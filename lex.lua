@@ -68,6 +68,7 @@ tok = {
 	command_close = k(),
 
 	line_ending = k(),
+	op_assign = k(),
 }
 
 kwds = {
@@ -148,6 +149,7 @@ function lex(text --[[string]], file --[[string | nil]])
 	local line = 1
 	local col = 1
 	local scopes = {}
+	local var_assignment = false
 
 	local function token_iterator()
 		while #text > 0 do
@@ -220,6 +222,11 @@ function lex(text --[[string]], file --[[string | nil]])
 						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
 							match = key
 							tok_type = value
+
+							if match == 'let' then
+								table.insert(scopes, 'let')
+							end
+							break
 						end
 					end
 				end
@@ -315,6 +322,7 @@ function lex(text --[[string]], file --[[string | nil]])
 						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
 							match = key
 							tok_type = value
+							break
 						end
 					end
 				end
@@ -327,6 +335,7 @@ function lex(text --[[string]], file --[[string | nil]])
 						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
 							match = key
 							tok_type = value
+							break
 						end
 					end
 				end
@@ -416,6 +425,39 @@ function lex(text --[[string]], file --[[string | nil]])
 					this_ix = this_ix + 1
 				end
 
+			elseif curr_scope == 'let' then
+				--line endings (end of variable declaration)
+				match = text:match('^[\n\x0b;]')
+				if match then
+					tok_type = tok.line_ending
+
+					if match ~= ';' then
+						line = line + 1
+						col = 0
+					end
+					table.remove(scopes)
+				end
+
+				--variable assignment operator (end of variable declaration)
+				if not match then
+					match = text:match('^=')
+					if match then
+						tok_type = tok.op_assign
+						table.remove(scopes)
+					end
+				end
+
+				--White space
+				if not match then
+					match = text:match('^[ \t\r]+')
+					if match then tok_ignore = true end
+				end
+
+				--Variable references
+				if not match then
+					match = text:match('^%w+')
+					if match then tok_type = tok.variable end
+				end
 			end
 
 			--Append currently matched token to token list
@@ -464,6 +506,6 @@ function print_token(token)
 	print(('%2d:%2d: ERR:%d = "%s"'):format(token.line, token.col, token.id, token.text))
 end
 
-for token in lex('"${3*100}"') do
+for token in lex('let i = 3') do
 	print_token(token)
 end
