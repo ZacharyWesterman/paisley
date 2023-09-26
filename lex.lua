@@ -130,305 +130,323 @@ function parse_error(line, col, msg, file)
 	end
 end
 
-function lex(text, file)
-	local tokens = {}
+--[[
+Takes text and (optional)file name, and returns an iterator for getting the next token.
+Throws an error if any token error was found in the input text.
+
+Iterator generates tokens of the form:
+{
+	text: string,
+	id: int,
+	line: int,
+	col: int,
+}
+--]]
+function lex(text --[[string]], file --[[string | nil]])
 	local line = 1
 	local col = 1
 	local scopes = {}
 
-	while #text > 0 do
-		local match = nil
-		local tok_type = nil
-		local tok_ignore = false
-		local curr_scope = scopes[#scopes]
+	local function token_iterator()
+		while #text > 0 do
+			local match = nil
+			local tok_type = nil
+			local tok_ignore = false
+			local curr_scope = scopes[#scopes]
 
-		if curr_scope == nil or curr_scope == '$' then
-			--Default parse rules
+			if curr_scope == nil or curr_scope == '$' then
+				--Default parse rules
 
-			--line ending
-			match = text:match('^[\n\x0b]')
-			if match then
-				tok_ignore = true
-				line = line + 1
-				col = 0
-			end
-
-			--White space
-			if not match then
-				match = text:match('^[ \t\r]+')
-				if match then tok_ignore = true end
-			end
-
-			--string start
-			if not match then
-				match = text:match('^[\'"]')
+				--line ending
+				match = text:match('^[\n\x0b]')
 				if match then
-					tok_type = tok.string_open
-					table.insert(scopes, match)
+					tok_ignore = true
+					line = line + 1
+					col = 0
 				end
-			end
 
-			--expression start
-			if not match then
-				match = text:match('^{')
-				if match then
-					tok_type = tok.expr_open
-					table.insert(scopes, match)
+				--White space
+				if not match then
+					match = text:match('^[ \t\r]+')
+					if match then tok_ignore = true end
 				end
-			end
 
-			--inline command start
-			if not match then
-				match = text:match('^%${')
-				if match then
-					tok_type = tok.command_open
-					table.insert(scopes, '$')
-				end
-			end
-
-			--inline command end
-			if not match and curr_scope == '$' then
-				match = text:match('^}')
-				if match then
-					tok_type = tok.command_close
-					table.remove(scopes)
-				end
-			end
-
-			--keywords
-			if not match then
-				local key
-				local value
-				for key, value in pairs(kwds) do
-					if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
-						match = key
-						tok_type = value
+				--string start
+				if not match then
+					match = text:match('^[\'"]')
+					if match then
+						tok_type = tok.string_open
+						table.insert(scopes, match)
 					end
 				end
-			end
 
-			--non-quoted text
-			if not match then
-				match = text:match('^[^ \t\n\r"\'{}\x0b;$]+')
-				if match then tok_type = tok.text end
-			end
-
-			--labels
-			if not match then
-				match = text:match('^%w+:')
-				if match then tok_type = tok.label end
-			end
-
-		elseif curr_scope == '{' or curr_scope == '(' then
-			--Parse rules when inside expressions
-
-			--line endings cause errors inside expressions
-			match = text:match('^[\n\x0b]')
-			if match then
-				parse_error(line, col, 'Unexpected line ending inside expression', file)
-			end
-
-			--White space
-			if not match then
-				match = text:match('^[ \t\r]+')
-				if match then tok_ignore = true end
-			end
-
-			--string start
-			if not match then
-				match = text:match('^[\'"]')
-				if match then
-					tok_type = tok.string_open
-					table.insert(scopes, match)
-				end
-			end
-
-			--expression start
-			if not match then
-				match = text:match('^{')
-				if match then
-					tok_type = tok.expr_open
-					table.insert(scopes, match)
-				end
-			end
-
-			--expression end
-			if not match then
-				match = text:match('^}')
-				if match then
-					tok_type = tok.expr_close
-					table.remove(scopes)
-					if curr_scope ~= '{' then parse_error(line, col, 'Mismatched parentheses, expected ")", got "}"', file) end
-				end
-			end
-
-			--paren close
-			if not match then
-				match = text:match('^%)')
-				if match then
-					tok_type = tok.paren_close
-					table.remove(scopes)
-					if curr_scope ~= '(' then parse_error(line, col, 'Mismatched parentheses, expected "}", got ")"', file) end
-				end
-			end
-
-			--paren open
-			if not match then
-				match = text:match('^%(')
-				if match then
-					tok_type = tok.paren_open
-					table.insert(scopes, match)
-				end
-			end
-
-			--inline command start
-			if not match then
-				match = text:match('^%${')
-				if match then
-					tok_type = tok.command_open
-					table.insert(scopes, '$')
-				end
-			end
-
-			--Operators
-			if not match then
-				local key
-				local value
-				for key, value in pairs(opers) do
-					if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
-						match = key
-						tok_type = value
-					end
-				end
-			end
-
-			--Named constants
-			if not match then
-				local key
-				local value
-				for key, value in pairs(literals) do
-					if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
-						match = key
-						tok_type = value
-					end
-				end
-			end
-
-			--Variable references
-			if not match then
-				match = text:match('^%w+')
-				if match then tok_type = tok.variable end
-			end
-
-			--Special "list of vars" variable
-			if not match then
-				match = text:match('^@')
-				if match then tok_type = tok.variable end
-			end
-		elseif curr_scope == '"' or curr_scope == '\'' then
-			--Logic for inside strings
-			local this_ix = 1
-			local this_str = ''
-			while true do
-				local this_chr = text:sub(this_ix, this_ix)
-
-				if this_chr == '' then
-					parse_error(line, col + #this_str, 'Unexpected EOF inside string', file)
-				end
-
-				--No line breaks are allowed inside strings
-				if this_chr == '\n' or this_chr == '\x0b' then
-					parse_error(line, col + #this_str, 'Unexpected line ending inside string', file)
-				end
-
-				--Once string ends, add text to token list and exit string.
-				--If we found an expression instead, add to the stack.
-				if this_chr == curr_scope or this_chr == '{' or this_chr == '$' then
-					if #this_str > 0 then
-						--Insert current built string
-						text = text:sub(this_ix, #text)
-						table.insert(tokens, {
-							text = this_str,
-							id = tok.text,
-							line = line,
-							col = col,
-						})
-						col = col + #this_str
-						print(this_str..' -> '..tok.text)
-					end
-
-					match = this_chr
-					if this_chr == '{' then
-						--enter expression (add to scope stack)
+				--expression start
+				if not match then
+					match = text:match('^{')
+					if match then
 						tok_type = tok.expr_open
 						table.insert(scopes, match)
-					elseif this_chr == '$' then
-						--Make sure command eval is formatted correctly
-						if text:sub(2,1) ~= '{' then
-							parse_error(line, col, 'Found command marker but no body (expected "{")', file)
-						end
-						match = '${'
+					end
+				end
 
-						--enter inline command eval
+				--inline command start
+				if not match then
+					match = text:match('^%${')
+					if match then
 						tok_type = tok.command_open
-						table.insert(scopes, this_chr)
-					else
-						--exit string (pop to previous scope)
-						tok_type = tok.string_close
+						table.insert(scopes, '$')
+					end
+				end
+
+				--inline command end
+				if not match and curr_scope == '$' then
+					match = text:match('^}')
+					if match then
+						tok_type = tok.command_close
 						table.remove(scopes)
 					end
-
-					break
 				end
 
-				--Parse escape chars. Currently only 2 of them, don't see much need to add more.
-				if this_chr == '\\' then
-					this_ix = this_ix + 1
-					this_chr = text:sub(this_ix, this_ix)
-					if this_chr == '' then
-						parse_error(line, col + #this_str, 'Unexpected EOF inside string (after "\\")', file)
-					elseif this_chr == 'n' then
-						this_chr = '\n'
-					elseif this_chr == 't' then
-						this_chr = '\t'
+				--keywords
+				if not match then
+					local key
+					local value
+					for key, value in pairs(kwds) do
+						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
+							match = key
+							tok_type = value
+						end
 					end
 				end
 
-				this_str = this_str .. this_chr
-				this_ix = this_ix + 1
+				--non-quoted text
+				if not match then
+					match = text:match('^[^ \t\n\r"\'{}\x0b;$]+')
+					if match then tok_type = tok.text end
+				end
+
+				--labels
+				if not match then
+					match = text:match('^%w+:')
+					if match then tok_type = tok.label end
+				end
+
+			elseif curr_scope == '{' or curr_scope == '(' then
+				--Parse rules when inside expressions
+
+				--line endings cause errors inside expressions
+				match = text:match('^[\n\x0b]')
+				if match then
+					parse_error(line, col, 'Unexpected line ending inside expression', file)
+				end
+
+				--White space
+				if not match then
+					match = text:match('^[ \t\r]+')
+					if match then tok_ignore = true end
+				end
+
+				--string start
+				if not match then
+					match = text:match('^[\'"]')
+					if match then
+						tok_type = tok.string_open
+						table.insert(scopes, match)
+					end
+				end
+
+				--expression start
+				if not match then
+					match = text:match('^{')
+					if match then
+						tok_type = tok.expr_open
+						table.insert(scopes, match)
+					end
+				end
+
+				--expression end
+				if not match then
+					match = text:match('^}')
+					if match then
+						tok_type = tok.expr_close
+						table.remove(scopes)
+						if curr_scope ~= '{' then parse_error(line, col, 'Mismatched parentheses, expected ")", got "}"', file) end
+					end
+				end
+
+				--paren close
+				if not match then
+					match = text:match('^%)')
+					if match then
+						tok_type = tok.paren_close
+						table.remove(scopes)
+						if curr_scope ~= '(' then parse_error(line, col, 'Mismatched parentheses, expected "}", got ")"', file) end
+					end
+				end
+
+				--paren open
+				if not match then
+					match = text:match('^%(')
+					if match then
+						tok_type = tok.paren_open
+						table.insert(scopes, match)
+					end
+				end
+
+				--inline command start
+				if not match then
+					match = text:match('^%${')
+					if match then
+						tok_type = tok.command_open
+						table.insert(scopes, '$')
+					end
+				end
+
+				--Operators
+				if not match then
+					local key
+					local value
+					for key, value in pairs(opers) do
+						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
+							match = key
+							tok_type = value
+						end
+					end
+				end
+
+				--Named constants
+				if not match then
+					local key
+					local value
+					for key, value in pairs(literals) do
+						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
+							match = key
+							tok_type = value
+						end
+					end
+				end
+
+				--Variable references
+				if not match then
+					match = text:match('^%w+')
+					if match then tok_type = tok.variable end
+				end
+
+				--Special "list of vars" variable
+				if not match then
+					match = text:match('^@')
+					if match then tok_type = tok.variable end
+				end
+			elseif curr_scope == '"' or curr_scope == '\'' then
+				--Logic for inside strings
+				local this_ix = 1
+				local this_str = ''
+				while true do
+					local this_chr = text:sub(this_ix, this_ix)
+
+					if this_chr == '' then
+						parse_error(line, col + #this_str, 'Unexpected EOF inside string', file)
+					end
+
+					--No line breaks are allowed inside strings
+					if this_chr == '\n' or this_chr == '\x0b' then
+						parse_error(line, col + #this_str, 'Unexpected line ending inside string', file)
+					end
+
+					--Once string ends, add text to token list and exit string.
+					--If we found an expression instead, add to the stack.
+					if this_chr == curr_scope or this_chr == '{' or this_chr == '$' then
+						if #this_str > 0 then
+							--Insert current built string
+							text = text:sub(this_ix, #text)
+							local out = {
+								text = this_str,
+								id = tok.text,
+								line = line,
+								col = col,
+							}
+							col = col + #this_str
+							return out
+						end
+
+						match = this_chr
+						if this_chr == '{' then
+							--enter expression (add to scope stack)
+							tok_type = tok.expr_open
+							table.insert(scopes, match)
+						elseif this_chr == '$' then
+							--Make sure command eval is formatted correctly
+							if text:sub(2,1) ~= '{' then
+								parse_error(line, col, 'Found command marker but no body (expected "{")', file)
+							end
+							match = '${'
+
+							--enter inline command eval
+							tok_type = tok.command_open
+							table.insert(scopes, this_chr)
+						else
+							--exit string (pop to previous scope)
+							tok_type = tok.string_close
+							table.remove(scopes)
+						end
+
+						break
+					end
+
+					--Parse escape chars. Currently only 2 of them, don't see much need to add more.
+					--Every other "escape" char is just the same character without the backslash.
+					if this_chr == '\\' then
+						this_ix = this_ix + 1
+						this_chr = text:sub(this_ix, this_ix)
+						if this_chr == '' then
+							parse_error(line, col + #this_str, 'Unexpected EOF inside string (after "\\")', file)
+						elseif this_chr == 'n' then
+							this_chr = '\n'
+						elseif this_chr == 't' then
+							this_chr = '\t'
+						end
+					end
+
+					this_str = this_str .. this_chr
+					this_ix = this_ix + 1
+				end
+
 			end
 
+			--Append currently matched token to token list
+			if match then
+				col = col + #match
+				text = text:sub(#match+1, #text)
+				if not tok_ignore then
+					return {
+						text = match,
+						id = tok_type,
+						line = line,
+						col = col,
+					}
+				end
+			else
+				parse_error(line, col, 'Unexpected character "'..text:sub(1,1)..'"', file)
+			end
 		end
 
-		--Append currently matched token to token list
-		if match then
-			col = col + #match
-			text = text:sub(#match+1, #text)
-			if not tok_ignore then
-				table.insert(tokens, {
-					text = match,
-					id = tok_type,
-					line = line,
-					col = col,
-				})
-				print(match..' -> '..tok_type)
-			end
-		else
-			parse_error(line, col, 'Unexpected character "'..text:sub(1,1)..'"', file)
+		--Make sure all strings, parens, and brackets all match up.
+		local remaining_scope = scopes[#scopes]
+		if remaining_scope == '"' or remaining_scope == '\'' then
+			parse_error(line, col, 'Unexpected EOF inside string', file)
+		elseif remaining_scope == '(' then
+			parse_error(line, col, 'Missing parenthesis, expected ")"', file)
+		elseif remaining_scope == '{' then
+			parse_error(line, col, 'Unexpected EOF inside expression, expected "}"', file)
+		elseif remaining_scope == '$' then
+			parse_error(line, col, 'Unexpected EOF inside command eval, expected "}"', file)
 		end
 	end
 
-	--Make sure all strings, parens, and brackets all match up.
-	local remaining_scope = scopes[#scopes]
-	if remaining_scope == '"' or remaining_scope == '\'' then
-		parse_error(line, col, 'Unexpected EOF inside string', file)
-	elseif remaining_scope == '(' then
-		parse_error(line, col, 'Missing parenthesis, expected ")"', file)
-	elseif remaining_scope == '{' then
-		parse_error(line, col, 'Unexpected EOF inside expression, expected "}"', file)
-	elseif remaining_scope == '$' then
-		parse_error(line, col, 'Unexpected EOF inside command eval, expected "}"', file)
-	end
+	return token_iterator
 end
 
-lex('{')
+
+for token in lex('"test{3}"') do
+	print(token.text..' -> '..token.id)
+end
