@@ -66,6 +66,8 @@ tok = {
 	label = k(),
 	command_open = k(),
 	command_close = k(),
+
+	line_ending = k(),
 }
 
 kwds = {
@@ -157,12 +159,15 @@ function lex(text --[[string]], file --[[string | nil]])
 			if curr_scope == nil or curr_scope == '$' then
 				--Default parse rules
 
-				--line ending
-				match = text:match('^[\n\x0b]')
+				--line endings (separate individual commands)
+				match = text:match('^[\n\x0b;]')
 				if match then
-					tok_ignore = true
-					line = line + 1
-					col = 0
+					tok_type = tok.line_ending
+
+					if match ~= ';' then
+						line = line + 1
+						col = 0
+					end
 				end
 
 				--White space
@@ -447,6 +452,18 @@ function lex(text --[[string]], file --[[string | nil]])
 end
 
 
-for token in lex('"test{3}"') do
-	print(token.text..' -> '..token.id)
+function print_token(token)
+	local key
+	local value
+	for key, value in pairs(tok) do
+		if token.id == value then
+			print(('%2d:%2d: %12s = %s'):format(token.line, token.col, key, token.text))
+			return
+		end
+	end
+	print(('%2d:%2d: ERR:%d = "%s"'):format(token.line, token.col, token.id, token.text))
+end
+
+for token in lex('"test{3}";print i') do
+	print_token(token)
 end
