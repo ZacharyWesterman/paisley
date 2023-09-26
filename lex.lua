@@ -381,7 +381,7 @@ function lex(text --[[string]], file --[[string | nil]])
 							table.insert(scopes, match)
 						elseif this_chr == '$' then
 							--Make sure command eval is formatted correctly
-							if text:sub(2,1) ~= '{' then
+							if text:sub(this_ix+1,this_ix+1) ~= '{' then
 								parse_error(line, col, 'Found command marker but no body (expected "{")', file)
 							end
 							match = '${'
@@ -427,7 +427,7 @@ function lex(text --[[string]], file --[[string | nil]])
 						text = match,
 						id = tok_type,
 						line = line,
-						col = col,
+						col = col - #match,
 					}
 				end
 			else
@@ -457,13 +457,13 @@ function print_token(token)
 	local value
 	for key, value in pairs(tok) do
 		if token.id == value then
-			print(('%2d:%2d: %12s = %s'):format(token.line, token.col, key, token.text))
+			print(('%2d:%2d: %13s = %s'):format(token.line, token.col, key, token.text:gsub('[\n\x0b]', '<newline>')))
 			return
 		end
 	end
 	print(('%2d:%2d: ERR:%d = "%s"'):format(token.line, token.col, token.id, token.text))
 end
 
-for token in lex('"test{3}";print i') do
+for token in lex('"${3*100}"') do
 	print_token(token)
 end
