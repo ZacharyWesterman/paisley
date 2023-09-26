@@ -62,6 +62,8 @@ tok = {
 
 	string_open = k(),
 	string_close = k(),
+
+	label = k(),
 }
 
 kwds = {
@@ -190,6 +192,13 @@ function lex(text, file)
 				match = text:match('^[^ \t\n\r"\'{}\x0b;]+')
 				if match then tok_type = tok.text end
 			end
+
+			--labels
+			if not match then
+				match = text:match('^\w+:')
+				if match then tok_type = tok.label end
+			end
+
 		elseif curr_scope == '{' or curr_scope == '(' then
 			--Parse rules when inside expressions
 
