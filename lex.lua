@@ -64,6 +64,8 @@ tok = {
 	string_close = k(),
 
 	label = k(),
+	command_open = k(),
+	command_close = k(),
 }
 
 kwds = {
@@ -140,7 +142,7 @@ function lex(text, file)
 		local tok_ignore = false
 		local curr_scope = scopes[#scopes]
 
-		if curr_scope == nil then
+		if curr_scope == nil or curr_scope == '$' then
 			--Default parse rules
 
 			--line ending
@@ -175,6 +177,24 @@ function lex(text, file)
 				end
 			end
 
+			--inline command start
+			if not match then
+				match = text:match('^%${')
+				if match then
+					tok_type = tok.command_open
+					table.insert(scopes, '$')
+				end
+			end
+
+			--inline command end
+			if not match and curr_scope == '$' then
+				match = text:match('^}')
+				if match then
+					tok_type = tok.command_close
+					table.remove(scopes)
+				end
+			end
+
 			--keywords
 			if not match then
 				local key
@@ -189,13 +209,13 @@ function lex(text, file)
 
 			--non-quoted text
 			if not match then
-				match = text:match('^[^ \t\n\r"\'{}\x0b;]+')
+				match = text:match('^[^ \t\n\r"\'{}\x0b;$]+')
 				if match then tok_type = tok.text end
 			end
 
 			--labels
 			if not match then
-				match = text:match('^\w+:')
+				match = text:match('^%w+:')
 				if match then tok_type = tok.label end
 			end
 
@@ -261,6 +281,15 @@ function lex(text, file)
 				end
 			end
 
+			--inline command start
+			if not match then
+				match = text:match('^%${')
+				if match then
+					tok_type = tok.command_open
+					table.insert(scopes, '$')
+				end
+			end
+
 			--Operators
 			if not match then
 				local key
@@ -314,7 +343,7 @@ function lex(text, file)
 
 				--Once string ends, add text to token list and exit string.
 				--If we found an expression instead, add to the stack.
-				if this_chr == curr_scope or this_chr == '{' then
+				if this_chr == curr_scope or this_chr == '{' or this_chr == '$' then
 					if #this_str > 0 then
 						--Insert current built string
 						text = text:sub(this_ix, #text)
@@ -333,6 +362,16 @@ function lex(text, file)
 						--enter expression (add to scope stack)
 						tok_type = tok.expr_open
 						table.insert(scopes, match)
+					elseif this_chr == '$' then
+						--Make sure command eval is formatted correctly
+						if text:sub(2,1) ~= '{' then
+							parse_error(line, col, 'Found command marker but no body (expected "{")', file)
+						end
+						match = '${'
+
+						--enter inline command eval
+						tok_type = tok.command_open
+						table.insert(scopes, this_chr)
 					else
 						--exit string (pop to previous scope)
 						tok_type = tok.string_close
@@ -387,6 +426,8 @@ function lex(text, file)
 		parse_error(line, col, 'Missing parenthesis, expected ")"', file)
 	elseif remaining_scope == '{' then
 		parse_error(line, col, 'Unexpected EOF inside expression, expected "}"', file)
+	elseif remaining_scope == '$' then
+		parse_error(line, col, 'Unexpected EOF inside command eval, expected "}"', file)
 	end
 end
 
