@@ -383,8 +383,14 @@ function lex(text --[[string]], file --[[string | nil]])
 
 				--Variable references
 				if not match then
-					match = text:match('^%w+')
+					match = text:match('^[a-zA-Z_]%w*')
 					if match then tok_type = tok.variable end
+				end
+
+				--Numbers (really just text)
+				if not match then
+					match = text:match('^[0-9%.]+')
+					if match then tok_type = tok.text end
 				end
 
 				--Special "list of vars" variable
@@ -496,7 +502,7 @@ function lex(text --[[string]], file --[[string | nil]])
 
 				--Variable references
 				if not match then
-					match = text:match('^%w+')
+					match = text:match('^[a-zA-Z_]%w*')
 					if match then tok_type = tok.variable end
 				end
 			end
@@ -549,6 +555,6 @@ function print_token(token)
 	print(('%2d:%2d: ERR:%d = "%s"'):format(token.line, token.col, token.id, token.text))
 end
 
-for token in lex('let i = {[]}') do
+for token in lex('let i = {3.123}') do
 	print_token(token)
 end
