@@ -69,6 +69,9 @@ tok = {
 
 	line_ending = k(),
 	op_assign = k(),
+
+	index_open = k(),
+	index_close = k(),
 }
 
 kwds = {
@@ -150,6 +153,24 @@ function lex(text --[[string]], file --[[string | nil]])
 	local col = 1
 	local scopes = {}
 	local var_assignment = false
+
+	local function check_parens(last_paren, this_paren)
+		local errtype = {
+			['('] = {['}']=true, [']']=true},
+			['{'] = {[')']=true, [']']=true},
+			['['] = {['}']=true, [')']=true},
+		}
+
+		local expected = {
+			['('] = ')',
+			['{'] = '}',
+			['['] = ']',
+		}
+
+		if errtype[last_paren][this_paren] then
+			parse_error(line, col, 'Mismatched parentheses, expected "'..expected[last_paren]..'", got "'..this_paren..'"', file)
+		end
+	end
 
 	local function token_iterator()
 		while #text > 0 do
@@ -243,7 +264,7 @@ function lex(text --[[string]], file --[[string | nil]])
 					if match then tok_type = tok.label end
 				end
 
-			elseif curr_scope == '{' or curr_scope == '(' then
+			elseif curr_scope == '{' or curr_scope == '(' or curr_scope == '[' then
 				--Parse rules when inside expressions
 
 				--line endings cause errors inside expressions
@@ -282,7 +303,7 @@ function lex(text --[[string]], file --[[string | nil]])
 					if match then
 						tok_type = tok.expr_close
 						table.remove(scopes)
-						if curr_scope ~= '{' then parse_error(line, col, 'Mismatched parentheses, expected ")", got "}"', file) end
+						check_parens(curr_scope, match)
 					end
 				end
 
@@ -290,9 +311,10 @@ function lex(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^%)')
 					if match then
+						print('-> -> '..curr_scope)
 						tok_type = tok.paren_close
 						table.remove(scopes)
-						if curr_scope ~= '(' then parse_error(line, col, 'Mismatched parentheses, expected "}", got ")"', file) end
+						check_parens(curr_scope, match)
 					end
 				end
 
@@ -301,6 +323,25 @@ function lex(text --[[string]], file --[[string | nil]])
 					match = text:match('^%(')
 					if match then
 						tok_type = tok.paren_open
+						table.insert(scopes, match)
+					end
+				end
+
+				--bracket close
+				if not match then
+					match = text:match('^%]')
+					if match then
+						tok_type = tok.index_close
+						table.remove(scopes)
+						check_parens(curr_scope, match)
+					end
+				end
+
+				--bracket open
+				if not match then
+					match = text:match('^%[')
+					if match then
+						tok_type = tok.index_open
 						table.insert(scopes, match)
 					end
 				end
@@ -483,10 +524,12 @@ function lex(text --[[string]], file --[[string | nil]])
 			parse_error(line, col, 'Unexpected EOF inside string', file)
 		elseif remaining_scope == '(' then
 			parse_error(line, col, 'Missing parenthesis, expected ")"', file)
+		elseif remaining_scope == '[' then
+			parse_error(line, col, 'Missing bracket, expected "]"', file)
 		elseif remaining_scope == '{' then
-			parse_error(line, col, 'Unexpected EOF inside expression, expected "}"', file)
+			parse_error(line, col, 'Missing brace after expression, expected "}"', file)
 		elseif remaining_scope == '$' then
-			parse_error(line, col, 'Unexpected EOF inside command eval, expected "}"', file)
+			parse_error(line, col, 'Missing brace after command eval, expected "}"', file)
 		end
 	end
 
@@ -506,6 +549,6 @@ function print_token(token)
 	print(('%2d:%2d: ERR:%d = "%s"'):format(token.line, token.col, token.id, token.text))
 end
 
-for token in lex('let i = 3') do
+for token in lex('let i = {[]}') do
 	print_token(token)
 end
