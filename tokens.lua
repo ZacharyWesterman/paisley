@@ -29,6 +29,7 @@ tok = {
 	expr_open = k(),
 	expr_close = k(),
 	variable = k(),
+	lit_number = k(),
 
 	op_plus = k(),
 	op_minus = k(),
@@ -72,6 +73,13 @@ tok = {
 
 	index_open = k(),
 	index_close = k(),
+
+	--Below this point are composite or meta tokens that don't exist during initial lexing phase, only get created as part of AST gen
+
+	value = k(), --any value in an expression: number, string, literal, or variable
+	sum = k(), -- value + value, value - value
+	mult = k(), -- multiplication or division
+	boolean = k(),
 }
 
 function parse_error(line, col, msg, file)
@@ -95,12 +103,17 @@ end
 
 function print_token(token, indent)
 	if indent == nil then indent = '' end
-	print((indent..'%2d:%2d: %13s = %s'):format(token.line, token.col, token_text(token.id), token.text:gsub('[\n\x0b]', '<newline>')))
+
+	local id = token_text(token.id)
+	if token.meta_id ~= nil then id = token_text(token.meta_id)..'*' end
+
+	print((indent..'%2d:%2d: %13s = %s'):format(token.line, token.col, id, token.text:gsub('[\n\x0b]', '<newline>')))
 end
 
 function print_tokens_recursive(root, indent)
 	local child
 	local _
+	if indent == nil then indent = '' end
 	print_token(root, indent)
 	if root.children then
 		for _, child in pairs(root.children) do

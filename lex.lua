@@ -228,7 +228,6 @@ function lex(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^%)')
 					if match then
-						print('-> -> '..curr_scope)
 						tok_type = tok.paren_close
 						table.remove(scopes)
 						check_parens(curr_scope, match)
@@ -307,7 +306,7 @@ function lex(text --[[string]], file --[[string | nil]])
 				--Numbers (really just text)
 				if not match then
 					match = text:match('^[0-9%.]+')
-					if match then tok_type = tok.text end
+					if match then tok_type = tok.lit_number end
 				end
 
 				--Special "list of vars" variable
@@ -420,7 +419,7 @@ function lex(text --[[string]], file --[[string | nil]])
 				--Variable references
 				if not match then
 					match = text:match('^[a-zA-Z_]%w*')
-					if match then tok_type = tok.variable end
+					if match then tok_type = tok.text end
 				end
 			end
 

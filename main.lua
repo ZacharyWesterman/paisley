@@ -1,5 +1,11 @@
 require "lex"
+require "syntax"
 
-for token in lex('let i = {3.123}') do
-	print_token(token)
+_tokens = {}
+lexer = lex('let x = {3.123 * (5 + 3)}')
+
+for t in lexer do
+	table.insert(_tokens, t)
 end
+
+syntax(_tokens)
