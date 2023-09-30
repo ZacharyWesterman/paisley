@@ -87,6 +87,7 @@ tok = {
 	array_slice = k(),
 	comparison = k(),
 	negate = k(),
+	string = k(),
 
 	expression = k(),
 }

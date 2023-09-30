@@ -144,6 +144,23 @@ local rules = {
 			return tokens[1]
 		end
 	},
+
+	--Condense strings
+	{
+		form = {{tok.string_open}, {tok.text, tok.value, tok.string_close}},
+		operation = function(tokens)
+			if not tokens[1].children then tokens[1].children = {} end
+
+			if tokens[2].id ~= tok.string_close then
+				table.insert(tokens[1].children, tokens[2])
+			else
+				tokens[1].id = tok.string
+				tokens[1].meta_id = tok.value
+			end
+
+			return tokens[1]
+		end
+	}
 }
 
 --[[
