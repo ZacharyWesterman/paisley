@@ -2,7 +2,7 @@ require "lex"
 require "syntax"
 
 _tokens = {}
-lexer = lex('let x = {3.123 * (5 + 3)}')
+lexer = lex('let x = {1 + {a}}')
 
 for t in lexer do
 	table.insert(_tokens, t)

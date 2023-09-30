@@ -45,6 +45,9 @@ opers = {
 	['='] = tok.op_eq,
 	['~='] = tok.op_ne,
 	['!='] = tok.op_ne,
+	['.'] = tok.op_concat,
+	['..'] = tok.op_concat,
+	[','] = tok.op_comma,
 }
 
 literals = {

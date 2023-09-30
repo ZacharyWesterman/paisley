@@ -53,6 +53,8 @@ tok = {
 	op_lt = k(),
 	op_eq = k(),
 	op_ne = k(),
+	op_comma = k(),
+	op_concat = k(),
 
 	paren_open = k(),
 	paren_close = k(),
@@ -77,9 +79,15 @@ tok = {
 	--Below this point are composite or meta tokens that don't exist during initial lexing phase, only get created as part of AST gen
 
 	value = k(), --any value in an expression: number, string, literal, or variable
-	sum = k(), -- value + value, value - value
-	mult = k(), -- multiplication or division
+	add = k(), -- value + value, value - value
+	multiply = k(), -- multiplication or division
 	boolean = k(),
+	index = k(),
+	array_concat = k(),
+	array_slice = k(),
+	comparison = k(),
+
+	expression = k(),
 }
 
 function parse_error(line, col, msg, file)

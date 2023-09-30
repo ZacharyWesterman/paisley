@@ -1,6 +1,17 @@
 require "tokens"
 
 local rules = {
+	--Condense array indexing
+	{
+		form = {{tok.value}, {tok.index_open}, {tok.value}, {tok.index_close}},
+		operation = function(tokens)
+			tokens[2].meta_id = tok.value
+			tokens[2].id = tok.index
+			tokens[2].children = { tokens[1], tokens[3] }
+			return tokens[2]
+		end
+	},
+
 	--Convert literals / variables into values
 	{
 		form = {{tok.lit_number, tok.lit_false, tok.lit_true, tok.lit_null, tok.variable}},
@@ -10,11 +21,25 @@ local rules = {
 		end
 	},
 
+	--Condense array-slice operations
+	{
+		form = {{tok.value}, {tok.op_slice}, {tok.value}},
+		operation = function(tokens)
+			tokens[2].meta_id = tok.value
+			tokens[2].id = tok.array_slice
+			tokens[2].children = {
+				tokens[1], tokens[3],
+			}
+			return tokens[2]
+		end
+	},
+
 	--Condense multiplication operations
 	{
 		form = {{tok.value}, {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod}, {tok.value}},
 		operation = function(tokens)
 			tokens[2].meta_id = tok.value
+			tokens[2].id = tok.multiply
 			tokens[2].children = {
 				tokens[1], tokens[3],
 			}
@@ -24,9 +49,62 @@ local rules = {
 
 	--Condense addition operations
 	{
-		form = {{tok.mult, tok.value}, {tok.op_plus, tok.op_minus}, {tok.mult, tok.value}},
+		form = {{tok.value}, {tok.op_plus, tok.op_minus}, {tok.value}},
 		operation = function(tokens)
 			tokens[2].meta_id = tok.value
+			tokens[2].id = tok.add
+			tokens[2].children = {
+				tokens[1], tokens[3],
+			}
+			return tokens[2]
+		end
+	},
+
+	--Condense unary boolean operations
+	{
+		form = {{tok.op_not}, {tok.value}},
+		operation = function(tokens)
+			tokens[1].meta_id = tok.value
+			tokens[1].id = tok.boolean
+			tokens[1].children = {
+				tokens[2],
+			}
+			return tokens[1]
+		end
+	},
+
+	--Condense binary boolean operations
+	{
+		form = {{tok.value}, {tok.op_and, tok.op_or, tok.op_xor}, {tok.value}},
+		operation = function(tokens)
+			tokens[2].meta_id = tok.value
+			tokens[2].id = tok.boolean
+			tokens[2].children = {
+				tokens[1], tokens[3],
+			}
+			return tokens[2]
+		end
+	},
+
+	--Condense comparison operations
+	{
+		form = {{tok.value}, {tok.op_eq, tok.op_ne, tok.op_gt, tok.op_ge, tok.op_lt, tok.op_le}, {tok.value}},
+		operation = function(tokens)
+			tokens[2].meta_id = tok.value
+			tokens[2].id = tok.comparison
+			tokens[2].children = {
+				tokens[1], tokens[3],
+			}
+			return tokens[2]
+		end
+	},
+
+	--Condense array-concat operations
+	{
+		form = {{tok.value}, {tok.op_comma}, {tok.value}},
+		operation = function(tokens)
+			tokens[2].meta_id = tok.value
+			tokens[2].id = tok.array_concat
 			tokens[2].children = {
 				tokens[1], tokens[3],
 			}
@@ -40,7 +118,18 @@ local rules = {
 		operation = function(tokens)
 			return tokens[2]
 		end
-	}
+	},
+
+	--Condense expression patterns
+	{
+		form = {{tok.expr_open}, {tok.value}, {tok.expr_close}},
+		operation = function(tokens)
+			tokens[1].id = tok.expression
+			tokens[1].meta_id = tok.value
+			tokens[1].children = {tokens[2]}
+			return tokens[1]
+		end
+	},
 }
 
 --[[
@@ -107,6 +196,9 @@ function check_match(tokens, index, form)
 
 	for i, form_rule in ipairs(form) do
 		local this_token = tokens[index + i - 1]
+
+		if this_token == nil then return false end --Definitely not a match if we ran out of tokens
+
 		local valid = false
 		for _, accepted_token_id in ipairs(form_rule) do
 			if (this_token.meta_id == nil and accepted_token_id == this_token.id) or (accepted_token_id == this_token.meta_id) then
