@@ -2,7 +2,11 @@ require "lex"
 require "syntax"
 
 _tokens = {}
-lexer = lex('let x = {1 + {a}}')
+
+local expression = io.read()
+
+-- print(expression)
+lexer = lex(expression)
 
 for t in lexer do
 	table.insert(_tokens, t)

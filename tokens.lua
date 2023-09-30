@@ -86,6 +86,7 @@ tok = {
 	array_concat = k(),
 	array_slice = k(),
 	comparison = k(),
+	negate = k(),
 
 	expression = k(),
 }
@@ -113,7 +114,7 @@ function print_token(token, indent)
 	if indent == nil then indent = '' end
 
 	local id = token_text(token.id)
-	if token.meta_id ~= nil then id = token_text(token.meta_id)..'*' end
+	if token.meta_id ~= nil then id = token_text(token.id)..'*' end
 
 	print((indent..'%2d:%2d: %13s = %s'):format(token.line, token.col, id, token.text:gsub('[\n\x0b]', '<newline>')))
 end

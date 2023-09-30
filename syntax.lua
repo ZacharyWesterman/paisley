@@ -21,6 +21,20 @@ local rules = {
 		end
 	},
 
+	--Condense unary negate operation
+	{
+		form = {{tok.op_minus}, {tok.value}},
+		not_after = {tok.lit_number, tok.literal, tok.paren_close, tok.expr_close, tok.index_close},
+		operation = function(tokens)
+			tokens[1].meta_id = tok.value
+			tokens[1].id = tok.negate
+			tokens[1].children = {
+				tokens[2],
+			}
+			return tokens[1]
+		end
+	},
+
 	--Condense array-slice operations
 	{
 		form = {{tok.value}, {tok.op_slice}, {tok.value}},
@@ -152,7 +166,7 @@ function syntax(tokens)
 	while true do
 		local reduced = false
 		for _, rule in ipairs(rules) do
-			token_list, reduced = reduce(token_list, rule.form, rule.operation)
+			token_list, reduced = reduce(token_list, rule.form, rule.operation, rule.not_after)
 			if reduced then break end
 		end
 
@@ -165,20 +179,37 @@ function syntax(tokens)
 	end
 end
 
-function reduce(tokens, form, operation)
+function reduce(tokens, form, operation, not_after)
 	local new_tokens = {}
 	local i = 1
 	local did_reduce = false
 	while i <= #tokens do
 		if check_match(tokens, i, form) then
-			local matched_group = {}
-			local k
-			for k = i, i + #form do
-				table.insert(matched_group, tokens[k])
+			local reject = false
+			if not_after and (i > 1) then
+				local _
+				local t
+				for _, t in pairs(not_after) do
+					if tokens[i-1].id == t or tokens[i-1].meta_id == t then
+						reject = true
+						break
+					end
+				end
 			end
-			table.insert(new_tokens, operation(matched_group))
-			did_reduce = true
-			i = i + #form
+
+			if reject then
+				table.insert(new_tokens, tokens[i])
+				i = i + 1
+			else
+				local matched_group = {}
+				local k
+				for k = i, i + #form do
+					table.insert(matched_group, tokens[k])
+				end
+				table.insert(new_tokens, operation(matched_group))
+				did_reduce = true
+				i = i + #form
+			end
 		else
 			table.insert(new_tokens, tokens[i])
 			i = i + 1
