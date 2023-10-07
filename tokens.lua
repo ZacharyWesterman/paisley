@@ -54,7 +54,6 @@ tok = {
 	op_eq = k(),
 	op_ne = k(),
 	op_comma = k(),
-	op_concat = k(),
 
 	paren_open = k(),
 	paren_close = k(),
@@ -90,8 +89,13 @@ tok = {
 	string = k(),
 	parentheses = k(),
 	func_call = k(),
+	concat = k(),
 
 	expression = k(),
+	inline_command = k(),
+	command = k(),
+
+	program = k(),
 }
 
 function parse_error(line, col, msg, file)

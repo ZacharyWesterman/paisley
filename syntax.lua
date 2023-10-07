@@ -1,4 +1,11 @@
 local rules = {
+	--String Concatenation
+	{
+		match = {{tok.comparison, tok.array_concat}, {tok.comparison, tok.array_concat}},
+		id = tok.concat,
+		text = 1,
+	},
+
 	--Function call
 	{
 		match = {{tok.comparison}, {tok.paren_open}, {tok.comparison}, {tok.paren_close}},
@@ -17,7 +24,7 @@ local rules = {
 
 	--Treat all literals the same.
 	{
-		match = {{tok.lit_number, tok.lit_false, tok.lit_true, tok.lit_null, tok.negate, tok.variable, tok.string, tok.parentheses, tok.comparison, tok.func_call, tok.index}},
+		match = {{tok.lit_number, tok.lit_false, tok.lit_true, tok.lit_null, tok.negate, tok.variable, tok.string, tok.parentheses, tok.comparison, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat}},
 		id = tok.value,
 		meta = true,
 	},
@@ -150,6 +157,54 @@ local rules = {
 		text = 1,
 	},
 
+
+	--Strings
+	{
+		match = {{tok.string_open}, {tok.expression, tok.text, tok.inline_command}},
+		append = true, --This is an "append" token: the first token in the group does not get consumed, instead all other tokens are appended as children.
+	},
+	{
+		match = {{tok.string_open}, {tok.string_close}},
+		id = tok.string,
+		meta = true,
+	},
+
+	--Inline commands
+	{
+		match = {{tok.command_open}, {tok.expression, tok.text, tok.inline_command, tok.string}},
+		append = true,
+	},
+	{
+		match = {{tok.command_open}, {tok.command_close}},
+		id = tok.inline_command,
+		meta = true,
+	},
+
+	--Commands
+	{
+		match = {{tok.text, tok.expression, tok.inline_command, tok.string}},
+		id = tok.command,
+		not_after = {tok.expression, tok.text, tok.inline_command, tok.command, tok.string},
+		text = 1,
+	},
+	{
+		match = {{tok.line_ending}, {tok.text, tok.expression, tok.inline_command, tok.string}},
+		id = tok.command,
+		keep = {2},
+		text = 2,
+	},
+	{
+		match = {{tok.command}, {tok.expression, tok.text, tok.inline_command, tok.string}},
+		append = true,
+	},
+
+
+	--Full program
+	{
+		match = {{tok.command, tok.program}, {tok.command, tok.program}},
+		id = tok.program,
+		text = 'stmt_list',
+	},
 }
 
 function syntax(tokens, file)
@@ -209,14 +264,28 @@ function syntax(tokens, file)
 				end
 
 				if rule_matches then
-					if rule.meta and #rule.match == 1 then
+					if rule.meta then
 						--This is a "meta" rule. It reduces a token by just changing the id.
 						this_token.meta_id = rule.id
-						return this_token, 1, nil
+						return this_token, #rule.match, nil
+					elseif rule.append then
+						--This is an "append" token: the first token in the group does not get consumed, instead all other tokens are appended as children.
+						if this_token.children == nil then this_token.children = {} end
+
+						local i
+						for i = 2, #rule.match do
+							table.insert(this_token.children, tokens[index + i - 1])
+						end
+
+						return this_token, #rule.match, nil
 					else
 						local text = '<undefined>'
 						if rule.text ~= nil then
-							text = tokens[index + rule.text - 1].text
+							if type(rule.text) == 'string' then
+								text = rule.text
+							else
+								text = tokens[index + rule.text - 1].text
+							end
 						end
 
 						local new_token = {
@@ -224,11 +293,11 @@ function syntax(tokens, file)
 							id = rule.id,
 							line = this_token.line,
 							col = this_token.col,
+							children = {},
 						}
 
 						if rule.keep then
 							--We only want to keep certain tokens of the matched group, not all of them.
-							new_token.children = {}
 							local i
 							for i = 1, #rule.keep do
 								table.insert(new_token.children, tokens[index + rule.keep[i] - 1])
