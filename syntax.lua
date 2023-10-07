@@ -1,7 +1,23 @@
 local rules = {
+	--Function call
+	{
+		match = {{tok.comparison}, {tok.paren_open}, {tok.comparison}, {tok.paren_close}},
+		id = tok.func_call,
+		keep = {1, 3},
+		text = 2,
+	},
+
+	--Array indexing
+	{
+		match = {{tok.comparison}, {tok.index_open}, {tok.comparison}, {tok.index_close}},
+		id = tok.index,
+		keep = {1, 3},
+		text = 2,
+	},
+
 	--Treat all literals the same.
 	{
-		match = {{tok.lit_number, tok.lit_false, tok.lit_true, tok.lit_null, tok.negate}},
+		match = {{tok.lit_number, tok.lit_false, tok.lit_true, tok.lit_null, tok.negate, tok.variable, tok.string, tok.parentheses, tok.comparison, tok.func_call, tok.index}},
 		id = tok.value,
 		meta = true,
 	},
@@ -17,7 +33,7 @@ local rules = {
 
 	--Multiplication
 	{
-		match = {{tok.value, tok.multiply}, {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod}, {tok.value}},
+		match = {{tok.value, tok.multiply}, {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod}, {tok.value, tok.multiply}},
 		id = tok.multiply,
 		keep = {1, 3},
 		text = 2,
@@ -33,14 +49,102 @@ local rules = {
 
 	--Addition (lower precedence than multiplication)
 	{
-		match = {{tok.multiply, tok.add}, {tok.op_plus, tok.op_minus}, {tok.multiply}},
+		match = {{tok.multiply, tok.add}, {tok.op_plus, tok.op_minus}, {tok.multiply, tok.add}},
 		id = tok.add,
 		keep = {1, 3},
 		text = 2,
 	},
 
+	--If no other addition was detected, just promote the value to add status.
+	--This is to keep add as higher precedence than boolean.
 	{
-		match = {{tok.expr_open}, {tok.add}, {tok.expr_close}},
+		match = {{tok.multiply}},
+		id = tok.add,
+		meta = true,
+	},
+
+	--Array Slicing
+	{
+		match = {{tok.add, tok.array_slice}, {tok.op_slice}, {tok.add, tok.array_slice}},
+		id = tok.array_slice,
+		keep = {1, 3},
+		text = 2,
+	},
+	{
+		match = {{tok.add}},
+		id = tok.array_slice,
+		meta = true,
+	},
+
+	--Array Concatenation
+	{
+		match = {{tok.array_slice, tok.array_concat}, {tok.op_comma}, {tok.array_slice, tok.array_concat}},
+		id = tok.array_concat,
+		keep = {1, 3},
+		text = 2,
+	},
+	{
+		match = {{tok.array_slice}},
+		id = tok.array_concat,
+		meta = true,
+	},
+
+	--Prefix Boolean not
+	{
+		match = {{tok.op_not}, {tok.array_concat, tok.boolean}},
+		id = tok.boolean,
+		keep = {2},
+		text = 1,
+	},
+
+	--Postfix Exists operator
+	{
+		match = {{tok.array_concat, tok.boolean}, {tok.op_exists}},
+		id = tok.boolean,
+		keep = {1},
+		text = 2,
+	},
+
+	--Infix Boolean operators
+	{
+		match = {{tok.array_concat, tok.boolean}, {tok.op_and, tok.op_or, tok.op_xor, tok.op_in, tok.op_like}, {tok.array_concat, tok.boolean}},
+		id = tok.boolean,
+		keep = {1, 3},
+		text = 2,
+	},
+
+	--If no other boolean op was detected, just promote the value to bool status.
+	--This is to keep booleans as higher precedence than comparison.
+	{
+		match = {{tok.array_concat}},
+		id = tok.boolean,
+		meta = true,
+	},
+
+	--Logical Comparison
+	{
+		match = {{tok.boolean, tok.comparison}, {tok.op_ge, tok.op_gt, tok.op_le, tok.op_lt, tok.op_eq, tok.op_ne}, {tok.boolean, tok.comparison}},
+		id = tok.comparison,
+		keep = {1, 3},
+		text = 2,
+	},
+	{
+		match = {{tok.boolean}},
+		id = tok.comparison,
+		meta = true,
+	},
+
+	--Parentheses
+	{
+		match = {{tok.paren_open}, {tok.comparison}, {tok.paren_close}},
+		id = tok.parentheses,
+		keep = {2},
+		text = 1,
+	},
+
+	--Expressions
+	{
+		match = {{tok.expr_open}, {tok.comparison}, {tok.expr_close}},
 		id = tok.expression,
 		keep = {2},
 		text = 1,
@@ -57,7 +161,7 @@ function syntax(tokens, file)
 		local _
 		local _t
 		for _, _t in ipairs(group) do
-			if (this_token.meta_id == nil and this_token.id == _t) or this_token.meta_id == _t then
+			if (this_token.meta_id == nil and this_token.id == _t) or (this_token.meta_id == _t) then
 				return true
 			end
 		end
@@ -179,13 +283,17 @@ function syntax(tokens, file)
 	end
 
 	--Run all syntax rules and condense tokens as far as possible
+	local loops_since_reduction = 0
+
 	while true do
 		local new_tokens, did_reduce, first_failure = full_reduce()
 		if #new_tokens == 1 then
 			return new_tokens
 		end
 
-		if not did_reduce then
+		loops_since_reduction = loops_since_reduction + 1
+
+		if not did_reduce or loops_since_reduction > 50 then
 			local token = tokens[first_failure]
 			parse_error(token.line, token.col, 'Unexpected token "'..token.text..'"', file)
 		end

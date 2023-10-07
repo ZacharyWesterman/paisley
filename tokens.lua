@@ -88,6 +88,8 @@ tok = {
 	comparison = k(),
 	negate = k(),
 	string = k(),
+	parentheses = k(),
+	func_call = k(),
 
 	expression = k(),
 }
@@ -115,9 +117,13 @@ function print_token(token, indent)
 	if indent == nil then indent = '' end
 
 	local id = token_text(token.id)
-	if token.meta_id ~= nil then id = token_text(token.id)..'*' end
+	local meta = ''
+	if token.meta_id ~= nil then
+		id = token_text(token.id)..'*'
+		meta = '    (meta='..token_text(token.meta_id)..')'
+	end
 
-	print((indent..'%2d:%2d: %13s = %s'):format(token.line, token.col, id, token.text:gsub('[\n\x0b]', '<newline>')))
+	print((indent..'%2d:%2d: %13s = %s%s'):format(token.line, token.col, id, token.text:gsub('[\n\x0b]', '<newline>'), meta))
 end
 
 function print_tokens_recursive(root, indent)
