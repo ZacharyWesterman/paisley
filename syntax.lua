@@ -1,262 +1,202 @@
-require "tokens"
-
 local rules = {
-	--Condense array indexing
+	--Treat all literals the same.
 	{
-		form = {{tok.value}, {tok.index_open}, {tok.value}, {tok.index_close}},
-		operation = function(tokens)
-			tokens[2].meta_id = tok.value
-			tokens[2].id = tok.index
-			tokens[2].children = { tokens[1], tokens[3] }
-			return tokens[2]
-		end
+		match = {{tok.lit_number, tok.lit_false, tok.lit_true, tok.lit_null, tok.negate}},
+		id = tok.value,
+		meta = true,
 	},
 
-	--Convert literals / variables into values
+	--Unary negation is a bit weird; highest precedence and cannot occur after certain nodes.
 	{
-		form = {{tok.lit_number, tok.lit_false, tok.lit_true, tok.lit_null, tok.variable}},
-		operation = function(tokens)
-			tokens[1].meta_id = tok.value
-			return tokens[1]
-		end
+		match = {{tok.op_minus}, {tok.value}},
+		id = tok.negate,
+		keep = {2},
+		text = 1,
+		not_after = {tok.lit_number, tok.lit_false, tok.lit_true, tok.lit_null, tok.negate},
 	},
 
-	--Condense unary negate operation
+	--Multiplication
 	{
-		form = {{tok.op_minus}, {tok.value}},
-		not_after = {tok.lit_number, tok.literal, tok.paren_close, tok.expr_close, tok.index_close},
-		operation = function(tokens)
-			tokens[1].meta_id = tok.value
-			tokens[1].id = tok.negate
-			tokens[1].children = {
-				tokens[2],
-			}
-			return tokens[1]
-		end
+		match = {{tok.value, tok.multiply}, {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod}, {tok.value}},
+		id = tok.multiply,
+		keep = {1, 3},
+		text = 2,
 	},
 
-	--Condense array-slice operations
+	--If no other multiplication was detected, just promote the value to mult status.
+	--This is to keep mult as higher precedence than addition.
 	{
-		form = {{tok.value}, {tok.op_slice}, {tok.value}},
-		operation = function(tokens)
-			tokens[2].meta_id = tok.value
-			tokens[2].id = tok.array_slice
-			tokens[2].children = {
-				tokens[1], tokens[3],
-			}
-			return tokens[2]
-		end
+		match = {{tok.value}},
+		id = tok.multiply,
+		meta = true,
 	},
 
-	--Condense multiplication operations
+	--Addition (lower precedence than multiplication)
 	{
-		form = {{tok.value}, {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod}, {tok.value}},
-		operation = function(tokens)
-			tokens[2].meta_id = tok.value
-			tokens[2].id = tok.multiply
-			tokens[2].children = {
-				tokens[1], tokens[3],
-			}
-			return tokens[2]
-		end
+		match = {{tok.multiply, tok.add}, {tok.op_plus, tok.op_minus}, {tok.multiply}},
+		id = tok.add,
+		keep = {1, 3},
+		text = 2,
 	},
 
-	--Condense addition operations
 	{
-		form = {{tok.value}, {tok.op_plus, tok.op_minus}, {tok.value}},
-		operation = function(tokens)
-			tokens[2].meta_id = tok.value
-			tokens[2].id = tok.add
-			tokens[2].children = {
-				tokens[1], tokens[3],
-			}
-			return tokens[2]
-		end
+		match = {{tok.expr_open}, {tok.add}, {tok.expr_close}},
+		id = tok.expression,
+		keep = {2},
+		text = 1,
 	},
 
-	--Condense unary boolean operations
-	{
-		form = {{tok.op_not}, {tok.value}},
-		operation = function(tokens)
-			tokens[1].meta_id = tok.value
-			tokens[1].id = tok.boolean
-			tokens[1].children = {
-				tokens[2],
-			}
-			return tokens[1]
-		end
-	},
-
-	--Condense binary boolean operations
-	{
-		form = {{tok.value}, {tok.op_and, tok.op_or, tok.op_xor}, {tok.value}},
-		operation = function(tokens)
-			tokens[2].meta_id = tok.value
-			tokens[2].id = tok.boolean
-			tokens[2].children = {
-				tokens[1], tokens[3],
-			}
-			return tokens[2]
-		end
-	},
-
-	--Condense comparison operations
-	{
-		form = {{tok.value}, {tok.op_eq, tok.op_ne, tok.op_gt, tok.op_ge, tok.op_lt, tok.op_le}, {tok.value}},
-		operation = function(tokens)
-			tokens[2].meta_id = tok.value
-			tokens[2].id = tok.comparison
-			tokens[2].children = {
-				tokens[1], tokens[3],
-			}
-			return tokens[2]
-		end
-	},
-
-	--Condense array-concat operations
-	{
-		form = {{tok.value}, {tok.op_comma}, {tok.value}},
-		operation = function(tokens)
-			tokens[2].meta_id = tok.value
-			tokens[2].id = tok.array_concat
-			tokens[2].children = {
-				tokens[1], tokens[3],
-			}
-			return tokens[2]
-		end
-	},
-
-	--Condense parentheses-enclosed expressions
-	{
-		form = {{tok.paren_open}, {tok.value}, {tok.paren_close}},
-		operation = function(tokens)
-			return tokens[2]
-		end
-	},
-
-	--Condense expression patterns
-	{
-		form = {{tok.expr_open}, {tok.value}, {tok.expr_close}},
-		operation = function(tokens)
-			tokens[1].id = tok.expression
-			tokens[1].meta_id = tok.value
-			tokens[1].children = {tokens[2]}
-			return tokens[1]
-		end
-	},
-
-	--Condense strings
-	{
-		form = {{tok.string_open}, {tok.text, tok.value, tok.string_close}},
-		operation = function(tokens)
-			if not tokens[1].children then tokens[1].children = {} end
-
-			if tokens[2].id ~= tok.string_close then
-				table.insert(tokens[1].children, tokens[2])
-			else
-				tokens[1].id = tok.string
-				tokens[1].meta_id = tok.value
-			end
-
-			return tokens[1]
-		end
-	}
 }
 
---[[
-Generate AST from a table or iterator of tokens.
---]]
-function syntax(tokens)
-	--Treat tables the same as iterators
-	local _
-	local token_list = tokens
-	if type(tokens) ~= 'table' then
-		token_list = {}
-		local token
-		for _, token in tokens do
-			table.insert(token_list, token)
+function syntax(tokens, file)
+
+	local function matches(index, rule, rule_index)
+		local this_token = tokens[index]
+		local group = rule.match[rule_index]
+
+		local _
+		local _t
+		for _, _t in ipairs(group) do
+			if (this_token.meta_id == nil and this_token.id == _t) or this_token.meta_id == _t then
+				return true
+			end
 		end
+
+		return false
 	end
 
-	local rule
-	local token_count = #token_list
-	while true do
-		local reduced = false
+	--Returns nil, nil, unexpected token index if reduce failed. If successful, returns a token, and the number of tokens consumed
+	local function reduce(index)
+		local _, rule
+		local this_token = tokens[index]
+		local greatest_len = 0
+		local unexpected_token = 1
+
 		for _, rule in ipairs(rules) do
-			token_list, reduced = reduce(token_list, rule.form, rule.operation, rule.not_after)
-			if reduced then break end
-		end
+			local rule_index
+			local rule_matches = true
 
-		--If token count did not change after iterating over all rules, then it will never reduce
-		if not reduced then break end
-	end
-
-	for _, token in pairs(token_list) do
-		print_tokens_recursive(token)
-	end
-end
-
-function reduce(tokens, form, operation, not_after)
-	local new_tokens = {}
-	local i = 1
-	local did_reduce = false
-	while i <= #tokens do
-		if check_match(tokens, i, form) then
-			local reject = false
-			if not_after and (i > 1) then
-				local _
-				local t
-				for _, t in pairs(not_after) do
-					if tokens[i-1].id == t or tokens[i-1].meta_id == t then
-						reject = true
-						break
+			if #rule.match + index - 1 <= #tokens then
+				local rule_failed = false
+				if rule.not_after and index > 1 then
+					local i
+					local prev_token = tokens[index - 1]
+					for i = 1, #rule.not_after do
+						if prev_token.id == rule.not_after[i] then
+							rule_failed = true
+							break
+						end
 					end
 				end
-			end
 
-			if reject then
+				if rule_failed then
+					rule_matches = false
+				else
+					for rule_index = 1, #rule.match do
+						if not matches(index + rule_index - 1,  rule, rule_index) then
+							rule_matches = false
+							if rule_index > greatest_len then
+								greatest_len = rule_index
+								unexpected_token = index + rule_index - 1
+								break
+							end
+						end
+					end
+				end
+
+				if rule_matches then
+					if rule.meta and #rule.match == 1 then
+						--This is a "meta" rule. It reduces a token by just changing the id.
+						this_token.meta_id = rule.id
+						return this_token, 1, nil
+					else
+						local text = '<undefined>'
+						if rule.text ~= nil then
+							text = tokens[index + rule.text - 1].text
+						end
+
+						local new_token = {
+							text = text,
+							id = rule.id,
+							line = this_token.line,
+							col = this_token.col,
+						}
+
+						if rule.keep then
+							--We only want to keep certain tokens of the matched group, not all of them.
+							new_token.children = {}
+							local i
+							for i = 1, #rule.keep do
+								table.insert(new_token.children, tokens[index + rule.keep[i] - 1])
+							end
+						else
+							--By default, add all tokens as children.
+							local i
+							for i = 1, #rule.match do
+								table.insert(new_token.children, tokens[index + i - 1])
+							end
+						end
+
+						return new_token, #rule.match, nil
+					end
+
+				end
+			end
+		end
+
+		--No matches found, so return unexpected token
+		return nil, nil, unexpected_token
+	end
+
+
+	local function full_reduce()
+		local i = 1
+		local new_tokens = {}
+		local first_failure = nil
+		local did_reduce = false
+
+		while i <= #tokens do
+			local new_token
+			local consumed_ct
+			local failure_index
+
+			new_token, consumed_ct, failure_index = reduce(i)
+
+			if new_token then
+				table.insert(new_tokens, new_token)
+				did_reduce = true
+				i = i + consumed_ct
+			else
+				if first_failure == nil then
+					first_failure = failure_index
+				end
 				table.insert(new_tokens, tokens[i])
 				i = i + 1
-			else
-				local matched_group = {}
-				local k
-				for k = i, i + #form do
-					table.insert(matched_group, tokens[k])
-				end
-				table.insert(new_tokens, operation(matched_group))
-				did_reduce = true
-				i = i + #form
-			end
-		else
-			table.insert(new_tokens, tokens[i])
-			i = i + 1
-		end
-	end
-
-	return new_tokens, did_reduce
-end
-
-function check_match(tokens, index, form)
-	local form_rule
-	local i
-	local _
-	local accepted_token_id
-
-	for i, form_rule in ipairs(form) do
-		local this_token = tokens[index + i - 1]
-
-		if this_token == nil then return false end --Definitely not a match if we ran out of tokens
-
-		local valid = false
-		for _, accepted_token_id in ipairs(form_rule) do
-			if (this_token.meta_id == nil and accepted_token_id == this_token.id) or (accepted_token_id == this_token.meta_id) then
-				valid = true
-				break
 			end
 		end
 
-		if not valid then return false end
+		return new_tokens, did_reduce, first_failure
 	end
 
-	return true
+	--Run all syntax rules and condense tokens as far as possible
+	while true do
+		local new_tokens, did_reduce, first_failure = full_reduce()
+		if #new_tokens == 1 then
+			return new_tokens
+		end
+
+		if not did_reduce then
+			local token = tokens[first_failure]
+			parse_error(token.line, token.col, 'Unexpected token "'..token.text..'"', file)
+		end
+
+		tokens = new_tokens
+
+		for _, t in pairs(tokens) do
+			print_tokens_recursive(t)
+		end
+		print()
+	end
+
+	return tokens
 end

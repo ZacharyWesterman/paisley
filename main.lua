@@ -12,4 +12,6 @@ for t in lexer do
 	table.insert(_tokens, t)
 end
 
-syntax(_tokens)
+for _, t in pairs(syntax(_tokens)) do
+	print_tokens_recursive(t)
+end
