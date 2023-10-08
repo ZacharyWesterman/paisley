@@ -3,7 +3,7 @@ local rules = {
 	{
 		match = {{tok.comparison, tok.array_concat}, {tok.comparison, tok.array_concat}},
 		id = tok.concat,
-		text = 1,
+		text = 'string concat',
 	},
 
 	--Function call
@@ -24,14 +24,14 @@ local rules = {
 
 	--Treat all literals the same.
 	{
-		match = {{tok.lit_number, tok.lit_false, tok.lit_true, tok.lit_null, tok.negate, tok.variable, tok.string, tok.parentheses, tok.comparison, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat}},
+		match = {{tok.lit_number, tok.lit_false, tok.lit_true, tok.lit_null, tok.negate, tok.variable, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat}},
 		id = tok.value,
 		meta = true,
 	},
 
 	--Unary negation is a bit weird; highest precedence and cannot occur after certain nodes.
 	{
-		match = {{tok.op_minus}, {tok.value}},
+		match = {{tok.op_minus}, {tok.value, tok.comparison}},
 		id = tok.negate,
 		keep = {2},
 		text = 1,
@@ -40,7 +40,7 @@ local rules = {
 
 	--Multiplication
 	{
-		match = {{tok.value, tok.multiply}, {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod}, {tok.value, tok.multiply}},
+		match = {{tok.value, tok.multiply, tok.comparison}, {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod}, {tok.value, tok.multiply, tok.comparison}},
 		id = tok.multiply,
 		keep = {1, 3},
 		text = 2,
@@ -56,7 +56,7 @@ local rules = {
 
 	--Addition (lower precedence than multiplication)
 	{
-		match = {{tok.multiply, tok.add}, {tok.op_plus, tok.op_minus}, {tok.multiply, tok.add}},
+		match = {{tok.multiply, tok.add, tok.comparison}, {tok.op_plus, tok.op_minus}, {tok.multiply, tok.add, tok.comparison}},
 		id = tok.add,
 		keep = {1, 3},
 		text = 2,
@@ -72,7 +72,7 @@ local rules = {
 
 	--Array Slicing
 	{
-		match = {{tok.add, tok.array_slice}, {tok.op_slice}, {tok.add, tok.array_slice}},
+		match = {{tok.add, tok.array_slice, tok.comparison}, {tok.op_slice}, {tok.add, tok.array_slice, tok.comparison}},
 		id = tok.array_slice,
 		keep = {1, 3},
 		text = 2,
@@ -85,7 +85,7 @@ local rules = {
 
 	--Array Concatenation
 	{
-		match = {{tok.array_slice, tok.array_concat}, {tok.op_comma}, {tok.array_slice, tok.array_concat}},
+		match = {{tok.array_slice, tok.array_concat, tok.comparison}, {tok.op_comma}, {tok.array_slice, tok.array_concat, tok.comparison}},
 		id = tok.array_concat,
 		keep = {1, 3},
 		text = 2,
@@ -98,7 +98,7 @@ local rules = {
 
 	--Prefix Boolean not
 	{
-		match = {{tok.op_not}, {tok.array_concat, tok.boolean}},
+		match = {{tok.op_not}, {tok.array_concat, tok.boolean, tok.comparison}},
 		id = tok.boolean,
 		keep = {2},
 		text = 1,
@@ -106,7 +106,7 @@ local rules = {
 
 	--Postfix Exists operator
 	{
-		match = {{tok.array_concat, tok.boolean}, {tok.op_exists}},
+		match = {{tok.array_concat, tok.boolean, tok.comparison}, {tok.op_exists}},
 		id = tok.boolean,
 		keep = {1},
 		text = 2,
@@ -114,7 +114,7 @@ local rules = {
 
 	--Infix Boolean operators
 	{
-		match = {{tok.array_concat, tok.boolean}, {tok.op_and, tok.op_or, tok.op_xor, tok.op_in, tok.op_like}, {tok.array_concat, tok.boolean}},
+		match = {{tok.array_concat, tok.boolean, tok.comparison}, {tok.op_and, tok.op_or, tok.op_xor, tok.op_in, tok.op_like}, {tok.array_concat, tok.boolean, tok.comparison}},
 		id = tok.boolean,
 		keep = {1, 3},
 		text = 2,
@@ -369,10 +369,10 @@ function syntax(tokens, file)
 
 		tokens = new_tokens
 
-		for _, t in pairs(tokens) do
-			print_tokens_recursive(t)
-		end
-		print()
+		-- for _, t in pairs(tokens) do
+		-- 	print_tokens_recursive(t)
+		-- end
+		-- print()
 	end
 
 	return tokens
