@@ -189,6 +189,28 @@ local rules = {
 		append = true,
 	},
 
+	--IF block
+	{
+		match = {{tok.kwd_if}, {tok.command}, {tok.kwd_then}, {tok.command, tok.program}, {tok.kwd_end, tok.elif_stmt, tok.else_stmt}},
+		id = tok.if_stmt,
+		keep = {2, 4, 5},
+		text = 1,
+	},
+	--ELSE block
+	{
+		match = {{tok.kwd_else}, {tok.command, tok.program}, {tok.kwd_end}},
+		id = tok.else_stmt,
+		keep = {2, 4, 6},
+		text = 1,
+	},
+	--ELIF block
+	{
+		match = {{tok.kwd_elif}, {tok.command}, {tok.kwd_then}, {tok.command, tok.program}, {tok.kwd_end, tok.elif_stmt, tok.else_stmt}},
+		id = tok.elif_stmt,
+		keep = {2, 4},
+		text = 1,
+	},
+
 	--Full program
 	{
 		match = {{tok.command, tok.program}, {tok.command, tok.program}},

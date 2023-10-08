@@ -94,8 +94,13 @@ tok = {
 	expression = k(),
 	inline_command = k(),
 	command = k(),
-
 	program = k(),
+
+	if_stmt = k(),
+	else_stmt = k(),
+	elif_stmt = k(),
+	while_stmt = k(),
+	for_stmt = k(),
 }
 
 function parse_error(line, col, msg, file)
