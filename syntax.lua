@@ -179,7 +179,7 @@ local rules = {
 
 	--Commands
 	{
-		match = {{tok.text, tok.expression, tok.inline_command, tok.string}},
+		match = {{tok.text, tok.expression, tok.inline_command, tok.string, tok.comparison}},
 		id = tok.command,
 		not_after = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_close, tok.command_close, tok.string_close},
 		text = 'cmd',
@@ -250,12 +250,12 @@ local rules = {
 	},
 
 	--Variable assignment
-	--TODO: get this working
 	{
-		match = {{tok.kwd_let}, {tok.var_assign}, {tok.op_assign}, {tok.command}},
+		match = {{tok.kwd_let}, {tok.var_assign}, {tok.op_assign}, {tok.command, tok.expression, tok.string}},
 		id = tok.let_stmt,
 		keep = {2, 4},
 		text = 1,
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open},
 	},
 
 	--Statements
@@ -338,6 +338,18 @@ function syntax(tokens, file)
 						end
 					end
 				end
+
+				if rule_matches and rule.not_before and (index + #rule.match) <= #tokens then
+					local i
+					local next_token = tokens[index + #rule.match]
+					for i = 1, #rule.not_before do
+						if next_token.id == rule.not_before[i] then
+							rule_matches = false
+							break
+						end
+					end
+				end
+
 
 				if rule_matches then
 					if rule.meta then
