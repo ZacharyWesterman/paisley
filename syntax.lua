@@ -171,39 +171,34 @@ local rules = {
 
 	--Inline commands
 	{
-		match = {{tok.command_open}, {tok.expression, tok.text, tok.inline_command, tok.string}},
-		append = true,
-	},
-	{
-		match = {{tok.command_open}, {tok.command_close}},
+		match = {{tok.command_open}, {tok.command, tok.program}, {tok.command_close}},
 		id = tok.inline_command,
-		meta = true,
+		keep = {2},
+		text = 1,
 	},
 
 	--Commands
 	{
 		match = {{tok.text, tok.expression, tok.inline_command, tok.string}},
 		id = tok.command,
-		not_after = {tok.expression, tok.text, tok.inline_command, tok.command, tok.string},
-		text = 1,
+		not_after = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_close, tok.command_close, tok.string_close},
+		text = 'cmd',
 	},
 	{
-		match = {{tok.line_ending}, {tok.text, tok.expression, tok.inline_command, tok.string}},
-		id = tok.command,
-		keep = {2},
-		text = 2,
-	},
-	{
-		match = {{tok.command}, {tok.expression, tok.text, tok.inline_command, tok.string}},
+		match = {{tok.command}, {tok.text, tok.expression, tok.inline_command, tok.string}},
 		append = true,
 	},
-
 
 	--Full program
 	{
 		match = {{tok.command, tok.program}, {tok.command, tok.program}},
 		id = tok.program,
 		text = 'stmt_list',
+	},
+	{
+		match = {{tok.command}, {tok.line_ending}},
+		id = tok.program,
+		meta = true,
 	},
 }
 
@@ -369,10 +364,10 @@ function syntax(tokens, file)
 
 		tokens = new_tokens
 
-		-- for _, t in pairs(tokens) do
-		-- 	print_tokens_recursive(t)
-		-- end
-		-- print()
+		for _, t in pairs(tokens) do
+			print_tokens_recursive(t)
+		end
+		print()
 	end
 
 	return tokens
