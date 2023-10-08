@@ -29,6 +29,7 @@ tok = {
 	expr_open = k(),
 	expr_close = k(),
 	variable = k(),
+	var_assign = k(),
 	lit_number = k(),
 
 	op_plus = k(),
@@ -101,6 +102,11 @@ tok = {
 	elif_stmt = k(),
 	while_stmt = k(),
 	for_stmt = k(),
+	delete_stmt = k(),
+	goto_stmt = k(),
+	gosub_stmt = k(),
+	let_stmt = k(),
+	statement = k(),
 }
 
 function parse_error(line, col, msg, file)

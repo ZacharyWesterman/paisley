@@ -170,6 +170,12 @@ function lex(text --[[string]], file --[[string | nil]])
 					end
 				end
 
+				--labels
+				if not match then
+					match = text:match('%w+:')
+					if match then tok_type = tok.label end
+				end
+
 				--non-quoted text
 				if not match then
 					match = text:match('^[^ \t\n\r"\'{}\x0b;$]+')
@@ -420,7 +426,7 @@ function lex(text --[[string]], file --[[string | nil]])
 				--Variable references
 				if not match then
 					match = text:match('^[a-zA-Z_]%w*')
-					if match then tok_type = tok.text end
+					if match then tok_type = tok.var_assign end
 				end
 			end
 

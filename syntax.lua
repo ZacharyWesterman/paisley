@@ -211,9 +211,68 @@ local rules = {
 		text = 1,
 	},
 
+	--WHILE loop
+	{
+		match = {{tok.kwd_while}, {tok.command}, {tok.kwd_do}, {tok.command, tok.program}, {tok.kwd_end}},
+		id = tok.while_stmt,
+		keep = {2, 4},
+		text = 1,
+	},
+	--FOR loop
+	{
+		match = {{tok.kwd_for}, {tok.command}, {tok.kwd_in}, {tok.command}, {tok.kwd_do}, {tok.command, tok.program}, {tok.kwd_end}},
+		id = tok.for_stmt,
+		keep = {2, 4, 6},
+		text = 1,
+	},
+
+	--Delete statement
+	{
+		match = {{tok.kwd_delete}, {tok.command}},
+		id = tok.delete_stmt,
+		keep = {2},
+		text = 1,
+	},
+
+	--GOTO statement
+	{
+		match = {{tok.kwd_goto}, {tok.text}},
+		id = tok.goto_stmt,
+		keep = {2},
+		text = 1,
+	},
+	--GOSUB statement
+	{
+		match = {{tok.kwd_gosub}, {tok.text}},
+		id = tok.gosub_stmt,
+		keep = {2},
+		text = 1,
+	},
+
+	--Variable assignment
+	--TODO: get this working
+	{
+		match = {{tok.kwd_let}, {tok.var_assign}, {tok.op_assign}, {tok.command}},
+		id = tok.let_stmt,
+		keep = {2, 4},
+		text = 1,
+	},
+
+	--Statements
+	{
+		match = {{tok.label, tok.if_stmt, tok.while_stmt, tok.for_stmt, tok.let_stmt, tok.delete_stmt, tok.goto_stmt, tok.gosub_stmt, tok.kwd_return, tok.kwd_break, tok.kwd_continue, tok.kwd_stop}},
+		id = tok.statement,
+		meta = true,
+	},
+	{
+		match = {{tok.statement}, {tok.line_ending}},
+		id = tok.statement,
+		meta = true,
+	},
+
 	--Full program
 	{
-		match = {{tok.command, tok.program}, {tok.command, tok.program}},
+		match = {{tok.command, tok.program, tok.statement}, {tok.command, tok.program, tok.statement}},
 		id = tok.program,
 		text = 'stmt_list',
 	},
@@ -379,7 +438,7 @@ function syntax(tokens, file)
 
 		loops_since_reduction = loops_since_reduction + 1
 
-		if not did_reduce or loops_since_reduction > 50 then
+		if not did_reduce or loops_since_reduction > 500 then
 			local token = tokens[first_failure]
 			parse_error(token.line, token.col, 'Unexpected token "'..token.text..'"', file)
 		end
