@@ -29,6 +29,14 @@ local rules = {
 		meta = true,
 	},
 
+	--Length operator
+	{
+		match = {{tok.op_count}, {tok.value, tok.comparison}},
+		id = tok.length,
+		keep = {2},
+		text = 1,
+	},
+
 	--Unary negation is a bit weird; highest precedence and cannot occur after certain nodes.
 	{
 		match = {{tok.op_minus}, {tok.value, tok.comparison}},
@@ -136,7 +144,7 @@ local rules = {
 		text = 2,
 	},
 	{
-		match = {{tok.boolean}},
+		match = {{tok.boolean, tok.length}},
 		id = tok.comparison,
 		meta = true,
 	},

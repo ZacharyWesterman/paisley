@@ -91,6 +91,7 @@ tok = {
 	parentheses = k(),
 	func_call = k(),
 	concat = k(),
+	length = k(),
 
 	expression = k(),
 	inline_command = k(),
