@@ -172,7 +172,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 
 				--labels
 				if not match then
-					match = text:match('%w+:')
+					match = text:match('^%w+:')
 					if match then tok_type = tok.label end
 				end
 
@@ -180,12 +180,6 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^[^ \t\n\r"\'{}\x0b;$]+')
 					if match then tok_type = tok.text end
-				end
-
-				--labels
-				if not match then
-					match = text:match('^%w+:')
-					if match then tok_type = tok.label end
 				end
 
 			elseif curr_scope == '{' or curr_scope == '(' or curr_scope == '[' then
