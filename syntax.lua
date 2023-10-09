@@ -181,7 +181,7 @@ local rules = {
 	{
 		match = {{tok.text, tok.expression, tok.inline_command, tok.string, tok.comparison}},
 		id = tok.command,
-		not_after = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_close, tok.command_close, tok.string_close},
+		not_after = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_close, tok.expr_open, tok.command_open, tok.command_close, tok.string_open, tok.string_close},
 		text = 'cmd',
 	},
 	{
@@ -256,6 +256,23 @@ local rules = {
 		keep = {2, 4},
 		text = 1,
 		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open},
+	},
+
+	{
+		match = {{tok.kwd_let}, {tok.var_assign}},
+		id = tok.let_stmt,
+		keep = {2},
+		text = 1,
+		not_before = {tok.op_assign},
+	},
+
+	--INVALID variable assignment
+	{
+		match = {{tok.kwd_let}, {tok.var_assign}, {tok.op_assign}},
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open},
+		onmatch = function(token, file)
+			parse_error(token.children[3].line, token.children[3].col, 'Missing expression after variable assignment', file)
+		end,
 	},
 
 	--Statements
@@ -396,6 +413,11 @@ function syntax(tokens, file)
 							for i = 1, #rule.match do
 								table.insert(new_token.children, tokens[index + i - 1])
 							end
+						end
+
+						if rule.onmatch then
+							local tkn = rule.onmatch(new_token, file)
+							if tkn ~= nil then new_token = tkn end
 						end
 
 						return new_token, #rule.match, nil
