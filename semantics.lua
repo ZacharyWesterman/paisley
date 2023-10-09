@@ -1,6 +1,6 @@
 
 function SemanticAnalyzer(tokens, file)
-	local function recurse(root, token_ids, operation)
+	local function recurse(root, token_ids, operation, on_exit)
 		local _
 		local id
 		for _, id in ipairs(token_ids) do
@@ -16,6 +16,10 @@ function SemanticAnalyzer(tokens, file)
 			for _, token in ipairs(root.children) do
 				recurse(token, token_ids, operation)
 			end
+		end
+
+		if on_exit ~= nil then
+			on_exit(root)
 		end
 	end
 
