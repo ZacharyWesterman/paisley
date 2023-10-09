@@ -66,7 +66,7 @@ Iterator generates tokens of the form:
 	col: int,
 }
 --]]
-function lex(text --[[string]], file --[[string | nil]])
+function Lexer(text --[[string]], file --[[string | nil]])
 	local line = 1
 	local col = 1
 	local scopes = {}

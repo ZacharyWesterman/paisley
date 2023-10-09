@@ -300,7 +300,7 @@ local rules = {
 	},
 }
 
-function syntax(tokens, file)
+function SyntaxParser(tokens, file)
 
 	local function matches(index, rule, rule_index)
 		local this_token = tokens[index]
@@ -464,10 +464,12 @@ function syntax(tokens, file)
 	--Run all syntax rules and condense tokens as far as possible
 	local loops_since_reduction = 0
 
-	while true do
+
+	local function fold()
 		local new_tokens, did_reduce, first_failure = full_reduce()
 		if #new_tokens == 1 then
-			return new_tokens
+			tokens = new_tokens
+			return false
 		end
 
 		loops_since_reduction = loops_since_reduction + 1
@@ -483,7 +485,14 @@ function syntax(tokens, file)
 		-- 	print_tokens_recursive(t)
 		-- end
 		-- print()
+
+		return true
 	end
 
-	return tokens
+	return {
+		fold = fold,
+		get = function()
+			return tokens
+		end
+	}
 end

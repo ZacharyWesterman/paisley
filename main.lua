@@ -1,8 +1,6 @@
 require "lex"
 require "syntax"
 
-_tokens = {}
-
 local expression = io.read()
 
 if expression == '' then
@@ -10,12 +8,16 @@ if expression == '' then
 end
 
 -- print(expression)
-lexer = lex(expression)
+local lexer = Lexer(expression)
+local t
+local tokens = {}
+for t in lexer do table.insert(tokens, t) end --Iterate to get tokens.
 
-for t in lexer do
-	table.insert(_tokens, t)
-end
+parser = SyntaxParser(tokens)
+while parser.fold() do end --Iterate on the syntax tree. Follows iterator-like behavior.
 
-for _, t in pairs(syntax(_tokens)) do
+
+--Print the AST
+for _, t in pairs(parser.get()) do
 	print_tokens_recursive(t)
 end
