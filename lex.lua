@@ -312,8 +312,14 @@ function lex(text --[[string]], file --[[string | nil]])
 
 				--Numbers (really just text)
 				if not match then
-					match = text:match('^[0-9%.]+')
-					if match then tok_type = tok.lit_number end
+					match = text:match('^[0-9%.][0-9%._]*')
+					if match then
+						local m = match:gsub('_', '')
+						if tonumber(m) == nil then
+							parse_error(line, col, 'Invalid number "'..match..'"', file)
+						end
+						tok_type = tok.lit_number
+					end
 				end
 
 				--Special "list of vars" variable

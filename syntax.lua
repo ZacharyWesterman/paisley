@@ -479,10 +479,10 @@ function syntax(tokens, file)
 
 		tokens = new_tokens
 
-		for _, t in pairs(tokens) do
-			print_tokens_recursive(t)
-		end
-		print()
+		-- for _, t in pairs(tokens) do
+		-- 	print_tokens_recursive(t)
+		-- end
+		-- print()
 	end
 
 	return tokens
