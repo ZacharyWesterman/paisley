@@ -300,7 +300,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 
 				--Variable references
 				if not match then
-					match = text:match('^[a-zA-Z_]%w*')
+					match = text:match('^[a-zA-Z_][a-zA-Z_0-9]*')
 					if match then tok_type = tok.variable end
 				end
 
@@ -425,7 +425,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 
 				--Variable references
 				if not match then
-					match = text:match('^[a-zA-Z_]%w*')
+					match = text:match('^[a-zA-Z_][a-zA-Z_0-9]*')
 					if match then tok_type = tok.var_assign end
 				end
 			end

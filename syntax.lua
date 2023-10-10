@@ -10,8 +10,14 @@ local rules = {
 	{
 		match = {{tok.comparison}, {tok.paren_open}, {tok.comparison}, {tok.paren_close}},
 		id = tok.func_call,
-		keep = {1, 3},
-		text = 2,
+		keep = {3},
+		text = 1,
+	},
+	{
+		match = {{tok.comparison}, {tok.paren_open}, {tok.paren_close}},
+		id = tok.func_call,
+		keep = {},
+		text = 1,
 	},
 
 	--Array indexing
@@ -189,7 +195,7 @@ local rules = {
 	{
 		match = {{tok.text, tok.expression, tok.inline_command, tok.string, tok.comparison}},
 		id = tok.command,
-		not_after = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_close, tok.expr_open, tok.command_open, tok.command_close, tok.string_open, tok.string_close, tok.command},
+		not_after = {tok.op_comma, tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_close, tok.expr_open, tok.command_open, tok.command_close, tok.string_open, tok.string_close, tok.command},
 		text = 'cmd',
 	},
 	{
