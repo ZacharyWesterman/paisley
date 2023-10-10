@@ -14,6 +14,7 @@ local builtin_funcs = {
 	sqrt = 1,
 	mean = -1, --mean(a,b,...) = mean(list) = sum(list) / #list
 	sum = -1,
+	mult = -1,
 	pow = 2,
 	min = -1,
 	max = -1,
@@ -21,6 +22,7 @@ local builtin_funcs = {
 	lerp = 3, --lerp(a, b, x) = a + x*(b - a) : 0 <= x <= 1
 	split = 2,
 	join = 2,
+	type = 1,
 }
 
 function SemanticAnalyzer(tokens, file)
