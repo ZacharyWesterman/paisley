@@ -503,6 +503,10 @@ function SyntaxParser(tokens, file)
 		loops_since_reduction = loops_since_reduction + 1
 
 		if not did_reduce or loops_since_reduction > 50 then
+			if first_failure == nil then
+				parse_error(1, 1, 'COMPILER BUG: Max iterations exceeded but no syntax error was found!', file)
+			end
+
 			local token = tokens[first_failure]
 			parse_error(token.line, token.col, 'Unexpected token "'..token.text..'"', file)
 		end

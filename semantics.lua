@@ -222,7 +222,7 @@ function SemanticAnalyzer(tokens, file)
 				elseif operator == '//' then result = math.floor(c1.value / c2.value)
 				elseif operator == '%' then result = c1.value % c2.value
 				else
-					parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"', file)
+					parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
 				end
 
 				if tostring(result) == tostring(1/0) or tostring(result) == tostring(0/0) then
@@ -254,7 +254,7 @@ function SemanticAnalyzer(tokens, file)
 						local v2 = c2.value and c2.value ~= 0 and c2.value ~= ''
 						token.value, token.id = (v1 or v2) and not (v1 and v2), tok.lit_boolean
 					else
-						parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"', file)
+						parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
 					end
 					token.children = nil
 					token.text = tostring(token.value)
