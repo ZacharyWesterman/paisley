@@ -59,19 +59,8 @@ tok = {
 	paren_open = k(),
 	paren_close = k(),
 
-	lit_true = k(),
-	lit_false = k(),
+	lit_boolean = k(),
 	lit_null = k(),
-
-	string_open = k(),
-	string_close = k(),
-
-	label = k(),
-	command_open = k(),
-	command_close = k(),
-
-	line_ending = k(),
-	op_assign = k(),
 
 	index_open = k(),
 	index_close = k(),
@@ -93,9 +82,20 @@ tok = {
 	concat = k(),
 	length = k(),
 
+	string_open = k(),
+	string_close = k(),
+
+	command_open = k(),
+	command_close = k(),
+
+	line_ending = k(),
+	op_assign = k(),
+
 	expression = k(),
 	inline_command = k(),
 	command = k(),
+
+	label = k(),
 	program = k(),
 
 	if_stmt = k(),
@@ -108,6 +108,8 @@ tok = {
 	gosub_stmt = k(),
 	let_stmt = k(),
 	statement = k(),
+
+	lit_array = k(), --This only gets created during constant folding
 }
 
 function parse_error(line, col, msg, file)
@@ -129,15 +131,35 @@ function token_text(token_id)
 	return string.format('%d', token_id)
 end
 
+function str(data)
+	if type(data) == 'table' then
+		local result = ''
+		local key, value
+		local first = true
+		for key, value in pairs(data) do
+			if not first then result = result .. ', ' end
+			result = result .. str(value)
+			first = false
+		end
+		return '{' .. result .. '}'
+	else
+		return tostring(data)
+	end
+end
+
 function print_token(token, indent)
 	if indent == nil then indent = '' end
 
 	local id = token_text(token.id)
 	local meta = ''
-	if token.meta_id ~= nil then
-		id = token_text(token.id)..'*'
-		meta = '    (meta='..token_text(token.meta_id)..')'
+
+	if token.value ~= nil then
+		meta = '    (value='..str(token.value)..')'
 	end
+	-- if token.meta_id ~= nil then
+	-- 	id = token_text(token.id)..'*'
+	-- 	meta = '    (meta='..token_text(token.meta_id)..')'
+	-- end
 
 	print((indent..'%2d:%2d: %13s = %s%s'):format(token.line, token.col, id, token.text:gsub('[\n\x0b]', '<newline>'), meta))
 end

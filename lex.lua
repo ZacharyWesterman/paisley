@@ -48,10 +48,17 @@ opers = {
 	[','] = tok.op_comma,
 }
 
+oper_block = {
+	['/'] = '/',
+	['>'] = '=',
+	['<'] = '=',
+	['='] = '=',
+}
+
 literals = {
-	['true'] = tok.lit_true,
-	['false'] = tok.lit_false,
-	['null'] = tok.lit_null,
+	['true'] = tok.lit_boolean,
+	['false'] = tok.lit_boolean,
+	['nil'] = tok.lit_null,
 }
 
 --[[
@@ -279,9 +286,12 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					local value
 					for key, value in pairs(opers) do
 						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
-							match = key
-							tok_type = value
-							break
+							--Look ahead to avoid ambiguity with operators
+							if not oper_block[key] or text:sub(#key + 1, #key + 1) ~= oper_block[key] then
+								match = key
+								tok_type = value
+								break
+							end
 						end
 					end
 				end
@@ -294,6 +304,9 @@ function Lexer(text --[[string]], file --[[string | nil]])
 						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
 							match = key
 							tok_type = value
+							if match == 'true' then real_value = true
+							elseif match == 'false' then real_value = false
+							end
 							break
 						end
 					end
@@ -330,7 +343,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 							parse_error(line, col, 'Invalid '..tp..'number "'..match..'"', file)
 						end
 						tok_type = tok.lit_number
-						real_value = tostring(n)
+						real_value = n
 					end
 				end
 
@@ -452,13 +465,13 @@ function Lexer(text --[[string]], file --[[string | nil]])
 			if match then
 				col = col + #match
 				text = text:sub(#match+1, #text)
-				if real_value == nil then real_value = match end
 				if not tok_ignore then
 					return {
-						text = real_value,
+						text = match,
 						id = tok_type,
 						line = line,
 						col = col - #match,
+						value = real_value,
 					}
 				end
 			else

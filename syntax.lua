@@ -30,7 +30,7 @@ local rules = {
 
 	--Treat all literals the same.
 	{
-		match = {{tok.lit_number, tok.lit_false, tok.lit_true, tok.lit_null, tok.negate, tok.variable, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat}},
+		match = {{tok.lit_number, tok.lit_boolean, tok.lit_null, tok.negate, tok.variable, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat}},
 		id = tok.value,
 		meta = true,
 	},
@@ -41,6 +41,7 @@ local rules = {
 		id = tok.length,
 		keep = {2},
 		text = 1,
+		not_before = {tok.paren_open},
 	},
 
 	--Unary negation is a bit weird; highest precedence and cannot occur after certain nodes.
@@ -162,6 +163,14 @@ local rules = {
 		keep = {2},
 		text = 1,
 	},
+	{
+		match = {{tok.paren_open}, {tok.paren_close}},
+		id = tok.parentheses,
+		not_after = {tok.variable},
+		onmatch = function(token, file)
+			parse_error(token.line, token.col, 'Parentheses must contain an expression', file)
+		end,
+	},
 
 	--Expressions
 	{
@@ -193,9 +202,9 @@ local rules = {
 
 	--Commands
 	{
-		match = {{tok.text, tok.expression, tok.inline_command, tok.string, tok.comparison}},
+		match = {{tok.text, tok.expression, tok.inline_command, tok.string}},
 		id = tok.command,
-		not_after = {tok.op_comma, tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_close, tok.expr_open, tok.command_open, tok.command_close, tok.string_open, tok.string_close, tok.command},
+		not_after_range = {tok.expr_open, tok.command}, --Command cannot come after anything in this range
 		text = 'cmd',
 	},
 	{
@@ -352,6 +361,11 @@ function SyntaxParser(tokens, file)
 							rule_failed = true
 							break
 						end
+					end
+				elseif rule.not_after_range and index > 1 then
+					local prev_token = tokens[index - 1]
+					if prev_token.id >= rule.not_after_range[1] or prev_token.id <= rule.not_after_range[2] then
+						rule_failed = true
 					end
 				end
 
