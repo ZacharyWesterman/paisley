@@ -96,6 +96,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 			local tok_type = nil
 			local tok_ignore = false
 			local curr_scope = scopes[#scopes]
+			local real_value = nil
 
 			if curr_scope == nil or curr_scope == '$' then
 				--Default parse rules
@@ -304,15 +305,32 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					if match then tok_type = tok.variable end
 				end
 
-				--Numbers (really just text)
+				--Numbers (can have formats 0xAAAA, 0bAAAA, AA.AAA, A_AAA_AAA.AAA)
 				if not match then
-					match = text:match('^[0-9%.][0-9%._]*')
+					match = text:match('^0[xb][0-9%._a-fA-F]*')
+					if not match then
+						match = text:match('^[0-9%.][0-9%._a-zA-Z]*')
+					end
+
 					if match then
 						local m = match:gsub('_', '')
-						if tonumber(m) == nil then
-							parse_error(line, col, 'Invalid number "'..match..'"', file)
+						local n
+						local tp = ''
+						if m:sub(2,2) == 'x' then
+							n = tonumber(m:sub(3, #m), 16)
+							tp = 'hexadecimal '
+						elseif m:sub(2,2) == 'b' then
+							n = tonumber(m:sub(3, #m), 2)
+							tp = 'binary '
+						else
+							n = tonumber(m)
+						end
+
+						if n == nil then
+							parse_error(line, col, 'Invalid '..tp..'number "'..match..'"', file)
 						end
 						tok_type = tok.lit_number
+						real_value = tostring(n)
 					end
 				end
 
@@ -434,9 +452,10 @@ function Lexer(text --[[string]], file --[[string | nil]])
 			if match then
 				col = col + #match
 				text = text:sub(#match+1, #text)
+				if real_value == nil then real_value = match end
 				if not tok_ignore then
 					return {
-						text = match,
+						text = real_value,
 						id = tok_type,
 						line = line,
 						col = col - #match,
