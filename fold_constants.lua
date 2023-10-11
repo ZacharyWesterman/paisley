@@ -43,23 +43,9 @@ func_operations = {
 	clamp = function(min, max, value) return math.min(max, math.max(min, value)) end,
 	lerp = function(a, b, x) return a + x * (b - a) end,
 	pow = function(a, b) return math.pow(a, b) end,
-	boolean = function(data)
-		if not data or data == 0 or data == '' or (type(data) == 'table' and #data == 0) then
-			return false
-		end
-		return true
-	end,
-	string = function(data)
-		if data == nil then return '' end
-		if data == true then return '1' end
-		if data == false then return '0' end
-		return str(data)
-	end,
-	number = function(data)
-		if data == true then return 1 end
-		local val = tonumber(data)
-		if val == nil then return 0 else return val end
-	end,
+	boolean = function(data) return std.bool(data) end,
+	string = function(data) return std.str(data) end,
+	number = function(data) return std.num(data) end,
 	array = function(values) return values end, --Interesting short-cut due to compiler quirks!
 	worddiff = function(a, b, token, file)
 		if type(a) ~= 'string' or type(b) ~= 'string' then
