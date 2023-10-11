@@ -120,6 +120,13 @@ function SemanticAnalyzer(tokens, file)
 
 	--Check function calls
 	recurse(root, {tok.func_call}, function(token)
+		--Move all params to be direct children
+		if not token.children then
+			token.children = {}
+		elseif token.children[1].id == tok.array_concat then
+			token.children = token.children[1].children
+		end
+
 		local func = builtin_funcs[token.text]
 
 		--Function doesn't exist
@@ -136,13 +143,7 @@ function SemanticAnalyzer(tokens, file)
 		if func == -2 then return end --Function can have any number of params
 
 		--Check if function has the right number of params
-		local param_ct = 0
-		if token.children and #token.children > 0 then
-			param_ct = 1
-			if token.children[1].id == tok.array_concat then
-				param_ct = #(token.children[1].children)
-			end
-		end
+		local param_ct = #token.children
 
 		if func ~= param_ct then
 			local plural = ''
