@@ -1,9 +1,8 @@
-local builtin_funcs = {
+builtin_funcs = {
 	irandom = 2,
 	frandom = 2,
 	worddiff = 2,
-	dist2d = 2,
-	dist3d = 2,
+	dist = 2,
 	sin = 1,
 	cos = 1,
 	tan = 1,
@@ -30,6 +29,7 @@ local builtin_funcs = {
 	floor = 1,
 	ceil = 1,
 	round = 1,
+	abs = 1,
 }
 
 function SemanticAnalyzer(tokens, file)
@@ -123,7 +123,7 @@ function SemanticAnalyzer(tokens, file)
 		--Move all params to be direct children
 		if not token.children then
 			token.children = {}
-		elseif token.children[1].id == tok.array_concat then
+		elseif #token.children > 0 and token.children[1].id == tok.array_concat then
 			token.children = token.children[1].children
 		end
 
@@ -189,154 +189,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Fold constants. this improves performance at runtime, and checks for type errors early on.
-	recurse(root, {tok.add, tok.multiply, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate}, nil, function(token)
-		local operator = token.text
-		local c1, c2 = token.children[1], token.children[2]
-
-		--Cast boolean token to integer
-		local function btoi(t)
-			if t.id == tok.lit_boolean then
-				t.id = tok.lit_number
-				if t.text == 'true' then t.value = 1 else t.value = 0 end
-			end
-		end
-
-
-		if token.id == tok.add or token.id == tok.multiply then
-			--Cannot perform math on strings. That's an error
-			if c1.id == tok.string_open or c2.id == tok.string_open then
-				parse_error(token.line, token.col, 'Cannot perform arithmetic on string values', file)
-			end
-
-			--Automatically cast booleans to integers
-			if c1.id == tok.lit_boolean or c2.id == tok.lit_boolean then
-				parse_error(token.line, token.col, 'Cannot perform arithmetic on boolean values', file)
-			end
-
-			--Fold the two values into a single value
-			if c1.id == tok.lit_number and c2.id == tok.lit_number then
-				local result
-				if operator == '+' then result = c1.value + c2.value
-				elseif operator == '-' then result = c1.value - c2.value
-				elseif operator == '*' then result = c1.value * c2.value
-				elseif operator == '/' then result = c1.value / c2.value
-				elseif operator == '//' then result = math.floor(c1.value / c2.value)
-				elseif operator == '%' then result = c1.value % c2.value
-				else
-					parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
-				end
-
-				if tostring(result) == tostring(1/0) or tostring(result) == tostring(0/0) then
-					parse_error(token.line, token.col, 'Division by zero', file)
-				end
-
-				token.value = result
-				token.children = nil
-				token.text = tostring(result)
-				token.id = tok.lit_number
-			end
-		elseif token.id == tok.boolean and operator ~= 'exists' then
-			if c2 then --Binary operators
-				if (c1.value ~= nil or c1.id == tok.lit_null) and (c2.value ~= nil or c2.id == tok.lit_null) then
-					if operator == 'or' then
-						if c1.value and c1.value ~= 0 and c1.value ~= '' then
-							token.value, token.id = c1.value, c1.id
-						else
-							token.value, token.id = c2.value, c2.id
-						end
-					elseif operator == 'and' then
-						if not c1.value or c1.value == 0 or c1.value == '' then
-							token.value, token.id = c1.value, c1.id
-						else
-							token.value, token.id = c2.value, c2.id
-						end
-					elseif operator == 'xor' then
-						local v1 = c1.value and c1.value ~= 0 and c1.value ~= ''
-						local v2 = c2.value and c2.value ~= 0 and c2.value ~= ''
-						token.value, token.id = (v1 or v2) and not (v1 and v2), tok.lit_boolean
-					else
-						parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
-					end
-					token.children = nil
-					token.text = tostring(token.value)
-				end
-			else --Unary operators (just "not")
-				if c1.value ~= nil or c1.id == tok.lit_null then
-					token.value = not c1.value or c1.value == 0 or c1.value == ''
-					token.id = tok.lit_boolean
-					token.children = nil
-					token.text = tostring(token.value)
-				elseif c1.id == tok.boolean and c1.text == 'not' then
-					--Fold redundant "not" operators
-					local ch = c1.children[1]
-					token.id, token.text, token.value, token.children = ch.id, ch.text, ch.value, ch.children
-				end
-			end
-		elseif token.id == tok.length then
-			if c1.value ~= nil or c1.id == tok.lit_null and (not c1.children or #c1.children == 0) then
-				if type(c1.value) ~= 'string' and type(c1.value) ~= 'table' then
-					parse_error(token.line, token.col, 'Length operator can only operate on strings and arrays', file)
-				end
-
-				token.id = tok.lit_number
-				token.value = #c1.value
-				token.text = tostring(token.value)
-				token.children = nil
-			end
-		elseif token.id == tok.func_call then
-			if c1.value ~= nil or c1.id == tok.lit_null then
-				--Fold values of only the deterministic functions
-				if token.text == 'string' then
-					token.id, token.value, token.text, token.children = tok.string_open, tostring(c1.value), tostring(c1.value), nil
-				elseif math[token.text] then
-					if type(c1.value) ~= 'number' then
-						parse_error(token.line, token.col, 'Function "'..token.text..'('..funcsig(token.text)..')" only accepts a number as input', file)
-					end
-					local val = math[token.text](c1.value)
-
-					--Check for NaN
-					if tostring(val) == tostring(1/0) or tostring(val) == tostring(0/0) then
-						parse_error(token.line, token.col, 'Result of "'..token.text..'('..c1.value..')" is not a number', file)
-					end
-
-					token.id, token.value, token.text, token.children = tok.lit_number, val, tostring(val), nil
-				end
-			end
-		elseif token.id == tok.array_concat then
-			--If an array contains only literals, fold it
-			local i
-			local all_const = true
-			for i = 1, #token.children do
-				local ch = token.children[i]
-				if not ch.value and ch.id ~= tok.lit_null then
-					all_const = false
-					break
-				end
-			end
-
-			if all_const then
-				token.id = tok.lit_array
-				token.text = '[]'
-				token.value = {}
-				for i = 1, #token.children do
-					table.insert(token.value, token.children[i].value)
-				end
-				token.children = nil
-			end
-		elseif token.id == tok.negate then
-			if c1.value ~= nil or c1.id == tok.lit_null then
-				if type(c1.value) ~= 'number' then
-					parse_error(token.line, token.col, 'Cannot get the negative of a non-number', file)
-				end
-
-				token.id = tok.lit_number
-				token.value = -c1.value
-				token.text = tostring(-c1.value)
-				token.children = nil
-			end
-		end
-
-	end)
+	recurse(root, {tok.add, tok.multiply, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate}, nil, fold_constants)
 
 	return root
 end

@@ -1,6 +1,7 @@
 require "lex"
 require "syntax"
 require "closest_word"
+require "fold_constants"
 require "semantics"
 
 local expression = io.read()

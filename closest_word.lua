@@ -11,7 +11,7 @@ local function matrix(row --[[number]], col --[[number]])
 end
 
 --Levenstein distance, for finding how similar one string is to another
-local function lev(a --[[string]], b --[[string]])
+function lev(a --[[string]], b --[[string]])
 	local M = matrix(#a + 1, #b + 1)
 	local i, j, cost
 	local row, col = #M, #M[1]

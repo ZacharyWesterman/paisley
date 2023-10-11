@@ -58,7 +58,7 @@ oper_block = {
 literals = {
 	['true'] = tok.lit_boolean,
 	['false'] = tok.lit_boolean,
-	['nil'] = tok.lit_null,
+	['null'] = tok.lit_null,
 }
 
 --[[

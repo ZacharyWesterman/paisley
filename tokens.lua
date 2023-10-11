@@ -146,6 +146,8 @@ function str(data)
 			first = false
 		end
 		return '{' .. result .. '}'
+	elseif type(data) == 'string' then
+		return '"'..data..'"'
 	else
 		return tostring(data)
 	end
