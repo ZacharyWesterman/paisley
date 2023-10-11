@@ -32,6 +32,17 @@ builtin_funcs = {
 	abs = 1,
 }
 
+type_signatures = {
+	sin = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	[tok.add] = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+}
+
 --Helper func for generating func_call error messages.
 function funcsig(func_name)
 	local param_ct = builtin_funcs[func_name]
@@ -161,11 +172,6 @@ function SemanticAnalyzer(tokens, file)
 
 	end)
 
-
-	--[[
-		CONSTANT FOLDING OPTIMIZATIONS
-	]]
-
 	--Get rid of parentheses
 	recurse(root, {tok.parentheses}, nil, function(token)
 		local key, value
@@ -187,8 +193,69 @@ function SemanticAnalyzer(tokens, file)
 		end
 	end)
 
+	--[[
+		TYPE ANNOTATIONS
+	]]
+	recurse(root, {tok.string_open, tok.add, tok.multiply, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number}, nil, function(token)
+		local signature, kind
+
+		if token.value ~= nil or token.id == tok.lit_null then
+			token.type = std.type(token.value)
+			return
+		elseif type_signatures[token.id] ~= nil then
+			signature = type_signatures[token.id]
+		elseif type_signatures[token.text] ~= nil then
+			signature = type_signatures[token.text]
+		else
+			return
+		end
+
+		if token.children then
+			local i
+			local g
+			local exp_types, got_types = {}, {}
+
+			for g = 1, #signature.valid do
+				table.insert(exp_types, {})
+			end
+
+			for i = 1, #token.children do
+				local tp = token.children[i].type
+				if tp then
+					for g = 1, #signature.valid do
+						local s = signature.valid[g]
+						table.insert(exp_types[g], s[(i-1) % #s + 1])
+					end
+					table.insert(got_types, tp)
+				end
+			end
+
+			local found_correct_types = false
+			got_types = std.join(got_types, ',')
+			for i = 1, #exp_types do
+				exp_types[i] = std.join(exp_types[i], ',')
+				if exp_types[i] == got_types then
+					found_correct_types = true
+					break
+				end
+			end
+
+			if not found_correct_types then
+				parse_error(token.line, token.col, 'Operator "'..token.text..'" expected ('..std.join(exp_types, ' or ')..') but got ('..got_types..')', file)
+			end
+
+			token.type = signature.out
+		end
+
+	end)
+
+
+	--[[
+		CONSTANT FOLDING OPTIMIZATIONS
+	]]
+
 	--Fold constants. this improves performance at runtime, and checks for type errors early on.
-	recurse(root, {tok.add, tok.multiply, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate}, nil, fold_constants)
+	-- recurse(root, {tok.add, tok.multiply, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate}, nil, fold_constants)
 
 	return root
 end

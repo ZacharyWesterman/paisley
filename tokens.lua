@@ -160,7 +160,14 @@ function print_token(token, indent)
 	local meta = ''
 
 	if token.value ~= nil then
-		meta = '    (value='..str(token.value)..')'
+		meta = '    (='..str(token.value)..')'
+		if token.type ~= nil then
+			meta = '    ('..token.type..'='..str(token.value)..')'
+		end
+	elseif token.type ~= nil then
+		if token.type ~= nil then
+			meta = '    ('..token.type..')'
+		end
 	end
 	-- if token.meta_id ~= nil then
 	-- 	id = token_text(token.id)..'*'
