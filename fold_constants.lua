@@ -1,3 +1,19 @@
+func_param_types = {
+	mean = {'number'},
+	sum = {'number'},
+	mult = {'number'},
+	min = {'number'},
+	max = {'number'},
+	clamp = {'number'},
+	lerp = {'number'},
+	pow = {'number'},
+	worddiff = {'string'},
+	irandom = {'number'},
+	frandom = {'number'},
+	split = {'string'},
+	join = {'array', 'string'},
+}
+
 func_operations = {
 	mean = function(values) return func_operators.sum(values) / #values end,
 	sum = function(values)
@@ -19,7 +35,7 @@ func_operations = {
 		for i = 2, #values do least = math.min(least, values[i]) end
 		return least
 	end,
-	min = function(values)
+	max = function(values)
 		local most, i = values[1], nil
 		for i = 2, #values do most = math.max(most, values[i]) end
 		return most
@@ -47,80 +63,23 @@ func_operations = {
 	array = function(values) return values end, --Interesting short-cut due to compiler quirks!
 	worddiff = function(a, b, token, file)
 		if type(a) ~= 'string' or type(b) ~= 'string' then
-			parse_error(token.line, token.col, 'Function "worddiff(a,b)" expected (string, string) but got ('..func_operations.type(a)..', '..func_operations.type(b)..')', file)
+			parse_error(token.line, token.col, 'Function "worddiff(a,b)" expected (string, string) but got ('..std.type(a)..', '..std.type(b)..')', file)
 		end
 
 		return lev(a, b)
 	end,
-	irandom = function(a, b, token, file)
-		if type(a) ~= 'number' or type(b) ~= 'number' then
-			parse_error(token.line, token.col, 'Function "irandom(a,b)" expected (number, number) but got ('..func_operations.type(a)..', '..func_operations.type(b)..')', file)
-		end
-	end,
-	frandom = function(a, b, token, file)
-		if type(a) ~= 'number' or type(b) ~= 'number' then
-			parse_error(token.line, token.col, 'Function "frandom(a,b)" expected (number, number) but got ('..func_operations.type(a)..', '..func_operations.type(b)..')', file)
-		end
-	end,
-	split = function(a, b, token, file)
-		--Why am I writing my own split function?
-		--1. Lua doesn't have a built-in one.
-		--2. I do NOT want users to have to think about regex.
-		--3. I just want a normal split function, literally every other language has one, or at least a normal FIND FUNCTION?? why can't Lua be normal???
-
-		if type(a) ~= 'string' or type(b) ~= 'string' then
-			parse_error(token.line, token.col, 'Function "split(a,b)" expected (string, string) but got ('..func_operations.type(a)..', '..func_operations.type(b)..')', file)
-		end
-
-		if a == '' then return {} end
-
-		local result = {}
-		while #a > 0 do
-			local i
-			local found = false
-
-			for i = 1, #a - #b + 1 do
-				if a:sub(i, i + #b - 1) == b then
-					table.insert(result, a:sub(1, i - 1))
-					a = a:sub(i + #b, #a)
-					found = true
-					break
-				end
-			end
-
-			if not found then
-				table.insert(result, a)
-				break
-			end
-		end
-
-		return result
-	end,
-	join = function(a, b, token, file)
-		if type(a) ~= 'table' or type(b) ~= 'string' then
-			parse_error(token.line, token.col, 'Function "split(a,b)" expected (array, string) but got ('..func_operations.type(a)..', '..func_operations.type(b)..')', file)
-		end
-
-		local result = ''
-		local i
-		for i = 1, #a do
-			if i > 1 then result = result .. b end
-			result = result .. a[i]
-		end
-		return result
-	end,
-	type = function(a)
-		if a == nil then return 'null' end
-		if type(a) == 'table' then return 'array' end
-		return type(a)
-	end,
+	irandom = function(a, b) end,
+	frandom = function(a, b) end,
+	split = function(a, b) std.split(a, b) end,
+	join = function(a, b) return std.join(a, b) end,
+	type = function(a) return std.type(a) end,
 	dist = function(a, b, token, file)
 		if type(a) ~= 'number' and type(b) ~= 'number' and type(a) ~= 'table' and type(b) ~= 'table' then
-			parse_error(token.line, token.col, 'Function "dist2d(a,b)" expected (number, number) or (array, array) but got ('..func_operations.type(a)..', '..func_operations.type(b)..')', file)
+			parse_error(token.line, token.col, 'Function "dist(a,b)" expected (number, number) or (array, array) but got ('..std.type(a)..', '..std.type(b)..')', file)
 		end
 
 		if type(a) ~= type(b) then
-			parse_error(token.line, token.col, 'Function "dist2d(a,b)" expected (number, number) or (array, array) but got ('..func_operations.type(a)..', '..func_operations.type(b)..')', file)
+			parse_error(token.line, token.col, 'Function "dist(a,b)" expected (number, number) or (array, array) but got ('..std.type(a)..', '..std.type(b)..')', file)
 		end
 
 		if type(a) == 'number' then
@@ -128,7 +87,7 @@ func_operations = {
 		end
 
 		if #a ~= #b then
-			parse_error(token.line, token.col, 'Function "dist2d(a,b)" expected arrays of equal length, got lengths '..#a..' and '..#b, file)
+			parse_error(token.line, token.col, 'Function "dist(a,b)" expected arrays of equal length, got lengths '..#a..' and '..#b, file)
 		end
 
 		local total, i = 0
@@ -236,7 +195,7 @@ function fold_constants(token)
 			token.children = nil
 		end
 	elseif token.id == tok.func_call then
-		local values, all_const, i = {}, true, nil
+		local values, types, all_const, i = {}, {}, true, nil
 		for i = 1, #token.children do
 			local ch = token.children[i]
 			if ch.value == nil and ch.id ~= tok.lit_null then
@@ -244,10 +203,26 @@ function fold_constants(token)
 				break
 			end
 			table.insert(values, ch.value)
+			table.insert(types, std.type(ch.value))
 		end
 
 		if all_const then
 			if func_operations[token.text] then
+
+				--Make sure the parameter types are correct!
+				if func_param_types[token.text] then
+					local expected, i = {}
+					for i = 1, #types do
+						local f = func_param_types[token.text]
+						table.insert(expected, f[(i-1) % #f + 1])
+					end
+					local exp, got = '('..std.join(expected, ', ')..')', '('..std.join(types, ', ')..')'
+					if exp ~= got then
+						parse_error(token.line, token.col, 'Function "'..token.text..'('..funcsig(token.text)..')" expected '..exp..' but got '..got, file)
+					end
+				end
+
+				--Run functions to get resultant value
 				local fn = func_operations[token.text]
 				local param_ct = builtin_funcs[token.text]
 				if param_ct < 0 then

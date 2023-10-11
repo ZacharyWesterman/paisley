@@ -32,6 +32,22 @@ builtin_funcs = {
 	abs = 1,
 }
 
+--Helper func for generating func_call error messages.
+function funcsig(func_name)
+	local param_ct = builtin_funcs[func_name]
+	local params = ''
+	if param_ct < 0 then
+		params = '...'
+	elseif param_ct > 0 then
+		local i
+		for i = 1, param_ct do
+			params = params .. string.char(96 + i)
+			if i < param_ct then params = params .. ',' end
+		end
+	end
+	return params
+end
+
 function SemanticAnalyzer(tokens, file)
 	local function recurse(root, token_ids, operation, on_exit)
 		local _, id
@@ -100,23 +116,6 @@ function SemanticAnalyzer(tokens, file)
 			parse_error(token.line, token.col, 'Label "'..label..'" not declared anywhere', file)
 		end
 	end)
-
-
-	--Helper func for generating func_call error messages.
-	local function funcsig(func_name)
-		local param_ct = builtin_funcs[func_name]
-		local params = ''
-		if param_ct < 0 then
-			params = '...'
-		elseif param_ct > 0 then
-			local i
-			for i = 1, param_ct do
-				params = params .. string.char(96 + i)
-				if i < param_ct then params = params .. ',' end
-			end
-		end
-		return params
-	end
 
 	--Check function calls
 	recurse(root, {tok.func_call}, function(token)

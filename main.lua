@@ -1,3 +1,4 @@
+require "stdlib"
 require "lex"
 require "syntax"
 require "closest_word"
