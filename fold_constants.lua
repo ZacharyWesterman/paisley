@@ -148,9 +148,27 @@ function fold_constants(token)
 						token.value, token.id = c2.value, c2.id
 					end
 				elseif operator == 'xor' then
-					local v1 = c1.value and c1.value ~= 0 and c1.value ~= ''
-					local v2 = c2.value and c2.value ~= 0 and c2.value ~= ''
+					local v1 = std.bool(c1.value)
+					local v2 = std.bool(c2.value)
 					token.value, token.id = (v1 or v2) and not (v1 and v2), tok.lit_boolean
+				elseif operator == 'in' then
+					local result = false
+					if c2.id == tok.lit_array then
+						local i
+						for i = 1, #c2.value do
+							if c2.value[i] == c1.value then
+								result = true
+								break
+							end
+						end
+					else
+						result = std.contains(std.str(c2.value), std.str(c1.value))
+					end
+
+					token.value = result
+					token.id = tok.lit_boolean
+					token.children = nil
+					token.text = tostring(result)
 				else
 					parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
 				end

@@ -81,4 +81,15 @@ std = {
 
 		return result
 	end,
+
+	contains = function(text, substring)
+		local i
+		for i = 1, #text - #substring + 1 do
+			if text:sub(i, i + #substring - 1) == substring then
+				return true
+			end
+		end
+		return false
+	end,
+
 }
