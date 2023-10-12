@@ -89,6 +89,15 @@ function fold_constants(token)
 	local operator = token.text
 	local c1, c2 = token.children[1], token.children[2]
 
+	--If this token does not contain only constant children, we cannot fold it.
+	local i
+	for i = 1, #token.children do
+		local ch = token.children[i]
+		if not ch.value and ch.id ~= tok.lit_null then
+			return
+		end
+	end
+
 	--Cast boolean token to integer
 	local function btoi(t)
 		if t.id == tok.lit_boolean then
@@ -99,83 +108,87 @@ function fold_constants(token)
 
 
 	if token.id == tok.add or token.id == tok.multiply then
-		--Cannot perform math on strings. That's an error
-		if c1.id == tok.string_open or c2.id == tok.string_open then
-			parse_error(token.line, token.col, 'Cannot perform arithmetic on string values', file)
-		end
-
-		--Automatically cast booleans to integers
-		if c1.id == tok.lit_boolean or c2.id == tok.lit_boolean then
-			parse_error(token.line, token.col, 'Cannot perform arithmetic on boolean values', file)
-		end
-
 		--Fold the two values into a single value
-		if c1.id == tok.lit_number and c2.id == tok.lit_number then
-			local result
-			if operator == '+' then result = c1.value + c2.value
-			elseif operator == '-' then result = c1.value - c2.value
-			elseif operator == '*' then result = c1.value * c2.value
-			elseif operator == '/' then result = c1.value / c2.value
-			elseif operator == '//' then result = math.floor(c1.value / c2.value)
-			elseif operator == '%' then result = c1.value % c2.value
+		local result
+		if operator == '+' then result = c1.value + c2.value
+		elseif operator == '-' then result = c1.value - c2.value
+		elseif operator == '*' then result = c1.value * c2.value
+		elseif operator == '/' then result = c1.value / c2.value
+		elseif operator == '//' then result = math.floor(c1.value / c2.value)
+		elseif operator == '%' then result = c1.value % c2.value
+		else
+			parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
+		end
+
+		local r = tostring(result)
+		if r == tostring(1/0) or r == tostring(0/0) or r == tostring(-(0/0)) then
+			parse_error(token.line, token.col, 'Division by zero', file)
+		end
+
+		token.value = result
+		token.children = nil
+		token.text = tostring(result)
+		token.id = tok.lit_number
+
+	elseif token.id == tok.comparison then
+		local result
+		if operator == '==' then result = c1.value == c2.value
+		elseif operator == '<' then result = c1.value < c2.value
+		elseif operator == '<=' then result = c1.value <= c2.value
+		elseif operator == '>' then result = c1.value > c2.value
+		elseif operator == '>=' then result = c1.value >= c2.value
+		elseif operator == '!=' then result = c1.value ~= c2.value
+		else
+			parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
+		end
+
+		token.value = result
+		token.children = nil
+		token.text = tostring(result)
+		token.id = tok.lit_boolean
+
+	elseif token.id == tok.boolean then
+		if c2 then --Binary operators
+			if operator == 'or' then
+				if c1.value and c1.value ~= 0 and c1.value ~= '' then
+					token.value, token.id = c1.value, c1.id
+				else
+					token.value, token.id = c2.value, c2.id
+				end
+			elseif operator == 'and' then
+				if not c1.value or c1.value == 0 or c1.value == '' then
+					token.value, token.id = c1.value, c1.id
+				else
+					token.value, token.id = c2.value, c2.id
+				end
+			elseif operator == 'xor' then
+				local v1 = std.bool(c1.value)
+				local v2 = std.bool(c2.value)
+				token.value, token.id = (v1 or v2) and not (v1 and v2), tok.lit_boolean
+			elseif operator == 'in' then
+				local result = false
+				if c2.id == tok.lit_array then
+					local i
+					for i = 1, #c2.value do
+						if c2.value[i] == c1.value then
+							result = true
+							break
+						end
+					end
+				else
+					result = std.contains(std.str(c2.value), std.str(c1.value))
+				end
+
+				token.value = result
+				token.id = tok.lit_boolean
+				token.children = nil
+				token.text = tostring(result)
 			else
 				parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
 			end
-
-			local r = tostring(result)
-			if r == tostring(1/0) or r == tostring(0/0) or r == tostring(-(0/0)) then
-				parse_error(token.line, token.col, 'Division by zero', file)
-			end
-
-			token.value = result
 			token.children = nil
-			token.text = tostring(result)
-			token.id = tok.lit_number
-		end
-	elseif token.id == tok.boolean and operator ~= 'exists' then
-		if c2 then --Binary operators
-			if (c1.value ~= nil or c1.id == tok.lit_null) and (c2.value ~= nil or c2.id == tok.lit_null) then
-				if operator == 'or' then
-					if c1.value and c1.value ~= 0 and c1.value ~= '' then
-						token.value, token.id = c1.value, c1.id
-					else
-						token.value, token.id = c2.value, c2.id
-					end
-				elseif operator == 'and' then
-					if not c1.value or c1.value == 0 or c1.value == '' then
-						token.value, token.id = c1.value, c1.id
-					else
-						token.value, token.id = c2.value, c2.id
-					end
-				elseif operator == 'xor' then
-					local v1 = std.bool(c1.value)
-					local v2 = std.bool(c2.value)
-					token.value, token.id = (v1 or v2) and not (v1 and v2), tok.lit_boolean
-				elseif operator == 'in' then
-					local result = false
-					if c2.id == tok.lit_array then
-						local i
-						for i = 1, #c2.value do
-							if c2.value[i] == c1.value then
-								result = true
-								break
-							end
-						end
-					else
-						result = std.contains(std.str(c2.value), std.str(c1.value))
-					end
-
-					token.value = result
-					token.id = tok.lit_boolean
-					token.children = nil
-					token.text = tostring(result)
-				else
-					parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
-				end
-				token.children = nil
-				token.text = tostring(token.value)
-			end
-		else --Unary operators (just "not")
+			token.text = tostring(token.value)
+		elseif operator ~= 'exists' then --Unary operators (just "not")
 			if c1.value ~= nil or c1.id == tok.lit_null then
 				token.value = not c1.value or c1.value == 0 or c1.value == ''
 				token.id = tok.lit_boolean
@@ -199,114 +212,74 @@ function fold_constants(token)
 			token.children = nil
 		end
 	elseif token.id == tok.func_call then
-		local values, types, all_const, i = {}, {}, true, nil
-		for i = 1, #token.children do
-			local ch = token.children[i]
-			if ch.value == nil and ch.id ~= tok.lit_null then
-				all_const = false
-				break
-			end
-			table.insert(values, ch.value)
-			table.insert(types, std.type(ch.value))
-		end
-
-		if all_const then
-			if func_operations[token.text] then
-
-				--Make sure the parameter types are correct!
-				if func_param_types[token.text] then
-					local expected, i = {}
-					for i = 1, #types do
-						local f = func_param_types[token.text]
-						table.insert(expected, f[(i-1) % #f + 1])
-					end
-					local exp, got = '('..std.join(expected, ', ')..')', '('..std.join(types, ', ')..')'
-					if exp ~= got then
-						parse_error(token.line, token.col, 'Function "'..token.text..'('..funcsig(token.text)..')" expected '..exp..' but got '..got, file)
-					end
-				end
-
-				--Run functions to get resultant value
-				local fn = func_operations[token.text]
-				local param_ct = builtin_funcs[token.text]
-				if param_ct < 0 then
-					token.value = fn(values, token, file)
-				elseif param_ct == 0 then
-					token.value = fn(token, file)
+		if func_operations[token.text] then
+			--Run functions to get resultant value
+			local fn = func_operations[token.text]
+			local param_ct = builtin_funcs[token.text]
+			if param_ct < 0 then
+				token.value = fn(values, token, file)
+			elseif param_ct == 0 then
+				token.value = fn(token, file)
+			else
+				if #values == 0 then
+					token.value = fn(nil, token, file)
 				else
-					if #values == 0 then
-						token.value = fn(nil, token, file)
-					else
-						table.insert(values, token)
-						table.insert(values, file)
-						token.value = fn(table.unpack(values))
-					end
+					table.insert(values, token)
+					table.insert(values, file)
+					token.value = fn(table.unpack(values))
 				end
-
-				--Fold values of only the deterministic functions
-				if token.value ~= nil then
-					token.text = tostring(token.value)
-					local tp = type(token.value)
-					if tp == 'boolean' then token.id = tok.lit_boolean
-					elseif tp == 'number' then token.id = tok.lit_number
-					elseif tp == 'string' then token.id = tok.string_open
-					elseif tp == 'table' then
-						token.id = tok.lit_array
-						token.text = '[]'
-					else
-						parse_error(token.line, token.col, 'COMPILER BUG: Folding of function "'..token.text..'" resulted in data of type "'..tp..'"!', file)
-					end
-					token.children = nil
-
-				end
-
-			elseif math[token.text] then
-				if type(c1.value) ~= 'number' then
-					parse_error(token.line, token.col, 'Function "'..token.text..'('..funcsig(token.text)..')" expected a number but got '..func_operations.type(c1.value), file)
-				end
-				local val = math[token.text](c1.value)
-
-				--Check for NaN
-				local r = tostring(val)
-				if r == tostring(1/0) or r == tostring(0/0) or r == tostring(-(0/0)) then
-					parse_error(token.line, token.col, 'Result of "'..token.text..'('..c1.value..')" is not a number', file)
-				end
-
-				token.id, token.value, token.text, token.children = tok.lit_number, val, tostring(val), nil
 			end
+
+			--Fold values of only the deterministic functions
+			if token.value ~= nil then
+				token.text = tostring(token.value)
+				local tp = type(token.value)
+				if tp == 'boolean' then token.id = tok.lit_boolean
+				elseif tp == 'number' then token.id = tok.lit_number
+				elseif tp == 'string' then token.id = tok.string_open
+				elseif tp == 'table' then
+					token.id = tok.lit_array
+					token.text = '[]'
+				else
+					parse_error(token.line, token.col, 'COMPILER BUG: Folding of function "'..token.text..'" resulted in data of type "'..tp..'"!', file)
+				end
+				token.children = nil
+			end
+
+		elseif math[token.text] then
+			local val = math[token.text](c1.value)
+
+			--Check for NaN
+			local r = tostring(val)
+			if r == tostring(1/0) or r == tostring(0/0) or r == tostring(-(0/0)) then
+				parse_error(token.line, token.col, 'Result of "'..token.text..'('..c1.value..')" is not a number', file)
+			end
+
+			token.id, token.value, token.text, token.children = tok.lit_number, val, tostring(val), nil
 		end
 	elseif token.id == tok.array_concat then
-		--If an array contains only literals, fold it
-		local i
-		local all_const = true
+		token.id = tok.lit_array
+		token.text = '[]'
+		token.value = {}
 		for i = 1, #token.children do
-			local ch = token.children[i]
-			if not ch.value and ch.id ~= tok.lit_null then
-				all_const = false
-				break
-			end
+			table.insert(token.value, token.children[i].value)
 		end
+		token.children = nil
 
-		if all_const then
-			token.id = tok.lit_array
-			token.text = '[]'
-			token.value = {}
-			for i = 1, #token.children do
-				table.insert(token.value, token.children[i].value)
-			end
-			token.children = nil
-		end
 	elseif token.id == tok.negate then
-		if c1.value ~= nil or c1.id == tok.lit_null then
-			if type(c1.value) ~= 'number' then
-				parse_error(token.line, token.col, 'Cannot get the negative of a non-number', file)
-			end
+		token.id = tok.lit_number
+		token.value = -c1.value
+		token.text = tostring(-c1.value)
+		token.children = nil
 
-			token.id = tok.lit_number
-			token.value = -c1.value
-			token.text = tostring(-c1.value)
-			token.children = nil
-		end
+	elseif token.id == tok.concat then
+		token.id = tok.string_open
+		token.value = std.str(c1.value) .. std.str(c2.value)
+		token.text = token.value
+		token.children = nil
+
+	else
+		parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for token id "'..token_text(token.id)..'"!', file)
 	end
 
 end

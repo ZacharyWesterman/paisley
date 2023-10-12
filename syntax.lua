@@ -156,6 +156,9 @@ local rules = {
 		id = tok.comparison,
 		keep = {1, 3},
 		text = 2,
+		onmatch = function(token)
+			if token.text == '~=' then token.text = '!=' end
+		end,
 	},
 	{
 		match = {{tok.boolean, tok.length}},

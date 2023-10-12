@@ -386,7 +386,7 @@ function SemanticAnalyzer(tokens, file)
 	]]
 
 	--Fold constants. this improves performance at runtime, and checks for type errors early on.
-	-- recurse(root, {tok.add, tok.multiply, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate}, nil, fold_constants)
+	recurse(root, {tok.add, tok.multiply, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice}, nil, fold_constants)
 
 	return root
 end
