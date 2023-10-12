@@ -301,13 +301,14 @@ function SemanticAnalyzer(tokens, file)
 
 	end)
 
-	--Get rid of parentheses
-	recurse(root, {tok.parentheses}, nil, function(token)
+	--Get rid of parentheses and expression pseudo-tokens
+	recurse(root, {tok.parentheses, tok.expression}, nil, function(token)
 		local key, value
 		local child = token.children[1]
 		for key, value in pairs(child) do
 			token[key] = value
 		end
+		token.children = child.children
 	end)
 
 	--Prep plain (non-interpolated) strings to allow constant folding

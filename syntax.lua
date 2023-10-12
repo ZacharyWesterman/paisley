@@ -115,7 +115,7 @@ local rules = {
 		id = tok.array_concat,
 		keep = {1},
 		text = 2,
-		not_before = {tok.lit_boolean, tok.lit_null, tok.lit_number, tok.string_open, tok.command_open, tok.expr_open, tok.array_slice, tok.array_concat, tok.comparison},
+		not_before = {tok.lit_boolean, tok.lit_null, tok.lit_number, tok.string_open, tok.command_open, tok.expr_open, tok.array_slice, tok.array_concat, tok.comparison, tok.paren_open, tok.index_open, tok.parentheses},
 	},
 
 	--Prefix Boolean not
@@ -212,7 +212,7 @@ local rules = {
 
 	--Commands
 	{
-		match = {{tok.text, tok.expression, tok.inline_command, tok.string}},
+		match = {{tok.text, tok.expression, tok.inline_command, tok.string, tok.comparison}},
 		id = tok.command,
 		not_after_range = {tok.expr_open, tok.command}, --Command cannot come after anything in this range
 		text = 'cmd',
@@ -251,13 +251,50 @@ local rules = {
 		keep = {2, 4},
 		text = 1,
 	},
+	--Invalid while loops
+	{
+		match = {{tok.kwd_while}, {tok.command}},
+		id = tok.while_stmt,
+		text = 1,
+		not_before = {tok.kwd_do},
+		onmatch = function(token, file)
+			parse_error(token.line, token.col, 'Incomplete while loop declaration (expected "while . do ... end")', file)
+		end,
+	},
+
 	--FOR loop
 	{
-		match = {{tok.kwd_for}, {tok.command}, {tok.kwd_in}, {tok.command}, {tok.kwd_do}, {tok.command, tok.program}, {tok.kwd_end}},
+		match = {{tok.kwd_for}, {tok.command}, {tok.kwd_in}, {tok.command, tok.comparison}, {tok.kwd_do}, {tok.command, tok.program}, {tok.kwd_end}},
 		id = tok.for_stmt,
 		keep = {2, 4, 6},
 		text = 1,
 	},
+	{
+		match = {{tok.kwd_for}, {tok.command}, {tok.kwd_in}, {tok.command, tok.comparison}, {tok.kwd_do}, {tok.kwd_end}},
+		id = tok.for_stmt,
+		keep = {2, 4},
+		text = 1,
+	},
+	--Invalid for loops
+	{
+		match = {{tok.kwd_for}, {tok.command}, {tok.kwd_in}, {tok.command, tok.comparison}},
+		id = tok.for_stmt,
+		text = 1,
+		not_before = {tok.kwd_do},
+		onmatch = function(token, file)
+			parse_error(token.line, token.col, 'Incomplete for loop declaration (expected "for . in . do ... end")', file)
+		end,
+	},
+	{
+		match = {{tok.kwd_for}, {tok.command}},
+		id = tok.for_stmt,
+		text = 1,
+		not_before = {tok.kwd_in},
+		onmatch = function(token, file)
+			parse_error(token.line, token.col, 'Incomplete for loop declaration (expected "for . in . do ... end")', file)
+		end,
+	},
+
 
 	--Delete statement
 	{
@@ -374,7 +411,7 @@ function SyntaxParser(tokens, file)
 					end
 				elseif rule.not_after_range and index > 1 then
 					local prev_token = tokens[index - 1]
-					if prev_token.id >= rule.not_after_range[1] or prev_token.id <= rule.not_after_range[2] then
+					if prev_token.id >= rule.not_after_range[1] and prev_token.id <= rule.not_after_range[2] then
 						rule_failed = true
 					end
 				end
@@ -506,11 +543,21 @@ function SyntaxParser(tokens, file)
 	local function fold()
 		local new_tokens, did_reduce, first_failure = full_reduce()
 		if #new_tokens == 1 then
+			local id = new_tokens[1].id
+			if id ~= tok.command and id ~= tok.expression and id ~= tok.string_open and id ~= tok.inline_command then
+				parse_error(1, 1, 'Unexpected token "'..new_tokens[1].text..'"', file)
+			end
+
 			tokens = new_tokens
 			return false
 		end
 
 		loops_since_reduction = loops_since_reduction + 1
+
+		-- for _, t in pairs(tokens) do
+		-- 	print_tokens_recursive(t)
+		-- end
+		-- print()
 
 		if not did_reduce or loops_since_reduction > 50 then
 			if first_failure == nil then
@@ -522,11 +569,6 @@ function SyntaxParser(tokens, file)
 		end
 
 		tokens = new_tokens
-
-		-- for _, t in pairs(tokens) do
-		-- 	print_tokens_recursive(t)
-		-- end
-		-- print()
 
 		return true
 	end

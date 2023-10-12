@@ -268,9 +268,28 @@ function fold_constants(token)
 		token.text = '[]'
 		token.value = {}
 		for i = 1, #token.children do
-			table.insert(token.value, token.children[i].value)
+			--If a slice operator is nested in an array_concat operation, merge the arrays
+			if token.children[i].reduce_array_concat then
+				local k
+				for k = 1, #token.children[i].value do
+					table.insert(token.value, token.children[i].value[k])
+				end
+			else
+				table.insert(token.value, token.children[i].value)
+			end
 		end
 		token.children = nil
+
+	elseif token.id == tok.array_slice then
+		token.id = tok.lit_array
+		token.text = '[]'
+		token.value = {}
+		local start, stop, i = token.children[1].value, token.children[2].value
+		for i = start, stop do
+			table.insert(token.value, i)
+		end
+		token.children = nil
+		token.reduce_array_concat = true --If a slice operator is nested in an array_concat operation, merge the arrays
 
 	elseif token.id == tok.negate then
 		token.id = tok.lit_number

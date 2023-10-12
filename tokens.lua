@@ -5,8 +5,6 @@ function k()
 end
 
 tok = {
-	text = k(),
-
 	kwd_for = k(),
 	kwd_while = k(),
 	kwd_in = k(),
@@ -31,6 +29,8 @@ tok = {
 	variable = k(),
 	var_assign = k(),
 	lit_number = k(),
+
+	text = k(),
 
 	op_plus = k(),
 	op_minus = k(),
@@ -85,15 +85,14 @@ tok = {
 	string_open = k(),
 	string_close = k(),
 
-	command_open = k(),
-	command_close = k(),
-
 	line_ending = k(),
 	op_assign = k(),
 
 	expression = k(),
 	inline_command = k(),
+	command_close = k(),
 	command = k(),
+	command_open = k(),
 
 	label = k(),
 	program = k(),
