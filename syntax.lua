@@ -544,7 +544,7 @@ function SyntaxParser(tokens, file)
 		local new_tokens, did_reduce, first_failure = full_reduce()
 		if #new_tokens == 1 then
 			local id = new_tokens[1].id
-			if id ~= tok.command and id ~= tok.expression and id ~= tok.string_open and id ~= tok.inline_command then
+			if id ~= tok.command and id ~= tok.expression and id ~= tok.string_open and id ~= tok.inline_command and id < tok.program then
 				parse_error(1, 1, 'Unexpected token "'..new_tokens[1].text..'"', file)
 			end
 
