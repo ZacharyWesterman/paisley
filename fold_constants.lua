@@ -86,6 +86,8 @@ func_operations = {
 }
 
 function fold_constants(token)
+	if not token.children then return end
+
 	local operator = token.text
 	local c1, c2 = token.children[1], token.children[2]
 

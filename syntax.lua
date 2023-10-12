@@ -410,7 +410,8 @@ function SyntaxParser(tokens, file)
 							break
 						end
 					end
-				elseif rule.not_after_range and index > 1 then
+				end
+				if not rule_failed and rule.not_after_range and index > 1 then
 					local prev_token = tokens[index - 1]
 					if prev_token.id >= rule.not_after_range[1] and prev_token.id <= rule.not_after_range[2] then
 						rule_failed = true

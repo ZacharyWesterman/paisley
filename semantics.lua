@@ -302,7 +302,9 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Get rid of parentheses and expression pseudo-tokens
-	recurse(root, {tok.parentheses, tok.expression}, nil, function(token)
+	recurse(root, {tok.parentheses, tok.expression, tok.command}, nil, function(token)
+		if not token.children or #token.children ~= 1 then return end
+
 		local key, value
 		local child = token.children[1]
 		for key, value in pairs(child) do
@@ -326,11 +328,17 @@ function SemanticAnalyzer(tokens, file)
 	--[[
 		TYPE ANNOTATIONS
 	]]
-	recurse(root, {tok.string_open, tok.add, tok.multiply, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number}, nil, function(token)
+	local variables = {}
+	local deduced_variable_types
+
+	local function type_checking(token)
 		local signature, kind
 
 		if token.value ~= nil or token.id == tok.lit_null then
 			token.type = std.type(token.value)
+			return
+		elseif token.id == tok.variable then
+			token.type = variables[token.text]
 			return
 		elseif type_signatures[token.id] ~= nil then
 			signature = type_signatures[token.id]
@@ -385,15 +393,62 @@ function SemanticAnalyzer(tokens, file)
 			token.type = signature.out
 		end
 
-	end)
+	end
 
+	local function variable_assignment(token)
+		if token.id == tok.for_stmt then
+			local var = token.children[1]
+			local ch = token.children[2]
+
+			if var.type then return end
+
+			--Expression to iterate over is constant
+			if ch.value ~= nil or ch.id == tok.lit_null then
+				if type(ch.value) == 'table' then
+					local _, val, tp
+					for _, val in pairs(ch.value) do
+						local _tp = std.type(val)
+						if tp == nil then tp = _tp
+						elseif tp ~= _tp then
+							--Type will change, so it can't be reduced to a constant state.
+							--Maybe change this later?
+							tp = nil
+							break
+						end
+					end
+
+					--If loop variable has a consistent type, then we know for sure what it will be.
+					if tp ~= nil then
+						variables[var.text] = tp
+						var.type = tp
+						deduced_variable_types = true
+					end
+				else
+					local tp = std.type(ch.value)
+					variables[var.text] = tp
+					var.type = tp
+					deduced_variable_types = true
+				end
+			end
+		end
+	end
 
 	--[[
-		CONSTANT FOLDING OPTIMIZATIONS
+		CONSTANT FOLDING AND TYPE DEDUCTIONS
 	]]
+	deduced_variable_types = true
+	while deduced_variable_types do
+		deduced_variable_types = false
 
-	--Fold constants. this improves performance at runtime, and checks for type errors early on.
-	recurse(root, {tok.add, tok.multiply, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice, tok.string_open}, nil, fold_constants)
+		--First pass at deducing all types
+		recurse(root, {tok.string_open, tok.add, tok.multiply, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.variable}, nil, type_checking)
+
+		--Fold constants. this improves performance at runtime, and checks for type errors early on.
+		recurse(root, {tok.add, tok.multiply, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice, tok.string_open}, nil, fold_constants)
+
+		--Set any variables we can
+		recurse(root, {tok.for_stmt}, variable_assignment)
+	end
 
 	return root
 end
