@@ -215,6 +215,7 @@ local rules = {
 		match = {{tok.text, tok.expression, tok.inline_command, tok.string, tok.comparison}},
 		id = tok.command,
 		not_after_range = {tok.expr_open, tok.command}, --Command cannot come after anything in this range
+		not_after = {tok.kwd_for},
 		text = 'cmd',
 	},
 	{
@@ -264,20 +265,20 @@ local rules = {
 
 	--FOR loop
 	{
-		match = {{tok.kwd_for}, {tok.command}, {tok.kwd_in}, {tok.command, tok.comparison}, {tok.kwd_do}, {tok.command, tok.program}, {tok.kwd_end}},
+		match = {{tok.kwd_for}, {tok.text}, {tok.kwd_in}, {tok.command, tok.comparison}, {tok.kwd_do}, {tok.command, tok.program}, {tok.kwd_end}},
 		id = tok.for_stmt,
 		keep = {2, 4, 6},
 		text = 1,
 	},
 	{
-		match = {{tok.kwd_for}, {tok.command}, {tok.kwd_in}, {tok.command, tok.comparison}, {tok.kwd_do}, {tok.kwd_end}},
+		match = {{tok.kwd_for}, {tok.text}, {tok.kwd_in}, {tok.command, tok.comparison}, {tok.kwd_do}, {tok.kwd_end}},
 		id = tok.for_stmt,
 		keep = {2, 4},
 		text = 1,
 	},
 	--Invalid for loops
 	{
-		match = {{tok.kwd_for}, {tok.command}, {tok.kwd_in}, {tok.command, tok.comparison}},
+		match = {{tok.kwd_for}, {tok.text}, {tok.kwd_in}, {tok.command, tok.comparison}},
 		id = tok.for_stmt,
 		text = 1,
 		not_before = {tok.kwd_do},
@@ -286,7 +287,7 @@ local rules = {
 		end,
 	},
 	{
-		match = {{tok.kwd_for}, {tok.command}},
+		match = {{tok.kwd_for}, {tok.text}},
 		id = tok.for_stmt,
 		text = 1,
 		not_before = {tok.kwd_in},
