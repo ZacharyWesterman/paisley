@@ -8,6 +8,20 @@ std = {
 		if data == false then return '0' end
 
 		if type(data) == 'table' then
+			local result, i = ''
+			local first = true
+			for i = 1, #data do
+				if not first then result = result .. ' ' end
+				result = result .. std.str(data[i])
+				first = false
+			end
+			return result
+		end
+		return tostring(data)
+	end,
+
+	debug_str = function(data)
+		if type(data) == 'table' then
 			local result = ''
 			local key, value
 			local first = true
@@ -17,8 +31,11 @@ std = {
 				first = false
 			end
 			return '{' .. result .. '}'
+		elseif type(data) == 'string' then
+			return '"'..data..'"'
+		else
+			return std.str(data)
 		end
-		return tostring(data)
 	end,
 
 	--Cast data to a boolean

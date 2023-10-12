@@ -303,6 +303,13 @@ function fold_constants(token)
 		token.text = token.value
 		token.children = nil
 
+	elseif token.id == tok.string_open then
+		token.value = ''
+		local i
+		for i = 1, #token.children do
+			token.value = token.value .. std.str(token.children[i].value)
+		end
+		token.children = nil
 	else
 		parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for token id "'..token_text(token.id)..'"!', file)
 	end
