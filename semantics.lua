@@ -371,7 +371,13 @@ function SemanticAnalyzer(tokens, file)
 				end
 
 				if not found_correct_types then
-					parse_error(token.line, token.col, 'Operator "'..token.text..'" expected ('..std.join(exp_types, ' or ')..') but got ('..got_types..')', file)
+					local msg
+					if builtin_funcs[token.text] then
+						msg = 'Function "'..token.text..'('..funcsig(token.text)..')"'
+					else
+						msg = 'Operator "'..token.text..'"'
+					end
+					parse_error(token.line, token.col, msg..' expected ('..std.join(exp_types, ' or ')..') but got ('..got_types..')', file)
 				end
 			end
 

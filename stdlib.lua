@@ -60,6 +60,15 @@ std = {
 		if text == '' then return {} end
 
 		local result = {}
+
+		if delimiter == '' then
+			local ch
+			for ch in text:gmatch('.') do
+				table.insert(result, ch)
+			end
+			return result
+		end
+
 		while #text > 0 do
 			local i
 			local found = false

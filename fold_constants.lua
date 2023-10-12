@@ -56,7 +56,7 @@ func_operations = {
 	end,
 	irandom = function(a, b) end,
 	frandom = function(a, b) end,
-	split = function(a, b) std.split(a, b) end,
+	split = function(a, b) return std.split(a, b) end,
 	join = function(a, b) return std.join(a, b) end,
 	type = function(a) return std.type(a) end,
 	dist = function(a, b, token, file)
@@ -213,6 +213,12 @@ function fold_constants(token)
 		end
 	elseif token.id == tok.func_call then
 		if func_operations[token.text] then
+			--Build list of parameters
+			local values = {}
+			for i = 1, #token.children do
+				table.insert(values, token.children[i].value)
+			end
+
 			--Run functions to get resultant value
 			local fn = func_operations[token.text]
 			local param_ct = builtin_funcs[token.text]
