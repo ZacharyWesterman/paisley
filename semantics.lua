@@ -33,13 +33,142 @@ builtin_funcs = {
 }
 
 type_signatures = {
+	irandom = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	frandom = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	worddiff = {
+		valid = {{'string'}},
+		out = 'number',
+	},
+	dist = {
+		valid = {{'number'}, {'array'}},
+		out = 'number',
+	},
 	sin = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	cos = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	tan = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	asin = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	acos = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	atan = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	atan2 = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	sqrt = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	mean = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	sum = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	mult = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	pow = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	min = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	max = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	clamp = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	lerp = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	split = {
+		valid = {{'string', 'string'}},
+		out = 'array',
+	},
+	join = {
+		valid = {{'array', 'string'}},
+		out = 'string',
+	},
+	floor = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	ceil = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	round = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	abs = {
 		valid = {{'number'}},
 		out = 'number',
 	},
 	[tok.add] = {
 		valid = {{'number'}},
 		out = 'number',
+	},
+	[tok.multiply] = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	[tok.boolean] = {
+		out = 'boolean',
+	},
+	[tok.array_concat] = {
+		out = 'array',
+	},
+	[tok.array_slice] = {
+		out = 'array',
+	},
+	[tok.comparison] = {
+		out = 'boolean',
+	},
+	[tok.negate] = {
+		valid = {{'number'}},
+		out = 'number',
+	},
+	[tok.concat] = {
+		out = 'string',
+	},
+	[tok.length] = {
+		out = 'number',
+	},
+	[tok.string_open] = {
+		out = 'string'
 	},
 }
 
@@ -215,33 +344,35 @@ function SemanticAnalyzer(tokens, file)
 			local g
 			local exp_types, got_types = {}, {}
 
-			for g = 1, #signature.valid do
-				table.insert(exp_types, {})
-			end
+			if signature.valid then
+				for g = 1, #signature.valid do
+					table.insert(exp_types, {})
+				end
 
-			for i = 1, #token.children do
-				local tp = token.children[i].type
-				if tp then
-					for g = 1, #signature.valid do
-						local s = signature.valid[g]
-						table.insert(exp_types[g], s[(i-1) % #s + 1])
+				for i = 1, #token.children do
+					local tp = token.children[i].type
+					if tp then
+						for g = 1, #signature.valid do
+							local s = signature.valid[g]
+							table.insert(exp_types[g], s[(i-1) % #s + 1])
+						end
+						table.insert(got_types, tp)
 					end
-					table.insert(got_types, tp)
 				end
-			end
 
-			local found_correct_types = false
-			got_types = std.join(got_types, ',')
-			for i = 1, #exp_types do
-				exp_types[i] = std.join(exp_types[i], ',')
-				if exp_types[i] == got_types then
-					found_correct_types = true
-					break
+				local found_correct_types = false
+				got_types = std.join(got_types, ',')
+				for i = 1, #exp_types do
+					exp_types[i] = std.join(exp_types[i], ',')
+					if exp_types[i] == got_types then
+						found_correct_types = true
+						break
+					end
 				end
-			end
 
-			if not found_correct_types then
-				parse_error(token.line, token.col, 'Operator "'..token.text..'" expected ('..std.join(exp_types, ' or ')..') but got ('..got_types..')', file)
+				if not found_correct_types then
+					parse_error(token.line, token.col, 'Operator "'..token.text..'" expected ('..std.join(exp_types, ' or ')..') but got ('..got_types..')', file)
+				end
 			end
 
 			token.type = signature.out

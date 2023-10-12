@@ -3,7 +3,7 @@ local rules = {
 	{
 		match = {{tok.comparison, tok.array_concat}, {tok.comparison, tok.array_concat}},
 		id = tok.concat,
-		text = 'string concat',
+		text = '..',
 	},
 
 	--Function call
