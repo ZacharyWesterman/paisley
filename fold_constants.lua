@@ -283,15 +283,19 @@ function fold_constants(token)
 		token.children = nil
 
 	elseif token.id == tok.array_slice then
-		token.id = tok.lit_array
-		token.text = '[]'
-		token.value = {}
 		local start, stop, i = token.children[1].value, token.children[2].value
-		for i = start, stop do
-			table.insert(token.value, i)
+
+		--For the sake of performance, don't fold if the array slice is too large!
+		if stop - start < 100 then
+			token.id = tok.lit_array
+			token.text = '[]'
+			token.value = {}
+			for i = start, stop do
+				table.insert(token.value, i)
+			end
+			token.children = nil
+			token.reduce_array_concat = true --If a slice operator is nested in an array_concat operation, merge the arrays
 		end
-		token.children = nil
-		token.reduce_array_concat = true --If a slice operator is nested in an array_concat operation, merge the arrays
 
 	elseif token.id == tok.negate then
 		token.id = tok.lit_number
