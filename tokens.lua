@@ -85,7 +85,6 @@ tok = {
 	string_open = k(),
 	string_close = k(),
 
-	line_ending = k(),
 
 	expression = k(),
 	inline_command = k(),
@@ -93,6 +92,7 @@ tok = {
 	command = k(),
 	command_open = k(),
 
+	line_ending = k(),
 	label = k(),
 	program = k(),
 	op_assign = k(),

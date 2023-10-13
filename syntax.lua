@@ -366,8 +366,26 @@ local rules = {
 		text = 'stmt_list',
 	},
 	{
-		match = {{tok.command}, {tok.line_ending}},
+		match = {{tok.command, tok.program, tok.statement}, {tok.line_ending}},
 		id = tok.program,
+		meta = true,
+	},
+	{
+		match = {{tok.line_ending}, {tok.command, tok.program, tok.statement}},
+		id = tok.program,
+		onmatch = function(token)
+			--Catch possible dead ends where line endings come before any commands.
+			local i, _
+			for _, i in ipairs({'text', 'line', 'col', 'id', 'meta_id'}) do
+				token[i] = token.children[2][i]
+			end
+			token.children = token.children[2].children
+		end,
+	},
+
+	{
+		match = {{tok.line_ending}, {tok.line_ending}},
+		id = tok.line_ending,
 		meta = true,
 	},
 }
@@ -554,6 +572,11 @@ function SyntaxParser(tokens, file)
 			end
 
 			local id = new_tokens[1].id
+
+			if id == tok.line_ending then
+				parse_error(1, 1, 'Program contains no actionable text', file)
+			end
+
 			if id ~= tok.command and id < tok.program then
 				parse_error(1, 1, 'Unexpected token "'..new_tokens[1].text..'"', file)
 			end
