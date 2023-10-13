@@ -541,12 +541,19 @@ function SyntaxParser(tokens, file)
 	--Run all syntax rules and condense tokens as far as possible
 	local loops_since_reduction = 0
 
-
 	local function fold()
 		local new_tokens, did_reduce, first_failure = full_reduce()
 		if #new_tokens == 1 then
+			--Try one final set of reductions!
+			local i
+			for i = 1, 10 do
+				tokens = new_tokens
+				new_tokens, did_reduce, first_failure = full_reduce()
+				if not did_reduce then break end
+			end
+
 			local id = new_tokens[1].id
-			if id ~= tok.command and id ~= tok.expression and id ~= tok.string_open and id ~= tok.inline_command and id < tok.program then
+			if id ~= tok.command and id < tok.program then
 				parse_error(1, 1, 'Unexpected token "'..new_tokens[1].text..'"', file)
 			end
 

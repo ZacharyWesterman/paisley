@@ -302,7 +302,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Get rid of parentheses and expression pseudo-tokens
-	recurse(root, {tok.parentheses, tok.expression, tok.command}, nil, function(token)
+	recurse(root, {tok.parentheses, tok.expression}, nil, function(token)
 		if not token.children or #token.children ~= 1 then return end
 
 		local key, value
