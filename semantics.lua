@@ -251,7 +251,12 @@ function SemanticAnalyzer(tokens, file)
 
 	--Check label references
 	recurse(root, {tok.goto_stmt, tok.gosub_stmt}, function(token)
-		local label = token.children[1].text
+		local ch = token.children[1]
+		if #ch.children > 1 then
+			parse_error(token.line, token.col, 'More than one label given to '..token.text, file)
+		end
+
+		local label = ch.children[1].text
 		if labels[label] == nil then
 			parse_error(token.line, token.col, 'Label "'..label..'" not declared anywhere', file)
 		end

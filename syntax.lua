@@ -302,21 +302,24 @@ local rules = {
 	{
 		match = {{tok.kwd_delete}, {tok.command}},
 		id = tok.delete_stmt,
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
 		keep = {2},
 		text = 1,
 	},
 
 	--GOTO statement
 	{
-		match = {{tok.kwd_goto}, {tok.text}},
+		match = {{tok.kwd_goto}, {tok.command}},
 		id = tok.goto_stmt,
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
 		keep = {2},
 		text = 1,
 	},
 	--GOSUB statement
 	{
-		match = {{tok.kwd_gosub}, {tok.text}},
+		match = {{tok.kwd_gosub}, {tok.command}},
 		id = tok.gosub_stmt,
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
 		keep = {2},
 		text = 1,
 	},
