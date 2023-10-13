@@ -394,6 +394,9 @@ local rules = {
 }
 
 function SyntaxParser(tokens, file)
+	if #tokens == 0 then
+		parse_error(0, 0, 'Program contains no text', file)
+	end
 
 	local function matches(index, rule, rule_index)
 		local this_token = tokens[index]

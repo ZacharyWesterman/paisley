@@ -125,6 +125,12 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					if match then tok_ignore = true end
 				end
 
+				--Comments
+				if not match then
+					match = text:match('^#[^\n\x0b]*')
+					if match then tok_ignore = true end
+				end
+
 				--string start
 				if not match then
 					match = text:match('^[\'"]')

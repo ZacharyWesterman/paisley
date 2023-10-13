@@ -7,10 +7,6 @@ require "semantics"
 
 local expression = io.read()
 
-if expression == '' then
-	parse_error(0, 0, 'Program contains no text')
-end
-
 -- print(expression)
 local lexer = Lexer(expression)
 local t
