@@ -3,6 +3,7 @@ local rules = {
 	{
 		match = {{tok.comparison, tok.array_concat}, {tok.comparison, tok.array_concat}},
 		id = tok.concat,
+		not_after = {tok.op_assign},
 		text = '..',
 	},
 

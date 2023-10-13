@@ -86,7 +86,6 @@ tok = {
 	string_close = k(),
 
 	line_ending = k(),
-	op_assign = k(),
 
 	expression = k(),
 	inline_command = k(),
@@ -96,6 +95,7 @@ tok = {
 
 	label = k(),
 	program = k(),
+	op_assign = k(),
 
 	if_stmt = k(),
 	else_stmt = k(),
@@ -150,6 +150,7 @@ function print_token(token, indent)
 			meta = '    ('..token.type..')'
 		end
 	end
+
 	-- if token.meta_id ~= nil then
 	-- 	id = token_text(token.id)..'*'
 	-- 	meta = '    (meta='..token_text(token.meta_id)..')'

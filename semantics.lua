@@ -325,6 +325,31 @@ function SemanticAnalyzer(tokens, file)
 		end
 	end)
 
+	--Prep text to allow constant folding
+	recurse(root, {tok.text}, function(token)
+		local val = tonumber(token.text)
+		if val then
+			token.value = val
+			token.type = 'number'
+		else
+			token.value = token.text
+			token.type = 'string'
+		end
+	end)
+
+	--Make variable assignment make sense, removing quirks of AST generation.
+	recurse(root, {tok.let_stmt}, function(token)
+		local body = token.children[2]
+		if body and body.id == tok.command then
+			if #body.children > 1 then
+				body.id = tok.array_concat
+				body.text = '[]'
+			else
+				token.children[2] = body.children[1]
+			end
+		end
+	end)
+
 	--[[
 		TYPE ANNOTATIONS
 	]]
@@ -338,7 +363,10 @@ function SemanticAnalyzer(tokens, file)
 			token.type = std.type(token.value)
 			return
 		elseif token.id == tok.variable then
-			token.type = variables[token.text]
+			local tp = variables[token.text]
+			if tp then
+				token.type = tp[#tp]
+			end
 			return
 		elseif type_signatures[token.id] ~= nil then
 			signature = type_signatures[token.id]
@@ -395,6 +423,26 @@ function SemanticAnalyzer(tokens, file)
 
 	end
 
+	local function push_var(var, value)
+		if not variables[var] then variables[var] = {} end
+		table.insert(variables[var], value)
+	end
+
+	local function set_var(var, value)
+		if not variables[var] then
+			variables[var] = {value}
+		else
+			variables[var][#variables[var]] = value
+		end
+	end
+
+	local function pop_var(var)
+		if variables[var] then
+			table.remove(variables[var])
+			if #variables[var] == 0 then variables[var] = nil end
+		end
+	end
+
 	local function variable_assignment(token)
 		if token.id == tok.for_stmt then
 			local var = token.children[1]
@@ -404,8 +452,10 @@ function SemanticAnalyzer(tokens, file)
 
 			--Expression to iterate over is constant
 			if ch.value ~= nil or ch.id == tok.lit_null then
+				local tp
+
 				if type(ch.value) == 'table' then
-					local _, val, tp
+					local _, val
 					for _, val in pairs(ch.value) do
 						local _tp = std.type(val)
 						if tp == nil then tp = _tp
@@ -416,18 +466,43 @@ function SemanticAnalyzer(tokens, file)
 							break
 						end
 					end
-
-					--If loop variable has a consistent type, then we know for sure what it will be.
-					if tp ~= nil then
-						variables[var.text] = tp
-						var.type = tp
-						deduced_variable_types = true
-					end
 				else
-					local tp = std.type(ch.value)
-					variables[var.text] = tp
+					tp = std.type(ch.value)
+				end
+
+				--If loop variable has a consistent type, then we know for sure what it will be.
+				if tp ~= nil then
+					push_var(var.text, tp)
 					var.type = tp
 					deduced_variable_types = true
+				end
+			end
+		elseif token.id == tok.let_stmt then
+			local var = token.children[1]
+			local ch = token.children[2]
+
+			if var.type then return end
+
+			if not ch then
+				set_var(var.text, 'null')
+				var.type = 'null'
+				deduced_variable_types = true
+			elseif ch.type then
+				set_var(var.text, ch.type)
+				var.type = ch.type
+				deduced_variable_types = true
+			end
+		end
+	end
+
+	local function variable_unassignment(token)
+		if token.id == tok.for_stmt then
+			local var = token.children[1].text
+			if variables[var] then
+				if #variables[var] == 1 then
+					variables[var] = nil
+				else
+					table.remove(variables)
 				end
 			end
 		end
@@ -447,7 +522,7 @@ function SemanticAnalyzer(tokens, file)
 		recurse(root, {tok.add, tok.multiply, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice, tok.string_open}, nil, fold_constants)
 
 		--Set any variables we can
-		recurse(root, {tok.for_stmt}, variable_assignment)
+		recurse(root, {tok.for_stmt, tok.let_stmt}, variable_assignment, variable_unassignment)
 	end
 
 	return root
