@@ -31,7 +31,7 @@ function generate_bytecode(root, file)
 		end
 
 		if not instr_text then
-			parse_error(0, 0, 'COMPILER ERROR: Unknown bytecode instruction with id '..instruction_id..'!', file)
+			parse_error(0, 0, 'COMPILER BUG: Unknown bytecode instruction with id '..instruction_id..'!', file)
 		end
 
 		if param1 == nil and instruction_id ~= bc.run_command then param1 = 'null' else param1 = std.debug_str(param1) end
@@ -47,7 +47,7 @@ function generate_bytecode(root, file)
 
 	local function enter(token)
 		if not codegen_rules[token.id] then
-			parse_error(token.line, token.col, 'COMPILER ERROR: Unable to generate bytecode for object "'..token_text(token.id)..'"!', file)
+			parse_error(token.line, token.col, 'COMPILER BUG: Unable to generate bytecode for token of type "'..token_text(token.id)..'"!', file)
 		end
 
 		current_line = token.line
