@@ -131,12 +131,46 @@ function generate_bytecode(root, file)
 			end
 		end,
 
+		--STRING CONCATENATION
 		[tok.string_open] = function(token, file)
 			local i
 			for i = 1, #token.children do
 				codegen_rules.recur_push(token.children[i])
 			end
 			emit(bc.call, 'concat', #token.children)
+		end,
+
+		--MULTIPLICATION OPERATIONS
+		[tok.multiply] = function(token, file)
+			if token.text == '//' then
+				--No such thing as integer division really, it's just division, rounded down.
+				codegen_rules.binary_op(token, 'div')
+				emit(bc.call, 'floor')
+			else
+				local op = {
+					['*'] = 'mult',
+					['/'] = 'div',
+					['%'] = 'remd',
+				}
+				codegen_rules.binary_op(token, op[token.text])
+			end
+		end,
+
+		--ADDITION OPERATIONS
+		[tok.add] = function(token, file)
+			local op = {
+				['+'] = 'add',
+				['-'] = 'sub',
+			}
+			codegen_rules.binary_op(token, op[token.text])
+		end,
+
+		--NEGATE
+		[tok.negate] = function(token, file)
+			--No real negate operation, it's just zero minus the value
+			emit(bc.push, 0)
+			codegen_rules.recur_push(token.children[1])
+			emit(bc.call, 'sub')
 		end,
 	}
 
