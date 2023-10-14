@@ -4,6 +4,7 @@ require "syntax"
 require "closest_word"
 require "fold_constants"
 require "semantics"
+require "codegen"
 
 local expression = io.read()
 
@@ -21,3 +22,9 @@ local root = SemanticAnalyzer(parser.get())
 
 --Print the AST
 print_tokens_recursive(root)
+
+print('--------------------------')
+print('Generating bytecode')
+print('--------------------------')
+--Generate instruction representation
+local bytecode = generate_bytecode(root)
