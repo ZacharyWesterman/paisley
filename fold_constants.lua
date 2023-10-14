@@ -262,12 +262,13 @@ function fold_constants(token)
 			end
 		end
 		token.children = nil
+		token.reduce_array_concat = true
 
 	elseif token.id == tok.array_slice then
 		local start, stop, i = token.children[1].value, token.children[2].value
 
 		--For the sake of performance, don't fold if the array slice is too large!
-		if stop - start < 100 then
+		if (stop - start) <= 200 then
 			token.id = tok.lit_array
 			token.text = '[]'
 			token.value = {}
@@ -297,6 +298,61 @@ function fold_constants(token)
 			token.value = token.value .. std.str(token.children[i].value)
 		end
 		token.children = nil
+
+	elseif token.id == tok.index then
+		local val = c1.value
+		if type(val) == 'string' then
+			val = std.split(val, '')
+		elseif type(val) ~= 'table' then
+			parse_error(token.line, token.col, 'Cannot get subset of a value of type "'..std.type(val)..'"', file)
+		end
+
+		local result
+		if type(c2.value) == 'table' then
+			local i
+			result = {}
+			for i = 1, #c2.value do
+				local ix = c2.value[i]
+				if type(ix) ~= 'number' then
+					print(std.debug_str(c2.value))
+					parse_error(token.line, token.col, 'Cannot use a non-number value as an array index', file)
+				end
+
+				if ix < 1 then
+					parse_error(token.line, token.col, 'Indexes start at 1, but an index of '..ix..' was found', file)
+				end
+				table.insert(result, val[ix])
+			end
+			token.text = '[]'
+			token.id = tok.lit_array
+		elseif type(c2.value) ~= 'number' then
+			parse_error(token.line, token.col, 'Cannot use a non-number value as an array index', file)
+		else
+			local ix = c2.value
+			if type(ix) ~= 'number' then
+				parse_error(token.line, token.col, 'Cannot use a non-number value as an array index', file)
+			end
+
+			if ix < 1 then
+				parse_error(token.line, token.col, 'Indexes start at 1, but an index of '..ix..' was found', file)
+			end
+			result = val[ix]
+			token.text = std.debug_str(result)
+			if type(result) == 'string' then token.text = '"' end
+		end
+
+		token.value = result
+		token.type = std.type(result)
+		token.children = nil
+
+		local rs = {
+			string = tok.string_open,
+			array = tok.text,
+			null = tok.lit_null,
+			boolean = tok.lit_boolean,
+			number = tok.lit_number,
+		}
+		token.id = rs[token.type]
 	else
 		parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for token id "'..token_text(token.id)..'"!', file)
 	end

@@ -86,7 +86,7 @@ function generate_bytecode(root, file)
 					all_const = false
 					break
 				end
-				table.insert(p, token.children[i].value)
+				table.insert(p, std.str(token.children[i].value))
 			end
 
 			if all_const then
