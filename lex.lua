@@ -109,7 +109,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				--Default parse rules
 
 				--line endings (separate individual commands)
-				match = text:match('^[\n\x0b;]')
+				match = text:match('^[\n;]')
 				if match then
 					tok_type = tok.line_ending
 
@@ -127,7 +127,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 
 				--Comments
 				if not match then
-					match = text:match('^#[^\n\x0b]*')
+					match = text:match('^#[^\n]*')
 					if match then tok_ignore = true end
 				end
 
@@ -192,7 +192,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 
 				--non-quoted text
 				if not match then
-					match = text:match('^[^ \t\n\r"\'{}\x0b;$]+')
+					match = text:match('^[^ \t\n\r"\'{};$]+')
 					if match then tok_type = tok.text end
 				end
 
@@ -200,7 +200,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				--Parse rules when inside expressions
 
 				--line endings cause errors inside expressions
-				match = text:match('^[\n\x0b]')
+				match = text:match('^\n')
 				if match then
 					parse_error(line, col, 'Unexpected line ending inside expression', file)
 				end
@@ -370,7 +370,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					end
 
 					--No line breaks are allowed inside strings
-					if this_chr == '\n' or this_chr == '\x0b' then
+					if this_chr == '\n' then
 						parse_error(line, col + #this_str, 'Unexpected line ending inside string', file)
 					end
 
@@ -434,7 +434,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 
 			elseif curr_scope == 'let' then
 				--line endings (end of variable declaration)
-				match = text:match('^[\n\x0b;]')
+				match = text:match('^[\n;]')
 				if match then
 					tok_type = tok.line_ending
 
