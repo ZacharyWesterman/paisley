@@ -366,6 +366,7 @@ local rules = {
 	{
 		match = {{tok.command, tok.program, tok.statement}, {tok.command, tok.program, tok.statement}},
 		id = tok.program,
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
 		text = 'stmt_list',
 	},
 	{

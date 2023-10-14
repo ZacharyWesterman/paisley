@@ -27,7 +27,7 @@ std = {
 			local first = true
 			for key, value in pairs(data) do
 				if not first then result = result .. ',' end
-				result = result .. std.str(value)
+				result = result .. std.debug_str(value)
 				first = false
 			end
 			return '{' .. result .. '}'

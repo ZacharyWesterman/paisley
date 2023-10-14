@@ -81,11 +81,23 @@ function generate_bytecode(root, file)
 
 		--CODEGEN FOR COMMANDS
 		[tok.command] = function(token, file)
-			local i
+			local all_const, p, i = true, {}
 			for i = 1, #token.children do
-				codegen_rules.recur_push(token.children[i])
+				if not is_const(token.children[i]) then
+					all_const = false
+					break
+				end
+				table.insert(p, token.children[i].value)
 			end
-			emit(bc.call, 'make_array', #token.children)
+
+			if all_const then
+				emit(bc.push, p)
+			else
+				for i = 1, #token.children do
+					codegen_rules.recur_push(token.children[i])
+				end
+				emit(bc.call, 'make_array', #token.children)
+			end
 			emit(bc.run_command)
 		end,
 
@@ -118,6 +130,14 @@ function generate_bytecode(root, file)
 				emit(bc.push, nil)
 				emit(bc.set, token.children[i].text)
 			end
+		end,
+
+		[tok.string_open] = function(token, file)
+			local i
+			for i = 1, #token.children do
+				codegen_rules.recur_push(token.children[i])
+			end
+			emit(bc.call, 'concat', #token.children)
 		end,
 	}
 

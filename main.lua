@@ -16,6 +16,7 @@ for t in lexer do table.insert(tokens, t) end --Iterate to get tokens.
 
 local parser = SyntaxParser(tokens)
 while parser.fold() do end --Iterate on the syntax tree. Follows iterator-like behavior.
+-- print_tokens_recursive(parser.get()[1])
 
 --Analyze the AST and check for any errors
 local root = SemanticAnalyzer(parser.get())
