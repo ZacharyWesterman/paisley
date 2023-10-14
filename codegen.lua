@@ -20,7 +20,6 @@ function generate_bytecode(root, file)
 	local function emit(instruction_id, param1, param2)
 		table.insert(instructions, {instruction_id, param1, param2, current_line})
 
-		--TEMP: print code as it's generated
 		local instr_text
 		local i, k
 		for k, i in pairs(bc) do
@@ -34,8 +33,8 @@ function generate_bytecode(root, file)
 			parse_error(0, 0, 'COMPILER BUG: Unknown bytecode instruction with id '..instruction_id..'!', file)
 		end
 
+		--TEMP: print code as it's generated
 		if param1 == nil and instruction_id ~= bc.run_command then param1 = 'null' else param1 = std.debug_str(param1) end
-
 		if param2 then
 			print(current_line..': '..instr_text..' '..param1..' '..std.debug_str(param2))
 		else
