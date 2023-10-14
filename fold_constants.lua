@@ -1,19 +1,3 @@
-func_param_types = {
-	mean = {'number'},
-	sum = {'number'},
-	mult = {'number'},
-	min = {'number'},
-	max = {'number'},
-	clamp = {'number'},
-	lerp = {'number'},
-	pow = {'number'},
-	worddiff = {'string'},
-	irandom = {'number'},
-	frandom = {'number'},
-	split = {'string'},
-	join = {'array', 'string'},
-}
-
 func_operations = {
 	mean = function(values) return func_operators.sum(values) / #values end,
 	sum = function(values)
@@ -47,13 +31,7 @@ func_operations = {
 	string = function(data) return std.str(data) end,
 	number = function(data) return std.num(data) end,
 	array = function(values) return values end, --Interesting short-cut due to compiler quirks!
-	worddiff = function(a, b, token, file)
-		if type(a) ~= 'string' or type(b) ~= 'string' then
-			parse_error(token.line, token.col, 'Function "worddiff(a,b)" expected (string, string) but got ('..std.type(a)..', '..std.type(b)..')', file)
-		end
-
-		return lev(a, b)
-	end,
+	worddiff = function(a, b, token, file) return lev(a, b) end,
 	irandom = function(a, b) end,
 	frandom = function(a, b) end,
 	split = function(a, b) return std.split(a, b) end,
@@ -183,8 +161,11 @@ function fold_constants(token)
 
 				token.value = result
 				token.id = tok.lit_boolean
-				token.children = nil
-				token.text = tostring(result)
+
+			elseif operator == 'like' then
+				local v1 = std.str(c1.value)
+				local v2 = std.str(c2.value)
+				token.value, token.id = v1:match(v2) ~= nil, tok.lit_boolean
 			else
 				parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
 			end
