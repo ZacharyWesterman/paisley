@@ -218,6 +218,18 @@ function SemanticAnalyzer(tokens, file)
 
 	local root = tokens[1] --At this point, there should only be one token, the root "program" token.
 
+	--Make sure "delete" statements only have text params. deleting expressions that resolve to variable names is a recipe for disaster.
+	recurse(root, {tok.delete_stmt}, function(token)
+		local kids, i = token.children[1].children
+		for i = 1, #kids do
+			if kids[i].id ~= tok.text then
+				parse_error(kids[i].line, kids[i].col, 'Expected only variable names after "delete" keyword', file)
+			end
+		end
+
+		token.children = kids
+	end)
+
 	--Fold nested array_concat tokens into a single array
 	recurse(root, {tok.array_concat}, function(token)
 		local child

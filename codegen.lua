@@ -17,7 +17,7 @@ function generate_bytecode(root, file)
 
 	local current_line = 0
 
-	local function emit(instruction_id, param1)
+	local function emit(instruction_id, param1, param2)
 		table.insert(instructions, {instruction_id, param1, param2, current_line})
 
 		--TEMP: print code as it's generated
@@ -31,10 +31,16 @@ function generate_bytecode(root, file)
 		end
 
 		if not instr_text then
-			parse_error(0, 0, 'COMPILER ERROR: Unknown bytecode instruction with id '..insruction_id..'!', file)
+			parse_error(0, 0, 'COMPILER ERROR: Unknown bytecode instruction with id '..instruction_id..'!', file)
 		end
 
-		print(current_line..': '..instr_text..' '..std.debug_str(param1))
+		if param1 == nil and instruction_id ~= bc.run_command then param1 = 'null' else param1 = std.debug_str(param1) end
+
+		if param2 then
+			print(current_line..': '..instr_text..' '..param1..' '..std.debug_str(param2))
+		else
+			print(current_line..': '..instr_text..' '..param1)
+		end
 
 		return #instructions
 	end
@@ -54,34 +60,6 @@ function generate_bytecode(root, file)
 		CODE GENERATION RULES
 	]]
 	codegen_rules = {
-		--CODEGEN FOR COMMANDS
-		[tok.command] = function(token, file)
-			local i
-			for i = 1, #token.children do
-				local ch = token.children[i]
-				if is_const(ch) then
-					emit(bc.push, ch.value)
-				else
-					enter(ch)
-				end
-			end
-
-			emit(bc.run_command)
-		end,
-
-		--CODEGEN FOR VARIABLE ASSIGNMENT
-		[tok.let_stmt] = function(token, file)
-			local var_name = token.children[1]
-			local var_value = token.children[2]
-
-			if is_const(var_value) then
-				emit(bc.push, var_value.value)
-			else
-				enter(var_value)
-			end
-			emit(bc.set, var_name.text)
-		end,
-
 		--Shortcut for binary operations, since they're all basically the same from a code gen perspective
 		binary_op = function(token, operation_name)
 			codegen_rules.recur_push(token.children[1])
@@ -93,6 +71,30 @@ function generate_bytecode(root, file)
 			if is_const(token) then emit(bc.push, token.value) else enter(token) end
 		end,
 
+		--CODEGEN FOR PROGRAM (Just a list of commands/statements)
+		[tok.program] = function(token, file)
+			local i
+			for i = 1, #token.children do
+				enter(token.children[i])
+			end
+		end,
+
+		--CODEGEN FOR COMMANDS
+		[tok.command] = function(token, file)
+			local i
+			for i = 1, #token.children do
+				codegen_rules.recur_push(token.children[i])
+			end
+			emit(bc.call, 'make_array', #token.children)
+			emit(bc.run_command)
+		end,
+
+		--CODEGEN FOR VARIABLE ASSIGNMENT
+		[tok.let_stmt] = function(token, file)
+			codegen_rules.recur_push(token.children[2])
+			emit(bc.set, token.children[1].text)
+		end,
+
 		--CODEGEN FOR ARRAY CONCATENATION
 		[tok.array_concat] = function(token, file)
 			emit(bc.push, {})
@@ -100,13 +102,22 @@ function generate_bytecode(root, file)
 			local i
 			for i = 1, #token.children do
 				codegen_rules.recur_push(token.children[i])
-				emit(bc.call, 'append')
 			end
+			emit(bc.call, 'make_array', #token.children)
 		end,
 
 		--CODEGEN FOR VARIABLES
 		[tok.variable] = function(token, file)
 			emit(bc.read, token.text)
+		end,
+
+		--DELETE STATEMENT
+		[tok.delete_stmt] = function(token, file)
+			local i
+			for i = 1, #token.children do
+				emit(bc.push, nil)
+				emit(bc.set, token.children[i].text)
+			end
 		end,
 	}
 
