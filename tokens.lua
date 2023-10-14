@@ -156,7 +156,7 @@ function print_token(token, indent)
 	-- 	meta = '    (meta='..token_text(token.meta_id)..')'
 	-- end
 
-	print((indent..'%2d:%2d: %13s = %s%s'):format(token.line, token.col, id, token.text:gsub('[\n\x0b]', '<newline>'), meta))
+	print((indent..'%2d:%2d: %13s = %s%s'):format(token.line, token.col, id, token.text:gsub('\n', '<nl>'):gsub('\x09','<nl>'), meta))
 end
 
 function print_tokens_recursive(root, indent)
