@@ -216,6 +216,38 @@ function generate_bytecode(root, file)
 			table.remove(loop_begn_labels)
 		end,
 
+		--WHILE LOOPS
+		[tok.while_stmt] = function(token, file)
+			local loop_beg_label = label_id()
+			local loop_end_label = label_id()
+
+			local const = is_const(token.children[1])
+			local val = std.bool(token.children[1].value)
+
+			--If the loop will never get executed, don't generate it.
+			if const and not val then return end
+
+			--Loop setup
+			emit(bc.label, loop_beg_label)
+			table.insert(loop_term_labels, loop_end_label)
+			table.insert(loop_begn_labels, loop_beg_label)
+			codegen_rules.recur_push(token.children[1])
+
+			--Run loop
+			emit(bc.call, 'jumpiffalse', loop_end_label)
+			emit(bc.pop, 1)
+
+			if #token.children >= 2 then
+				enter(token.children[2])
+			end
+
+			--End of loop
+			emit(bc.call, 'jump', loop_beg_label)
+			emit(bc.label, loop_end_label)
+			emit(bc.pop, 1)
+		end,
+
+		--BREAK STATEMENT
 		[tok.break_stmt] = function(token, file)
 			if #loop_term_labels == 0 then
 				parse_error(token.line, token.col, 'Break statements are meaningless outside of a loop', file)
@@ -228,6 +260,21 @@ function generate_bytecode(root, file)
 			end
 
 			emit(bc.call, 'jump', loop_term_labels[#loop_term_labels - token.children[1].value + 1])
+		end,
+
+		--CONTINUE STATEMENT
+		[tok.continue_stmt] = function(token, file)
+			if #loop_begn_labels == 0 then
+				parse_error(token.line, token.col, 'Continue statements are meaningless outside of a loop', file)
+			end
+
+			if #loop_begn_labels < token.children[1].value then
+				local word = 'loop'
+				if #loop_begn_labels ~= 1 then word = 'loops' end
+				parse_error(token.line, token.col, 'Unable to skip iteration of '..token.children[1].value..' loops, only '..#loop_begn_labels..' '..word..' found')
+			end
+
+			emit(bc.call, 'jump', loop_begn_labels[#loop_begn_labels - token.children[1].value + 1])
 		end,
 	}
 

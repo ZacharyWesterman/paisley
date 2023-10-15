@@ -253,6 +253,12 @@ local rules = {
 		keep = {2, 4},
 		text = 1,
 	},
+	{
+		match = {{tok.kwd_while}, {tok.command}, {tok.kwd_do}, {tok.kwd_end}},
+		id = tok.while_stmt,
+		keep = {2},
+		text = 1,
+	},
 	--Invalid while loops
 	{
 		match = {{tok.kwd_while}, {tok.command}},

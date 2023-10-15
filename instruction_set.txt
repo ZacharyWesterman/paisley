@@ -4,6 +4,10 @@ jumpifnil X
 	if the top value on the stack == nil, jump to the label/instruction X
 	DOES NOT CONSUME the stack
 
+jumpiffalse X
+	if the top value on the stack coerces to false (std.bool), jump to the label/instruction X
+	DOES NOT CONSUME the stack
+
 explode
 	COMSUME the array on the top of the stack and PUSH all the sub-values back onto the stack
 

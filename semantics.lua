@@ -367,6 +367,11 @@ function SemanticAnalyzer(tokens, file)
 		end
 	end)
 
+	--Tidy up WHILE loops (replace command with cmd contents)
+	recurse(root, {tok.while_stmt}, function(token)
+		token.children[1] = token.children[1].children[1]
+	end)
+
 	--[[
 		TYPE ANNOTATIONS
 	]]

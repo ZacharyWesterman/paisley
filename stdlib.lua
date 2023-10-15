@@ -40,7 +40,7 @@ std = {
 
 	--Cast data to a boolean
 	bool = function(data --[[any]])
-		return not data or data == 0 or data == '' or (type(data) == 'table' and #data == 0)
+		return not (not data or data == 0 or data == '' or (type(data) == 'table' and #data == 0))
 	end,
 
 	--Cast data to a number
