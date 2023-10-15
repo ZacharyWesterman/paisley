@@ -22,9 +22,9 @@ builtin_funcs = {
 	split = 2,
 	join = 2,
 	type = 1,
-	boolean = 1,
-	number = 1,
-	string = 1,
+	bool = 1,
+	num = 1,
+	str = 1,
 	array = -2,
 	floor = 1,
 	ceil = 1,
@@ -86,11 +86,11 @@ type_signatures = {
 		out = 'number',
 	},
 	sum = {
-		valid = {{'number'}},
+		valid = {{'number', 'array'}},
 		out = 'number',
 	},
 	mult = {
-		valid = {{'number'}},
+		valid = {{'number', 'array'}},
 		out = 'number',
 	},
 	pow = {

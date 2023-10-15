@@ -12,6 +12,8 @@ function generate_bytecode(root, file)
 		pop = 5,
 		run_command = 6,
 		push_cmd_result = 7,
+		push_index = 8,
+		pop_goto_index = 9,
 	}
 
 	local current_line = 0
@@ -33,7 +35,7 @@ function generate_bytecode(root, file)
 		end
 
 		--TEMP: print code as it's generated
-		if param1 == nil and instruction_id ~= bc.run_command and instruction_id ~= bc.push_cmd_result and instruction_id ~= bc.pop then param1 = 'null' else param1 = std.debug_str(param1) end
+		if param1 == nil and instruction_id ~= bc.run_command and instruction_id ~= bc.push_cmd_result and instruction_id ~= bc.pop and instruction_id ~= bc.push_index and instruction_id ~= bc.pop_goto_index then param1 = 'null' else param1 = std.debug_str(param1) end
 		if param2 then
 			print(current_line..': '..instr_text..' '..param1..' '..std.debug_str(param2))
 		else
@@ -117,13 +119,33 @@ function generate_bytecode(root, file)
 
 		--CODEGEN FOR ARRAY CONCATENATION
 		[tok.array_concat] = function(token, file)
-			emit(bc.push, {})
-
 			local i
+			local has_slices = false
 			for i = 1, #token.children do
+				local chid = token.children[i].id
+				if chid == tok.array_slice or chid == tok.lit_array then has_slices = true end
 				codegen_rules.recur_push(token.children[i])
 			end
-			emit(bc.call, 'make_array', #token.children)
+
+			if has_slices then
+				emit(bc.call, 'superimplode', #token.children)
+			else
+				emit(bc.call, 'implode', #token.children)
+			end
+		end,
+
+		--ARRAY SLICE
+		[tok.array_slice] = function(token, file)
+			codegen_rules.recur_push(token.children[1])
+			codegen_rules.recur_push(token.children[2])
+			emit(bc.call, 'arrayslice')
+		end,
+
+		--STRING CONCAT
+		[tok.concat] = function(token, file)
+			codegen_rules.recur_push(token.children[1])
+			codegen_rules.recur_push(token.children[2])
+			emit(bc.call, 'concat')
 		end,
 
 		--CODEGEN FOR VARIABLES
@@ -157,9 +179,9 @@ function generate_bytecode(root, file)
 				emit(bc.call, 'floor')
 			else
 				local op = {
-					['*'] = 'mult',
+					['*'] = 'mul',
 					['/'] = 'div',
-					['%'] = 'remd',
+					['%'] = 'rem',
 				}
 				codegen_rules.binary_op(token, op[token.text])
 			end
@@ -180,6 +202,19 @@ function generate_bytecode(root, file)
 			emit(bc.push, 0)
 			codegen_rules.recur_push(token.children[1])
 			emit(bc.call, 'sub')
+		end,
+
+		--LENGTH OPERATOR
+		[tok.length] = function(token, file)
+			codegen_rules.recur_push(token.children[1])
+			emit(bc.call, 'length')
+		end,
+
+		--INDEXING
+		[tok.index] = function(token, file)
+			codegen_rules.recur_push(token.children[1])
+			codegen_rules.recur_push(token.children[2])
+			emit(bc.call, 'index')
 		end,
 
 		--BOOLEAN OPERATIONS
@@ -359,6 +394,45 @@ function generate_bytecode(root, file)
 
 		--ELIF STATEMENT (Functionally identical to the IF statement)
 		[tok.elif_stmt] = function(token, file) codegen_rules[tok.if_stmt](token, file) end,
+
+		--GOTO STATEMENT
+		[tok.goto_stmt] = function(token, file)
+			emit(bc.call, 'jump', token.children[1].text)
+		end,
+
+		--GOSUB STATEMENT
+		[tok.gosub_stmt] = function(token, file)
+			emit(bc.push_index)
+			emit(bc.call, 'jump', token.children[1].text)
+		end,
+
+		--LABEL pseudo-statement
+		[tok.label] = function(token, file)
+			emit(bc.label, token.text:sub(1, #token.text - 1))
+		end,
+
+		--RETURN STATEMENT
+		[tok.kwd_return] = function(token, file)
+			emit(bc.pop_goto_index)
+		end,
+
+		--BUILT-IN FUNCTION CALLS
+		[tok.func_call] = function(token, file)
+			local i
+			local has_slices = false
+			for i = 1, #token.children do
+				local chid = token.children[i].id
+				if chid == tok.array_slice or chid == tok.lit_array then has_slices = true end
+				codegen_rules.recur_push(token.children[i])
+			end
+
+			if has_slices then
+				emit(bc.call, 'superimplode', #token.children)
+			else
+				emit(bc.call, 'implode', #token.children)
+			end
+			emit(bc.call, token.text)
+		end,
 	}
 
 	enter(root)

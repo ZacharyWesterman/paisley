@@ -3,14 +3,28 @@ func_operations = {
 	sum = function(values)
 		local total, i = 0, nil
 		for i = 1, #values do
-			total = total + values[i]
+			if type(values[i]) == 'table' then
+				local k
+				for k = 1, #values[i] do
+					total = total + values[i][k]
+				end
+			else
+				total = total + values[i]
+			end
 		end
 		return total
 	end,
 	mult = function(values)
 		local total, i = 1, nil
 		for i = 1, #values do
-			total = total * values[i]
+			if type(values[i]) == 'table' then
+				local k
+				for k = 1, #values[i] do
+					total = total * values[i][k]
+				end
+			else
+				total = total * values[i]
+			end
 		end
 		return total
 	end,
@@ -27,9 +41,9 @@ func_operations = {
 	clamp = function(min, max, value) return math.min(max, math.max(min, value)) end,
 	lerp = function(a, b, x) return a + x * (b - a) end,
 	pow = function(a, b) return math.pow(a, b) end,
-	boolean = function(data) return std.bool(data) end,
-	string = function(data) return std.str(data) end,
-	number = function(data) return std.num(data) end,
+	bool = function(data) return std.bool(data) end,
+	str = function(data) return std.str(data) end,
+	num = function(data) return std.num(data) end,
 	array = function(values) return values end, --Interesting short-cut due to compiler quirks!
 	worddiff = function(a, b, token, file) return lev(a, b) end,
 	irandom = function(a, b) end,

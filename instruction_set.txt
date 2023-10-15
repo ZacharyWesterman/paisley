@@ -12,7 +12,10 @@ explode
 	CONSUME the array on the top of the stack and PUSH all the sub-values back onto the stack
 
 implode
-	CONSUME N elements on the stack, merge them into an array, and PUSH the resulting number of elements onto the stack
+	CONSUME N elements on the stack, merge them into an array, and PUSH the resulting array of elements onto the stack
+
+superimplode
+	CONSUME N elements on the stack, explode each element that is an array, merge it all into an array, and PUSH the resulting array of elements onto the stack
 
 jump X
 	unconditionally jump to the label/instruction X
@@ -24,14 +27,27 @@ add
 sub
 	CONSUME top 2 elements (a, b) from the stack and PUSH (a - b)
 
-mult
+mul
 	CONSUME top 2 elements (a, b) from the stack and PUSH (a * b)
 
 div
 	CONSUME top 2 elements (a, b) from the stack and PUSH (a / b)
 
-remd
+rem
 	CONSUME top 2 elements (a, b) from the stack and PUSH (a mod b)
+
+length
+	CONSUME top element from the stack and PUSH its array/string length (whichever is applicable)
+
+index
+	CONSUME top 2 elements (a, b) from the stack and PUSH the indexed value (a[b])
+	If (b) is an array, result will be an array of elements from (a).
+
+arrayslice
+	CONSUME top 2 elements (a, b) from the stack and generate a list of numbers in the range (a -> b, inclusive), then PUSH that list to the stack.
+
+concat
+	CONSUME top 2 elements (a, b) from the stack, string-concatenate the values, and PUSH to the stack
 
 booland, boolor, boolxor, inarray, strlike, equal, notequal, greater, greaterequal, less, lessequal
 	CONSUME top 2 elements (a, b) from the stack and PUSH the result of the appropriate boolean operation
@@ -39,6 +55,8 @@ booland, boolor, boolxor, inarray, strlike, equal, notequal, greater, greaterequ
 boolnot, varexists
 	CONSUME the top element from the stack and PUSH the result of the appropriate boolean operation
 
+irandom, frandom, worddiff, dist, sin, cos, tan, asin, acos, atan, atan2, sqrt, sum, mult, pow, min, max, split, join, type, bool, num, str, array floor, ceil, round, abs
+	CONSUME the top element from the stack, run the respective function, and PUSH the result to the stack.
 
 OPCODES:
 call
@@ -67,3 +85,9 @@ run_command
 
 push_cmd_result
 	PUSH the result of the last executed command onto the stack. Will push null if no command was executed.
+
+push_index
+	PUSH the current instruction index onto the subroutine stack
+
+pop_goto_index
+	CONSUME the top element from the stack and go to the specified index. This will generate a runtime error if it is used when there are no items in the subroutine stack.
