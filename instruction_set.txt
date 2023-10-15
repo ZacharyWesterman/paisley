@@ -30,3 +30,37 @@ div
 remd
 	CONSUME top 2 elements (a, b) from the stack and PUSH (a mod b)
 
+booland, boolor, boolxor, inarray, strlike, equal, notequal, greater, greaterequal, less, lessequal
+	CONSUME top 2 elements (a, b) from the stack and PUSH the result of the appropriate boolean operation
+
+boolnot, varexists
+	CONSUME the top element from the stack and PUSH the result of the appropriate boolean operation
+
+
+OPCODES:
+call
+	run the given COMMAND
+	(only consumes if the command specifies it does!)
+
+label
+	(This is an intermediate id to allow jumping between sections in the program: it does not exist in fully compiled bytecode)
+	DOES NOT CONSUME, DOES NOT PUSH, DOES NOTHING
+
+get
+	read the value of the given variable (or null if it doesn't exist) and PUSH that value to the stack
+	DOES NOT CONSUME
+
+set
+	CONSUME the first element from the stack and set as the given variable's value
+
+push
+	PUSH the given (constant) value onto the stack
+
+pop
+	CONSUME N VALUES from the stack (given amount must be an INT)
+
+run_command
+	CONSUME top element from the stack (MUST BE A STRING ARRAY) and executes the command. Note program execution will pause until the command returns.
+
+push_cmd_result
+	PUSH the result of the last executed command onto the stack. Will push null if no command was executed.

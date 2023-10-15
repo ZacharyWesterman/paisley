@@ -4,16 +4,14 @@ function generate_bytecode(root, file)
 
 	--List of possible bytecode instructions
 	local bc = {
-		read = 0,
-		write = 1,
-		call = 2,
-		label = 3,
-		jump = 4,
-		set = 5,
-		get = 6,
-		run_command = 7,
-		push = 8,
-		pop = 9,
+		call = 0,
+		label = 1,
+		set = 2,
+		get = 3,
+		push = 4,
+		pop = 5,
+		run_command = 6,
+		push_cmd_result = 7,
 	}
 
 	local current_line = 0
@@ -35,7 +33,7 @@ function generate_bytecode(root, file)
 		end
 
 		--TEMP: print code as it's generated
-		if param1 == nil and instruction_id ~= bc.run_command then param1 = 'null' else param1 = std.debug_str(param1) end
+		if param1 == nil and instruction_id ~= bc.run_command and instruction_id ~= bc.push_cmd_result then param1 = 'null' else param1 = std.debug_str(param1) end
 		if param2 then
 			print(current_line..': '..instr_text..' '..param1..' '..std.debug_str(param2))
 		else
@@ -130,7 +128,7 @@ function generate_bytecode(root, file)
 
 		--CODEGEN FOR VARIABLES
 		[tok.variable] = function(token, file)
-			emit(bc.read, token.text)
+			emit(bc.get, token.text)
 		end,
 
 		--DELETE STATEMENT
@@ -182,6 +180,39 @@ function generate_bytecode(root, file)
 			emit(bc.push, 0)
 			codegen_rules.recur_push(token.children[1])
 			emit(bc.call, 'sub')
+		end,
+
+		--BOOLEAN OPERATIONS
+		[tok.boolean] = function(token, file)
+			local op = {
+				['and'] = 'booland',
+				['or'] = 'boolor',
+				['xor'] = 'boolxor',
+				['not'] = 'boolnot',
+				['in'] = 'inarray',
+				['like'] = 'strlike',
+				['exists'] = 'varexists',
+			}
+
+			if #token.children > 1 then
+				codegen_rules.binary_op(token, op[token.text])
+			else
+				codegen_rules.recur_push(token.children[1])
+				emit(bc.call, op[token.text])
+			end
+		end,
+
+		--COMPARISON OPERATIONS (also boolean technically)
+		[tok.comparison] = function(token, file)
+			local op = {
+				['=='] = 'equal',
+				['!='] = 'notequal',
+				['>'] = 'greater',
+				['>='] = 'greaterequal',
+				['<'] = 'less',
+				['<='] = 'lessequal',
+			}
+			codegen_rules.binary_op(token, op[token.text])
 		end,
 
 		--FOR LOOPS
@@ -275,6 +306,12 @@ function generate_bytecode(root, file)
 			end
 
 			emit(bc.call, 'jump', loop_begn_labels[#loop_begn_labels - token.children[1].value + 1])
+		end,
+
+		--INLINE COMMAND EVALUATION
+		[tok.inline_command] = function(token, file)
+			enter(token.children[1])
+			emit(bc.push_cmd_result)
 		end,
 	}
 
