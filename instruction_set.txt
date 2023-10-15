@@ -1,0 +1,28 @@
+COMMANDS:
+
+jumpifnil X
+	if the top value on the stack == nil, jump to the label/instruction X
+	DOES NOT CONSUME the stack
+
+explode
+	COMSUME the array on the top of the stack and PUSH all the sub-values back onto the stack
+
+jump X
+	unconditionally jump to the label/instruction X
+	DOES NOT CONSUME
+
+add
+	CONSUME top 2 elements (a, b) from the stack and PUSH (a + b)
+
+sub
+	CONSUME top 2 elements (a, b) from the stack and PUSH (a - b)
+
+mult
+	CONSUME top 2 elements (a, b) from the stack and PUSH (a * b)
+
+div
+	CONSUME top 2 elements (a, b) from the stack and PUSH (a / b)
+
+remd
+	CONSUME top 2 elements (a, b) from the stack and PUSH (a mod b)
+

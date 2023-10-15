@@ -10,9 +10,10 @@ function generate_bytecode(root, file)
 		label = 3,
 		jump = 4,
 		set = 5,
-		run_command = 6,
-		push = 7,
-		pop = 8,
+		get = 6,
+		run_command = 7,
+		push = 8,
+		pop = 9,
 	}
 
 	local current_line = 0
@@ -54,6 +55,16 @@ function generate_bytecode(root, file)
 	end
 
 	local function is_const(token) return token.value ~= nil or token.id == tok.lit_null end
+
+	--Generate unique label ids (ones that can't clash with user-defined labels)
+	local label_counter = 0
+	local function label_id()
+		label_counter = label_counter + 1
+		return '?'..label_counter
+	end
+
+	local loop_term_labels = {}
+	local loop_begn_labels = {}
 
 	--[[
 		CODE GENERATION RULES
@@ -171,6 +182,52 @@ function generate_bytecode(root, file)
 			emit(bc.push, 0)
 			codegen_rules.recur_push(token.children[1])
 			emit(bc.call, 'sub')
+		end,
+
+		--FOR LOOPS
+		[tok.for_stmt] = function(token, file)
+			local loop_beg_label = label_id()
+			local loop_end_label = label_id()
+
+			--Loop setup
+			emit(bc.push, nil)
+			codegen_rules.recur_push(token.children[2])
+
+			if token.children[3] == nil then
+				emit(bc.pop)
+				return
+			end
+
+			emit(bc.call, 'explode')
+			emit(bc.label, loop_beg_label)
+			table.insert(loop_term_labels, loop_end_label)
+			table.insert(loop_begn_labels, loop_beg_label)
+
+			--Run loop
+			emit(bc.call, 'jumpifnil', loop_end_label)
+			emit(bc.set, token.children[1].text)
+
+			enter(token.children[3])
+
+			--End of loop
+			emit(bc.call, 'jump', loop_beg_label)
+			emit(bc.label, loop_end_label)
+			table.remove(loop_term_labels)
+			table.remove(loop_begn_labels)
+		end,
+
+		[tok.break_stmt] = function(token, file)
+			if #loop_term_labels == 0 then
+				parse_error(token.line, token.col, 'Break statements are meaningless outside of a loop', file)
+			end
+
+			if #loop_term_labels < token.children[1].value then
+				local word = 'loop'
+				if #loop_term_labels ~= 1 then word = 'loops' end
+				parse_error(token.line, token.col, 'Unable to break out of '..token.children[1].value..' loops, only '..#loop_term_labels..' '..word..' found')
+			end
+
+			emit(bc.call, 'jump', loop_term_labels[#loop_term_labels - token.children[1].value + 1])
 		end,
 	}
 

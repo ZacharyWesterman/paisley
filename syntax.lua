@@ -226,21 +226,21 @@ local rules = {
 
 	--IF block
 	{
-		match = {{tok.kwd_if}, {tok.command}, {tok.kwd_then}, {tok.command, tok.program}, {tok.kwd_end, tok.elif_stmt, tok.else_stmt}},
+		match = {{tok.kwd_if}, {tok.command}, {tok.kwd_then}, {tok.command, tok.program, tok.statement}, {tok.kwd_end, tok.elif_stmt, tok.else_stmt}},
 		id = tok.if_stmt,
 		keep = {2, 4, 5},
 		text = 1,
 	},
 	--ELSE block
 	{
-		match = {{tok.kwd_else}, {tok.command, tok.program}, {tok.kwd_end}},
+		match = {{tok.kwd_else}, {tok.command, tok.program, tok.statement}, {tok.kwd_end}},
 		id = tok.else_stmt,
 		keep = {2, 4, 6},
 		text = 1,
 	},
 	--ELIF block
 	{
-		match = {{tok.kwd_elif}, {tok.command}, {tok.kwd_then}, {tok.command, tok.program}, {tok.kwd_end, tok.elif_stmt, tok.else_stmt}},
+		match = {{tok.kwd_elif}, {tok.command}, {tok.kwd_then}, {tok.command, tok.program, tok.statement}, {tok.kwd_end, tok.elif_stmt, tok.else_stmt}},
 		id = tok.elif_stmt,
 		keep = {2, 4},
 		text = 1,
@@ -248,7 +248,7 @@ local rules = {
 
 	--WHILE loop
 	{
-		match = {{tok.kwd_while}, {tok.command}, {tok.kwd_do}, {tok.command, tok.program}, {tok.kwd_end}},
+		match = {{tok.kwd_while}, {tok.command}, {tok.kwd_do}, {tok.command, tok.program, tok.statement}, {tok.kwd_end}},
 		id = tok.while_stmt,
 		keep = {2, 4},
 		text = 1,
@@ -266,7 +266,7 @@ local rules = {
 
 	--FOR loop
 	{
-		match = {{tok.kwd_for}, {tok.text}, {tok.kwd_in}, {tok.command, tok.comparison}, {tok.kwd_do}, {tok.command, tok.program}, {tok.kwd_end}},
+		match = {{tok.kwd_for}, {tok.text}, {tok.kwd_in}, {tok.command, tok.comparison}, {tok.kwd_do}, {tok.command, tok.program, tok.statement}, {tok.kwd_end}},
 		id = tok.for_stmt,
 		keep = {2, 4, 6},
 		text = 1,
@@ -324,6 +324,36 @@ local rules = {
 		text = 1,
 	},
 
+	--BREAK statement (can break out of multiple loops)
+	{
+		match = {{tok.kwd_break}, {tok.command}},
+		id = tok.break_stmt,
+		keep = {2},
+		text = 1,
+	},
+	{
+		match = {{tok.kwd_break}},
+		id = tok.break_stmt,
+		keep = {},
+		text = 1,
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
+	},
+
+	--CONTINUE statement (can continue any parent loop)
+	{
+		match = {{tok.kwd_continue}, {tok.command}},
+		id = tok.continue_stmt,
+		keep = {2},
+		text = 1,
+	},
+	{
+		match = {{tok.kwd_continue}},
+		id = tok.continue_stmt,
+		keep = {},
+		text = 1,
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
+	},
+
 	--Variable assignment
 	{
 		match = {{tok.kwd_let}, {tok.var_assign}, {tok.op_assign}, {tok.command, tok.expression, tok.string}},
@@ -352,7 +382,7 @@ local rules = {
 
 	--Statements
 	{
-		match = {{tok.label, tok.if_stmt, tok.while_stmt, tok.for_stmt, tok.let_stmt, tok.delete_stmt, tok.goto_stmt, tok.gosub_stmt, tok.kwd_return, tok.kwd_break, tok.kwd_continue, tok.kwd_stop}},
+		match = {{tok.label, tok.if_stmt, tok.while_stmt, tok.for_stmt, tok.let_stmt, tok.delete_stmt, tok.goto_stmt, tok.gosub_stmt, tok.kwd_return, tok.continue_stmt, tok.kwd_stop, tok.break_stmt}},
 		id = tok.statement,
 		meta = true,
 	},
@@ -599,7 +629,7 @@ function SyntaxParser(tokens, file)
 		-- end
 		-- print()
 
-		if not did_reduce or loops_since_reduction > 50 then
+		if not did_reduce or loops_since_reduction > 500 then
 			if first_failure == nil then
 				parse_error(1, 1, 'COMPILER BUG: Max iterations exceeded but no syntax error was found!', file)
 			end

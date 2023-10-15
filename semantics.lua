@@ -542,5 +542,26 @@ function SemanticAnalyzer(tokens, file)
 		recurse(root, {tok.for_stmt, tok.let_stmt}, variable_assignment, variable_unassignment)
 	end
 
+
+	--BREAK and CONTINUE statements are only allowed to have up to a single CONSTANT INTEGER operand
+	recurse(root, {tok.break_stmt, tok.continue_stmt}, function(token)
+		if not token.children or #token.children == 0 then
+			token.children = {{
+				id = tok.lit_number,
+				text = '1',
+				value = 1,
+				line = token.line,
+				col = token.col,
+			}}
+			return
+		end
+
+		token.children = token.children[1].children
+		local val = token.children[1].value
+		if #token.children > 1 or math.type(val) ~= 'integer' or val < 1 then
+			parse_error(token.line, token.col, 'Only a constant positive integer is allowed as a parameter for "'..token.text..'"', file)
+		end
+	end)
+
 	return root
 end
