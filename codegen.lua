@@ -33,7 +33,7 @@ function generate_bytecode(root, file)
 		end
 
 		--TEMP: print code as it's generated
-		if param1 == nil and instruction_id ~= bc.run_command and instruction_id ~= bc.push_cmd_result then param1 = 'null' else param1 = std.debug_str(param1) end
+		if param1 == nil and instruction_id ~= bc.run_command and instruction_id ~= bc.push_cmd_result and instruction_id ~= bc.pop then param1 = 'null' else param1 = std.debug_str(param1) end
 		if param2 then
 			print(current_line..': '..instr_text..' '..param1..' '..std.debug_str(param2))
 		else
@@ -104,7 +104,7 @@ function generate_bytecode(root, file)
 				for i = 1, #token.children do
 					codegen_rules.recur_push(token.children[i])
 				end
-				emit(bc.call, 'make_array', #token.children)
+				emit(bc.call, 'implode', #token.children)
 			end
 			emit(bc.run_command)
 		end,
@@ -266,7 +266,7 @@ function generate_bytecode(root, file)
 
 			--Run loop
 			emit(bc.call, 'jumpiffalse', loop_end_label)
-			emit(bc.pop, 1)
+			emit(bc.pop)
 
 			if #token.children >= 2 then
 				enter(token.children[2])
@@ -275,7 +275,7 @@ function generate_bytecode(root, file)
 			--End of loop
 			emit(bc.call, 'jump', loop_beg_label)
 			emit(bc.label, loop_end_label)
-			emit(bc.pop, 1)
+			emit(bc.pop)
 		end,
 
 		--BREAK STATEMENT
@@ -313,6 +313,52 @@ function generate_bytecode(root, file)
 			enter(token.children[1])
 			emit(bc.push_cmd_result)
 		end,
+
+		--IF STATEMENT
+		[tok.if_stmt] = function(token, file)
+			local const = is_const(token.children[1])
+			local val = std.bool(token.children[1].value)
+			local endif_label
+
+			--Only generate the branch if it's possible for it to execute.
+			if not const or val then
+				local else_label
+
+				--Don't generate a label if the "if" part will always execute
+				if not const then
+					else_label = label_id()
+					endif_label = label_id()
+					enter(token.children[1])
+					emit(bc.call, 'jumpiffalse', else_label)
+					emit(bc.pop)
+				end
+
+				--IF statement body
+				enter(token.children[2])
+
+				if not const then
+					emit(bc.call, 'jump', endif_label) --Skip the "else" section if the "if" section executed
+					emit(bc.label, else_label)
+					emit(bc.pop)
+				end
+			end
+
+			--Generate the "else" part of the if statement
+			--Only if it's possible for the "if" part to not execute.
+			if #token.children > 2 and token.children[3].id ~= tok.kwd_end and not (const and val) then
+				local else_block = token.children[3]
+				if else_block.id == tok.else_stmt then
+					enter(else_block.children[1])
+				else
+					enter(else_block)
+				end
+
+				if not const then emit(bc.label, endif_label) end
+			end
+		end,
+
+		--ELIF STATEMENT (Functionally identical to the IF statement)
+		[tok.elif_stmt] = function(token, file) codegen_rules[tok.if_stmt](token, file) end,
 	}
 
 	enter(root)

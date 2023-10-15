@@ -620,7 +620,7 @@ function SyntaxParser(tokens, file)
 				parse_error(1, 1, 'Program contains no actionable text', file)
 			end
 
-			if id ~= tok.command and id < tok.program then
+			if (id ~= tok.command and id < tok.program) or id == tok.else_stmt or id == tok.elif_stmt then
 				parse_error(1, 1, 'Unexpected token "'..new_tokens[1].text..'"', file)
 			end
 
@@ -635,7 +635,7 @@ function SyntaxParser(tokens, file)
 		-- end
 		-- print()
 
-		if not did_reduce or loops_since_reduction > 500 then
+		if not did_reduce or loops_since_reduction > 50 then
 			if first_failure == nil then
 				parse_error(1, 1, 'COMPILER BUG: Max iterations exceeded but no syntax error was found!', file)
 			end

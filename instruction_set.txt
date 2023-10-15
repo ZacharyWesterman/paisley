@@ -9,7 +9,10 @@ jumpiffalse X
 	DOES NOT CONSUME the stack
 
 explode
-	COMSUME the array on the top of the stack and PUSH all the sub-values back onto the stack
+	CONSUME the array on the top of the stack and PUSH all the sub-values back onto the stack
+
+implode
+	CONSUME N elements on the stack, merge them into an array, and PUSH the resulting number of elements onto the stack
 
 jump X
 	unconditionally jump to the label/instruction X
@@ -57,7 +60,7 @@ push
 	PUSH the given (constant) value onto the stack
 
 pop
-	CONSUME N VALUES from the stack (given amount must be an INT)
+	CONSUME the top value from the stack and discard it
 
 run_command
 	CONSUME top element from the stack (MUST BE A STRING ARRAY) and executes the command. Note program execution will pause until the command returns.

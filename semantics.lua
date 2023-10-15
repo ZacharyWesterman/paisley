@@ -367,8 +367,11 @@ function SemanticAnalyzer(tokens, file)
 		end
 	end)
 
-	--Tidy up WHILE loops (replace command with cmd contents)
-	recurse(root, {tok.while_stmt}, function(token)
+	--Tidy up WHILE loops and IF/ELIF statements (replace command with cmd contents)
+	recurse(root, {tok.while_stmt, tok.if_stmt, tok.elif_stmt}, function(token)
+		if #token.children[1].children > 1 then
+			parse_error(token.line, token.col, 'Too many parameters passed to "'..token.text..'" statement', file)
+		end
 		token.children[1] = token.children[1].children[1]
 	end)
 
