@@ -395,20 +395,23 @@ function generate_bytecode(root, file)
 		--ELIF STATEMENT (Functionally identical to the IF statement)
 		[tok.elif_stmt] = function(token, file) codegen_rules[tok.if_stmt](token, file) end,
 
-		--GOTO STATEMENT
-		[tok.goto_stmt] = function(token, file)
-			emit(bc.call, 'jump', token.children[1].text)
-		end,
-
 		--GOSUB STATEMENT
 		[tok.gosub_stmt] = function(token, file)
-			emit(bc.push_index)
-			emit(bc.call, 'jump', token.children[1].text)
+			if not token.ignore then
+				emit(bc.push_index)
+				emit(bc.call, 'jump', token.children[1].text)
+			end
 		end,
 
-		--LABEL pseudo-statement
-		[tok.label] = function(token, file)
-			emit(bc.label, token.text:sub(1, #token.text - 1))
+		--SUBROUTINES. These are basically just a label and a return statement
+		[tok.subroutine] = function(token, file)
+			--Don't generate code for the subroutine if it contains nothing.
+			--If it contains nothing then references to it have already been removed.
+			if not token.ignore then
+				emit(bc.label, token.text:sub(1, #token.text - 1))
+				enter(token.children[1])
+				emit(bc.pop_goto_index)
+			end
 		end,
 
 		--RETURN STATEMENT

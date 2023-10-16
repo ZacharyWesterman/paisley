@@ -249,29 +249,37 @@ function SemanticAnalyzer(tokens, file)
 		token.children = kids
 	end)
 
-	--Make a list of all labels
+	--Make a list of all subroutines
 	local labels = {}
-	recurse(root, {tok.label}, function(token)
+	recurse(root, {tok.subroutine}, function(token)
 		local label = token.text:sub(1, #token.text - 1)
 		local prev = labels[label]
 		if prev ~= nil then
 			-- Don't allow tokens to be redeclared
-			parse_error(token.line, token.col, 'Redeclaration of label "'..label..'" (previously declared on line '..prev.line..', col '..prev.col..')', file)
+			parse_error(token.line, token.col, 'Redeclaration of subroutine "'..label..'" (previously declared on line '..prev.line..', col '..prev.col..')', file)
 		end
+
+		if not token.children or #token.children == 0 then
+			token.ignore = true
+		end
+
 		labels[label] = token
 	end)
 
-	--Check label references
-	recurse(root, {tok.goto_stmt, tok.gosub_stmt}, function(token)
+	--Check subroutine references
+	recurse(root, {tok.gosub_stmt}, function(token)
 		local ch = token.children[1]
 		if #ch.children > 1 then
-			parse_error(token.line, token.col, 'More than one label given to '..token.text, file)
+			parse_error(token.line, token.col, 'More than one subroutine given to '..token.text, file)
 		end
 
 		local label = ch.children[1].text
 		if labels[label] == nil then
-			parse_error(token.line, token.col, 'Label "'..label..'" not declared anywhere', file)
+			parse_error(token.line, token.col, 'Subroutine "'..label..'" not declared anywhere', file)
 		end
+
+		token.ignore = labels[label].ignore
+		token.children = ch.children
 	end)
 
 	--Check function calls

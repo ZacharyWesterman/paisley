@@ -216,7 +216,7 @@ local rules = {
 		match = {{tok.text, tok.expression, tok.inline_command, tok.string, tok.comparison}},
 		id = tok.command,
 		not_after_range = {tok.expr_open, tok.command}, --Command cannot come after anything in this range
-		not_after = {tok.kwd_for},
+		not_after = {tok.kwd_for, tok.kwd_subroutine},
 		text = 'cmd',
 	},
 	{
@@ -313,14 +313,30 @@ local rules = {
 		text = 1,
 	},
 
-	--GOTO statement
+	--SUBROUTINE statement
 	{
-		match = {{tok.kwd_goto}, {tok.command}},
-		id = tok.goto_stmt,
-		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
-		keep = {2},
-		text = 1,
+		match = {{tok.kwd_subroutine}, {tok.label}, {tok.command, tok.program, tok.statement}, {tok.kwd_end}},
+		id = tok.subroutine,
+		keep = {3},
+		text = 2,
 	},
+	{
+		match = {{tok.kwd_subroutine}, {tok.label}, {tok.kwd_end}},
+		id = tok.subroutine,
+		keep = {},
+		text = 2,
+	},
+	--Invalid subroutine
+	{
+		match = {{tok.kwd_subroutine}},
+		id = tok.subroutine,
+		not_before = {tok.label},
+		text = 1,
+		onmatch = function(token, file)
+			parse_error(token.line, token.col, 'Incomplete subroutine declaration (expected "subroutine LABEL: ... end")', file)
+		end,
+	},
+
 	--GOSUB statement
 	{
 		match = {{tok.kwd_gosub}, {tok.command}},
@@ -388,7 +404,7 @@ local rules = {
 
 	--Statements
 	{
-		match = {{tok.label, tok.if_stmt, tok.while_stmt, tok.for_stmt, tok.let_stmt, tok.delete_stmt, tok.goto_stmt, tok.gosub_stmt, tok.kwd_return, tok.continue_stmt, tok.kwd_stop, tok.break_stmt}},
+		match = {{tok.if_stmt, tok.while_stmt, tok.for_stmt, tok.let_stmt, tok.delete_stmt, tok.subroutine, tok.gosub_stmt, tok.kwd_return, tok.continue_stmt, tok.kwd_stop, tok.break_stmt}},
 		id = tok.statement,
 		meta = true,
 	},
