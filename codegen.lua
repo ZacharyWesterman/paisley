@@ -493,7 +493,7 @@ function generate_bytecode(root, file)
 	for i = 1, #instructions do
 		local instr = instructions[i]
 		if instr[1] == bc.call and (instr[2] == 'jump' or instr[2] == 'jumpifnil' or instr[3] == 'jumpiffalse') then
-			instr[3] = label_indexes[instr[3]]
+			instr[3] = label_indexes[instr[3]] - 1
 		end
 
 		if instr[1] ~= bc.label then
