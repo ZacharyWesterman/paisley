@@ -1,24 +1,59 @@
+--List of possible bytecode instructions
+local bc = {
+	call = 0,
+	label = 1,
+	set = 2,
+	get = 3,
+	push = 4,
+	pop = 5,
+	run_command = 6,
+	push_cmd_result = 7,
+	push_index = 8,
+	pop_goto_index = 9,
+}
+
+function print_bytecode(instructions)
+	local i
+	for i = 1, #instructions do
+		local instr = instructions[i]
+		local instr_text
+		local j, k
+		for k, j in pairs(bc) do
+			if j == instr[1] then
+				instr_text = k
+				break
+			end
+		end
+
+		if not instr_text then
+			parse_error(0, 0, 'COMPILER BUG: Unknown bytecode instruction with id '..instr[1]..'!', file)
+		end
+
+		--TEMP: print code as it's generated
+		if instr[2] == nil and instr[1] ~= bc.run_command and instr[1] ~= bc.push_cmd_result and instr[1] ~= bc.pop and instr[1] ~= bc.push_index and instr[1] ~= bc.pop_goto_index then instr[2] = 'null' else instr[2] = std.debug_str(instr[2]) end
+		if instr[3] then
+			print(i..' @ line '..instr[4]..': '..instr_text..' '..instr[2]..' '..std.debug_str(instr[3]))
+		else
+			print(i..' @ line '..instr[4]..': '..instr_text..' '..instr[2])
+		end
+	end
+end
+
 function generate_bytecode(root, file)
 	local instructions = {}
 	local codegen_rules
 
-	--List of possible bytecode instructions
-	local bc = {
-		call = 0,
-		label = 1,
-		set = 2,
-		get = 3,
-		push = 4,
-		pop = 5,
-		run_command = 6,
-		push_cmd_result = 7,
-		push_index = 8,
-		pop_goto_index = 9,
-	}
-
 	local current_line = 0
+	local label_indexes = {}
+	local running_index = 1
 
 	local function emit(instruction_id, param1, param2)
+		if instruction_id == bc.label then
+			label_indexes[param1] = running_index
+		else
+			running_index = running_index + 1
+		end
+
 		table.insert(instructions, {instruction_id, param1, param2, current_line})
 
 		local instr_text
@@ -35,12 +70,12 @@ function generate_bytecode(root, file)
 		end
 
 		--TEMP: print code as it's generated
-		if param1 == nil and instruction_id ~= bc.run_command and instruction_id ~= bc.push_cmd_result and instruction_id ~= bc.pop and instruction_id ~= bc.push_index and instruction_id ~= bc.pop_goto_index then param1 = 'null' else param1 = std.debug_str(param1) end
-		if param2 then
-			print(current_line..': '..instr_text..' '..param1..' '..std.debug_str(param2))
-		else
-			print(current_line..': '..instr_text..' '..param1)
-		end
+		-- if param1 == nil and instruction_id ~= bc.run_command and instruction_id ~= bc.push_cmd_result and instruction_id ~= bc.pop and instruction_id ~= bc.push_index and instruction_id ~= bc.pop_goto_index then param1 = 'null' else param1 = std.debug_str(param1) end
+		-- if param2 then
+		-- 	print(current_line..': '..instr_text..' '..param1..' '..std.debug_str(param2))
+		-- else
+		-- 	print(current_line..': '..instr_text..' '..param1)
+		-- end
 
 		return #instructions
 	end
@@ -452,5 +487,19 @@ function generate_bytecode(root, file)
 	enter(root)
 	emit(bc.label, EOF_LABEL)
 
-	return instructions
+	--CLEAN OUT LABEL REFERENCES
+	local i
+	local result = {}
+	for i = 1, #instructions do
+		local instr = instructions[i]
+		if instr[1] == bc.call and (instr[2] == 'jump' or instr[2] == 'jumpifnil' or instr[3] == 'jumpiffalse') then
+			instr[3] = label_indexes[instr[3]]
+		end
+
+		if instr[1] ~= bc.label then
+			table.insert(result, instr)
+		end
+	end
+
+	return result
 end

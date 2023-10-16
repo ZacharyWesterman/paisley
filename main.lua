@@ -29,3 +29,5 @@ print('Generating bytecode')
 print('--------------------------')
 --Generate instruction representation
 local bytecode = generate_bytecode(root)
+
+print_bytecode(bytecode)
