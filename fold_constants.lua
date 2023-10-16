@@ -52,10 +52,6 @@ func_operations = {
 	join = function(a, b) return std.join(a, b) end,
 	type = function(a) return std.type(a) end,
 	dist = function(a, b, token, file)
-		if type(a) ~= 'number' and type(b) ~= 'number' and type(a) ~= 'table' and type(b) ~= 'table' then
-			parse_error(token.line, token.col, 'Function "dist(a,b)" expected (number, number) or (array, array) but got ('..std.type(a)..', '..std.type(b)..')', file)
-		end
-
 		if type(a) ~= type(b) then
 			parse_error(token.line, token.col, 'Function "dist(a,b)" expected (number, number) or (array, array) but got ('..std.type(a)..', '..std.type(b)..')', file)
 		end
@@ -74,6 +70,10 @@ func_operations = {
 			total = total + p*p
 		end
 		return math.sqrt(total)
+	end,
+	append = function(a, b)
+		table.insert(a, b)
+		return a
 	end,
 }
 

@@ -1,4 +1,6 @@
 require "stdlib"
+require "json"
+
 require "lex"
 require "syntax"
 require "closest_word"
@@ -22,12 +24,13 @@ while parser.fold() do end --Iterate on the syntax tree. Follows iterator-like b
 local root = SemanticAnalyzer(parser.get())
 
 --Print the AST
-print_tokens_recursive(root)
+-- print_tokens_recursive(root)
 
-print('--------------------------')
-print('Generating bytecode')
-print('--------------------------')
+-- print('--------------------------')
+-- print('Generating bytecode')
+-- print('--------------------------')
 --Generate instruction representation
 local bytecode = generate_bytecode(root)
 
-print_bytecode(bytecode)
+-- print_bytecode(bytecode)
+print(json.stringify(bytecode))

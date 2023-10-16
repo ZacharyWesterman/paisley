@@ -12,6 +12,66 @@ local bc = {
 	pop_goto_index = 9,
 }
 
+local call_codes = {
+	jump = 0,
+	jumpifnil = 1,
+	jumpiffalse = 2,
+	explode = 3,
+	implode = 4,
+	superimplode = 5,
+	add = 6,
+	sub = 7,
+	mul = 8,
+	div = 9,
+	rem = 10,
+	length = 11,
+	index = 12,
+	arrayslice = 13,
+	concat = 14,
+	booland = 15,
+	boolor = 16,
+	boolxor = 17,
+	inarray = 18,
+	strlike = 19,
+	equal = 20,
+	notequal = 21,
+	greater = 22,
+	greaterequal = 23,
+	less = 24,
+	lessequal = 25,
+	boolnot = 26,
+	varexists = 27,
+	irandom = 28,
+	frandom = 29,
+	worddiff = 30,
+	dist = 31,
+	sin = 32,
+	cos = 33,
+	tan = 34,
+	asin = 35,
+	acos = 36,
+	atan = 37,
+	atan2 = 38,
+	sqrt = 39,
+	sum = 40,
+	mult = 41,
+	pow = 42,
+	min = 43,
+	max = 44,
+	split = 45,
+	join = 46,
+	type = 47,
+	bool = 48,
+	num = 49,
+	str = 50,
+	array = 51,
+	floor = 52,
+	ceil = 53,
+	round = 54,
+	abs = 55,
+	append = 56,
+}
+
 function print_bytecode(instructions)
 	local i
 	for i = 1, #instructions do
@@ -30,11 +90,11 @@ function print_bytecode(instructions)
 		end
 
 		--TEMP: print code as it's generated
-		if instr[2] == nil and instr[1] ~= bc.run_command and instr[1] ~= bc.push_cmd_result and instr[1] ~= bc.pop and instr[1] ~= bc.push_index and instr[1] ~= bc.pop_goto_index then instr[2] = 'null' else instr[2] = std.debug_str(instr[2]) end
-		if instr[3] then
-			print(i..' @ line '..instr[4]..': '..instr_text..' '..instr[2]..' '..std.debug_str(instr[3]))
+		if instr[3] == nil and instr[1] ~= bc.run_command and instr[1] ~= bc.push_cmd_result and instr[1] ~= bc.pop and instr[1] ~= bc.push_index and instr[1] ~= bc.pop_goto_index then instr[3] = 'null' else instr[3] = std.debug_str(instr[3]) end
+		if instr[4] then
+			print(i..' @ line '..instr[2]..': '..instr_text..' '..instr[3]..' '..std.debug_str(instr[4]))
 		else
-			print(i..' @ line '..instr[4]..': '..instr_text..' '..instr[2])
+			print(i..' @ line '..instr[2]..': '..instr_text..' '..instr[3])
 		end
 	end
 end
@@ -54,7 +114,14 @@ function generate_bytecode(root, file)
 			running_index = running_index + 1
 		end
 
-		table.insert(instructions, {instruction_id, param1, param2, current_line})
+		if instruction_id == bc.call then
+			if not call_codes[param1] then
+				parse_error(current_line, 0, 'COMPILER BUG: No call code for function "'..param1..'"!', file)
+			end
+			param1 = call_codes[param1]
+		end
+
+		table.insert(instructions, {instruction_id, current_line, param1, param2})
 
 		local instr_text
 		local i, k
@@ -66,7 +133,7 @@ function generate_bytecode(root, file)
 		end
 
 		if not instr_text then
-			parse_error(0, 0, 'COMPILER BUG: Unknown bytecode instruction with id '..instruction_id..'!', file)
+			parse_error(current_line, 0, 'COMPILER BUG: Unknown bytecode instruction with id '..instruction_id..'!', file)
 		end
 
 		--TEMP: print code as it's generated
@@ -492,8 +559,8 @@ function generate_bytecode(root, file)
 	local result = {}
 	for i = 1, #instructions do
 		local instr = instructions[i]
-		if instr[1] == bc.call and (instr[2] == 'jump' or instr[2] == 'jumpifnil' or instr[3] == 'jumpiffalse') then
-			instr[3] = label_indexes[instr[3]] - 1
+		if instr[1] == bc.call and (instr[3] == call_codes.jump or instr[3] == call_codes.jumpifnil or instr[3] == call_codes.jumpiffalse) then
+			instr[4] = label_indexes[instr[4]] - 1
 		end
 
 		if instr[1] ~= bc.label then

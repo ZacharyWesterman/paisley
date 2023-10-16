@@ -30,6 +30,7 @@ builtin_funcs = {
 	ceil = 1,
 	round = 1,
 	abs = 1,
+	append = 2,
 }
 
 type_signatures = {
@@ -136,6 +137,25 @@ type_signatures = {
 	abs = {
 		valid = {{'number'}},
 		out = 'number',
+	},
+	append = {
+		valid = {{'array', 'any'}},
+		out = 'array',
+	},
+	type = {
+		out = 'string',
+	},
+	bool = {
+		out = 'boolean',
+	},
+	num = {
+		out = 'number',
+	},
+	str = {
+		out = 'number',
+	},
+	array = {
+		out = 'array',
 	},
 	[tok.add] = {
 		valid = {{'number'}},
@@ -444,13 +464,19 @@ function SemanticAnalyzer(tokens, file)
 				end
 
 				local found_correct_types = false
-				got_types = std.join(got_types, ',')
+				local expt2 = {}
 				for i = 1, #exp_types do
-					exp_types[i] = std.join(exp_types[i], ',')
-					if exp_types[i] == got_types then
-						found_correct_types = true
-						break
+					expt2[i] = std.join(exp_types[i], ',')
+
+					local k
+					found_correct_types = true
+					for k = 1, #exp_types[i] do
+						if exp_types[i][k] ~= 'any' and got_types[k] ~= exp_types[i][k] then
+							found_correct_types = false
+							break
+						end
 					end
+					if found_correct_types then break end
 				end
 
 				if not found_correct_types then
@@ -460,7 +486,7 @@ function SemanticAnalyzer(tokens, file)
 					else
 						msg = 'Operator "'..token.text..'"'
 					end
-					parse_error(token.line, token.col, msg..' expected ('..std.join(exp_types, ' or ')..') but got ('..got_types..')', file)
+					parse_error(token.line, token.col, msg..' expected ('..std.join(expt2, ' or ')..') but got ('..std.join(got_types, ',')..')', file)
 				end
 			end
 
