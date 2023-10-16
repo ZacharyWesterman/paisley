@@ -56,7 +56,7 @@ function generate_bytecode(root, file)
 
 	local function is_const(token) return token.value ~= nil or token.id == tok.lit_null end
 
-	--Generate unique label ids (ones that can't clash with user-defined labels)
+	--Generate unique label ids (ones that can't clash with subroutine names)
 	local label_counter = 0
 	local function label_id()
 		label_counter = label_counter + 1
@@ -65,6 +65,9 @@ function generate_bytecode(root, file)
 
 	local loop_term_labels = {}
 	local loop_begn_labels = {}
+
+	--Create a termination label which will be appended to the end
+	local EOF_LABEL = label_id()
 
 	--[[
 		CODE GENERATION RULES
@@ -408,9 +411,12 @@ function generate_bytecode(root, file)
 			--Don't generate code for the subroutine if it contains nothing.
 			--If it contains nothing then references to it have already been removed.
 			if not token.ignore then
+				local skipsub = label_id()
+				emit(bc.call, "jump", skipsub)
 				emit(bc.label, token.text:sub(1, #token.text - 1))
 				enter(token.children[1])
 				emit(bc.pop_goto_index)
+				emit(bc.label, skipsub)
 			end
 		end,
 
@@ -439,5 +445,7 @@ function generate_bytecode(root, file)
 	}
 
 	enter(root)
+	emit(bc.label, EOF_LABEL)
+
 	return instructions
 end

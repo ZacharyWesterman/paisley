@@ -249,21 +249,34 @@ function SemanticAnalyzer(tokens, file)
 		token.children = kids
 	end)
 
-	--Make a list of all subroutines
+	--Make a list of all subroutines, and check that return statements are only in subroutines
 	local labels = {}
-	recurse(root, {tok.subroutine}, function(token)
-		local label = token.text:sub(1, #token.text - 1)
-		local prev = labels[label]
-		if prev ~= nil then
-			-- Don't allow tokens to be redeclared
-			parse_error(token.line, token.col, 'Redeclaration of subroutine "'..label..'" (previously declared on line '..prev.line..', col '..prev.col..')', file)
-		end
+	local inside_sub = 0
+	recurse(root, {tok.subroutine, tok.kwd_return}, function(token)
+		if token.id == tok.subroutine then
+			inside_sub = inside_sub + 1
 
-		if not token.children or #token.children == 0 then
-			token.ignore = true
-		end
+			local label = token.text:sub(1, #token.text - 1)
+			local prev = labels[label]
+			if prev ~= nil then
+				-- Don't allow tokens to be redeclared
+				parse_error(token.line, token.col, 'Redeclaration of subroutine "'..label..'" (previously declared on line '..prev.line..', col '..prev.col..')', file)
+			end
 
-		labels[label] = token
+			if not token.children or #token.children == 0 then
+				token.ignore = true
+			end
+
+			labels[label] = token
+		else
+			if inside_sub < 1 then
+				parse_error(token.line, token.col, 'Return statements can only be inside subroutines', file)
+			end
+		end
+	end, function(token)
+		if token.id == tok.subroutine then
+			inside_sub = inside_sub - 1
+		end
 	end)
 
 	--Check subroutine references
