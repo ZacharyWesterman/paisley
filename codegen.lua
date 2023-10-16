@@ -412,7 +412,7 @@ function generate_bytecode(root, file)
 			--If it contains nothing then references to it have already been removed.
 			if not token.ignore then
 				local skipsub = label_id()
-				emit(bc.call, "jump", skipsub)
+				emit(bc.call, 'jump', skipsub)
 				emit(bc.label, token.text:sub(1, #token.text - 1))
 				enter(token.children[1])
 				emit(bc.pop_goto_index)
@@ -441,6 +441,11 @@ function generate_bytecode(root, file)
 				emit(bc.call, 'implode', #token.children)
 			end
 			emit(bc.call, token.text)
+		end,
+
+		--STOP statement
+		[tok.kwd_stop] = function(token, file)
+			emit(bc.call, 'jump', EOF_LABEL)
 		end,
 	}
 
