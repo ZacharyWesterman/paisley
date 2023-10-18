@@ -9,7 +9,7 @@ builtin_funcs = {
 	asin = 1,
 	acos = 1,
 	atan = 1,
-	atan2 = 1,
+	atan2 = 2,
 	sqrt = 1,
 	mean = -1, --mean(a,b,...) = mean(list) = sum(list) / #list
 	sum = -1,

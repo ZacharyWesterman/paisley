@@ -4,12 +4,14 @@
 ]]
 
 require "stdlib"
+require "closest_word"
 require "json"
 
 --TEMP: read bytecode from stdin. only for testing
 local INSTRUCTIONS = json.parse(io.read())
 local CURRENT_INSTRUCTION = 0
-local LAST_CMD_RESULT = '<NOTHING>'
+local LAST_CMD_RESULT = nil
+local RANDOM_SEED = 0 --Change this later
 
 local NULL = {}
 local STACK = {}
@@ -29,8 +31,254 @@ local function PUSH(value)
 	end
 end
 
-local functions = {
+local function mathfunc(funcname)
+	return function(line)
+		local v, p, i = POP(), {}
+		for i = 1, #v do
+			table.insert(p, std.num(p[i]))
+		end
 
+		PUSH(math[funcname](table.unpack(v)))
+	end
+end
+
+local functions = {
+	--JUMP
+	function(line, param)
+		CURRENT_INSTRUCTION = param
+	end,
+
+	--JUMP IF NIL
+	function(line, param)
+		if STACK[#STACK] == NULL then CURRENT_INSTRUCTION = param end
+	end,
+
+	--JUMP IF FALSEY
+	function(line, param)
+		if std.bool(STACK[#STACK]) == false then CURRENT_INSTRUCTION = param end
+	end,
+
+	--EXPLODE
+	function(line, param)
+		local array, i = POP()
+		for i = 1, #array do PUSH(array[i]) end
+	end,
+
+	--IMPLODE
+	function(line, param)
+		local array, i = {}
+		for i = 1, param do
+			table.insert(array, POP())
+		end
+		PUSH(array)
+	end,
+
+	--SUPERIMPLODE
+	function(param)
+		local array, i = {}
+		for i = 1, param do
+			local val = POP()
+			if type(val) == 'table' then
+				local k
+				for k = 1, #val then table.insert(array, val[k]) end
+			else
+				table.insert(array, val)
+			end
+		end
+		PUSH(array)
+	end,
+
+	--ADD
+	function() PUSH(std.num(POP()) + std.num(POP())) end,
+
+	--SUB
+	function() PUSH(std.num(POP()) - std.num(POP())) end,
+
+	--MUL
+	function() PUSH(std.num(POP()) * std.num(POP())) end,
+
+	--DIV
+	function() PUSH(std.num(POP()) / std.num(POP())) end,
+
+	--REM
+	function() PUSH(std.num(POP()) % std.num(POP())) end,
+
+	--LENGTH
+	function()
+		local val = POP()
+		if type(val) == 'table' then PUSH(#VAL) else PUSH(#std.str(val)) end
+	end,
+
+	--INDEX
+	function()
+		local index, data, i = POP(), POP()
+		if type(data) ~= 'table' then data = std.split(std.str(data), '') end
+		if type(index) ~= 'table' then index = {index} end
+
+		local result = {}
+		for i = 1, index do
+			table.insert(result, data[std.num(index[i])])
+		end
+		PUSH(result)
+	end,
+
+	--ARRAYSLICE
+	function()
+		local start, stop, i = std.num(POP()), std.num(POP())
+		local array = {}
+		for i = start, stop do
+			table.insert(array, i)
+		end
+		PUSH(array)
+	end,
+
+	--CONCAT
+	function() PUSH(std.str(POP()) .. std.str(POP())) end,
+
+	--BOOLEAN AND
+	function() PUSH(std.bool(POP()) and std.bool(POP())) end,
+
+	--BOOLEAN OR
+	function() PUSH(std.bool(POP()) or std.bool(POP())) end,
+
+	--BOOLEAN XOR
+	function()
+		local a, b = std.bool(POP()), std.bool(POP())
+		PUSH((a or b) and not (a and b))
+	end,
+
+	--IN ARRAY/STRING
+	function()
+		local data, val = POP(), POP()
+		local result = false
+		if type(data) == 'table' then
+			local i
+			for i = 1, #data do
+				if data[i] == val then
+					result = true
+					break
+				end
+			end
+		else
+			result = std.contains(std.str(data), val)
+		end
+		PUSH(result)
+	end,
+
+	--STRING LIKE PATTERN
+	function()
+		local str, pattn = std.str(POP()), std.str(POP())
+		PUSH(str:match(pattn) ~= nil)
+	end,
+
+	--EQUAL
+	function() PUSH(POP() == POP()) end,
+
+	--NOT EQUAL
+	function() PUSH(POP() ~= POP()) end,
+
+	--GREATER THAN
+	function() PUSH(POP() > POP()) end,
+
+	--GREATER THAN OR EQUAL
+	function() PUSH(POP() >= POP()) end,
+
+	--LESS THAN
+	function() PUSH(POP() < POP()) end,
+
+	--LESS THAN OR EQUAL
+	function() PUSH(POP() <= POP()) end,
+
+	--BOOLEAN NOT
+	function() PUSH(not std.bool(POP())) end,
+
+	--CHECK IF VARIABLE EXISTS
+	function() PUSH(VARS[POP()] ~= nil) end,
+
+	--IRANDOM
+	function()
+		local v = POP()
+		local max, min = std.num(v[1]), std.num(v[2])
+		PUSH(math.random(math.floor(min), math.floor(max)))
+	end,
+
+	--FRANDOM
+	function()
+		local v = POP()
+		local max, min = std.num(v[1]), std.num(v[2])
+		PUSH((math.random() * (max - min)) + min)
+	end,
+
+	--WORD DIFF (Levenshtein distance)
+	function()
+		local v = POP()
+		PUSH(lev(std.str(v[1]), std.str(v[2])))
+	end,
+
+	--DIST (N-dimensional vector distance)
+	function()
+		local v = POP()
+		local b, a = v[1], v[2]
+		local t1, t2 = type(a), type(b)
+		local result
+
+		if t1 ~= 'table' and t2 == 'table' then b = b[1]
+		elseif t1 == 'table' and t2 ~= 'table' then a = a[1]
+		end
+
+		if t1 == 'table' then
+			local total, i = 0
+			for i = 1, math.min(#a, #b) do
+				local p = a[i] - b[i]
+				total = total + p*p
+			end
+			result = math.sqrt(total)
+		else
+			result = math.abs(b - a)
+		end
+		PUSH(result)
+	end,
+
+	--MATH FUNCTIONS
+	mathfunc('sin'),
+	mathfunc('cos'),
+	mathfunc('tan'),
+	mathfunc('asin'),
+	mathfunc('acos'),
+	mathfunc('atan'),
+	mathfunc('atan2'),
+	mathfunc('sqrt'),
+
+	--SUM
+	function()
+		local v, total, i = POP(), 0
+		for i = 1, #v do
+			if type(v[i]) == 'table' then
+				local k
+				for k = 1, #v[i] do total = total + std.num(v[i][k]) end
+			else
+				total = total + std.num(v[i])
+			end
+		end
+		PUSH(total)
+	end,
+
+	--MULT
+	function()
+		local v, total, i = POP(), 1
+		for i = 1, #v do
+			if type(v[i]) == 'table' then
+				local k
+				for k = 1, #v[i] do total = total * std.num(v[i][k]) end
+			else
+				total = total * std.num(v[i])
+			end
+		end
+		PUSH(total)
+	end,
+
+	--MORE MATH FUNCTIONS
+	mathfunc('pow'),
 }
 
 --[[ INSTRUCTION LAYOUT
