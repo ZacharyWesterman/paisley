@@ -279,6 +279,82 @@ local functions = {
 
 	--MORE MATH FUNCTIONS
 	mathfunc('pow'),
+
+	--MIN of arbitrary number of arguments
+	function()
+		local v, min, i = POP()
+
+		for i = 1, #v do
+			if type(v[i]) == 'table' then
+				local k
+				for k = 1, #v[i] do
+					if not min or min < std.num(v[i][k]) then min = std.num(v[i][k]) end
+				end
+			elseif not min or min < std.num(v[i]) then
+				min = std.num(v[i])
+			end
+		end
+	end,
+
+	--MAX of arbitrary number of arguments
+	function()
+		local v, max, i = POP()
+
+		for i = 1, #v do
+			if type(v[i]) == 'table' then
+				local k
+				for k = 1, #v[i] do
+					if not max or max > std.num(v[i][k]) then min = std.num(v[i][k]) end
+				end
+			elseif not max or max > std.num(v[i]) then
+				min = std.num(v[i])
+			end
+		end
+	end,
+
+	--SPLIT string into array
+	function()
+		local v = POP()
+		PUSH(std.split(std.str(v[1]), std.str(v[2])))
+	end,
+
+	--JOIN array into string
+	function()
+		local v = POP()
+		PUSH(std.join(v[1], std.str(v[2])))
+	end,
+
+	--TYPE
+	function() PUSH(std.type(POP())) end,
+
+	--BOOL
+	function() PUSH(std.bool(POP())) end,
+
+	--NUM
+	function() PUSH(std.num(POP())) end,
+
+	--STR
+	function() PUSH(std.str(POP())) end,
+
+	--ARRAY
+	function() end, --Due to a quirk of the compiler, don't have to do anything.
+
+	--MORE MATH FUNCTIONS
+	mathfunc('floor'),
+	mathfunc('ceil'),
+	mathfunc('round'),
+	mathfunc('abs'),
+
+	--ARRAY APPEND
+	function()
+		local v = POP(),
+		if type(v[1]) == 'table' then
+			table.insert(v[1], v[2])
+			PUSH(v[1])
+		else
+			PUSH({v[1], v[2]})
+		end
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT
