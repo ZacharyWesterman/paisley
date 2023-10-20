@@ -87,7 +87,7 @@ function fold_constants(token)
 	local i
 	for i = 1, #token.children do
 		local ch = token.children[i]
-		if not ch.value and ch.id ~= tok.lit_null then
+		if ch.value == nil and ch.id ~= tok.lit_null then
 			return
 		end
 	end
