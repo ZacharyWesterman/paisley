@@ -560,6 +560,10 @@ function generate_bytecode(root, file)
 	for i = 1, #instructions do
 		local instr = instructions[i]
 		if instr[1] == bc.call and (instr[3] == call_codes.jump or instr[3] == call_codes.jumpifnil or instr[3] == call_codes.jumpiffalse) then
+			if label_indexes[instr[4]] == nil then
+				parse_error(instr[2], 0, 'COMPILER BUG: Attempt to reference unknown label of ID "'..std.str(instr[4])..'"!', file)
+			end
+
 			instr[4] = label_indexes[instr[4]] - 1
 		end
 
