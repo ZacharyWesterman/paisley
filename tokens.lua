@@ -40,7 +40,6 @@ tok = {
 	op_mod = k(),
 	op_slice = k(),
 	op_count = k(),
-	op_length = k(),
 	op_not = k(),
 	op_and = k(),
 	op_or = k(),

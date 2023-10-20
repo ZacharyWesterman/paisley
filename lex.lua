@@ -29,7 +29,6 @@ opers = {
 	['%'] = tok.op_mod,
 	[':'] = tok.op_slice,
 	['#'] = tok.op_count,
-	['$'] = tok.op_length,
 	['not'] = tok.op_not,
 	['and'] = tok.op_and,
 	['or'] = tok.op_or,
