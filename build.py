@@ -4,7 +4,7 @@ from pathlib import Path
 require = re.compile(r'require *[\'"]([^\'"]+)[\'"]')
 Path('build/').mkdir(exist_ok=True)
 
-for i in ['main.lua', 'runtime.lua']:
+for i in ['compiler.lua', 'runtime.lua']:
 	with open(i, 'r') as fp:
 		text = fp.read()
 
