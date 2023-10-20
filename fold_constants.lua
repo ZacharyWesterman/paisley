@@ -92,14 +92,6 @@ function fold_constants(token)
 		end
 	end
 
-	--Cast boolean token to integer
-	local function btoi(t)
-		if t.id == tok.lit_boolean then
-			t.id = tok.lit_number
-			if t.text == 'true' then t.value = 1 else t.value = 0 end
-		end
-	end
-
 
 	if token.id == tok.add or token.id == tok.multiply then
 		--Fold the two values into a single value
@@ -144,17 +136,9 @@ function fold_constants(token)
 	elseif token.id == tok.boolean then
 		if c2 then --Binary operators
 			if operator == 'or' then
-				if c1.value and c1.value ~= 0 and c1.value ~= '' then
-					token.value, token.id = c1.value, c1.id
-				else
-					token.value, token.id = c2.value, c2.id
-				end
+				token.value, token.id = std.bool(c1.value) or std.bool(c2.value), tok.lit_boolean
 			elseif operator == 'and' then
-				if not c1.value or c1.value == 0 or c1.value == '' then
-					token.value, token.id = c1.value, c1.id
-				else
-					token.value, token.id = c2.value, c2.id
-				end
+				token.value, token.id = std.bool(c1.value) and std.bool(c2.value), tok.lit_boolean
 			elseif operator == 'xor' then
 				local v1 = std.bool(c1.value)
 				local v2 = std.bool(c2.value)
