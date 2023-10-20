@@ -72,17 +72,22 @@ local call_codes = {
 	append = 56,
 }
 
+local function bc_get_key(code, lookup)
+	local i, k
+	for k, i in pairs(lookup) do
+		if i == code then return k end
+	end
+	return nil
+end
+
 function print_bytecode(instructions)
 	local i
 	for i = 1, #instructions do
 		local instr = instructions[i]
-		local instr_text
-		local j, k
-		for k, j in pairs(bc) do
-			if j == instr[1] then
-				instr_text = k
-				break
-			end
+		local instr_text = bc_get_key(instr[1], bc)
+		local call_text = instr[3]
+		if instr[1] == bc.call then
+			call_text = bc_get_key(call_text, call_codes)
 		end
 
 		if not instr_text then
@@ -90,11 +95,11 @@ function print_bytecode(instructions)
 		end
 
 		--TEMP: print code as it's generated
-		if instr[3] == nil and instr[1] ~= bc.run_command and instr[1] ~= bc.push_cmd_result and instr[1] ~= bc.pop and instr[1] ~= bc.push_index and instr[1] ~= bc.pop_goto_index then instr[3] = 'null' else instr[3] = std.debug_str(instr[3]) end
+		if call_text == nil and instr[1] ~= bc.run_command and instr[1] ~= bc.push_cmd_result and instr[1] ~= bc.pop and instr[1] ~= bc.push_index and instr[1] ~= bc.pop_goto_index then call_text = 'null' else call_text = std.debug_str(call_text) end
 		if instr[4] then
-			print(i..' @ line '..instr[2]..': '..instr_text..' '..instr[3]..' '..std.debug_str(instr[4]))
+			print(i..' @ line '..instr[2]..': '..instr_text..' '..call_text..' '..std.debug_str(instr[4]))
 		else
-			print(i..' @ line '..instr[2]..': '..instr_text..' '..instr[3])
+			print(i..' @ line '..instr[2]..': '..instr_text..' '..call_text)
 		end
 	end
 end
@@ -123,25 +128,22 @@ function generate_bytecode(root, file)
 
 		table.insert(instructions, {instruction_id, current_line, param1, param2})
 
-		local instr_text
-		local i, k
-		for k, i in pairs(bc) do
-			if i == instruction_id then
-				instr_text = k
-				break
-			end
-		end
+		local instr_text = bc_get_key(instruction_id, bc)
+		local call_text = param1
+		if instruction_id == bc.call then call_text = bc_get_key(param1, call_codes) end
 
 		if not instr_text then
 			parse_error(current_line, 0, 'COMPILER BUG: Unknown bytecode instruction with id '..instruction_id..'!', file)
 		end
 
 		--TEMP: print code as it's generated
-		-- if param1 == nil and instruction_id ~= bc.run_command and instruction_id ~= bc.push_cmd_result and instruction_id ~= bc.pop and instruction_id ~= bc.push_index and instruction_id ~= bc.pop_goto_index then param1 = 'null' else param1 = std.debug_str(param1) end
-		-- if param2 then
-		-- 	print(current_line..': '..instr_text..' '..param1..' '..std.debug_str(param2))
-		-- else
-		-- 	print(current_line..': '..instr_text..' '..param1)
+		-- if COMPILER_DEBUG then
+		-- 	if call_text == nil and instruction_id ~= bc.run_command and instruction_id ~= bc.push_cmd_result and instruction_id ~= bc.pop and instruction_id ~= bc.push_index and instruction_id ~= bc.pop_goto_index then call_text = 'null' else call_text = std.debug_str(call_text) end
+		-- 	if param2 then
+		-- 		print(current_line..': '..instr_text..' '..call_text..' '..std.debug_str(param2))
+		-- 	else
+		-- 		print(current_line..': '..instr_text..' '..call_text)
+		-- 	end
 		-- end
 
 		return #instructions
@@ -460,6 +462,8 @@ function generate_bytecode(root, file)
 			local val = std.bool(token.children[1].value)
 			local endif_label
 
+			local has_else = #token.children > 2 and token.children[3].id ~= tok.kwd_end and not (const and val)
+
 			--Only generate the branch if it's possible for it to execute.
 			if not const or val then
 				local else_label
@@ -476,8 +480,13 @@ function generate_bytecode(root, file)
 				--IF statement body
 				enter(token.children[2])
 
+				if has_else then
+					--Skip the "else" section if the "if" section executed
+					emit(bc.call, 'jump', endif_label)
+				end
+
+				--Jump to here if "if" section does not execute
 				if not const then
-					emit(bc.call, 'jump', endif_label) --Skip the "else" section if the "if" section executed
 					emit(bc.label, else_label)
 					emit(bc.pop)
 				end
@@ -485,7 +494,7 @@ function generate_bytecode(root, file)
 
 			--Generate the "else" part of the if statement
 			--Only if it's possible for the "if" part to not execute.
-			if #token.children > 2 and token.children[3].id ~= tok.kwd_end and not (const and val) then
+			if has_else then
 				local else_block = token.children[3]
 				if else_block.id == tok.else_stmt then
 					enter(else_block.children[1])
