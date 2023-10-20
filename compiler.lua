@@ -1,3 +1,8 @@
+--[[
+	This is the Paisley compiler.
+	It takes Paisley code and compiles it into bytecode that is easy to interpret and run.
+]]
+
 require "stdlib"
 require "json"
 
