@@ -13,7 +13,7 @@ require "fold_constants"
 require "semantics"
 require "codegen"
 
-local expression = V1
+local expression = V1:gsub('\x0b', '\n')
 
 -- print(expression)
 local lexer = Lexer(expression)

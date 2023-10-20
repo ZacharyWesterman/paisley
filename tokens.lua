@@ -119,10 +119,11 @@ function parse_error(line, col, msg, file)
 	end
 
 	if file ~= nil then
-		error(file..': '..line..', '..col..': '..msg)
+		print(file..': '..line..', '..col..': '..msg)
 	else
-		error(line..', '..col..': '..msg)
+		print(line..', '..col..': '..msg)
 	end
+	error('ERROR in user-supplied Paisley script.')
 end
 
 function token_text(token_id)
