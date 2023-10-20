@@ -8,7 +8,7 @@ require "fold_constants"
 require "semantics"
 require "codegen"
 
-local expression = io.read()
+local expression = V1
 
 -- print(expression)
 local lexer = Lexer(expression)
@@ -33,4 +33,4 @@ local root = SemanticAnalyzer(parser.get())
 local bytecode = generate_bytecode(root)
 
 -- print_bytecode(bytecode)
-print(json.stringify(bytecode))
+output(json.stringify(bytecode), 1)
