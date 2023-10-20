@@ -12,6 +12,7 @@ local INSTRUCTIONS = json.parse(io.read())
 local CURRENT_INSTRUCTION = 0
 local LAST_CMD_RESULT = nil
 local RANDOM_SEED = 0 --Change this later
+local MAX_ITER = 30 --Max number of instructions to run before pausing execution (performance reasons mostly)
 
 local NULL = {}
 local STACK = {}
@@ -74,7 +75,7 @@ local functions = {
 	end,
 
 	--SUPERIMPLODE
-	function(param)
+	function(line, param)
 		local array, i = {}
 		for i = 1, param do
 			local val = POP()
@@ -393,7 +394,8 @@ local commands = {
 	--RUN COMMAND
 	[6] = function(line, p1, p2)
 		local command_array = POP()
-		--[[What to do here? Command will delay execution, to be resumed once the command finishes]]
+		output(command_array, 2)
+		return true --Suppress regular "continue" output
 	end,
 
 	--PUSH LAST COMMAND RESULT TO THE STACK
@@ -403,7 +405,7 @@ local commands = {
 
 	--PUSH THE CURRENT INSTRUCTION INDEX TO THE STACK
 	[8] = function(line, p1, p2)
-		PUSH(#INSTRUCTIONS)
+		PUSH(CURRENT_INSTRUCTION)
 	end,
 
 	--POP THE NEW INSTRUCTION INDEX FROM THE STACK (GOTO THAT INDEX)
@@ -412,4 +414,37 @@ local commands = {
 	end,
 }
 
-print(std.debug_str(INSTRUCTIONS))
+--[[RUN THIS TO LOAD CODE]]
+function INIT()
+	INSTRUCTIONS = json.parse(V1)
+	CURRENT_INSTRUCTION = 0
+	LAST_CMD_RESULT = nil
+	RANDOM_SEED = std.str(V2):reverse()
+	math.randomseed(RANDOM_SEED)
+	STACK = {}
+	VARS = {}
+end
+
+function ITER()
+	CURRENT_INSTRUCTION = CURRENT_INSTRUCTION + 1
+	local I = INSTRUCTIONS[CURRENT_INSTRUCTION]
+
+	if I == nil then
+		output(nil, 3) --Program successfully completed
+	else
+		if not commands[I[1]](I[2], I[3], I[4]) then
+			output(I[3], 1)
+			return true
+		end
+	end
+
+	return false
+end
+
+--[[RUN THIS WHILE OUTPUT IS COMMING FROM (1) OR WHEN COMMAND RETURNS]]
+function RUN()
+	local i
+	for i = 1, MAX_ITER do
+		if not ITER() then break end
+	end
+end
