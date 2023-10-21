@@ -9,13 +9,13 @@ local rules = {
 
 	--Function call
 	{
-		match = {{tok.comparison}, {tok.paren_open}, {tok.comparison}, {tok.paren_close}},
+		match = {{tok.text}, {tok.paren_open}, {tok.comparison}, {tok.paren_close}},
 		id = tok.func_call,
 		keep = {3},
 		text = 1,
 	},
 	{
-		match = {{tok.comparison}, {tok.paren_open}, {tok.paren_close}},
+		match = {{tok.text}, {tok.paren_open}, {tok.paren_close}},
 		id = tok.func_call,
 		keep = {},
 		text = 1,

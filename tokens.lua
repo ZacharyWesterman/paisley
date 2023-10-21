@@ -117,7 +117,7 @@ function parse_error(line, col, msg, file)
 		msg = msg .. '\nTHIS IS A BUG IN THE PAISLEY COMPILER, PLEASE REPORT IT!'
 	end
 
-	if file ~= nil then
+	if file ~= nil and file ~= '' then
 		print(file..': '..line..', '..col..': '..msg)
 	else
 		print(line..', '..col..': '..msg)

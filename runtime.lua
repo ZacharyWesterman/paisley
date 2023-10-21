@@ -22,6 +22,7 @@ end
 function ITER()
 	CURRENT_INSTRUCTION = CURRENT_INSTRUCTION + 1
 	local I = INSTRUCTIONS[CURRENT_INSTRUCTION]
+	LAST_CMD_RESULT = V2
 
 	if I == nil then
 		output(nil, 3) --Program successfully completed
@@ -35,7 +36,7 @@ function ITER()
 	return false
 end
 
---[[RUN THIS WHILE OUTPUT IS COMMING FROM (1) OR WHEN COMMAND RETURNS]]
+--[[RUN THIS WHILE OUTPUT IS COMING FROM (1) OR WHEN COMMAND RETURNS]]
 function RUN()
 	local i
 	for i = 1, MAX_ITER do

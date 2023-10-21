@@ -14,6 +14,7 @@ require "semantics"
 require "codegen"
 
 local expression = V1:gsub('\x0b', '\n')
+local file = V2
 
 --[[
 	Command format is a string array, each element formatted as follows:
@@ -30,8 +31,8 @@ local expression = V1:gsub('\x0b', '\n')
 
 	Note that this IS case-sensitive!
 ]]
-ALLOWED_COMMANDS = V2
-if ALLOWED_COMMANDS then
+ALLOWED_COMMANDS = V3
+if ALLOWED_COMMANDS and #ALLOWED_COMMANDS > 0 then
 	local cmds, i = {}
 	for i = 1, #ALLOWED_COMMANDS do
 		local c = std.split(ALLOWED_COMMANDS[i], ':')
@@ -41,17 +42,17 @@ if ALLOWED_COMMANDS then
 	ALLOWED_COMMANDS = cmds
 end
 
-local lexer = Lexer(expression)
+local lexer = Lexer(expression, file)
 local t
 local tokens = {}
 for t in lexer do table.insert(tokens, t) end --Iterate to get tokens.
 
-local parser = SyntaxParser(tokens)
+local parser = SyntaxParser(tokens, file)
 while parser.fold() do end --Iterate on the syntax tree. Follows iterator-like behavior.
 
 --Analyze the AST and check for any errors
-local root = SemanticAnalyzer(parser.get())
+local root = SemanticAnalyzer(parser.get(), file)
 
 --Generate instruction representation
-local bytecode = generate_bytecode(root)
+local bytecode = generate_bytecode(root, file)
 output(json.stringify(bytecode), 1)
