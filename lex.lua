@@ -374,8 +374,8 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					end
 
 					--Once string ends, add text to token list and exit string.
-					--If we found an expression instead, add to the stack.
-					if this_chr == curr_scope or this_chr == '{' or this_chr == '$' then
+					--If we found an expression instead, add to the stack (only in double-quoted strings).
+					if this_chr == curr_scope or ((this_chr == '{' or this_chr == '$') and curr_scope ~= '\'') then
 						if #this_str > 0 then
 							--Insert current built string
 							text = text:sub(this_ix, #text)
