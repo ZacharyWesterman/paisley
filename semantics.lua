@@ -416,6 +416,14 @@ function SemanticAnalyzer(tokens, file)
 		token.children[1] = token.children[1].children[1]
 	end)
 
+	--Tidy up FOR loops (replace command with cmd contents)
+	recurse(root, {tok.for_stmt}, function(token)
+		if #token.children[2].children > 1 then
+			parse_error(token.line, token.col, 'Too many parameters passed to "'..token.text..'" statement', file)
+		end
+		token.children[2] = token.children[2].children[1]
+	end)
+
 	--[[
 		TYPE ANNOTATIONS
 	]]
@@ -426,33 +434,16 @@ function SemanticAnalyzer(tokens, file)
 		local signature, kind
 
 		--Unlike other tokens, "command" tokens only need the first child to be constant for us to deduce the type
-		if token.id == tok.inline_command then
-			local ch = token.children[1].children[1]
-			if ALLOWED_COMMANDS then
-				if ch.value ~= nil and ch.id ~= tok.lit_null then
-					if not ALLOWED_COMMANDS[ch.value] then
-						--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
-						msg = 'Unknown command "'..std.str(ch.value)..'"'
-						local guess = closest_word(ch.value, ALLOWED_COMMANDS, 4)
-
-						if guess ~= nil then
-							msg = msg .. ' (did you mean "'..guess..'"?)'
-						end
-						parse_error(ch.line, ch.col, msg, file)
-					end
-
-					token.type = ALLOWED_COMMANDS[ch.value]
-				end
-			end
-			return
-		elseif token.id == tok.command then
+		if token.id == tok.inline_command or token.id == tok.command then
 			local ch = token.children[1]
+			if token.id == tok.inline_command then ch = ch.children[1] end
+
 			if ALLOWED_COMMANDS then
 				if ch.value ~= nil and ch.id ~= tok.lit_null then
 					if not ALLOWED_COMMANDS[ch.value] then
 						--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
 						msg = 'Unknown command "'..std.str(ch.value)..'"'
-						local guess = closest_word(ch.value, ALLOWED_COMMANDS, 4)
+						local guess = closest_word(std.str(ch.value), ALLOWED_COMMANDS, 4)
 
 						if guess ~= nil then
 							msg = msg .. ' (did you mean "'..guess..'"?)'
