@@ -369,7 +369,16 @@ commands = {
 
 	--GET VARIABLE
 	[3] = function(line, p1, p2)
-		PUSH(VARS[p1])
+		if p1 == '@' then
+			local res, k = {}
+			for k in pairs(VARS) do
+				if VARS[k] ~= nil then table.insert(res, k) end
+			end
+			table.sort(res)
+			PUSH(res)
+		else
+			PUSH(VARS[p1])
+		end
 	end,
 
 	--PUSH VALUE ONTO STACK
