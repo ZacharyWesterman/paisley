@@ -445,6 +445,25 @@ function SemanticAnalyzer(tokens, file)
 				end
 			end
 			return
+		elseif token.id == tok.command then
+			local ch = token.children[1]
+			if ALLOWED_COMMANDS then
+				if ch.value ~= nil and ch.id ~= tok.lit_null then
+					if not ALLOWED_COMMANDS[ch.value] then
+						--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
+						msg = 'Unknown command "'..std.str(ch.value)..'"'
+						local guess = closest_word(ch.value, ALLOWED_COMMANDS, 4)
+
+						if guess ~= nil then
+							msg = msg .. ' (did you mean "'..guess..'"?)'
+						end
+						parse_error(ch.line, ch.col, msg, file)
+					end
+
+					token.type = ALLOWED_COMMANDS[ch.value]
+				end
+			end
+			return
 		end
 
 		if token.value ~= nil or token.id == tok.lit_null then
@@ -610,7 +629,7 @@ function SemanticAnalyzer(tokens, file)
 		deduced_variable_types = false
 
 		--First pass at deducing all types
-		recurse(root, {tok.string_open, tok.add, tok.multiply, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.variable, tok.inline_command}, nil, type_checking)
+		recurse(root, {tok.string_open, tok.add, tok.multiply, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.variable, tok.inline_command, tok.command}, nil, type_checking)
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
 		recurse(root, {tok.add, tok.multiply, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice, tok.string_open, tok.index}, nil, fold_constants)
@@ -620,7 +639,7 @@ function SemanticAnalyzer(tokens, file)
 	end
 
 	--One last pass at deducing all types (after any constant folding)
-	recurse(root, {tok.string_open, tok.add, tok.multiply, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.variable, tok.inline_command}, nil, type_checking)
+	recurse(root, {tok.string_open, tok.add, tok.multiply, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.variable, tok.inline_command, tok.command}, nil, type_checking)
 
 
 	--BREAK and CONTINUE statements are only allowed to have up to a single CONSTANT INTEGER operand
