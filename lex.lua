@@ -185,7 +185,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 
 				--labels
 				if not match then
-					match = text:match('^%w+:')
+					match = text:match('^[a-zA-Z0-9_]+:')
 					if match then tok_type = tok.label end
 				end
 

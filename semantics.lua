@@ -308,7 +308,12 @@ function SemanticAnalyzer(tokens, file)
 
 		local label = ch.children[1].text
 		if labels[label] == nil then
-			parse_error(token.line, token.col, 'Subroutine "'..label..'" not declared anywhere', file)
+			local msg = 'Subroutine "'..label..'" not declared anywhere'
+			local guess = closest_word(label, labels, 4)
+			if guess ~= nil then
+				msg = msg .. ' (did you mean "'.. guess ..'"?)'
+			end
+			parse_error(token.line, token.col, msg, file)
 		end
 
 		token.ignore = labels[label].ignore

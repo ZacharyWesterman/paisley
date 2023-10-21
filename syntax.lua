@@ -326,6 +326,13 @@ local rules = {
 		keep = {},
 		text = 2,
 	},
+	{
+		match = {{tok.kwd_subroutine}, {tok.label}, {tok.line_ending}, {tok.kwd_end}},
+		id = tok.subroutine,
+		keep = {},
+		text = 2,
+	},
+
 	--Invalid subroutine
 	{
 		match = {{tok.kwd_subroutine}},
