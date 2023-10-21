@@ -13,10 +13,12 @@ function INIT()
 	INSTRUCTIONS = json.parse(V1)
 	CURRENT_INSTRUCTION = 0
 	LAST_CMD_RESULT = nil
-	RANDOM_SEED = std.str(V2):reverse()
+	RANDOM_SEED = std.num(std.str(V2):reverse())
 	math.randomseed(RANDOM_SEED)
 	STACK = {}
 	VARS = {}
+	NULL = {}
+	output(0, 1)
 end
 
 function ITER()
@@ -43,3 +45,5 @@ function RUN()
 		if not ITER() then break end
 	end
 end
+
+INIT()

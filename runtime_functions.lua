@@ -1,25 +1,26 @@
 --TEMP: read bytecode from stdin. only for testing
-INSTRUCTIONS = []
-CURRENT_INSTRUCTION = 0
-LAST_CMD_RESULT = nil
-RANDOM_SEED = 0 --Change this later
+-- INSTRUCTIONS = {}
+-- CURRENT_INSTRUCTION = 0
+-- LAST_CMD_RESULT = nil
+-- RANDOM_SEED = 0 --Change this later
 MAX_ITER = 30 --Max number of instructions to run before pausing execution (performance reasons mostly)
 
-NULL = {}
-STACK = {}
-VARS = {}
+-- NULL = {}
+-- STACK = {}
+-- VARS = {}
 
 local function POP()
-	local val = table.remove(STACK)
+	local val = STACK[#STACK]
+	table.remove(STACK)
 	if val == NULL then return nil end
 	return val
 end
 
 local function PUSH(value)
-	if val == nil then
+	if value == nil then
 		table.insert(STACK, NULL)
 	else
-		table.insert(value)
+		table.insert(STACK, value)
 	end
 end
 
@@ -72,7 +73,7 @@ local functions = {
 			local val = POP()
 			if type(val) == 'table' then
 				local k
-				for k = 1, #val then table.insert(array, val[k]) end
+				for k = 1, #val do table.insert(array, val[k]) end
 			else
 				table.insert(array, val)
 			end
@@ -339,7 +340,7 @@ local functions = {
 
 	--ARRAY APPEND
 	function()
-		local v = POP(),
+		local v = POP()
 		if type(v[1]) == 'table' then
 			table.insert(v[1], v[2])
 			PUSH(v[1])
@@ -394,7 +395,7 @@ commands = {
 	--RUN COMMAND
 	[6] = function(line, p1, p2)
 		local command_array = POP()
-		output(command_array, 2)
+		output_array(command_array, 2)
 		return true --Suppress regular "continue" output
 	end,
 
