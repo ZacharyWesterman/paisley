@@ -12,6 +12,36 @@ COMPILER_DEBUG = true
 
 local expression = io.read()
 
+--[[
+	Command format is a string array, each element formatted as follows:
+	"COMMAND_NAME:RETURN_TYPE"
+	Where RETURN_TYPE is a Paisley data type, not a Lua type.
+
+	Paisley types are one of the following:
+		null
+		boolean
+		number
+		string
+		array
+		any
+
+	Note that this IS case-sensitive!
+]]
+ALLOWED_COMMANDS = {
+	"print:null",
+	"near:boolean",
+}
+
+if ALLOWED_COMMANDS then
+	local cmds, i = {}
+	for i = 1, #ALLOWED_COMMANDS do
+		local c = std.split(ALLOWED_COMMANDS[i], ':')
+		if not c[2] then c[2] = 'any' end
+		cmds[c[1]] = c[2]
+	end
+	ALLOWED_COMMANDS = cmds
+end
+
 -- print(expression)
 local lexer = Lexer(expression)
 local t
