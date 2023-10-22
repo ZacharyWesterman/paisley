@@ -8,12 +8,43 @@ require "closest_word"
 require "json"
 require "runtime_functions"
 
+
+FILE = V2
+
+--[[
+	Command format is a string array, each element formatted as follows:
+	"COMMAND_NAME:RETURN_TYPE"
+	Where RETURN_TYPE is a Paisley data type, not a Lua type.
+
+	Paisley types are one of the following:
+		null
+		boolean
+		number
+		string
+		array
+		any
+
+	Note that this IS case-sensitive!
+]]
+ALLOWED_COMMANDS = V3
+if ALLOWED_COMMANDS and #ALLOWED_COMMANDS > 0 then
+	local cmds, i = {}
+	for i = 1, #ALLOWED_COMMANDS do
+		local c = std.split(ALLOWED_COMMANDS[i], ':')
+		if not c[2] then c[2] = 'any' end
+		cmds[c[1]] = c[2]
+	end
+	ALLOWED_COMMANDS = cmds
+else
+	ALLOWED_COMMANDS = nil
+end
+
 --[[RUN THIS TO LOAD CODE]]
 function INIT()
 	INSTRUCTIONS = json.parse(V1)
 	CURRENT_INSTRUCTION = 0
 	LAST_CMD_RESULT = nil
-	RANDOM_SEED = std.num(std.str(V2):reverse())
+	RANDOM_SEED = std.num(std.str(V4):reverse())
 	math.randomseed(RANDOM_SEED)
 	STACK = {}
 	VARS = {}
@@ -24,7 +55,7 @@ end
 function ITER()
 	CURRENT_INSTRUCTION = CURRENT_INSTRUCTION + 1
 	local I = INSTRUCTIONS[CURRENT_INSTRUCTION]
-	LAST_CMD_RESULT = V2
+	LAST_CMD_RESULT = V5
 
 	if I == nil then
 		output(nil, 3) --Program successfully completed

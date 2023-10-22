@@ -9,6 +9,19 @@ MAX_ITER = 30 --Max number of instructions to run before pausing execution (perf
 -- STACK = {}
 -- VARS = {}
 
+function runtime_error(line, msg)
+	if msg:sub(1, 12) == 'COMPILER BUG' then
+		msg = msg .. '\nTHIS IS A BUG IN THE PAISLEY COMPILER, PLEASE REPORT IT!'
+	end
+
+	if FILE ~= nil and FILE ~= '' then
+		print(FILE..': '..line..': '..msg)
+	else
+		print(line..': '..msg)
+	end
+	error('ERROR in user-supplied Paisley script.')
+end
+
 local function POP()
 	local val = STACK[#STACK]
 	table.remove(STACK)
@@ -395,6 +408,18 @@ commands = {
 	--RUN COMMAND
 	[6] = function(line, p1, p2)
 		local command_array = POP()
+
+		if ALLOWED_COMMANDS and not ALLOWED_COMMANDS[command_array[1]] then
+			--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
+			msg = 'Unknown command "'..command_array[1]..'"'
+			local guess = closest_word(command_array[1], ALLOWED_COMMANDS, 4)
+
+			if guess ~= nil then
+				msg = msg .. ' (did you mean "'..guess..'"?)'
+			end
+			runtime_error(line, msg)
+		end
+
 		output_array(command_array, 2)
 		return true --Suppress regular "continue" output
 	end,

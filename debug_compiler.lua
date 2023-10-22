@@ -32,7 +32,7 @@ ALLOWED_COMMANDS = {
 	"near:boolean",
 }
 
-if ALLOWED_COMMANDS then
+if ALLOWED_COMMANDS and #ALLOWED_COMMANDS > 0 then
 	local cmds, i = {}
 	for i = 1, #ALLOWED_COMMANDS do
 		local c = std.split(ALLOWED_COMMANDS[i], ':')
@@ -40,6 +40,8 @@ if ALLOWED_COMMANDS then
 		cmds[c[1]] = c[2]
 	end
 	ALLOWED_COMMANDS = cmds
+else
+	ALLOWED_COMMANDS = nil
 end
 
 -- print(expression)

@@ -40,6 +40,8 @@ if ALLOWED_COMMANDS and #ALLOWED_COMMANDS > 0 then
 		cmds[c[1]] = c[2]
 	end
 	ALLOWED_COMMANDS = cmds
+else
+	ALLOWED_COMMANDS = nil
 end
 
 local lexer = Lexer(expression, file)
