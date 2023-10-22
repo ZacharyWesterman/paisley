@@ -67,7 +67,7 @@ local functions = {
 	--EXPLODE
 	function(line, param)
 		local array, i = POP()
-		for i = 1, #array do PUSH(array[i]) end
+		for i = 1, #array do PUSH(array[#array - i + 1]) end
 	end,
 
 	--IMPLODE
@@ -76,7 +76,12 @@ local functions = {
 		for i = 1, param do
 			table.insert(array, POP())
 		end
-		PUSH(array)
+		--Reverse the table so it's in the correct order
+		local res = {}
+		for i = 1, #array do
+			table.insert(res, array[#array - i + 1])
+		end
+		PUSH(res)
 	end,
 
 	--SUPERIMPLODE
@@ -91,7 +96,12 @@ local functions = {
 				table.insert(array, val)
 			end
 		end
-		PUSH(array)
+		--Reverse the table so it's in the correct order
+		local res = {}
+		for i = 1, #array do
+			table.insert(res, array[#array - i + 1])
+		end
+		PUSH(res)
 	end,
 
 	--ADD
