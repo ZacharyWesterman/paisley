@@ -105,6 +105,7 @@ Expressions give access to a decent suite of operations and functions, listed be
 - array slicing, `:` (e.g. `0:5` gives `(0,1,2,3,4,5)`)
 - array listing, `,` (e.g. `1,2,3` is an array with 3 elements, `(1,)` is array with 1 element, etc). can combine this with slicing, e.g. `1,3:5,9` gives `(1,3,4,5,9)`.
 - array searching `in` (e.g. `3 in (1,2,4,5,6)` gives `false`)
+- string concatenation: There is no string concatenation operator. Seriously, two values next to each other, without an operator between them, results in string concatenation.
 
 ### Allowed values:
 - hexadecimal numbers, `0xFFFF`
