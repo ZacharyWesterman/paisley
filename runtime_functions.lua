@@ -374,7 +374,7 @@ local functions = {
 
 commands = {
 	--CALL
-	[0] = function(line, p1, p2) functions[p1](line, p2) end,
+	[0] = function(line, p1, p2) functions[p1+1](line, p2) end,
 
 	--SET VARIABLE
 	[2] = function(line, p1, p2)
@@ -408,11 +408,12 @@ commands = {
 	--RUN COMMAND
 	[6] = function(line, p1, p2)
 		local command_array = POP()
+		local cmd_name = std.str(command_array[1])
 
-		if ALLOWED_COMMANDS and not ALLOWED_COMMANDS[command_array[1]] then
+		if ALLOWED_COMMANDS and not ALLOWED_COMMANDS[cmd_name] then
 			--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
-			msg = 'Unknown command "'..command_array[1]..'"'
-			local guess = closest_word(command_array[1], ALLOWED_COMMANDS, 4)
+			msg = 'Unknown command "'..cmd_name..'"'
+			local guess = closest_word(cmd_name, ALLOWED_COMMANDS, 4)
 
 			if guess ~= nil then
 				msg = msg .. ' (did you mean "'..guess..'"?)'
