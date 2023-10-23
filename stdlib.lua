@@ -118,4 +118,21 @@ std = {
 		return false
 	end,
 
+	strfind = function(text, substring)
+		local i
+		for i = 1, #text - #substring + 1 do
+			if text:sub(i, i + #substring - 1) == substring then
+				return i
+			end
+		end
+		return 0
+	end,
+
+	arrfind = function(array, value)
+		local i
+		for i = 1, #array do
+			if array[i] == value then return i end
+		end
+		return 0
+	end,
 }

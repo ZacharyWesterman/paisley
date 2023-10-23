@@ -75,6 +75,13 @@ func_operations = {
 		table.insert(a, b)
 		return a
 	end,
+	index = function(a, b)
+		if type(a) == 'table' then
+			return std.arrfind(a, b)
+		else
+			return std.strfind(a, std.str(b))
+		end
+	end,
 }
 
 function fold_constants(token)

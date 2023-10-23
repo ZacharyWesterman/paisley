@@ -31,6 +31,7 @@ builtin_funcs = {
 	round = 1,
 	abs = 1,
 	append = 2,
+	index = 2,
 }
 
 type_signatures = {
@@ -156,6 +157,10 @@ type_signatures = {
 	},
 	array = {
 		out = 'array',
+	},
+	index = {
+		valid = {{'array', 'any'}, {'string', 'any'}},
+		out = 'number',
 	},
 	[tok.add] = {
 		valid = {{'number'}},

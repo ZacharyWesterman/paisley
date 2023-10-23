@@ -100,6 +100,9 @@ Expressions give access to a decent suite of operations and functions, listed be
 - *integer* division, `//` (divide then round down)
 - remainder/modulo, `%`
 - boolean operators, `and`, `or`, `xor`, `not`
+- comparison, `>`, `>=`, `<`, `<=`
+- comparison (equality), `=` or `==` (both are the same)
+- comparison (not equal), `!=` or `~=` (both are the same)
 - check for whether variables are set, `exists` (e.g. `x exists`)
 - string or array length, `#` (e.g. `#variable`)
 - array slicing, `:` (e.g. `0:5` gives `(0,1,2,3,4,5)`)
@@ -147,6 +150,14 @@ Expressions give access to a decent suite of operations and functions, listed be
 - Round to nearest integer: `round(value) -> number`
 - Absolute value: `abs(value) -> number`
 - Append value to an array: `append(array, value) -> array`
+- Find index of value in an array: `index(array, value) -> number` (returns 0 if value was not found)
+
+### Arrays in expressions
+While you can absolutely create an array using the `array(...)` function, the simpler way to do it is to just include a comma in expressions.
+For example, `(1,2,3)` is an array, as are `array(1,2,3)`, `(1,2,3,)` and `(1,)`. Note that expressions *are* allowed to have a trailing comma, which simply indicates that the expression is an array with a single element.
+
+Note that an expression must contain a comma `,` or slice `:` operator to be considered an array, just parentheses is not enough.
+So `(1,)` is an array and `(1:1)` is an equivalent array, but `(1)` is a number, not an array.
 
 ### Inline command evaluation
 Since commands can return values to Paisley after execution, you can also use those values in further calculations. For example:
