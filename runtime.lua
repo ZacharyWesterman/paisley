@@ -27,17 +27,7 @@ FILE = V2
 	Note that this IS case-sensitive!
 ]]
 ALLOWED_COMMANDS = V3
-if ALLOWED_COMMANDS and #ALLOWED_COMMANDS > 0 then
-	local cmds, i = {}
-	for i = 1, #ALLOWED_COMMANDS do
-		local c = std.split(ALLOWED_COMMANDS[i], ':')
-		if not c[2] then c[2] = 'any' end
-		cmds[c[1]] = c[2]
-	end
-	ALLOWED_COMMANDS = cmds
-else
-	ALLOWED_COMMANDS = nil
-end
+require "builtin_commands"
 
 --[[RUN THIS TO LOAD CODE]]
 function INIT()

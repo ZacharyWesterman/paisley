@@ -448,20 +448,25 @@ function SemanticAnalyzer(tokens, file)
 			local ch = token.children[1]
 			if token.id == tok.inline_command then ch = ch.children[1] end
 
-			if ALLOWED_COMMANDS then
-				if ch.value ~= nil and ch.id ~= tok.lit_null then
-					if not ALLOWED_COMMANDS[ch.value] then
-						--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
-						msg = 'Unknown command "'..std.str(ch.value)..'"'
-						local guess = closest_word(std.str(ch.value), ALLOWED_COMMANDS, 4)
-
-						if guess ~= nil then
-							msg = msg .. ' (did you mean "'..guess..'"?)'
-						end
-						parse_error(ch.line, ch.col, msg, file)
+			if ch.value ~= nil and ch.id ~= tok.lit_null then
+				if not ALLOWED_COMMANDS[ch.value] and not BUILTIN_COMMANDS[ch.value] then
+					--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
+					msg = 'Unknown command "'..std.str(ch.value)..'"'
+					local guess = closest_word(std.str(ch.value), ALLOWED_COMMANDS, 4)
+					if guess == nil then
+						guess = closest_word(std.str(ch.value), BUILTIN_COMMANDS, 4)
 					end
 
+					if guess ~= nil then
+						msg = msg .. ' (did you mean "'..guess..'"?)'
+					end
+					parse_error(ch.line, ch.col, msg, file)
+				end
+
+				if ALLOWED_COMMANDS[ch.value] then
 					token.type = ALLOWED_COMMANDS[ch.value]
+				else
+					token.type = BUILTIN_COMMANDS[ch.value]
 				end
 			end
 			return

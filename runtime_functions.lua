@@ -432,10 +432,13 @@ commands = {
 		local command_array = POP()
 		local cmd_name = std.str(command_array[1])
 
-		if ALLOWED_COMMANDS and not ALLOWED_COMMANDS[cmd_name] then
+		if not ALLOWED_COMMANDS[cmd_name] and not BUILTIN_COMMANDS[cmd_name] then
 			--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
 			msg = 'Unknown command "'..cmd_name..'"'
 			local guess = closest_word(cmd_name, ALLOWED_COMMANDS, 4)
+			if guess == nil then
+				guess = closest_word(cmd_name, BUILTIN_COMMANDS, 4)
+			end
 
 			if guess ~= nil then
 				msg = msg .. ' (did you mean "'..guess..'"?)'
