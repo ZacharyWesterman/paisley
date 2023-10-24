@@ -5,12 +5,12 @@ BUILTIN_COMMANDS = {
 	"error:string",
 }
 
-local _explode(cmdlist)
+local function _explode(cmdlist)
 	if not cmdlist then return {} end
 
 	local cmds, i = {}
-	for i = 1, #ALLOWED_COMMANDS do
-		local c = std.split(ALLOWED_COMMANDS[i], ':')
+	for i = 1, #cmdlist do
+		local c = std.split(cmdlist[i], ':')
 		if not c[2] then c[2] = 'any' end
 		cmds[c[1]] = c[2]
 	end

@@ -121,7 +121,7 @@ function generate_bytecode(root, file)
 
 		if instruction_id == bc.call then
 			if not call_codes[param1] then
-				parse_error(current_line, 0, 'COMPILER BUG: No call code for function "'..param1..'"!', file)
+				parse_error(current_line, 0, 'COMPILER BUG: No call code for function "'..std.str(param1)..'"!', file)
 			end
 			param1 = call_codes[param1]
 		end
@@ -347,6 +347,7 @@ function generate_bytecode(root, file)
 		--COMPARISON OPERATIONS (also boolean technically)
 		[tok.comparison] = function(token, file)
 			local op = {
+				['='] = 'equal',
 				['=='] = 'equal',
 				['!='] = 'notequal',
 				['>'] = 'greater',

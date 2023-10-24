@@ -428,10 +428,13 @@ function SemanticAnalyzer(tokens, file)
 
 	--Tidy up FOR loops (replace command with cmd contents)
 	recurse(root, {tok.for_stmt}, function(token)
-		if #token.children[2].children > 1 then
-			parse_error(token.line, token.col, 'Too many parameters passed to "'..token.text..'" statement', file)
+		if token.children[2].id == tok.command then
+			token.children[2].id = tok.array_concat
+			-- if #token.children[2].children > 1 then
+			-- 	parse_error(token.line, token.col, 'Too many parameters passed to "'..token.text..'" statement', file)
+			-- end
+			-- token.children[2] = token.children[2].children[1]
 		end
-		token.children[2] = token.children[2].children[1]
 	end)
 
 	--[[
@@ -453,12 +456,12 @@ function SemanticAnalyzer(tokens, file)
 					--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
 					msg = 'Unknown command "'..std.str(ch.value)..'"'
 					local guess = closest_word(std.str(ch.value), ALLOWED_COMMANDS, 4)
-					if guess == nil then
+					if guess == nil or guess == '' then
 						guess = closest_word(std.str(ch.value), BUILTIN_COMMANDS, 4)
 					end
 
-					if guess ~= nil then
-						msg = msg .. ' (did you mean "'..guess..'"?)'
+					if guess ~= nil and guess ~= '' then
+						msg = msg .. ' (did you mean "'..std.str(guess)..'"?)'
 					end
 					parse_error(ch.line, ch.col, msg, file)
 				end

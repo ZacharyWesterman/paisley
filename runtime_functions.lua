@@ -10,7 +10,7 @@ MAX_ITER = 30 --Max number of instructions to run before pausing execution (perf
 -- VARS = {}
 
 function runtime_error(line, msg)
-	if msg:sub(1, 12) == 'COMPILER BUG' then
+	if msg:sub(1, 12) == 'RUNTIME BUG' then
 		msg = msg .. '\nTHIS IS A BUG IN THE PAISLEY COMPILER, PLEASE REPORT IT!'
 	end
 
@@ -108,16 +108,25 @@ local functions = {
 	function() PUSH(std.num(POP()) + std.num(POP())) end,
 
 	--SUB
-	function() PUSH(std.num(POP()) - std.num(POP())) end,
+	function()
+		local v1, v2 = std.num(POP()), std.num(POP())
+		PUSH(v2 - v1)
+	end,
 
 	--MUL
 	function() PUSH(std.num(POP()) * std.num(POP())) end,
 
 	--DIV
-	function() PUSH(std.num(POP()) / std.num(POP())) end,
+	function()
+		local v1, v2 = std.num(POP()), std.num(POP())
+		PUSH(v2 / v1)
+	end,
 
 	--REM
-	function() PUSH(std.num(POP()) % std.num(POP())) end,
+	function()
+		local v1, v2 = std.num(POP()), std.num(POP())
+		PUSH(v2 % v1)
+	end,
 
 	--LENGTH
 	function()
@@ -149,7 +158,14 @@ local functions = {
 	end,
 
 	--CONCAT
-	function() PUSH(std.str(POP()) .. std.str(POP())) end,
+	function(line, param)
+		local result = ''
+		while param > 0 do
+			result = std.str(POP())..result
+			param = param - 1
+		end
+		PUSH(result)
+	end,
 
 	--BOOLEAN AND
 	function() PUSH(std.bool(POP()) and std.bool(POP())) end,
@@ -436,17 +452,36 @@ commands = {
 			--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
 			msg = 'Unknown command "'..cmd_name..'"'
 			local guess = closest_word(cmd_name, ALLOWED_COMMANDS, 4)
-			if guess == nil then
+			if guess == nil or guess == '' then
 				guess = closest_word(cmd_name, BUILTIN_COMMANDS, 4)
 			end
 
-			if guess ~= nil then
+			if guess ~= nil and guess ~= '' then
 				msg = msg .. ' (did you mean "'..guess..'"?)'
 			end
 			runtime_error(line, msg)
 		end
 
-		output_array(command_array, 2)
+		if not ALLOWED_COMMANDS[cmd_name] then
+			if cmd_name == 'sleep' then
+				local amt = math.max(0.05, std.num(command_array[2])) - 0.05
+				output(amt, 5)
+			elseif cmd_name == 'time' then
+				output(nil, 6)
+			elseif cmd_name == 'print' then
+				table.remove(command_array, 1)
+				output(std.join(command_array, ' '), 7)
+			elseif cmd_name == 'error' then
+				table.remove(command_array, 1)
+				local msg = line..': '..std.join(command_array, ' ')
+				if file then msg = file..': '..msg end
+				output(msg, 8)
+			else
+				runtime_error(line, 'RUNTIME BUG: No logic implemented for built-in command "'..command_array[1]..'"')
+			end
+		else
+			output_array(command_array, 2)
+		end
 		return true --Suppress regular "continue" output
 	end,
 

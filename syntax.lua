@@ -264,7 +264,7 @@ local rules = {
 		match = {{tok.kwd_while}, {tok.command}},
 		id = tok.while_stmt,
 		text = 1,
-		not_before = {tok.kwd_do},
+		not_before = {tok.kwd_in, tok.text, tok.expression, tok.string_open, tok.expr_open, tok.command_open, tok.inline_command},
 		onmatch = function(token, file)
 			parse_error(token.line, token.col, 'Incomplete while loop declaration (expected "while . do ... end")', file)
 		end,
@@ -288,7 +288,7 @@ local rules = {
 		match = {{tok.kwd_for}, {tok.text}, {tok.kwd_in}, {tok.command, tok.comparison}},
 		id = tok.for_stmt,
 		text = 1,
-		not_before = {tok.kwd_do},
+		not_before = {tok.kwd_do, tok.text, tok.expression, tok.string_open, tok.expr_open, tok.command_open, tok.inline_command},
 		onmatch = function(token, file)
 			parse_error(token.line, token.col, 'Incomplete for loop declaration (expected "for . in . do ... end")', file)
 		end,
@@ -297,7 +297,7 @@ local rules = {
 		match = {{tok.kwd_for}, {tok.text}},
 		id = tok.for_stmt,
 		text = 1,
-		not_before = {tok.kwd_in},
+		not_before = {tok.kwd_in, tok.text, tok.expression, tok.string_open, tok.expr_open, tok.command_open, tok.inline_command},
 		onmatch = function(token, file)
 			parse_error(token.line, token.col, 'Incomplete for loop declaration (expected "for . in . do ... end")', file)
 		end,
