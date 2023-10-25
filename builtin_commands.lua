@@ -3,6 +3,7 @@ BUILTIN_COMMANDS = {
 	"sleep:null",
 	"print:string",
 	"error:string",
+	"systime:number",
 }
 
 local function _explode(cmdlist)
