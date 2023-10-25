@@ -82,6 +82,16 @@ func_operations = {
 			return std.strfind(a, std.str(b))
 		end
 	end,
+	lower = function(a)
+		return std.str(a):lower()
+	end,
+	upper = function(a)
+		return std.str(a):lower()
+	end,
+	camel = function(a)
+		if #a == 0 then return '' end
+		return a:sub(1,1):upper() .. a:sub(2,#a):lower()
+	end,
 }
 
 function fold_constants(token)

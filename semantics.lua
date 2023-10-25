@@ -32,6 +32,9 @@ builtin_funcs = {
 	abs = 1,
 	append = 2,
 	index = 2,
+	lower = 1,
+	upper = 1,
+	camel = 1,
 }
 
 type_signatures = {
@@ -161,6 +164,18 @@ type_signatures = {
 	index = {
 		valid = {{'array', 'any'}, {'string', 'any'}},
 		out = 'number',
+	},
+	lower = {
+		valid = {{'string'}},
+		out = 'string',
+	},
+	upper = {
+		valid = {{'string'}},
+		out = 'string',
+	},
+	camel = {
+		valid = {{'string'}},
+		out = 'string',
 	},
 	[tok.add] = {
 		valid = {{'number'}},

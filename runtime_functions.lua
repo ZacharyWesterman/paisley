@@ -399,6 +399,25 @@ local functions = {
 		end
 		PUSH(res)
 	end,
+
+	--LOWERCASE
+	function()
+		PUSH( std.str(POP()):lower() )
+	end,
+
+	--UPPERCASE
+	function()
+		PUSH( std.str(POP()):upper() )
+	end,
+
+	--CAMEL CASE
+	function()
+		local v = std.str(POP())
+		if #v > 0 then
+			v = v:sub(1,1):upper() .. v:sub(2,#v):lower()
+		end
+		PUSH(v)
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT
