@@ -5,7 +5,7 @@
 -- RANDOM_SEED = 0 --Change this later
 MAX_ITER = 30 --Max number of instructions to run before pausing execution (performance reasons mostly)
 
--- NULL = {}
+NULL = {}
 -- STACK = {}
 -- VARS = {}
 
@@ -56,7 +56,9 @@ local functions = {
 
 	--JUMP IF NIL
 	function(line, param)
-		if STACK[#STACK] == NULL then CURRENT_INSTRUCTION = param end
+		if STACK[#STACK] == NULL then
+			CURRENT_INSTRUCTION = param
+		end
 	end,
 
 	--JUMP IF FALSEY

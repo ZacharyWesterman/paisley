@@ -38,7 +38,6 @@ function INIT()
 	math.randomseed(RANDOM_SEED)
 	STACK = {}
 	VARS = {}
-	NULL = {}
 	output(0, 1)
 end
 

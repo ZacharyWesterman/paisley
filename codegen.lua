@@ -94,13 +94,21 @@ function print_bytecode(instructions)
 			parse_error(0, 0, 'COMPILER BUG: Unknown bytecode instruction with id '..instr[1]..'!', file)
 		end
 
-		--TEMP: print code as it's generated
+		local line = ''
 		if call_text == nil and instr[1] ~= bc.run_command and instr[1] ~= bc.push_cmd_result and instr[1] ~= bc.pop and instr[1] ~= bc.push_index and instr[1] ~= bc.pop_goto_index then call_text = 'null' else call_text = std.debug_str(call_text) end
 		if instr[4] then
-			print(i..' @ line '..instr[2]..': '..instr_text..' '..call_text..' '..std.debug_str(instr[4]))
+			line = i..' @ line '..instr[2]..': '..instr_text..' '..call_text..' '..std.debug_str(instr[4])
 		else
-			print(i..' @ line '..instr[2]..': '..instr_text..' '..call_text)
+			line = i..' @ line '..instr[2]..': '..instr_text..' '..call_text
 		end
+
+		if COMPILER_DEBUG then
+			if i == DEBUG_INSTRUCTION_NUM then
+				line = '\27[7m' .. line .. '\27[0m'
+			end
+		end
+
+		print(line)
 	end
 end
 
@@ -489,7 +497,7 @@ function generate_bytecode(root, file)
 				--Jump to here if "if" section does not execute
 				if not const then
 					emit(bc.label, else_label)
-					emit(bc.pop)
+					-- emit(bc.pop)
 				end
 			end
 
