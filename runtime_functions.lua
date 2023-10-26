@@ -151,7 +151,7 @@ local functions = {
 
 	--ARRAYSLICE
 	function()
-		local start, stop, i = std.num(POP()), std.num(POP())
+		local stop, start, i = std.num(POP()), std.num(POP())
 		local array = {}
 		for i = start, stop do
 			table.insert(array, i)
