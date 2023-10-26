@@ -153,7 +153,7 @@ local functions = {
 	function()
 		local stop, start, i = std.num(POP()), std.num(POP())
 		local array = {}
-		for i = start, stop do
+		for i = stop, start, -1 do
 			table.insert(array, i)
 		end
 		PUSH(array)
