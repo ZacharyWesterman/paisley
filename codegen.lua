@@ -489,15 +489,12 @@ function generate_bytecode(root, file)
 				--IF statement body
 				enter(token.children[2])
 
-				if has_else then
-					--Skip the "else" section if the "if" section executed
-					emit(bc.call, 'jump', endif_label)
-				end
+				emit(bc.call, 'jump', endif_label)
 
 				--Jump to here if "if" section does not execute
 				if not const then
 					emit(bc.label, else_label)
-					-- emit(bc.pop)
+					emit(bc.pop)
 				end
 			end
 
@@ -510,9 +507,10 @@ function generate_bytecode(root, file)
 				else
 					enter(else_block)
 				end
-
-				if not const then emit(bc.label, endif_label) end
 			end
+
+			if not const then emit(bc.label, endif_label) end
+
 		end,
 
 		--ELIF STATEMENT (Functionally identical to the IF statement)
