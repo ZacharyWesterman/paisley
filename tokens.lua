@@ -142,12 +142,12 @@ function print_token(token, indent)
 	local id = token_text(token.id)
 	local meta = ''
 
-	if COMPILER_DEBUG then
-		if token.meta_id ~= nil then
-			id = token_text(token.id)..'*'
-			meta = '    (meta='..token_text(token.meta_id)..')'
-		end
-	else
+	-- if COMPILER_DEBUG then
+	-- 	if token.meta_id ~= nil then
+	-- 		id = token_text(token.id)..'*'
+	-- 		meta = '    (meta='..token_text(token.meta_id)..')'
+	-- 	end
+	-- else
 		if token.value ~= nil then
 			meta = '    (='..std.debug_str(token.value)..')'
 			if token.type ~= nil then
@@ -158,7 +158,7 @@ function print_token(token, indent)
 				meta = '    ('..token.type..')'
 			end
 		end
-	end
+	-- end
 
 	print((indent..'%2d:%2d: %13s = %s%s'):format(token.line, token.col, id, token.text:gsub('\n', '<nl>'):gsub('\x09','<nl>'), meta))
 end

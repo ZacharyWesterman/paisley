@@ -259,8 +259,8 @@ function generate_bytecode(root, file)
 		--STRING CONCAT
 		[tok.concat] = function(token, file)
 			codegen_rules.recur_push(token.children[1])
-			codegen_rules.recur_push(token.children[2])
-			emit(bc.call, 'concat')
+			if token.children[2] then codegen_rules.recur_push(token.children[2]) end
+			emit(bc.call, 'concat', #token.children)
 		end,
 
 		--CODEGEN FOR VARIABLES
@@ -279,11 +279,17 @@ function generate_bytecode(root, file)
 
 		--STRING CONCATENATION
 		[tok.string_open] = function(token, file)
-			local i
-			for i = 1, #token.children do
-				codegen_rules.recur_push(token.children[i])
+			if #token.children > 0 then
+				local i
+				for i = 1, #token.children do
+					codegen_rules.recur_push(token.children[i])
+				end
+				emit(bc.call, 'concat', #token.children)
+			elseif token.value ~= nil then
+				emit(bc.push, token.value)
+			else
+				parse_error(token.line, token.col, 'COMPILER BUG: Codegen for "string_open", token has no children or const value!', file)
 			end
-			emit(bc.call, 'concat', #token.children)
 		end,
 
 		--MULTIPLICATION OPERATIONS

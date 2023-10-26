@@ -4,18 +4,19 @@ local rules = {
 		match = {{tok.comparison, tok.array_concat}, {tok.comparison, tok.array_concat}},
 		id = tok.concat,
 		not_after = {tok.op_assign},
+		not_before = {tok.index_open},
 		text = '..',
 	},
 
 	--Function call
 	{
-		match = {{tok.text}, {tok.paren_open}, {tok.comparison}, {tok.paren_close}},
+		match = {{tok.text, tok.variable}, {tok.paren_open}, {tok.comparison}, {tok.paren_close}},
 		id = tok.func_call,
 		keep = {3},
 		text = 1,
 	},
 	{
-		match = {{tok.text}, {tok.paren_open}, {tok.paren_close}},
+		match = {{tok.text, tok.variable}, {tok.paren_open}, {tok.paren_close}},
 		id = tok.func_call,
 		keep = {},
 		text = 1,
@@ -31,9 +32,15 @@ local rules = {
 
 	--Treat all literals the same.
 	{
-		match = {{tok.lit_number, tok.lit_boolean, tok.lit_null, tok.negate, tok.variable, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat}},
+		match = {{tok.lit_number, tok.lit_boolean, tok.lit_null, tok.negate, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat}},
 		id = tok.value,
 		meta = true,
+	},
+	{
+		match = {{tok.variable}},
+		id = tok.value,
+		meta = true,
+		not_before = {tok.paren_open},
 	},
 
 	--Length operator
@@ -171,6 +178,7 @@ local rules = {
 	{
 		match = {{tok.paren_open}, {tok.comparison}, {tok.paren_close}},
 		id = tok.parentheses,
+		not_after = {tok.variable},
 		keep = {2},
 		text = 1,
 	},
@@ -658,7 +666,7 @@ function SyntaxParser(tokens, file)
 		-- end
 		-- print()
 
-		if not did_reduce or loops_since_reduction > 50 then
+		if not did_reduce or loops_since_reduction > 500 then
 			if first_failure == nil then
 				parse_error(1, 1, 'COMPILER BUG: Max iterations exceeded but no syntax error was found!', file)
 			end

@@ -4,7 +4,7 @@ BUILTIN_COMMANDS = {
 	"print:string",
 	"error:string",
 	"systime:number",
-	"sysdate:number",
+	"sysdate:string",
 }
 
 local function _explode(cmdlist)

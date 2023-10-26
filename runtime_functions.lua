@@ -143,7 +143,7 @@ local functions = {
 		if type(index) ~= 'table' then index = {index} end
 
 		local result = {}
-		for i = 1, index do
+		for i = 1, #index do
 			table.insert(result, data[std.num(index[i])])
 		end
 		PUSH(result)
