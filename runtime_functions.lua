@@ -486,9 +486,13 @@ commands = {
 		if not ALLOWED_COMMANDS[cmd_name] then
 			if cmd_name == 'sleep' then
 				local amt = math.max(0.05, std.num(command_array[2])) - 0.05
-				output(amt, 5)
+				output(amt, 4)
 			elseif cmd_name == 'time' then
-				output(nil, 6)
+				output(nil, 5)
+			elseif cmd_name == 'systime' then
+				output(1, 6)
+			elseif cmd_name == 'sysdate' then
+				output(2, 6)
 			elseif cmd_name == 'print' then
 				table.remove(command_array, 1)
 				output(std.join(command_array, ' '), 7)

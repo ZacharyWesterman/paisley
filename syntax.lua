@@ -264,7 +264,7 @@ local rules = {
 		match = {{tok.kwd_while}, {tok.command}},
 		id = tok.while_stmt,
 		text = 1,
-		not_before = {tok.kwd_in, tok.text, tok.expression, tok.string_open, tok.expr_open, tok.command_open, tok.inline_command},
+		not_before = {tok.kwd_do, tok.line_ending, tok.kwd_in, tok.text, tok.expression, tok.string_open, tok.expr_open, tok.command_open, tok.inline_command},
 		onmatch = function(token, file)
 			parse_error(token.line, token.col, 'Incomplete while loop declaration (expected "while . do ... end")', file)
 		end,

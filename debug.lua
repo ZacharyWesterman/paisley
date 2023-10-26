@@ -12,7 +12,7 @@ end
 
 require "compiler"
 
--- exit() --TEMP
+exit() --TEMP
 
 print_header('Raw Bytecode')
 print(TRANSFER)
