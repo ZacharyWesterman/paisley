@@ -151,6 +151,10 @@ Expressions give access to a decent suite of operations and functions, listed be
 - Absolute value: `abs(value) -> number`
 - Append value to an array: `append(array, value) -> array`
 - Find index of value in an array: `index(array, value) -> number` (returns 0 if value was not found)
+- Convert string to lowercase: `lower(text) -> string`
+- Convert string to uppercase: `upper(text) -> string`
+- Capitalize the first letter: `camel(text) -> string`
+- Replace all occurrences of a sub-string: `replace(text, search, replace) -> string`
 
 ### Arrays in expressions
 While you can absolutely create an array using the `array(...)` function, the simpler way to do it is to just include a comma in expressions.
@@ -165,6 +169,16 @@ Since commands can return values to Paisley after execution, you can also use th
 let emote_list = ${get emotes}
 let last_emote = {emote_list[#emote_list]}
 ```
+### Built-in commands
+For ease of use and consistency, there are 6 built-in commands that will always be the same regardless of device.
+- `time`: Returns a number representing the in-game time. Arguments are ignored.
+- `systime`: Returns a number representing the system time. Arguments are ignored.
+- `sysdate`: Returns a numeric array containing the system day, month, and year (in that order). Arguments are ignored.
+- `print`: Send all arguments to the "print" output, as well as to internal log.
+- `error`: Send all arguments (plus line number and file, if applicable) to the "error" output, as well as to internal warning log.
+- `sleep`: Pause script execution for the given amount of seconds. If the first argument is not a positive number, delay defaults to minimum value (0.05s).
+
+Note that all commands take a little bit of time to run (at least 0.05s), whether they're built-in or not. This is to prevent "infinite loop" errors or performance drops.
 
 ---
 
