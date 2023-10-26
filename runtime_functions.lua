@@ -467,6 +467,11 @@ commands = {
 	--RUN COMMAND
 	[6] = function(line, p1, p2)
 		local command_array = POP()
+		local cmd_array, i = {}
+		for i = 1, #command_array do
+			table.insert(cmd_array, std.str(command_array[i]))
+		end
+		command_array = cmd_array
 		local cmd_name = std.str(command_array[1])
 
 		if not ALLOWED_COMMANDS[cmd_name] and not BUILTIN_COMMANDS[cmd_name] then
@@ -495,7 +500,8 @@ commands = {
 				output(2, 6)
 			elseif cmd_name == 'print' then
 				table.remove(command_array, 1)
-				output(std.join(command_array, ' '), 7)
+				local msg = std.join(command_array, ' ')
+				output(msg, 7)
 			elseif cmd_name == 'error' then
 				table.remove(command_array, 1)
 				local msg = line..': '..std.join(command_array, ' ')

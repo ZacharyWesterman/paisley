@@ -202,7 +202,7 @@ local rules = {
 
 	--Strings
 	{
-		match = {{tok.string_open}, {tok.expression, tok.text, tok.inline_command}},
+		match = {{tok.string_open}, {tok.expression, tok.text, tok.inline_command, tok.comparison}},
 		append = true, --This is an "append" token: the first token in the group does not get consumed, instead all other tokens are appended as children.
 	},
 	{
@@ -661,10 +661,10 @@ function SyntaxParser(tokens, file)
 
 		loops_since_reduction = loops_since_reduction + 1
 
-		-- for _, t in pairs(tokens) do
-		-- 	print_tokens_recursive(t)
-		-- end
-		-- print()
+		for _, t in pairs(tokens) do
+			print_tokens_recursive(t)
+		end
+		print()
 
 		if not did_reduce or loops_since_reduction > 500 then
 			if first_failure == nil then
