@@ -92,6 +92,10 @@ func_operations = {
 		if #a == 0 then return '' end
 		return a:sub(1,1):upper() .. a:sub(2,#a):lower()
 	end,
+	replace = function(subject, search, replace)
+		--Not really memory efficient, but good enough.
+		return std.join(std.split(subject, search), replace)
+	end,
 }
 
 function fold_constants(token)

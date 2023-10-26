@@ -420,6 +420,12 @@ local functions = {
 		end
 		PUSH(v)
 	end,
+
+	--STRING REPLACE
+	function()
+		local v = POP()
+		PUSH( std.join(std.split(std.str(v[3]), std.str(v[2])), std.str(v[1])) )
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT

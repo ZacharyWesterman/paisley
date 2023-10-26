@@ -35,6 +35,7 @@ builtin_funcs = {
 	lower = 1,
 	upper = 1,
 	camel = 1,
+	replace = 3,
 }
 
 type_signatures = {
@@ -174,6 +175,10 @@ type_signatures = {
 		out = 'string',
 	},
 	camel = {
+		valid = {{'string'}},
+		out = 'string',
+	},
+	replace = {
 		valid = {{'string'}},
 		out = 'string',
 	},
