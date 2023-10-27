@@ -126,7 +126,7 @@ Expressions give access to a decent suite of operations and functions, listed be
 ### Built-in functions:
 - Random integer: `irandom(min_value, max_value) -> number`
 - Random real number: `frandom(min_value, max_value) -> number`
-- Difference between two strings: `worddiff(str1, str2) -> number`
+- Difference between two strings: `worddiff(str1, str2) -> number` (levenschtein distance)
 - Euclidean distance (numbers or vectors of N dimension): `dist(point1, point2) -> number`
 - Trig functions: `sin(x), cos(x), tan(x), asin(h), acos(h), atan(h), atan2(x, y) -> number`
 - Square root: `sqrt(x) -> number`
