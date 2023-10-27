@@ -9,7 +9,7 @@ json = {
 	--[[
 		Convert an object into a JSON string.
 	--]]
-	stringify = function(data, indent)
+	stringify = function(data, indent, return_error)
 		local function __stringify(data, indent, __indent)
 			local tp = type(data)
 
@@ -85,7 +85,12 @@ json = {
 			elseif data == nil then
 				return 'null'
 			else
-				error('Unable to stringify data "'..tostring(data)..'" of type '..tp..'.')
+				local msg = 'Unable to stringify data "'..tostring(data)..'" of type '..tp..'.'
+				if return_error then
+					return nil, msg
+				else
+					error(msg)
+				end
 			end
 		end
 
@@ -95,7 +100,7 @@ json = {
 	--[[
 		Parse a JSON string into an arbitrary object.
 	--]]
-	parse = function(text)
+	parse = function(text, return_error)
 		local __text = text
 		local line = 1
 		local col = 1
@@ -129,6 +134,12 @@ json = {
 			error('JSON parse error at ['..line..':'..col..']: '..msg)
 		end
 
+		if return_error then
+			do_error = function(msg)
+				return nil, 'JSON parse error at ['..line..':'..col..']: '..msg
+			end
+		end
+
 		--Split JSON string into tokens
 		local in_string = false
 		local escaped = false
@@ -143,7 +154,7 @@ json = {
 				line = line + 1
 				col = 0
 				if in_string then
-					do_error('Unexpected line ending inside string.')
+					return do_error('Unexpected line ending inside string.')
 				end
 			elseif in_string then
 				if escaped then
@@ -167,15 +178,15 @@ json = {
 				table.insert(paren_stack, chr)
 			elseif chr == ']' then
 				table.insert(tokens, newtoken(chr, _tok.rbracket))
-				if #paren_stack == 0 then do_error('Unexpected closing bracket "]".') end
-				if table.remove(paren_stack) ~= '[' then do_error('Bracket mismatch (expected "}", got "]").') end
+				if #paren_stack == 0 then return do_error('Unexpected closing bracket "]".') end
+				if table.remove(paren_stack) ~= '[' then return do_error('Bracket mismatch (expected "}", got "]").') end
 			elseif chr == '{' then
 				table.insert(tokens, newtoken(chr, _tok.lbrace))
 				table.insert(paren_stack, chr)
 			elseif chr == '}' then
 				table.insert(tokens, newtoken(chr, _tok.rbrace))
-				if #paren_stack == 0 then do_error('Unexpected closing brace "}".') end
-				if table.remove(paren_stack) ~= '{' then do_error('Brace mismatch (expected "]", got "}").') end
+				if #paren_stack == 0 then return do_error('Unexpected closing brace "}".') end
+				if table.remove(paren_stack) ~= '{' then return do_error('Brace mismatch (expected "]", got "}").') end
 			elseif chr == ':' then
 				table.insert(tokens, newtoken(chr, _tok.colon))
 			elseif chr == ',' then
@@ -197,7 +208,7 @@ json = {
 			else
 				local num = text:match('^%-?%d+%.?%d*', i)
 				if num == nil then
-					do_error('Invalid character "'..chr..'".')
+					return do_error('Invalid character "'..chr..'".')
 				else
 					table.insert(tokens, newtoken(tonumber(num), _tok.literal))
 					i = i + #num - 1
@@ -209,22 +220,23 @@ json = {
 
 		if in_string then
 			col = col - #this_token
-			do_error('Unterminated string.')
+			return do_error('Unterminated string.')
 		end
 
 		if #paren_stack > 0 then
 			local last = table.remove(paren_stack)
 			if last == '[' then
-				do_error('No terminating "]" bracket.')
+				return do_error('No terminating "]" bracket.')
 			else
-				do_error('No terminating "}" brace.')
+				return do_error('No terminating "}" brace.')
 			end
 		end
 
 		local lex_error = function(token, msg)
 			line = token.line
 			col = token.col
-			do_error(msg)
+			local r1, r2 = do_error(msg)
+			return r1, nil, r2
 		end
 
 		--Now that the JSON data is confirmed to only have valid tokens, condense the tokens into valid data
@@ -250,7 +262,7 @@ json = {
 					if this_token.kind == _tok.comma then
 						i = i + 1
 					elseif this_token.kind ~= _tok.rbracket then
-						lex_error(this_token, 'Unexpected token "'..this_token.value..'" (expected "," or "]").')
+						return lex_error(this_token, 'Unexpected token "'..this_token.value..'" (expected "," or "]").')
 					end
 					i = i + 1
 					this_token = tokens[i]
@@ -266,13 +278,13 @@ json = {
 				while this_token.kind ~= _tok.rbrace do
 					--Only exact keys are allowed‚ no objects as keys
 					if this_token.kind ~= _tok.literal then
-						lex_error(this_token, 'Unexpected token "'..this_token.value..'" (expected literal).')
+						return lex_error(this_token, 'Unexpected token "'..this_token.value..'" (expected literal).')
 					end
 					local key = this_token.value
 
 					this_token = tokens[i+1]
 					if this_token.kind ~= _tok.colon then
-						lex_error(this_token, 'Unexpected token "'..this_token.value..'" (expected ":").')
+						return lex_error(this_token, 'Unexpected token "'..this_token.value..'" (expected ":").')
 					end
 
 					this_object[key], i = lex(i+2)
@@ -280,18 +292,19 @@ json = {
 					if this_token.kind == _tok.comma then
 						i = i + 1
 					elseif this_token.kind ~= _tok.rbrace then
-						lex_error(this_token, 'Unexpected token "'..this_token.value..'" (expected "," or "}").')
+						return lex_error(this_token, 'Unexpected token "'..this_token.value..'" (expected "," or "}").')
 					end
 					i = i + 1
 					this_token = tokens[i]
 				end
 				return this_object, i
 			else
-				lex_error(this_token, 'Unexpected token "'..this_token.value..'".')
+				return lex_error(this_token, 'Unexpected token "'..this_token.value..'".')
 			end
 		end
 
 		if #tokens == 0 then return nil end
-		return lex(1)
+		local r1, r2, r3 = lex(1)
+		return r1, r3
 	end
 }
