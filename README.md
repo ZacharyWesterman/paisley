@@ -176,7 +176,7 @@ let last_emote = {emote_list[#emote_list]}
 ### Built-in commands
 For ease of use and consistency, there are 6 built-in commands that will always be the same regardless of device.
 - `time`: Returns a number representing the in-game time. Arguments are ignored.
-- `systime`: Returns a number representing the system time. Arguments are ignored.
+- `systime`: Returns a number representing the system time (seconds since midnight). Arguments are ignored.
 - `sysdate`: Returns a numeric array containing the system day, month, and year (in that order). Arguments are ignored.
 - `print`: Send all arguments to the "print" output, as well as to internal log.
 - `error`: Send all arguments (plus line number and file, if applicable) to the "error" output, as well as to internal warning log.
