@@ -155,6 +155,10 @@ Expressions give access to a decent suite of operations and functions, listed be
 - Convert string to uppercase: `upper(text) -> string`
 - Capitalize the first letter: `camel(text) -> string`
 - Replace all occurrences of a sub-string: `replace(text, search, replace) -> string`
+- Serialize data to a JSON string: `json_encode(data) -> string`
+- Deserialize data from a JSON string: `json_decode(text) -> any`
+- Convert a string to base64: `b64_encode(text) -> string`
+- Convert base64 text to a string: `b64_decode(text) -> string`
 
 ### Arrays in expressions
 While you can absolutely create an array using the `array(...)` function, the simpler way to do it is to just include a comma in expressions.

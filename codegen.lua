@@ -25,7 +25,7 @@ local call_codes = {
 	div = 9,
 	rem = 10,
 	length = 11,
-	index = 12,
+	arrayindex = 12,
 	arrayslice = 13,
 	concat = 14,
 	booland = 15,
@@ -70,6 +70,16 @@ local call_codes = {
 	round = 54,
 	abs = 55,
 	append = 56,
+	index = 57,
+	lower = 58,
+	upper = 59,
+	camel = 60,
+	replace = 61,
+	json_encode = 62,
+	json_decode = 63,
+	json_valid = 64,
+	b64_encode = 65,
+	b64_decode = 66,
 }
 
 local function bc_get_key(code, lookup)
@@ -335,7 +345,7 @@ function generate_bytecode(root, file)
 		[tok.index] = function(token, file)
 			codegen_rules.recur_push(token.children[1])
 			codegen_rules.recur_push(token.children[2])
-			emit(bc.call, 'index')
+			emit(bc.call, 'arrayindex')
 		end,
 
 		--BOOLEAN OPERATIONS

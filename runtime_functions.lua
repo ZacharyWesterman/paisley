@@ -136,7 +136,7 @@ local functions = {
 		if type(val) == 'table' then PUSH(#VAL) else PUSH(#std.str(val)) end
 	end,
 
-	--INDEX
+	--ARRAY INDEX
 	function()
 		local index, data, i = POP(), POP()
 		if type(data) ~= 'table' then data = std.split(std.str(data), '') end
