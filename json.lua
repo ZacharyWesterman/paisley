@@ -306,5 +306,17 @@ json = {
 		if #tokens == 0 then return nil end
 		local r1, r2, r3 = lex(1)
 		return r1, r3
-	end
+	end,
+
+
+	--[[
+		Check if a JSON string is valid.
+	--]]
+	verify = function(text)
+		local res, err = json.parse(text, true)
+		if err ~= nil then
+			return false, err
+		end
+		return true
+	end,
 }

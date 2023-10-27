@@ -36,6 +36,11 @@ builtin_funcs = {
 	upper = 1,
 	camel = 1,
 	replace = 3,
+	json_encode = 1,
+	json_decode = 1,
+	json_valid = 1,
+	b64_encode = 1,
+	b64_decode = 1,
 }
 
 type_signatures = {
@@ -182,6 +187,23 @@ type_signatures = {
 		valid = {{'string'}},
 		out = 'string',
 	},
+	json_encode = {
+		out = 'string',
+	},
+	json_decode = {
+		valid = {{'string'}},
+	},
+	json_valid = {
+		out = 'boolean',
+	},
+	b64_encode = {
+		valid = {{'string'}},
+		out = 'string',
+	},
+	b64_decode = {
+		valid = {{'string'}},
+		out = 'string',
+	},
 	[tok.add] = {
 		valid = {{'number'}},
 		out = 'number',
@@ -213,7 +235,7 @@ type_signatures = {
 		out = 'number',
 	},
 	[tok.string_open] = {
-		out = 'string'
+		out = 'string',
 	},
 }
 

@@ -96,6 +96,35 @@ func_operations = {
 		--Not really memory efficient, but good enough.
 		return std.join(std.split(subject, search), replace)
 	end,
+
+	json_encode = function(data, token, file)
+		local result, err = json.stringify(data, nil, true)
+
+		if err ~= nil then
+			parse_error(token.line, token.col, err, file)
+		end
+
+		return result
+	end,
+	json_decode = function(data, token, file)
+		local result, err = json.parse(data, true)
+
+		if err ~= nil then
+			parse_error(token.line, token.col, err, file)
+		end
+
+		return result
+	end,
+	json_valid = function(data)
+		return json.verify(data)
+	end,
+
+	b64_encode = function(text)
+		return std.b64_encode(text)
+	end,
+	b64_decode = function(text)
+		return std.b64_decode(text)
+	end,
 }
 
 function fold_constants(token)
@@ -232,9 +261,12 @@ function fold_constants(token)
 				if #values == 0 then
 					token.value = fn(nil, token, file)
 				else
+					local u = table.unpack
+					if not u then u = unpack end
+
 					table.insert(values, token)
 					table.insert(values, file)
-					token.value = fn(table.unpack(values))
+					token.value = fn(u(values))
 				end
 			end
 

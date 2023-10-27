@@ -426,6 +426,52 @@ local functions = {
 		local v = POP()
 		PUSH( std.join(std.split(std.str(v[3]), std.str(v[2])), std.str(v[1])) )
 	end,
+
+	--JSON_ENCODE
+	function(line)
+		local v = POP()
+		local res, err = json.stringify(v[1], nil, true)
+		if err ~= nil then
+			runtime_error(line, err)
+		end
+		PUSH(res)
+	end,
+
+	--JSON_DECODE
+	function(line)
+		local v = POP()
+
+		if type(v[1]) ~= 'string' then
+			runtime_error(line, 'Input to json_decode is not a string')
+		end
+
+		local res, err = json.parse(v[1], true)
+		if err ~= nil then
+			runtime_error(line, err)
+		end
+
+		PUSH(res)
+	end,
+
+	--JSON_VALID
+	function()
+		local v = POP()
+		if type(v[1]) ~= 'string' then
+			PUSH(false)
+		else
+			PUSH(json.verify(v[1]))
+		end
+	end,
+
+	--BASE64_ENCODE
+	function()
+		PUSH( std.b64_encode(std.str(POP()[1])) )
+	end,
+
+	--BASE64_DECODE
+	function()
+		PUSH( std.b64_decode(std.str(POP()[1])) )
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT
