@@ -352,9 +352,9 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					end
 				end
 
-				--Special "list of vars" variable
+				--Special "list of vars" and "list of commands" variables
 				if not match then
-					match = text:match('^@')
+					match = text:match('^[@%$]')
 					if match then tok_type = tok.variable end
 				end
 			elseif curr_scope == '"' or curr_scope == '\'' then

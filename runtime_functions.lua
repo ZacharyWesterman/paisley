@@ -501,6 +501,12 @@ commands = {
 			end
 			table.sort(res)
 			PUSH(res)
+		elseif p1 == '$' then
+			local res, k = {}
+			for k in pairs(BUILTIN_COMMANDS) do table.insert(res, k) end
+			for k in pairs(ALLOWED_COMMANDS) do table.insert(res, k) end
+			table.sort(res)
+			PUSH(res)
 		else
 			PUSH(VARS[p1])
 		end
