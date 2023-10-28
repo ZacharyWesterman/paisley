@@ -160,6 +160,8 @@ Expressions give access to a decent suite of operations and functions, listed be
 - Deserialize data from a JSON string: `json_decode(text) -> any`
 - Convert a string to base64: `b64_encode(text) -> string`
 - Convert base64 text to a string: `b64_decode(text) -> string`
+- Left-pad a string with a given character: `lpad(string, character, to_width) -> string`
+- Right-pad a string with a given character: `rpad(string, character, to_width) -> string`
 
 ### Arrays in expressions
 While you can absolutely create an array using the `array(...)` function, the simpler way to do it is to just include a comma in expressions.
@@ -187,20 +189,22 @@ Note that all commands take a little bit of time to run (at least 0.05s), whethe
 
 ---
 
-Lastly, to give an idea of the syntax, here is an example program that could check if the player is near an NPC and respond accordingly. Keep in mind that the actual commands available will vary based on the device.
+Lastly, to give an idea of the syntax, here is an example program that will create a clock that stays in sync with the client system.
 
 ```sh
-	let start = ${time}
+#Repeat forever. "while 1 do" would also work.
+while {true} do
+	#Format date as YYYY-MM-DD
+	let date = ${sysdate}
+	let date = {date[3] '-' date[2] '-' date[1]}
 
-	#Wait until player approaches
-	while {not ${player near}} do
-		#Every 10 seconds, ask player to come here
-		if {${time} - start > 10} then
-			say "Hey, come over here!"
-			let start = ${time}
-		end
-	end
+	#Format time as HH:MM:SS
+	#Note the lpad() uses make sure that minutes/seconds are always 2 digits
+	let time = ${systime}
+	let time = {floor(time/3600) ':' lpad(floor(time/60)%60, '0', 2) ':' lpad(floor(time%60), '0', 2)}
+	print {date ' @ ' time}
 
-	#Now that player is nearby, tell them a secret
-	say "Did you know... I'm not wearing shoes."
+	#Only update once per second
+	sleep 1
+end
 ```
