@@ -521,10 +521,6 @@ function SemanticAnalyzer(tokens, file)
 			token.type = std.type(token.value)
 			return
 		elseif token.id == tok.variable then
-			local tp = variables[token.text]
-			if tp then
-				token.type = tp[#tp]
-			end
 			return
 		elseif type_signatures[token.id] ~= nil then
 			signature = type_signatures[token.id]
@@ -641,6 +637,19 @@ function SemanticAnalyzer(tokens, file)
 					deduced_variable_types = true
 				end
 			end
+		end
+	end
+
+	local function variable_unassignment(token)
+		if token.id == tok.for_stmt then
+			local var = token.children[1].text
+			if variables[var] then
+				if #variables[var] == 1 then
+					variables[var] = nil
+				else
+					table.remove(variables)
+				end
+			end
 		elseif token.id == tok.let_stmt then
 			local var = token.children[1]
 			local ch = token.children[2]
@@ -656,18 +665,12 @@ function SemanticAnalyzer(tokens, file)
 				var.type = ch.type
 				deduced_variable_types = true
 			end
-		end
-	end
+		elseif token.id == tok.variable then
+			if token.type then return end
 
-	local function variable_unassignment(token)
-		if token.id == tok.for_stmt then
-			local var = token.children[1].text
-			if variables[var] then
-				if #variables[var] == 1 then
-					variables[var] = nil
-				else
-					table.remove(variables)
-				end
+			local tp = variables[token.text]
+			if tp then
+				token.type = tp[#tp]
 			end
 		end
 	end
@@ -680,13 +683,13 @@ function SemanticAnalyzer(tokens, file)
 		deduced_variable_types = false
 
 		--First pass at deducing all types
-		recurse(root, {tok.string_open, tok.add, tok.multiply, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.variable, tok.inline_command, tok.command}, nil, type_checking)
+		recurse(root, {tok.string_open, tok.add, tok.multiply, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.inline_command, tok.command}, nil, type_checking)
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
 		recurse(root, {tok.add, tok.multiply, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice, tok.string_open, tok.index}, nil, fold_constants)
 
 		--Set any variables we can
-		recurse(root, {tok.for_stmt, tok.let_stmt}, variable_assignment, variable_unassignment)
+		recurse(root, {tok.for_stmt, tok.let_stmt, tok.variable}, variable_assignment, variable_unassignment)
 	end
 
 	--One last pass at deducing all types (after any constant folding)

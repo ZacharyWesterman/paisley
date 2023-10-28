@@ -41,8 +41,10 @@ print(PORT)
 while PORT ~= 3 do
 	os.execute('sleep 1')
 	-- os.execute('clear')
-	V5 = {10, 25, 2023}
 	ITER()
+	-- if PORT == 6 then
+	-- 	if DATA == 1 then V5 = ''
+	V5 = {10, 25, 2023}
 	DEBUG_INSTRUCTION_NUM = CURRENT_INSTRUCTION
 	print_bytecode(bytecode)
 
