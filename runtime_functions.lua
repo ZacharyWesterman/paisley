@@ -472,6 +472,26 @@ local functions = {
 	function()
 		PUSH( std.b64_decode(std.str(POP()[1])) )
 	end,
+
+	--LEFT PAD STRING
+	function()
+		local v = POP()
+		local text = std.str(v[3])
+		local character = std.str(v[2]):sub(1,1)
+		local width = std.num(v[1])
+
+		PUSH( character:rep(width - #text) .. text )
+	end
+
+	--RIGHT PAD STRING
+	function()
+		local v = POP()
+		local text = std.str(v[3])
+		local character = std.str(v[2]):sub(1,1)
+		local width = std.num(v[1])
+
+		PUSH( text .. character:rep(width - #text) )
+	end
 }
 
 --[[ INSTRUCTION LAYOUT

@@ -33,6 +33,8 @@ V2 = nil --FILE
 V3 = {} --non-builtin commands
 V4 = 0 --RNG seed value
 V5 = nil --LAST CMD RESULT
+PORT = 0
+DATA = nil
 
 require "runtime"
 

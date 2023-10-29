@@ -125,6 +125,15 @@ func_operations = {
 	b64_decode = function(text)
 		return std.b64_decode(text)
 	end,
+
+	lpad = function(text, character, width)
+		local c = character:sub(1,1)
+		return c:rep(width-#text) .. text
+	end,
+	rpad = function(text, character, width)
+		local c = character:sub(1,1)
+		return text .. c:rep(width-#text)
+	end,
 }
 
 function fold_constants(token)

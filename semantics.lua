@@ -41,6 +41,8 @@ builtin_funcs = {
 	json_valid = 1,
 	b64_encode = 1,
 	b64_decode = 1,
+	lpad = 3,
+	rpad = 3,
 }
 
 type_signatures = {
@@ -202,6 +204,14 @@ type_signatures = {
 	},
 	b64_decode = {
 		valid = {{'string'}},
+		out = 'string',
+	},
+	lpad = {
+		valid = {{'string', 'string', 'number'}},
+		out = 'string',
+	},
+	rpad = {
+		valid = {{'string', 'string', 'number'}},
 		out = 'string',
 	},
 	[tok.add] = {
