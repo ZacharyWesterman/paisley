@@ -162,6 +162,7 @@ Expressions give access to a decent suite of operations and functions, listed be
 - Convert base64 text to a string: `b64_decode(text) -> string`
 - Left-pad a string with a given character: `lpad(string, character, to_width) -> string`
 - Right-pad a string with a given character: `rpad(string, character, to_width) -> string`
+- Convert a number to a hexadecimal string: `hex(value) -> string`
 
 ### Arrays in expressions
 While you can absolutely create an array using the `array(...)` function, the simpler way to do it is to just include a comma in expressions.

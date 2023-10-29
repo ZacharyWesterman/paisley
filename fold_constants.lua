@@ -134,6 +134,9 @@ func_operations = {
 		local c = character:sub(1,1)
 		return text .. c:rep(width-#text)
 	end,
+	hex = function(value)
+		return string.format('%x', value)
+	end,
 }
 
 function fold_constants(token)

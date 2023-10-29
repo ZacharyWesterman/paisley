@@ -43,6 +43,7 @@ builtin_funcs = {
 	b64_decode = 1,
 	lpad = 3,
 	rpad = 3,
+	hex = 1,
 }
 
 type_signatures = {
@@ -212,6 +213,10 @@ type_signatures = {
 	},
 	rpad = {
 		valid = {{'string', 'string', 'number'}},
+		out = 'string',
+	},
+	hex = {
+		valid = {{'number'}},
 		out = 'string',
 	},
 	[tok.add] = {

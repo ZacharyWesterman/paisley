@@ -492,6 +492,11 @@ local functions = {
 
 		PUSH( text .. character:rep(width - #text) )
 	end,
+
+	--CONVERT NUMBER TO HEX
+	function()
+		PUSH( string.format('%x', std.num(POP()[1])) )
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT
