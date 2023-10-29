@@ -476,22 +476,22 @@ local functions = {
 	--LEFT PAD STRING
 	function()
 		local v = POP()
-		local text = std.str(v[3])
+		local text = std.str(v[1])
 		local character = std.str(v[2]):sub(1,1)
-		local width = std.num(v[1])
+		local width = std.num(v[3])
 
 		PUSH( character:rep(width - #text) .. text )
-	end
+	end,
 
 	--RIGHT PAD STRING
 	function()
 		local v = POP()
-		local text = std.str(v[3])
+		local text = std.str(v[1])
 		local character = std.str(v[2]):sub(1,1)
-		local width = std.num(v[1])
+		local width = std.num(v[3])
 
 		PUSH( text .. character:rep(width - #text) )
-	end
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT
