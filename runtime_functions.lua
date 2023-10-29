@@ -150,9 +150,16 @@ local functions = {
 	end,
 
 	--ARRAYSLICE
-	function()
+	function(line)
 		local stop, start, i = std.num(POP()), std.num(POP())
 		local array = {}
+
+		--For performance, limit how big slices can be.
+		local max_arr_sz = 65535
+		if stop - start > max_arr_sz then
+			runtime_error(line, 'Attempt to create an array of '..(stop - start)..' elements (max is '..max_arr_sz..')')
+		end
+
 		for i = stop, start, -1 do
 			table.insert(array, i)
 		end
