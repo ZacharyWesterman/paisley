@@ -291,6 +291,12 @@ local rules = {
 		keep = {2, 4},
 		text = 1,
 	},
+	{
+		match = {{tok.kwd_for}, {tok.text}, {tok.kwd_in}, {tok.command, tok.comparison}, {tok.kwd_do}, {tok.line_ending}, {tok.kwd_end}},
+		id = tok.for_stmt,
+		keep = {2, 4},
+		text = 1,
+	},
 	--Invalid for loops
 	{
 		match = {{tok.kwd_for}, {tok.text}, {tok.kwd_in}, {tok.command, tok.comparison}},
