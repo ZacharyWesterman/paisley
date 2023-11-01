@@ -300,6 +300,19 @@ function SemanticAnalyzer(tokens, file)
 
 	local root = tokens[1] --At this point, there should only be one token, the root "program" token.
 
+	--Make sure subroutines are top-level statements
+	local tok_level = 0
+	recurse(root, {tok.subroutine, tok.if_stmt, tok.for_stmt, tok.while_stmt}, function(token)
+		--Enter scope
+		if token.id == tok.subroutine and tok_level > 0 then
+			parse_error(token.line, token.col, 'Subroutines cannot be defined inside other structures', file)
+		end
+		tok_level = tok_level + 1
+	end, function(token)
+		--Exit scope
+		tok_level = tok_level - 1
+	end)
+
 	--Make sure "delete" statements only have text params. deleting expressions that resolve to variable names is a recipe for disaster.
 	recurse(root, {tok.delete_stmt}, function(token)
 		local kids, i = token.children[1].children
