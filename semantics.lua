@@ -439,18 +439,6 @@ function SemanticAnalyzer(tokens, file)
 
 	end)
 
-	--Get rid of parentheses and expression pseudo-tokens
-	recurse(root, {tok.parentheses, tok.expression}, nil, function(token)
-		if not token.children or #token.children ~= 1 then return end
-
-		local key, value
-		local child = token.children[1]
-		for key, value in pairs(child) do
-			token[key] = value
-		end
-		token.children = child.children
-	end)
-
 	--Prep plain (non-interpolated) strings to allow constant folding
 	recurse(root, {tok.string_open}, function(token)
 		if token.children then
@@ -461,6 +449,28 @@ function SemanticAnalyzer(tokens, file)
 		else
 			token.value = ''
 		end
+	end)
+
+	--Check for variable existence by var name, not value
+	recurse(root, {tok.boolean}, function(token)
+		local ch = token.children[1]
+		if token.text == 'exists' and ch.id == tok.variable then
+			ch.id = tok.string_open
+			ch.value = ch.text
+			ch.type = 'string'
+		end
+	end)
+
+	--Get rid of parentheses and expression pseudo-tokens
+	recurse(root, {tok.parentheses, tok.expression}, nil, function(token)
+		if not token.children or #token.children ~= 1 then return end
+
+		local key, value
+		local child = token.children[1]
+		for key, value in pairs(child) do
+			token[key] = value
+		end
+		token.children = child.children
 	end)
 
 	--Prep text to allow constant folding
