@@ -500,10 +500,6 @@ function SemanticAnalyzer(tokens, file)
 	recurse(root, {tok.for_stmt}, function(token)
 		if token.children[2].id == tok.command then
 			token.children[2].id = tok.array_concat
-			-- if #token.children[2].children > 1 then
-			-- 	parse_error(token.line, token.col, 'Too many parameters passed to "'..token.text..'" statement', file)
-			-- end
-			-- token.children[2] = token.children[2].children[1]
 		end
 	end)
 

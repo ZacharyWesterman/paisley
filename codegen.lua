@@ -10,6 +10,7 @@ local bc = {
 	push_cmd_result = 7,
 	push_index = 8,
 	pop_goto_index = 9,
+	copy = 10,
 }
 
 local call_codes = {
@@ -108,7 +109,7 @@ function print_bytecode(instructions)
 		end
 
 		local line = ''
-		if call_text == nil and instr[1] ~= bc.run_command and instr[1] ~= bc.push_cmd_result and instr[1] ~= bc.pop and instr[1] ~= bc.push_index and instr[1] ~= bc.pop_goto_index then call_text = 'null' else call_text = std.debug_str(call_text) end
+		if call_text == nil and instr[1] ~= bc.run_command and instr[1] ~= bc.push_cmd_result and instr[1] ~= bc.pop and instr[1] ~= bc.push_index and instr[1] ~= bc.pop_goto_index  then call_text = 'null' else call_text = std.debug_str(call_text) end
 		if instr[4] then
 			line = i..' @ line '..instr[2]..': '..instr_text..' '..call_text..' '..std.debug_str(instr[4])
 		else
@@ -390,14 +391,56 @@ function generate_bytecode(root, file)
 			local loop_beg_label = label_id()
 			local loop_end_label = label_id()
 
+			--Try to optimize away for loops with no body and with a knowable stop point
+			if token.children[3] == nil then
+				local list = token.children[2]
+				--If list is entirely constant, just use the last value.
+				if is_const(list) then
+					local val = list.value
+					if type(val) == 'table' then val = val[#val] end
+					emit(bc.push, val)
+					emit(bc.set, token.children[1].text)
+					return
+				end
+
+				--Optimize out slices
+				--This does not optimize for size, but rather run time.
+				--The tradeoff here is that the generated code is 1 instruction more than an un-optimized version, but reduces loop to constant run time.
+				--For large slices, this can save a massive amount of time.
+				if list.id == tok.array_slice then
+					--If list is a slice with constant values, optimize it away.
+					if is_const(list.children[1]) and is_const(list.children[2]) then
+						local start, stop = list.children[1].value, list.children[2].value
+
+						--The variable will never get set in this case
+						if start > stop then return end
+
+						emit(bc.push, stop)
+						emit(bc.set, token.children[1].text)
+						return
+					end
+
+					--Otherwise, we can still optimize out slices
+					codegen_rules.recur_push(list.children[2])
+					codegen_rules.recur_push(list.children[1])
+					emit(bc.copy, 1) -- copy list.children[2] onto stack again
+					--Check if var would even get set
+					emit(bc.call, 'lessequal')
+					emit(bc.call, 'jumpiffalse', loop_end_label)
+					--If so, set it
+					emit(bc.pop)
+					emit(bc.set, token.children[1].text)
+					emit(bc.call, 'jump', loop_beg_label)
+					emit(bc.label, loop_end_label)
+					emit(bc.pop)
+					emit(bc.label, loop_beg_label)
+					return
+				end
+			end
+
 			--Loop setup
 			emit(bc.push, nil)
 			codegen_rules.recur_push(token.children[2])
-
-			if token.children[3] == nil then
-				emit(bc.pop)
-				return
-			end
 
 			emit(bc.call, 'explode')
 			emit(bc.label, loop_beg_label)
@@ -408,7 +451,7 @@ function generate_bytecode(root, file)
 			emit(bc.call, 'jumpifnil', loop_end_label)
 			emit(bc.set, token.children[1].text)
 
-			enter(token.children[3])
+			if token.children[3] then enter(token.children[3]) end
 
 			--End of loop
 			emit(bc.call, 'jump', loop_beg_label)

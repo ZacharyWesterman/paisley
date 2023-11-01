@@ -620,4 +620,10 @@ commands = {
 	[9] = function(line, p1, p2)
 		CURRENT_INSTRUCTION = POP()
 	end,
+
+	--COPY THE NTH STACK ELEMENT ONTO THE STACK AGAIN (BACKWARDS FROM TOP)
+	[10] = function(line, p1, p2)
+		PUSH(STACK[#STACK - p1])
+		-- error('AGGA')
+	end,
 }
