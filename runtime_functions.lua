@@ -366,16 +366,16 @@ local functions = {
 	end,
 
 	--TYPE
-	function() PUSH(std.type(POP())) end,
+	function() PUSH(std.type(POP()[1])) end,
 
 	--BOOL
-	function() PUSH(std.bool(POP())) end,
+	function() PUSH(std.bool(POP()[1])) end,
 
 	--NUM
-	function() PUSH(std.num(POP())) end,
+	function() PUSH(std.num(POP()[1])) end,
 
 	--STR
-	function() PUSH(std.str(POP())) end,
+	function() PUSH(std.str(POP()[1])) end,
 
 	--ARRAY
 	function() end, --Due to a quirk of the compiler, don't have to do anything.
