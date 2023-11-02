@@ -11,6 +11,7 @@ local bc = {
 	push_index = 8,
 	pop_goto_index = 9,
 	copy = 10,
+	delete = 11,
 }
 
 local call_codes = {
@@ -286,8 +287,7 @@ function generate_bytecode(root, file)
 		[tok.delete_stmt] = function(token, file)
 			local i
 			for i = 1, #token.children do
-				emit(bc.push, nil)
-				emit(bc.set, token.children[i].text)
+				emit(bc.delete, token.children[i].text)
 			end
 		end,
 

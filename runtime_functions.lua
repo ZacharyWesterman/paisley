@@ -521,7 +521,12 @@ commands = {
 
 	--SET VARIABLE
 	[2] = function(line, p1, p2)
-		VARS[p1] = POP()
+		local v = POP()
+		if v == nil then
+			VARS[p1] = NULL
+		else
+			VARS[p1] = v
+		end
 	end,
 
 	--GET VARIABLE
@@ -625,5 +630,10 @@ commands = {
 	[10] = function(line, p1, p2)
 		PUSH(STACK[#STACK - p1])
 		-- error('AGGA')
+	end,
+
+	--DELETE VARIABLE
+	[11] = function(line, p1, p2)
+		VARS[p1] = nil
 	end,
 }
