@@ -55,6 +55,13 @@ Variable assignment always starts with `let`, e.g.
 let pi = 3.14
 let circumference = {2 * pi * r}
 ```
+Note that the `let` keyword is required even when reassigning variables.
+For example, consider the following:
+```sh
+let var = 13
+var = 99
+```
+The second line will **not** set var's value to 13. Instead, that would attempt to run a command called "var" with the parameters `["=", "99"]`.
 
 ## Subroutines:
 Subroutines are a lot like functions, except they do not take any parameters, and do not return any value.
