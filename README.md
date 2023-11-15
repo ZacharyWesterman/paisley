@@ -178,12 +178,17 @@ For example, `(1,2,3)` is an array, as are `array(1,2,3)`, `(1,2,3,)` and `(1,)`
 Note that an expression must contain a comma `,` or slice `:` operator to be considered an array, just parentheses is not enough.
 So `(1,)` is an array and `(1:1)` is an equivalent array, but `(1)` is a number, not an array.
 
-### Inline command evaluation
+### Inline Command Evaluation
 Since commands can return values to Paisley after execution, you can also use those values in further calculations. For example:
+```sh
+#Get an integer value representing in-game time, and convert it to a human-readable format
+let t = {floor(${time})}
+let hour = {t // 3600}
+let minute = {(t // 60) % 60}
+set second = {t % 60}
+print {hour ":" minute ":" second}
 ```
-let emote_list = ${get emotes}
-let last_emote = {emote_list[#emote_list]}
-```
+
 ### Built-in commands
 For ease of use and consistency, there are 6 built-in commands that will always be the same regardless of device.
 - `time`: Returns a number representing the in-game time. Arguments are ignored.
