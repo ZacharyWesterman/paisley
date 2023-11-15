@@ -95,7 +95,9 @@ Proper use of subroutines can let you easily reuse common code.
 - `return` returns from a subroutine back to the caller.
 
 ## Expressions:
-Expressions can only exist inside curly braces, `{}`, and can be placed anywhere inside a command or statement operand. In addition, they can also be placed inside double-quoted strings (e.g. `"a = {1+2}"` gives `a = 3`) to perform easy string interpolation. Note that single-quoted strings **do not** interpolate expressions, so for example `'a = {1+2}'` would give exactly `a = {1+2}` without parsing any expression.
+First and foremost, expressions will only be evaluated inside curly braces, `{}`. If you place an expression outside of braces, it will be treated as plain text. For example `print {1+2}` will print "3" but `print 1+2` will print the actual string "1+2".
+
+Expressions can be placed anywhere inside a command or statement operand. In addition, they can also be placed inside double-quoted strings (e.g. `"a = {1+2}"` gives `a = 3`) to perform easy string interpolation. Note that single-quoted strings **do not** interpolate expressions, so for example `'a = {1+2}'` would give exactly `a = {1+2}` without parsing any expression.
 
 If you would like to avoid interpolation in double-quoted strings, simply escape the opening curly brace with a backslash, e.g.
 ```sh
