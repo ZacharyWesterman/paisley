@@ -185,7 +185,7 @@ Since commands can return values to Paisley after execution, you can also use th
 let t = {floor(${time})}
 let hour = {t // 3600}
 let minute = {(t // 60) % 60}
-set second = {t % 60}
+let second = {t % 60}
 print {hour ":" minute ":" second}
 ```
 
