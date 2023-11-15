@@ -165,7 +165,7 @@ type_signatures = {
 		out = 'number',
 	},
 	str = {
-		out = 'number',
+		out = 'string',
 	},
 	array = {
 		out = 'array',
