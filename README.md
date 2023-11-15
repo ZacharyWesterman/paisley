@@ -97,6 +97,12 @@ Proper use of subroutines can let you easily reuse common code.
 ## Expressions:
 Expressions can only exist inside curly braces, `{}`, and can be placed anywhere inside a command or statement operand. In addition, they can also be placed inside double-quoted strings (e.g. `"a = {1+2}"` gives `a = 3`) to perform easy string interpolation. Note that single-quoted strings **do not** interpolate expressions, so for example `'a = {1+2}'` would give exactly `a = {1+2}` without parsing any expression.
 
+If you would like to avoid interpolation in double-quoted strings, simply escape the opening curly brace with a backslash, e.g.
+```sh
+print "the expression \{1+2} evaluates to {1+2}"
+print "you can also put \"quotes\" and line breaks (\n) inside strings!"
+```
+
 Expressions give access to a decent suite of operations and functions, listed below:
 
 ### Operators:
