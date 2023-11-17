@@ -133,7 +133,7 @@ local functions = {
 	--LENGTH
 	function()
 		local val = POP()
-		if type(val) == 'table' then PUSH(#VAL) else PUSH(#std.str(val)) end
+		if type(val) == 'table' then PUSH(#val) else PUSH(#std.str(val)) end
 	end,
 
 	--ARRAY INDEX

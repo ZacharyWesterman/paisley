@@ -4,6 +4,9 @@ V2 = nil --filename
 V3 = nil --non-builtin commands
 
 COMPILER_DEBUG = true
+V3 = {
+	"emote",
+}
 
 local TRANSFER
 function output(data, _)

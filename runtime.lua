@@ -49,7 +49,8 @@ function ITER()
 	if I == nil then
 		output(nil, 3) --Program successfully completed
 	else
-		if not commands[I[1]](I[2], I[3], I[4]) then
+		local external_cmd = commands[I[1]](I[2], I[3], I[4])
+		if not external_cmd then
 			output(I[3], 1)
 			return true
 		end
