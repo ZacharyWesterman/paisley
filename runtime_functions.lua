@@ -619,11 +619,18 @@ commands = {
 	--PUSH THE CURRENT INSTRUCTION INDEX TO THE STACK
 	[8] = function(line, p1, p2)
 		table.insert(INSTR_STACK, CURRENT_INSTRUCTION + 1)
+		table.insert(INSTR_STACK, #STACK) --Keep track of how big the stack SHOULD be when returning
 	end,
 
 	--POP THE NEW INSTRUCTION INDEX FROM THE STACK (GOTO THAT INDEX)
 	[9] = function(line, p1, p2)
+		local new_stack_size = table.remove(INSTR_STACK)
 		CURRENT_INSTRUCTION = table.remove(INSTR_STACK)
+
+		--Shrink stack back down to how big it should be
+		while new_stack_size > #STACK do
+			table.remove(STACK)
+		end
 	end,
 
 	--COPY THE NTH STACK ELEMENT ONTO THE STACK AGAIN (BACKWARDS FROM TOP)
