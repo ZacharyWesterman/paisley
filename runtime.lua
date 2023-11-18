@@ -38,6 +38,7 @@ function INIT()
 	math.randomseed(RANDOM_SEED)
 	STACK = {}
 	VARS = {}
+	INSTR_STACK = {}
 	output(0, 1)
 end
 
