@@ -17,7 +17,6 @@ tok = {
 	kwd_continue = k(),
 	kwd_break = k(),
 	kwd_delete = k(),
-	kwd_do = k(),
 	kwd_subroutine = k(),
 	kwd_gosub = k(),
 	kwd_return = k(),

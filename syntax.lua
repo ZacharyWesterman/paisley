@@ -449,7 +449,7 @@ local rules = {
 		meta = true,
 	},
 	{
-		match = {{tok.line_ending}, {tok.command, tok.program, tok.statement}},
+		match = {{tok.line_ending}, {tok.command, tok.program, tok.statement, tok.kwd_for, tok.kwd_while, tok.kwd_in, tok.kwd_do, tok.kwd_if, tok.kwd_then, tok.kwd_elif, tok.kwd_else, tok.kwd_end}},
 		id = tok.program,
 		onmatch = function(token)
 			--Catch possible dead ends where line endings come before any commands.
@@ -673,10 +673,10 @@ function SyntaxParser(tokens, file)
 
 		loops_since_reduction = loops_since_reduction + 1
 
-		-- for _, t in pairs(tokens) do
-		-- 	print_tokens_recursive(t)
-		-- end
-		-- print()
+		for _, t in pairs(tokens) do
+			print_tokens_recursive(t)
+		end
+		print()
 
 		if not did_reduce or loops_since_reduction > 500 then
 			if first_failure == nil then
