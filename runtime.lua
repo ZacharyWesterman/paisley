@@ -51,7 +51,6 @@ function ITER()
 	else
 		local external_cmd = commands[I[1]](I[2], I[3], I[4])
 		if not external_cmd then
-			output(I[3], 1)
 			return true
 		end
 	end
@@ -63,7 +62,12 @@ end
 function RUN()
 	local i
 	for i = 1, MAX_ITER do
-		if not ITER() then break end
+		if not ITER() then return end
+	end
+
+	local I = INSTRUCTIONS[CURRENT_INSTRUCTION]
+	if I then
+		output(I[3], 1)
 	end
 end
 

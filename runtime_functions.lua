@@ -239,7 +239,7 @@ local functions = {
 	--IRANDOM
 	function()
 		local v = POP()
-		local max, min = std.num(v[1]), std.num(v[2])
+		local min, max = std.num(v[1]), std.num(v[2])
 		PUSH(math.random(math.floor(min), math.floor(max)))
 	end,
 
