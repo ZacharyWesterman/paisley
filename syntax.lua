@@ -5,6 +5,7 @@ local rules = {
 		id = tok.concat,
 		not_after = {tok.op_assign},
 		not_before = {tok.index_open},
+		expr_only = true,
 		text = '..',
 	},
 
@@ -443,7 +444,7 @@ local rules = {
 		text = 'stmt_list',
 	},
 	{
-		match = {{tok.command, tok.program, tok.statement}, {tok.line_ending}},
+		match = {{tok.program}, {tok.line_ending}},
 		id = tok.program,
 		meta = true,
 	},
@@ -488,7 +489,7 @@ function SyntaxParser(tokens, file)
 	end
 
 	--Returns nil, nil, unexpected token index if reduce failed. If successful, returns a token, and the number of tokens consumed
-	local function reduce(index)
+	local function reduce(index, expr_indent)
 		local _, rule
 		local this_token = tokens[index]
 		local greatest_len = 0
@@ -497,9 +498,11 @@ function SyntaxParser(tokens, file)
 		for _, rule in ipairs(rules) do
 			local rule_index
 			local rule_matches = true
+			local rule_failed = false
 
-			if #rule.match + index - 1 <= #tokens then
-				local rule_failed = false
+			if rule.expr_only and expr_indent < 1 then rule_failed = true end
+
+			if (#rule.match + index - 1 <= #tokens) and not rule_failed then
 				if rule.not_after and index > 1 then
 					local i
 					local prev_token = tokens[index - 1]
@@ -613,13 +616,16 @@ function SyntaxParser(tokens, file)
 		local new_tokens = {}
 		local first_failure = nil
 		local did_reduce = false
+		local expr_indent = 0
 
 		while i <= #tokens do
 			local new_token
 			local consumed_ct
 			local failure_index
 
-			new_token, consumed_ct, failure_index = reduce(i)
+			if tokens[i].id == tok.expr_open then expr_indent = expr_indent + 1 end
+			if tokens[i].id == tok.expr_close then expr_indent = expr_indent - 1 end
+			new_token, consumed_ct, failure_index = reduce(i, expr_indent)
 
 			if new_token then
 				table.insert(new_tokens, new_token)
