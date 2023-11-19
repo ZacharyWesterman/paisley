@@ -596,12 +596,12 @@ commands = {
 			elseif cmd_name == 'print' then
 				table.remove(command_array, 1)
 				local msg = std.join(command_array, ' ')
-				output(msg, 7)
+				output_array({"print", msg}, 7)
 			elseif cmd_name == 'error' then
 				table.remove(command_array, 1)
 				local msg = line..': '..std.join(command_array, ' ')
 				if file then msg = file..': '..msg end
-				output(msg, 8)
+				output_array({"error", msg}, 7)
 			else
 				runtime_error(line, 'RUNTIME BUG: No logic implemented for built-in command "'..command_array[1]..'"')
 			end
