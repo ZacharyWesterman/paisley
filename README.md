@@ -238,8 +238,3 @@ while {true} do
 	sleep 1
 end
 ```
-
-
----
-
-## That's cool and all, but how
