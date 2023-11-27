@@ -42,7 +42,7 @@ else
 	...
 end
 ```
-Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`.
+Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression’s trueness: false, null, zero, and empty strings are false-ish, everything else is true-ish.
 
 ## Loops:
 While and For loops have a similar syntax to Lua:
@@ -130,7 +130,7 @@ Expressions give access to a decent suite of operations and functions, listed be
 - check for whether variables are set, `exists` (e.g. `x exists`)
 - string or array length, `#` (e.g. `#variable`)
 - array slicing, `:` (e.g. `0:5` gives `(0,1,2,3,4,5)`)
-- array listing, `,` (e.g. `1,2,3` is an array with 3 elements, `(1,)` is array with 1 element, etc). can combine this with slicing, e.g. `1,3:5,9` gives `(1,3,4,5,9)`.
+- array listing, `,` (e.g. `1,2,3` is an array with 3 elements, `(1,)` is an array with 1 element, etc). can combine this with slicing, e.g. `1,3:5,9` gives `(1,3,4,5,9)`.
 - array searching `in` (e.g. `3 in (1,2,4,5,6)` gives `false`)
 - string concatenation: There is no string concatenation operator. Seriously, two values next to each other, without an operator between them, results in string concatenation.
 
@@ -139,7 +139,7 @@ Expressions give access to a decent suite of operations and functions, listed be
 - binary numbers, `0b1111`
 - decimal numbers, `1.2345` or `12345` or `1_000_000`. Note that underscores are ignored by the compiler, you can use them for readability purposes.
 - booleans, `true` or `false`
-- nothing, `null`, equivalent to Lua's "nil"
+- `null`, equivalent to Lua's "nil"
 - Strings with interpolation allowed, `"some text"`
 - Strings with NO interpolation, `'some text'`
 - variables, `var_name`, `x`, etc.
@@ -211,11 +211,11 @@ For ease of use and consistency, there are 6 built-in commands that will always 
 - `time`: Returns a number representing the in-game time. Arguments are ignored.
 - `systime`: Returns a number representing the system time (seconds since midnight). Arguments are ignored.
 - `sysdate`: Returns a numeric array containing the system day, month, and year (in that order). Arguments are ignored.
-- `print`: Send all arguments to the "print" output, as well as to internal log.
-- `error`: Send all arguments (plus line number and file, if applicable) to the "error" output, as well as to internal warning log.
-- `sleep`: Pause script execution for the given amount of seconds. If the first argument is not a positive number, delay defaults to minimum value (0.05s).
+- `print`: Send all arguments to the "print" output, as well as to the internal log.
+- `error`: Send all arguments (plus line number and file, if applicable) to the "error" output, as well as to the internal warning log.
+- `sleep`: Pause script execution for the given amount of seconds. If the first argument is not a positive number, delay defaults to minimum value (0.02s).
 
-Note that all commands take a little bit of time to run (at least 0.05s), whether they're built-in or not. This is to prevent "infinite loop" errors or performance drops.
+Note that all commands take a little bit of time to run (at least 0.02s), whether they're built-in or not. This is to prevent "infinite loop" errors or performance drops.
 
 ---
 
