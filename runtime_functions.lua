@@ -564,7 +564,14 @@ commands = {
 		local command_array = POP()
 		local cmd_array, i = {}
 		for i = 1, #command_array do
-			table.insert(cmd_array, std.str(command_array[i]))
+			if type(command_array[i]) == 'table' then
+				local k
+				for k = 1, #command_array[i] do
+					table.insert(cmd_array, std.str(command_array[i][k]))
+				end
+			else
+				table.insert(cmd_array, std.str(command_array[i]))
+			end
 		end
 		command_array = cmd_array
 		local cmd_name = std.str(command_array[1])
