@@ -470,7 +470,10 @@ local rules = {
 
 function SyntaxParser(tokens, file)
 	if #tokens == 0 then
-		parse_error(0, 0, 'Program contains no text', file)
+		return {
+			fold = function() return false end,
+			get = function() return {} end,
+		}
 	end
 
 	local function matches(index, rule, rule_index)
@@ -648,6 +651,11 @@ function SyntaxParser(tokens, file)
 
 	local function fold()
 		local new_tokens, did_reduce, first_failure = full_reduce()
+
+		if #new_tokens == 2 and new_tokens[2].id == tok.line_ending then
+			table.remove(new_tokens)
+		end
+
 		if #new_tokens == 1 then
 			--Try one final set of reductions!
 			local i
@@ -660,10 +668,11 @@ function SyntaxParser(tokens, file)
 			local id = new_tokens[1].id
 
 			if id == tok.line_ending then
-				parse_error(1, 1, 'Program contains no actionable text', file)
+				tokens = {}
+				return false
 			end
 
-			if (id ~= tok.command and id < tok.program) or id == tok.else_stmt or id == tok.elif_stmt then
+			if (id ~= tok.command and id ~= tok.kwd_stop and id < tok.program) or id == tok.else_stmt or id == tok.elif_stmt then
 				parse_error(1, 1, 'Unexpected token "'..new_tokens[1].text..'"', file)
 			end
 

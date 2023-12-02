@@ -5,7 +5,7 @@ V3 = nil --non-builtin commands
 
 COMPILER_DEBUG = true
 V3 = {
-	"emote",
+	"hand","pinky","wrist","pointer","middle","ring","thumb",
 }
 
 local TRANSFER
@@ -33,7 +33,9 @@ print()
 print_header('RUNNING BYTECODE')
 V1 = TRANSFER --Serialized bytecode
 V2 = nil --FILE
-V3 = {} --non-builtin commands
+V3 = {
+	"hand","pinky","wrist","pointer","middle","ring","thumb",
+}
 V4 = 0 --RNG seed value
 V5 = nil --LAST CMD RESULT
 PORT = 0
@@ -44,14 +46,16 @@ require "runtime"
 DEBUG_INSTRUCTION_NUM = 1
 print(PORT)
 while PORT ~= 3 do
-	os.execute('sleep 1')
+	-- os.execute('sleep 1')
 	-- os.execute('clear')
 	ITER()
 	-- if PORT == 6 then
 	-- 	if DATA == 1 then V5 = ''
 	V5 = {10, 25, 2023}
 	DEBUG_INSTRUCTION_NUM = CURRENT_INSTRUCTION
-	print_bytecode(bytecode)
+	if bytecode then
+		print_bytecode(bytecode)
+	end
 
 	print()
 	print_header('BEG STACK')
