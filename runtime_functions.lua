@@ -51,6 +51,22 @@ local function mathfunc(funcname)
 	end
 end
 
+local function number_op(v1, v2, operator)
+	if type(v1) == 'table' or type(v2) == 'table' then
+		if type(v1) ~= 'table' then v1 = {v1} end
+		if type(v2) ~= 'table' then v2 = {v2} end
+
+		local result, i = {}
+		for i = 1, math.min(#v1, #v2) do
+			table.insert(result, operator(std.num(v1[i]), std.num(v2[i])))
+		end
+		return result
+	else
+		return operator(std.num(v1), std.num(v2))
+	end
+end
+
+
 local functions = {
 	--JUMP
 	function(line, param)
@@ -110,27 +126,38 @@ local functions = {
 	end,
 
 	--ADD
-	function() PUSH(std.num(POP()) + std.num(POP())) end,
+	function()
+		local v1, v2 = POP(), POP()
+		local result = number_op(v2, v1, function(a, b) return a + b end)
+		PUSH(result)
+	end,
 
 	--SUB
 	function()
-		local v1, v2 = std.num(POP()), std.num(POP())
-		PUSH(v2 - v1)
+		local v1, v2 = POP(), POP()
+		local result = number_op(v2, v1, function(a, b) return a - b end)
+		PUSH(result)
 	end,
 
 	--MUL
-	function() PUSH(std.num(POP()) * std.num(POP())) end,
+	function()
+		local v1, v2 = POP(), POP()
+		local result = number_op(v2, v1, function(a, b) return a * b end)
+		PUSH(result)
+	end,
 
 	--DIV
 	function()
-		local v1, v2 = std.num(POP()), std.num(POP())
-		PUSH(v2 / v1)
+		local v1, v2 = POP(), POP()
+		local result = number_op(v2, v1, function(a, b) return a / b end)
+		PUSH(result)
 	end,
 
 	--REM
 	function()
-		local v1, v2 = std.num(POP()), std.num(POP())
-		PUSH(v2 % v1)
+		local v1, v2 = POP(), POP()
+		local result = number_op(v2, v1, function(a, b) return a % b end)
+		PUSH(result)
 	end,
 
 	--LENGTH

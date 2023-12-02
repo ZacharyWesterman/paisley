@@ -124,7 +124,7 @@ local rules = {
 		id = tok.array_concat,
 		keep = {1},
 		text = 2,
-		not_before = {tok.lit_boolean, tok.lit_null, tok.lit_number, tok.string_open, tok.command_open, tok.expr_open, tok.array_slice, tok.array_concat, tok.comparison, tok.paren_open, tok.index_open, tok.parentheses},
+		not_before = {tok.lit_boolean, tok.lit_null, tok.lit_number, tok.string_open, tok.command_open, tok.expr_open, tok.array_slice, tok.array_concat, tok.comparison, tok.paren_open, tok.index_open, tok.parentheses, tok.variable, tok.func_call},
 	},
 
 	--Prefix Boolean not

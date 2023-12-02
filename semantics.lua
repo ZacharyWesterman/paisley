@@ -220,11 +220,11 @@ type_signatures = {
 		out = 'string',
 	},
 	[tok.add] = {
-		valid = {{'number'}},
+		valid = {{'number'}, {'array'}},
 		out = 'number',
 	},
 	[tok.multiply] = {
-		valid = {{'number'}},
+		valid = {{'number'}, {'array'}},
 		out = 'number',
 	},
 	[tok.boolean] = {
@@ -326,7 +326,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Fold nested array_concat tokens into a single array
-	recurse(root, {tok.array_concat}, function(token)
+	recurse(root, {tok.array_concat}, nil, function(token)
 		local child
 		local _
 		local kids = {}

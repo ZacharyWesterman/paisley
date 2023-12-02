@@ -139,6 +139,21 @@ func_operations = {
 	end,
 }
 
+local function number_op(v1, v2, operator)
+	if type(v1) == 'table' or type(v2) == 'table' then
+		if type(v1) ~= 'table' then v1 = {v1} end
+		if type(v2) ~= 'table' then v2 = {v2} end
+
+		local result, i = {}
+		for i = 1, math.min(#v1, #v2) do
+			table.insert(result, operator(std.num(v1[i]), std.num(v2[i])))
+		end
+		return result
+	else
+		return operator(std.num(v1), std.num(v2))
+	end
+end
+
 function fold_constants(token)
 	if not token.children then return end
 
@@ -158,12 +173,12 @@ function fold_constants(token)
 	if token.id == tok.add or token.id == tok.multiply then
 		--Fold the two values into a single value
 		local result
-		if operator == '+' then result = c1.value + c2.value
-		elseif operator == '-' then result = c1.value - c2.value
-		elseif operator == '*' then result = c1.value * c2.value
-		elseif operator == '/' then result = c1.value / c2.value
-		elseif operator == '//' then result = math.floor(c1.value / c2.value)
-		elseif operator == '%' then result = c1.value % c2.value
+		if operator == '+' then result = number_op(c1.value, c2.value, function(a, b) return a + b end)
+		elseif operator == '-' then result = number_op(c1.value, c2.value, function(a, b) return a - b end)
+		elseif operator == '*' then result = number_op(c1.value, c2.value, function(a, b) return a * b end)
+		elseif operator == '/' then result = number_op(c1.value, c2.value, function(a, b) return a / b end)
+		elseif operator == '//' then result = number_op(c1.value, c2.value, function(a, b) return math.floor(c1.value / c2.value) end)
+		elseif operator == '%' then result = number_op(c1.value, c2.value, function(a, b) return a % b end)
 		else
 			parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
 		end

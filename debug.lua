@@ -14,7 +14,7 @@ function output(data, _)
 end
 
 require "compiler"
-
+error()
 
 print_header('Raw Bytecode')
 print(TRANSFER)
