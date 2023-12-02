@@ -227,7 +227,14 @@ function generate_bytecode(root, file)
 					all_const = false
 					break
 				end
-				table.insert(p, std.str(token.children[i].value))
+				if type(token.children[i].value) == 'table' then
+					local k
+					for k = 1, #token.children[i].value do
+						table.insert(p, std.str(token.children[i].value[k]))
+					end
+				else
+					table.insert(p, std.str(token.children[i].value))
+				end
 			end
 
 			if all_const then
@@ -311,6 +318,7 @@ function generate_bytecode(root, file)
 			if token.text == '//' then
 				--No such thing as integer division really, it's just division, rounded down.
 				codegen_rules.binary_op(token, 'div')
+				emit(bc.call, 'implode', 1)
 				emit(bc.call, 'floor')
 			else
 				local op = {

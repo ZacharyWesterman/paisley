@@ -41,10 +41,13 @@ local function mathfunc(funcname)
 	return function(line)
 		local v, p, i = POP(), {}
 		for i = 1, #v do
-			table.insert(p, std.num(p[i]))
+			table.insert(p, std.num(v[i]))
 		end
 
-		PUSH(math[funcname](table.unpack(v)))
+		local u = table.unpack
+		if not u then u = unpack end
+
+		PUSH(math[funcname](u(v)))
 	end
 end
 
@@ -140,13 +143,15 @@ local functions = {
 	function()
 		local index, data, i = POP(), POP()
 		if type(data) ~= 'table' then data = std.split(std.str(data), '') end
-		if type(index) ~= 'table' then index = {index} end
-
-		local result = {}
-		for i = 1, #index do
-			table.insert(result, data[std.num(index[i])])
+		if type(index) ~= 'table' then
+			PUSH(data[std.num(index)])
+		else
+			local result = {}
+			for i = 1, #index do
+				table.insert(result, data[std.num(index[i])])
+			end
+			PUSH(result)
 		end
-		PUSH(result)
 	end,
 
 	--ARRAYSLICE
