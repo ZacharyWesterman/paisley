@@ -9,10 +9,6 @@ while 1 do
 end
 
 subroutine idle_pose:
-    let PLAYER = ${get player pos}
-    let SELF = ${get self pos}
-    let diff =
-
     eye pos {frandom(-1, 1)} {frandom(-.8, .8)}
     ears {irandom(40, 50)} {irandom(40, 50)}
     neck {irandom(-2, 2), irandom(-2, 2), irandom(-2, 2)}
