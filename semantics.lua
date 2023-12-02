@@ -240,7 +240,7 @@ type_signatures = {
 		out = 'boolean',
 	},
 	[tok.negate] = {
-		valid = {{'number'}},
+		valid = {{'number'}, {'array'}},
 		out = 'number',
 	},
 	[tok.concat] = {

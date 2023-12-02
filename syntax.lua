@@ -59,7 +59,7 @@ local rules = {
 		id = tok.negate,
 		keep = {2},
 		text = 1,
-		not_after = {tok.lit_number, tok.lit_false, tok.lit_true, tok.lit_null, tok.negate, tok.command_close, tok.expr_close, tok.string_close, tok.string_open, tok.paren_close, tok.inline_command, tok.expression, tok.parentheses},
+		not_after = {tok.lit_number, tok.lit_false, tok.lit_true, tok.lit_null, tok.negate, tok.command_close, tok.expr_close, tok.string_close, tok.string_open, tok.paren_close, tok.inline_command, tok.expression, tok.parentheses, tok.variable, tok.func_call},
 	},
 
 	--Multiplication

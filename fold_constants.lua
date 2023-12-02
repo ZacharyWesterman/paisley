@@ -359,8 +359,8 @@ function fold_constants(token)
 
 	elseif token.id == tok.negate then
 		token.id = tok.lit_number
-		token.value = -c1.value
-		token.text = tostring(-c1.value)
+		token.value = number_op(0, c1.value, function(a, b) return a - b end)
+		token.text = tostring(token.value)
 		token.children = nil
 
 	elseif token.id == tok.concat then
