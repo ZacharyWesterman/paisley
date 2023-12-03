@@ -240,19 +240,55 @@ local rules = {
 		keep = {2, 4, 5},
 		text = 1,
 	},
+	{
+		match = {{tok.kwd_if}, {tok.command}, {tok.kwd_then}, {tok.kwd_end, tok.elif_stmt, tok.else_stmt}},
+		id = tok.if_stmt,
+		keep = {2, 3, 4},
+		text = 1,
+	},
+	{ --Invalid if
+		match = {{tok.kwd_if}, {tok.command}},
+		id = tok.if_stmt,
+		text = 1,
+		not_before = {tok.kwd_then, tok.line_ending},
+		onmatch = function(token, file)
+			parse_error(token.line, token.col, 'Missing "then" after if statement', file)
+		end,
+	},
 	--ELSE block
 	{
 		match = {{tok.kwd_else}, {tok.command, tok.program, tok.statement}, {tok.kwd_end}},
 		id = tok.else_stmt,
-		keep = {2, 4, 6},
+		keep = {2},
+		text = 1,
+	},
+	{ --Empty else block
+		match = {{tok.kwd_else}, {tok.kwd_end}},
+		id = tok.else_stmt,
+		keep = {},
 		text = 1,
 	},
 	--ELIF block
 	{
 		match = {{tok.kwd_elif}, {tok.command}, {tok.kwd_then}, {tok.command, tok.program, tok.statement}, {tok.kwd_end, tok.elif_stmt, tok.else_stmt}},
 		id = tok.elif_stmt,
-		keep = {2, 4},
+		keep = {2, 4, 5},
 		text = 1,
+	},
+	{
+		match = {{tok.kwd_elif}, {tok.command}, {tok.kwd_then}, {tok.kwd_end, tok.elif_stmt, tok.else_stmt}},
+		id = tok.elif_stmt,
+		keep = {2, 3, 4},
+		text = 1,
+	},
+	{ --Invalid elif
+		match = {{tok.kwd_elif}, {tok.command}},
+		id = tok.if_stmt,
+		text = 1,
+		not_before = {tok.kwd_then, tok.line_ending},
+		onmatch = function(token, file)
+			parse_error(token.line, token.col, 'Missing "then" after elif statement', file)
+		end,
 	},
 
 	--WHILE loop

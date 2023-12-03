@@ -557,7 +557,9 @@ function generate_bytecode(root, file)
 				end
 
 				--IF statement body
-				enter(token.children[2])
+				if token.children[2].id ~= tok.kwd_then then
+					enter(token.children[2])
+				end
 
 				emit(bc.call, 'jump', endif_label)
 
