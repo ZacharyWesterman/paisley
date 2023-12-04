@@ -66,6 +66,7 @@ local rules = {
 	{
 		match = {{tok.value, tok.multiply, tok.comparison}, {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod}, {tok.value, tok.multiply, tok.comparison}},
 		id = tok.multiply,
+		not_after = {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod},
 		keep = {1, 3},
 		text = 2,
 	},
@@ -82,6 +83,8 @@ local rules = {
 	{
 		match = {{tok.multiply, tok.add, tok.comparison}, {tok.op_plus, tok.op_minus}, {tok.multiply, tok.add, tok.comparison}},
 		id = tok.add,
+		not_before = {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod},
+		not_after = {tok.op_plus, tok.op_minus, tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod},
 		keep = {1, 3},
 		text = 2,
 	},
