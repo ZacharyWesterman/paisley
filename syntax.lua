@@ -170,6 +170,7 @@ local rules = {
 		text = 2,
 		onmatch = function(token)
 			if token.text == '~=' then token.text = '!=' end
+			if token.text == '=' then token.text = '==' end
 		end,
 	},
 	{
@@ -507,6 +508,20 @@ local rules = {
 	},
 }
 
+--Build a table for quick rule lookup. This is a performance optimization
+--Check this lookup table for a rule id instead of looping over every rule every time
+local rule_lookup = {}
+local _i, _k, _rule, _id
+for _i, _rule in pairs(rules) do
+	for _k, _id in pairs(_rule.match[1]) do
+		if rule_lookup[_id] then
+			table.insert(rule_lookup[_id], _i)
+		else
+			rule_lookup[_id] = {_i}
+		end
+	end
+end
+
 function SyntaxParser(tokens, file)
 	if #tokens == 0 then
 		return {
@@ -537,10 +552,20 @@ function SyntaxParser(tokens, file)
 		local greatest_len = 0
 		local unexpected_token = 1
 
-		for _, rule in ipairs(rules) do
+		local possible_rules = rule_lookup[this_token.meta_id]
+		if not possible_rules then possible_rules = rule_lookup[this_token.id] end
+
+		if not possible_rules then
+			-- unexpected_token = index
+			possible_rules = {}
+			-- parse_error(this_token.line, this_token.col, 'COMPILER BUG: No AST rule for token "'..token_text(this_token.id)..'"', file)
+		end
+
+		for _, _r in ipairs(possible_rules) do
 			local rule_index
 			local rule_matches = true
 			local rule_failed = false
+			local rule = rules[_r]
 
 			if rule.expr_only and expr_indent < 1 then rule_failed = true end
 
