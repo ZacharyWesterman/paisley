@@ -5,7 +5,7 @@ V3 = nil --non-builtin commands
 
 COMPILER_DEBUG = true
 V3 = {
-	"hand","pinky","wrist","pointer","middle","ring","thumb",
+	"receive"
 }
 
 local TRANSFER
@@ -32,15 +32,17 @@ print()
 print_header('RUNNING BYTECODE')
 V1 = TRANSFER --Serialized bytecode
 V2 = nil --FILE
-V3 = {
-	"hand","pinky","wrist","pointer","middle","ring","thumb",
-}
+V3 = ALLOWED_COMMANDS
 V4 = 0 --RNG seed value
 V5 = nil --LAST CMD RESULT
 PORT = 0
 DATA = nil
 
 require "runtime"
+
+for i,k in pairs(ALLOWED_COMMANDS) do
+	print(i..'='..k)
+end
 
 DEBUG_INSTRUCTION_NUM = 1
 print(PORT)
