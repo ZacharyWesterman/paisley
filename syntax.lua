@@ -33,7 +33,7 @@ local rules = {
 
 	--Treat all literals the same.
 	{
-		match = {{tok.lit_number, tok.lit_boolean, tok.lit_null, tok.negate, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat}},
+		match = {{tok.lit_number, tok.lit_boolean, tok.lit_null, tok.negate, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat, tok.lambda, tok.lambda_ref}},
 		id = tok.value,
 		meta = true,
 	},
@@ -506,6 +506,23 @@ local rules = {
 		id = tok.line_ending,
 		meta = true,
 	},
+
+	--Lambda definition
+	{
+		match = {{tok.op_exclamation}, {tok.index_open}, {tok.expression, tok.text, tok.inline_command, tok.comparison}, {tok.index_close}},
+		id = tok.lambda,
+		keep = {3},
+		text = 1,
+	},
+
+	--Lambda reference
+	{
+		match = {{tok.op_exclamation}},
+		not_before = {tok.index_open},
+		keep = {},
+		text = 1,
+		id = tok.lambda_ref,
+	}
 }
 
 --Build a table for quick rule lookup. This is a performance optimization

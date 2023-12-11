@@ -53,6 +53,7 @@ tok = {
 	op_eq = k(),
 	op_ne = k(),
 	op_comma = k(),
+	op_exclamation = k(),
 
 	paren_open = k(),
 	paren_close = k(),
@@ -82,7 +83,8 @@ tok = {
 
 	string_open = k(),
 	string_close = k(),
-
+	lambda = k(),
+	lambda_ref = k(),
 
 	expression = k(),
 	inline_command = k(),

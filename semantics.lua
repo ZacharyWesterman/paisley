@@ -395,6 +395,62 @@ function SemanticAnalyzer(tokens, file)
 		token.children = ch.children
 	end)
 
+	--Resolve all lambda references
+	local lambdas = {}
+	local tok_level = 0
+	local pop_scope = function(token)
+		if token.id == tok.lambda then
+			if not lambdas[token.text] then lambdas[token.text] = {} end
+			table.insert(lambdas[token.text], {
+				level = tok_level,
+				node = token.children[1]
+			})
+		elseif token.id == tok.lambda_ref then
+			if not lambdas[token.text] then
+				parse_error(token.line, token.col, 'Lambda "'..token.text..'" is not defined in the current scope', file)
+			end
+
+			--Lambda is defined, so replace it with the appropriate node
+			local lambda_node, i, _ = lambdas[token.text][#lambdas[token.text]].node
+			print(token_text(lambda_node.id))
+			for _, i in ipairs({'text', 'line', 'col', 'id', 'meta_id'}) do
+				token[i] = lambda_node[i]
+			end
+			token.children = lambda_node.children
+		else
+			tok_level = tok_level - 1
+			--Make sure lambdas are only referenced in the appropriate scope, never outside the scope they're defined.
+			local i
+			for i in pairs(lambdas) do
+				while lambdas[i][#lambdas[i]].level > tok_level do
+					table.remove(lambdas[i])
+					if #lambdas[i] == 0 then
+						lambdas[i] = nil
+						break
+					end
+				end
+			end
+		end
+	end
+	recurse(root, {tok.lambda, tok.lambda_ref, tok.if_stmt, tok.while_stmt, tok.for_stmt, tok.subroutine, tok.else_stmt, tok.elif_stmt}, function(token)
+		if token.id ~= tok.lambda and token.id ~= tok.lambda_ref then
+			if token.id == tok.else_stmt or token.id == tok.elif_stmt then
+				pop_scope(token)
+			end
+			--Make sure lambdas are only referenced in the appropriate scope, never outside the scope they're defined.
+			tok_level = tok_level + 1
+		end
+	end, pop_scope)
+
+	--Replace lambda definitions with the appropriate node.
+	recurse(root, {tok.lambda}, nil, function(token)
+		local lambda_node, i, _ = token.children[1]
+		for _, i in ipairs({'text', 'line', 'col', 'id', 'meta_id'}) do
+			token[i] = lambda_node[i]
+		end
+		token.children = lambda_node.children
+	end)
+
 	--Check function calls
 	recurse(root, {tok.func_call}, function(token)
 		--Move all params to be direct children

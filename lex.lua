@@ -301,6 +301,14 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					end
 				end
 
+				--Lambda operators
+				if not match then
+					match = text:match('^!+%w*')
+					if match then
+						tok_type = tok.op_exclamation
+					end
+				end
+
 				--Named constants
 				if not match then
 					local key
