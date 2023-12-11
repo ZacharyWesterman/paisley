@@ -412,7 +412,6 @@ function SemanticAnalyzer(tokens, file)
 
 			--Lambda is defined, so replace it with the appropriate node
 			local lambda_node, i, _ = lambdas[token.text][#lambdas[token.text]].node
-			print(token_text(lambda_node.id))
 			for _, i in ipairs({'text', 'line', 'col', 'id', 'meta_id'}) do
 				token[i] = lambda_node[i]
 			end
@@ -582,6 +581,9 @@ function SemanticAnalyzer(tokens, file)
 		if token.id == tok.inline_command or token.id == tok.command then
 			local ch = token.children[1]
 			if token.id == tok.inline_command then ch = ch.children[1] end
+
+			--ignore "define" pseudo-command
+			if ch.value == 'define' then return end
 
 			if ch.value ~= nil and ch.id ~= tok.lit_null then
 				if not ALLOWED_COMMANDS[ch.value] and not BUILTIN_COMMANDS[ch.value] then
