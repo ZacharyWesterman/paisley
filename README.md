@@ -96,12 +96,30 @@ gosub print_numbers
 ```
 Proper use of subroutines can let you easily reuse common code.
 
+## Lambdas:
+Lambdas are another good way to reuse code, however unlike subroutines, these are specifically for reusing parts of expressions.
+Lambdas are defined with the syntax `![expression]`, and are referred to with that same `!` identifier, just without the brackets. Note that the `!` can be any number of exclamation marks, optionally followed by an alphanumeric identifier. So for example, `!!`, `!2`, and `!!lambda_1` are all valid lambda identifiers.
+
+Below is an example of lambda usage. Both the top and bottom commands will print 5 random numbers in the range 0-100.
+```
+print {![irandom(0, 100)], !, !, !, !}
+
+#do the same thing, but using the define keyword
+define {!rnd[irandom(0, 100)]}
+print {!rnd, !rnd, !rnd, !rnd, !rnd}
+```
+Note that either of the above commands are equivalent to the following
+```
+print {irandom(0, 100), irandom(0, 100), irandom(0, 100), irandom(0, 100), irandom(0, 100)}
+```
+
 ## Other statements:
 - `break` or `break 1` or `break 2` etc, will exit as many while/for loops as are specified (defaults to 1 if not specified)
 - `continue` or `continue 1` or `continue 2` etc, will skip an iteration of as many while/for loops as are specified (defaults to 1 if not specified)
 - `delete` will delete the variables listed, e.g. `delete x y z`
 - `stop` will immediately halt program execution.
 - `return` returns from a subroutine back to the caller.
+- `define` will parse the following expression(s) but will ignore them at run time. This is most useful for defining lambdas outside of where they're used.
 
 ## Expressions:
 First and foremost, expressions will only be evaluated inside curly braces, `{}`. If you place an expression outside of braces, it will be treated as plain text. For example `print {1+2}` will print "3" but `print 1+2` will print the actual string "1+2".
