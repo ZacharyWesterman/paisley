@@ -21,6 +21,8 @@ kwds = {
 }
 
 opers = {
+	['if'] = tok.kwd_if_expr,
+	['else'] = tok.kwd_else_expr,
 	['+'] = tok.op_plus,
 	['-'] = tok.op_minus,
 	['*'] = tok.op_times,

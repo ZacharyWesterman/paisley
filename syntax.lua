@@ -33,7 +33,7 @@ local rules = {
 
 	--Treat all literals the same.
 	{
-		match = {{tok.lit_number, tok.lit_boolean, tok.lit_null, tok.negate, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat, tok.lambda, tok.lambda_ref}},
+		match = {{tok.lit_number, tok.lit_boolean, tok.lit_null, tok.negate, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat, tok.lambda, tok.lambda_ref, tok.ternary}},
 		id = tok.value,
 		meta = true,
 	},
@@ -229,7 +229,7 @@ local rules = {
 		match = {{tok.text, tok.expression, tok.inline_command, tok.string, tok.comparison}},
 		id = tok.command,
 		not_after_range = {tok.expr_open, tok.command}, --Command cannot come after anything in this range
-		not_after = {tok.kwd_for, tok.kwd_subroutine},
+		not_after = {tok.kwd_for, tok.kwd_subroutine, tok.kwd_if_expr, tok.kwd_else_expr},
 		text = 'cmd',
 	},
 	{
@@ -509,7 +509,7 @@ local rules = {
 
 	--Lambda definition
 	{
-		match = {{tok.op_exclamation}, {tok.index_open}, {tok.expression, tok.text, tok.inline_command, tok.comparison}, {tok.index_close}},
+		match = {{tok.op_exclamation}, {tok.index_open}, {tok.comparison}, {tok.index_close}},
 		id = tok.lambda,
 		keep = {3},
 		text = 1,
@@ -522,7 +522,15 @@ local rules = {
 		keep = {},
 		text = 1,
 		id = tok.lambda_ref,
-	}
+	},
+
+	--Ternary operator
+	{
+		match = {{tok.comparison}, {tok.kwd_if_expr}, {tok.comparison}, {tok.kwd_else_expr}, {tok.comparison}},
+		keep = {3, 1, 5},
+		text = 'ternary',
+		id = tok.ternary,
+	},
 }
 
 --Build a table for quick rule lookup. This is a performance optimization

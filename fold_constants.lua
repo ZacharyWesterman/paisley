@@ -160,6 +160,23 @@ function fold_constants(token)
 	local operator = token.text
 	local c1, c2 = token.children[1], token.children[2]
 
+	local function not_const(token) return token.value == nil and token.id ~= tok.lit_null end
+
+	--Ternary operators are unique: if the condition is constant, they can be folded
+	if token.id == tok.ternary then
+		local child
+		if not_const(c1) then return end
+		if std.bool(c1.value) then child = token.children[2] else child = token.children[3] end
+
+		token.id = child.id
+		token.value = child.value
+		token.text = child.text
+		token.line = child.line
+		token.col = child.col
+		token.children = child.children
+		return
+	end
+
 	--If this token does not contain only constant children, we cannot fold it.
 	local i
 	for i = 1, #token.children do

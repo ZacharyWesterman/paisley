@@ -640,6 +640,22 @@ function generate_bytecode(root, file)
 		[tok.kwd_stop] = function(token, file)
 			emit(bc.call, 'jump', EOF_LABEL)
 		end,
+
+		--TERNARY (X if Y else Z) operator
+		[tok.ternary] = function(token, file)
+			local else_label = label_id()
+			local endif_label = label_id()
+
+			codegen_rules.recur_push(token.children[1])
+			emit(bc.call, 'jumpiffalse', else_label)
+			emit(bc.pop)
+			codegen_rules.recur_push(token.children[2])
+			emit(bc.call, 'jump', endif_label)
+			emit(bc.label, else_label)
+			emit(bc.pop)
+			codegen_rules.recur_push(token.children[3])
+			emit(bc.label, endif_label)
+		end,
 	}
 
 	enter(root)
