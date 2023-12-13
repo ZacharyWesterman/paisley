@@ -85,10 +85,20 @@ local functions = {
 		if std.bool(STACK[#STACK]) == false then CURRENT_INSTRUCTION = param end
 	end,
 
-	--EXPLODE
+	--EXPLODE: only used in for loops
 	function(line, param)
 		local array, i = POP()
-		for i = 1, #array do PUSH(array[#array - i + 1]) end
+		for i = 1, #array do
+			local val = array[#array - i + 1]
+			if type(val) == 'table' then
+				local k
+				for k = 1, #val do
+					PUSH(val[#val - k + 1])
+				end
+			else
+				PUSH(val)
+			end
+		end
 	end,
 
 	--IMPLODE
