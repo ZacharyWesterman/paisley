@@ -651,7 +651,7 @@ function SemanticAnalyzer(tokens, file)
 					local k
 					found_correct_types = true
 					for k = 1, #exp_types[i] do
-						if exp_types[i][k] ~= 'any' and got_types[k] ~= exp_types[i][k] then
+						if exp_types[i][k] ~= 'any' and got_types[k] ~= exp_types[i][k] and got_types[k] ~= 'any' then
 							found_correct_types = false
 							break
 						end
