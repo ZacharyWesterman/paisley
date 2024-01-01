@@ -47,7 +47,7 @@ end
 DEBUG_INSTRUCTION_NUM = 1
 print(PORT)
 while PORT ~= 3 do
-	-- os.execute('sleep 1')
+	os.execute('sleep 1')
 	-- os.execute('clear')
 	ITER()
 	-- if PORT == 6 then
