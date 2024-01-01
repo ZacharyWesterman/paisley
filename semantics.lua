@@ -564,7 +564,14 @@ function SemanticAnalyzer(tokens, file)
 	--Tidy up FOR loops (replace command with cmd contents)
 	recurse(root, {tok.for_stmt}, function(token)
 		if token.children[2].id == tok.command then
-			token.children[2].id = tok.array_concat
+			if #token.children[2].children > 1 then
+				token.children[2].id = tok.array_concat
+			else
+				for _, i in ipairs({'text', 'line', 'col', 'id', 'meta_id'}) do
+					token.children[2][i] = token.children[2].children[1][i]
+				end
+				token.children[2].children = token.children[2].children[1].children
+			end
 		end
 	end)
 
