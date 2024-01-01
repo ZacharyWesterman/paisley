@@ -185,12 +185,6 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					end
 				end
 
-				--labels
-				if not match then
-					match = text:match('^[a-zA-Z0-9_]+:')
-					if match then tok_type = tok.label end
-				end
-
 				--non-quoted text
 				if not match then
 					match = text:match('^[^ \t\n\r"\'{};$]+')

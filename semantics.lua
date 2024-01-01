@@ -361,7 +361,7 @@ function SemanticAnalyzer(tokens, file)
 		if token.id == tok.subroutine then
 			inside_sub = inside_sub + 1
 
-			local label = token.text:sub(1, #token.text - 1)
+			local label = token.text
 			local prev = labels[label]
 			if prev ~= nil then
 				-- Don't allow tokens to be redeclared

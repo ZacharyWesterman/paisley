@@ -96,7 +96,6 @@ tok = {
 	command_open = k(),
 
 	line_ending = k(),
-	label = k(),
 	program = k(),
 	op_assign = k(),
 

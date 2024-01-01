@@ -371,19 +371,19 @@ local rules = {
 
 	--SUBROUTINE statement
 	{
-		match = {{tok.kwd_subroutine}, {tok.label}, {tok.command, tok.program, tok.statement}, {tok.kwd_end}},
+		match = {{tok.kwd_subroutine}, {tok.text}, {tok.command, tok.program, tok.statement}, {tok.kwd_end}},
 		id = tok.subroutine,
 		keep = {3},
 		text = 2,
 	},
 	{
-		match = {{tok.kwd_subroutine}, {tok.label}, {tok.kwd_end}},
+		match = {{tok.kwd_subroutine}, {tok.text}, {tok.kwd_end}},
 		id = tok.subroutine,
 		keep = {},
 		text = 2,
 	},
 	{
-		match = {{tok.kwd_subroutine}, {tok.label}, {tok.line_ending}, {tok.kwd_end}},
+		match = {{tok.kwd_subroutine}, {tok.text}, {tok.line_ending}, {tok.kwd_end}},
 		id = tok.subroutine,
 		keep = {},
 		text = 2,
@@ -393,7 +393,7 @@ local rules = {
 	{
 		match = {{tok.kwd_subroutine}},
 		id = tok.subroutine,
-		not_before = {tok.label},
+		not_before = {tok.text},
 		text = 1,
 		onmatch = function(token, file)
 			parse_error(token.line, token.col, 'Incomplete subroutine declaration (expected "subroutine LABEL: ... end")', file)

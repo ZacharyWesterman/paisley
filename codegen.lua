@@ -112,7 +112,14 @@ function print_bytecode(instructions)
 		end
 
 		local line = ''
-		if call_text == nil and instr[1] ~= bc.run_command and instr[1] ~= bc.push_cmd_result and instr[1] ~= bc.pop and instr[1] ~= bc.push_index and instr[1] ~= bc.pop_goto_index  then call_text = 'null' else call_text = std.debug_str(call_text) end
+		if call_text == nil and instr[1] ~= bc.run_command and instr[1] ~= bc.push_cmd_result and instr[1] ~= bc.pop and instr[1] ~= bc.push_index and instr[1] ~= bc.pop_goto_index then
+			call_text = 'null'
+		elseif call_text == nil then
+			call_text = ''
+		else
+			call_text = std.debug_str(call_text)
+		end
+
 		if instr[4] then
 			line = i..' @ line '..instr[2]..': '..instr_text..' '..call_text..' '..std.debug_str(instr[4])
 		else
@@ -607,7 +614,7 @@ function generate_bytecode(root, file)
 			if not token.ignore then
 				local skipsub = label_id()
 				emit(bc.call, 'jump', skipsub)
-				emit(bc.label, token.text:sub(1, #token.text - 1))
+				emit(bc.label, token.text)
 				enter(token.children[1])
 				emit(bc.pop_goto_index)
 				emit(bc.label, skipsub)
