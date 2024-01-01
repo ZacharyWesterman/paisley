@@ -33,6 +33,10 @@ std = {
 			return '{' .. result .. '}'
 		elseif type(data) == 'string' then
 			return '"'..data..'"'
+		elseif type(data) == 'boolean' then
+			if data then return 'true' else return 'false' end
+		elseif data == nil then
+			return 'null'
 		else
 			return std.str(data)
 		end
@@ -181,5 +185,12 @@ std = {
 			in_text = in_text:sub(#m+1, #in_text)
 		end
 		return result
+	end,
+
+	--Check if a given string is numeric
+	isnumber = function(text)
+		if type(text) == 'number' then return true end
+		if type(text) ~= 'string' then return false end
+		if tonumber(text) then return true else return false end
 	end,
 }

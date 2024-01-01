@@ -40,12 +40,7 @@ DATA = nil
 
 require "runtime"
 
-for i,k in pairs(ALLOWED_COMMANDS) do
-	print(i..'='..k)
-end
-
 DEBUG_INSTRUCTION_NUM = 1
-print(PORT)
 while PORT ~= 3 do
 	os.execute('sleep 1')
 	-- os.execute('clear')
@@ -61,7 +56,7 @@ while PORT ~= 3 do
 	print()
 	print_header('BEG STACK')
 	for i = 1, #STACK do
-		print(std.debug_str(STACK[i]))
+		if STACK[i] == NULL then print('null') else print(std.debug_str(STACK[i])) end
 	end
 	print_header('END STACK')
 

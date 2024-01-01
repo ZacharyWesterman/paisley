@@ -141,6 +141,9 @@ func_operations = {
 	filter = function(text, pattern)
 		return std.filter(text, pattern)
 	end,
+	isnumber = function(text)
+		return std.isnumber(text)
+	end,
 }
 
 local function number_op(v1, v2, operator)

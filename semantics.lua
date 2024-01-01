@@ -45,6 +45,7 @@ builtin_funcs = {
 	rpad = 3,
 	hex = 1,
 	filter = 2,
+	isnumber = 1,
 }
 
 type_signatures = {
@@ -223,6 +224,10 @@ type_signatures = {
 	filter = {
 		valid = {{'string', 'string'}},
 		out = 'string',
+	},
+	isnumber = {
+		valid = {{'string'}},
+		out = 'boolean',
 	},
 	[tok.add] = {
 		valid = {{'number'}, {'array'}},

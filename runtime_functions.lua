@@ -550,6 +550,12 @@ local functions = {
 		local v = POP()
 		PUSH(std.filter(std.str(v[1]), std.str(v[2])))
 	end,
+
+	--CHECK IF A STRING IS NUMERIC
+	function()
+		local v = POP()
+		PUSH(std.isnumber(v[1]))
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT
