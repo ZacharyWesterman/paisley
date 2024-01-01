@@ -448,7 +448,7 @@ function generate_bytecode(root, file)
 			--SMALL OPTIMIZATION:
 			--If previously emitted token was an "implode" and then we're "exploding"
 			--Just remove the previous token!
-			if instructions[#instructions][2] == call_codes.implode then
+			if instructions[#instructions][3] == call_codes.implode then
 				table.remove(instructions)
 			else
 				emit(bc.call, 'explode')
@@ -661,21 +661,21 @@ function generate_bytecode(root, file)
 	emit(bc.label, EOF_LABEL)
 
 	--CLEAN OUT LABEL PSEUDO-COMMANDS
-	local labels, result, ct, i = {}, {}, 1
+	local labels, result2, ct, i = {}, {}, 1
 	for i = 1, #instructions do
 		local instr = instructions[i]
 		if instr[1] == bc.label then
 			labels[instr[3]] = ct
 		else
 			ct = ct + 1
-			table.insert(result, instr)
+			table.insert(result2, instr)
 		end
 	end
-	instructions = result
 
 	--CLEAN OUT LABEL REFERENCES
-	for i = 1, #instructions do
-		local instr = instructions[i]
+	local result = {}
+	for i = 1, #result2 do
+		local instr = result2[i]
 		if instr[1] == bc.call and (instr[3] == call_codes.jump or instr[3] == call_codes.jumpifnil or instr[3] == call_codes.jumpiffalse) then
 			if labels[instr[4]] == nil then
 				parse_error(instr[2], 0, 'COMPILER BUG: Attempt to reference unknown label of ID "'..std.str(instr[4])..'"!', file)
