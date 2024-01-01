@@ -544,6 +544,12 @@ local functions = {
 	function()
 		PUSH( string.format('%x', std.num(POP()[1])) )
 	end,
+
+	--FILTER STRING CHARS BASED ON PATTERN
+	function()
+		local v = POP()
+		PUSH(std.filter(std.str(v[1]), std.str(v[2])))
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT

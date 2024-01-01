@@ -85,6 +85,7 @@ local call_codes = {
 	lpad = 67,
 	rpad = 68,
 	hex = 69,
+	filter = 70,
 }
 
 local function bc_get_key(code, lookup)

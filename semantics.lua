@@ -44,6 +44,7 @@ builtin_funcs = {
 	lpad = 3,
 	rpad = 3,
 	hex = 1,
+	filter = 2,
 }
 
 type_signatures = {
@@ -217,6 +218,10 @@ type_signatures = {
 	},
 	hex = {
 		valid = {{'number'}},
+		out = 'string',
+	},
+	filter = {
+		valid = {{'string', 'string'}},
 		out = 'string',
 	},
 	[tok.add] = {

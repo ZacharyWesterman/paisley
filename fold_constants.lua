@@ -137,6 +137,10 @@ func_operations = {
 	hex = function(value)
 		return string.format('%x', value)
 	end,
+
+	filter = function(text, pattern)
+		return std.filter(text, pattern)
+	end,
 }
 
 local function number_op(v1, v2, operator)

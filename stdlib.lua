@@ -167,4 +167,19 @@ std = {
 				return string.char(c)
 		end))
 	end,
+
+	--Filter a string so it only contains characters that match the given pattern
+	filter = function(text, pattern)
+		local result, in_text, i = '', text
+		while #in_text > 0 do
+			local m = in_text:match('^'..pattern)
+			if m and (#m > 0) then
+				result = result .. m
+			else
+				m = 'x'
+			end
+			in_text = in_text:sub(#m+1, #in_text)
+		end
+		return result
+	end,
 }
