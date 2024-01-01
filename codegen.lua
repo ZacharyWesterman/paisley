@@ -132,16 +132,8 @@ function generate_bytecode(root, file)
 	local codegen_rules
 
 	local current_line = 0
-	local label_indexes = {}
-	local running_index = 1
 
 	local function emit(instruction_id, param1, param2)
-		if instruction_id == bc.label then
-			label_indexes[param1] = running_index
-		else
-			running_index = running_index + 1
-		end
-
 		if instruction_id == bc.call then
 			if not call_codes[param1] then
 				parse_error(current_line, 0, 'COMPILER BUG: No call code for function "'..std.str(param1)..'"!', file)
@@ -668,22 +660,31 @@ function generate_bytecode(root, file)
 	enter(root)
 	emit(bc.label, EOF_LABEL)
 
+	--CLEAN OUT LABEL PSEUDO-COMMANDS
+	local labels, result, ct, i = {}, {}, 1
+	for i = 1, #instructions do
+		local instr = instructions[i]
+		if instr[1] == bc.label then
+			labels[instr[3]] = ct
+		else
+			ct = ct + 1
+			table.insert(result, instr)
+		end
+	end
+	instructions = result
+
 	--CLEAN OUT LABEL REFERENCES
-	local i
-	local result = {}
 	for i = 1, #instructions do
 		local instr = instructions[i]
 		if instr[1] == bc.call and (instr[3] == call_codes.jump or instr[3] == call_codes.jumpifnil or instr[3] == call_codes.jumpiffalse) then
-			if label_indexes[instr[4]] == nil then
+			if labels[instr[4]] == nil then
 				parse_error(instr[2], 0, 'COMPILER BUG: Attempt to reference unknown label of ID "'..std.str(instr[4])..'"!', file)
 			end
 
-			instr[4] = label_indexes[instr[4]] - 1
+			instr[4] = labels[instr[4]] - 1
 		end
 
-		if instr[1] ~= bc.label then
-			table.insert(result, instr)
-		end
+		table.insert(result, instr)
 	end
 
 	return result
