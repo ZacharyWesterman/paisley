@@ -453,7 +453,14 @@ function generate_bytecode(root, file)
 			emit(bc.push, nil)
 			codegen_rules.recur_push(token.children[2])
 
-			emit(bc.call, 'explode')
+			--SMALL OPTIMIZATION:
+			--If previously emitted token was an "implode" and then we're "exploding"
+			--Just remove the previous token!
+			if instructions[#instructions][2] == call_codes.implode then
+				table.remove(instructions)
+			else
+				emit(bc.call, 'explode')
+			end
 			emit(bc.label, loop_beg_label)
 			table.insert(loop_term_labels, loop_end_label)
 			table.insert(loop_begn_labels, loop_beg_label)
