@@ -204,8 +204,17 @@ function fold_constants(token)
 		return
 	end
 
-	--List comprehension is also unique: if the condition (exists and) only references the loop variable, and the output only references the loop variable, then it can be reduced
-	--May have to hold off on this for now, it's pretty complicated...
+	--List comprehension is also unique: if the expression has the form "i for i in EXPR (no condition)" then can optimize the whole list comprehension away.
+	if token.id == tok.list_comp and c1.id == tok.variable and c1.text == c2.text and not token.children[4] then
+		local child = token.children[3]
+		token.id = child.id
+		token.value = child.value
+		token.text = child.text
+		token.line = child.line
+		token.col = child.col
+		token.children = child.children
+		return
+	end
 
 	--If this token does not contain only constant children, we cannot fold it.
 	local i
