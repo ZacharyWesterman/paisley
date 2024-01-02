@@ -584,6 +584,17 @@ local functions = {
 
 		PUSH(result)
 	end,
+	--SORT ARRAY
+	function()
+		local v = POP()[1]
+		if type(v) ~= 'table' then
+			PUSH({v})
+			return
+		end
+
+		table.sort(v)
+		PUSH(v)
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT

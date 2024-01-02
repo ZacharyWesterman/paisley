@@ -160,6 +160,10 @@ func_operations = {
 		end
 		return result
 	end,
+	sort = function(value)
+		table.sort(value)
+		return value
+	end,
 }
 
 local function number_op(v1, v2, operator)

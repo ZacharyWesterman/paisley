@@ -48,6 +48,7 @@ builtin_funcs = {
 	isnumber = 1,
 	clocktime = 1,
 	reverse = 1,
+	sort = 1,
 }
 
 type_signatures = {
@@ -236,6 +237,10 @@ type_signatures = {
 		out = 'array',
 	},
 	reverse = {
+		valid = {{'array'}},
+		out = 'array',
+	},
+	sort = {
 		valid = {{'array'}},
 		out = 'array',
 	},
