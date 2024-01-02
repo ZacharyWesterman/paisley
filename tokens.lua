@@ -56,6 +56,7 @@ tok = {
 	op_ne = k(),
 	op_comma = k(),
 	op_exclamation = k(),
+	op_dot = k(),
 
 	paren_open = k(),
 	paren_close = k(),

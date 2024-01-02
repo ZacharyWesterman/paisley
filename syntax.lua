@@ -1,4 +1,19 @@
 local rules = {
+	--Function call, dot-notation
+	{
+		match = {{tok.value, tok.func_call}, {tok.op_dot}, {tok.comparison}},
+		id = tok.func_call,
+		text = 3,
+		onmatch = function(token, file)
+			if token.children[3].id ~= tok.func_call then
+				parse_error(token.line, token.col, 'Dot notation can only be used with function calls', file)
+			end
+
+			table.insert(token.children[3].children, 1, token.children[1])
+			token.children = token.children[3].children
+		end,
+	},
+
 	--String Concatenation
 	{
 		match = {{tok.comparison, tok.array_concat}, {tok.comparison, tok.array_concat}},
@@ -50,7 +65,7 @@ local rules = {
 		id = tok.length,
 		keep = {2},
 		text = 1,
-		not_before = {tok.paren_open},
+		not_before = {tok.paren_open, tok.op_dot},
 	},
 
 	--Unary negation is a bit weird; highest precedence and cannot occur after certain nodes.
@@ -60,6 +75,7 @@ local rules = {
 		keep = {2},
 		text = 1,
 		not_after = {tok.lit_number, tok.lit_false, tok.lit_true, tok.lit_null, tok.negate, tok.command_close, tok.expr_close, tok.string_close, tok.string_open, tok.paren_close, tok.inline_command, tok.expression, tok.parentheses, tok.variable, tok.func_call},
+		not_before = {tok.op_dot},
 	},
 
 	--Multiplication
@@ -69,6 +85,7 @@ local rules = {
 		not_after = {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod},
 		keep = {1, 3},
 		text = 2,
+		not_before = {tok.op_dot},
 	},
 
 	--If no other multiplication was detected, just promote the value to mult status.
@@ -77,6 +94,7 @@ local rules = {
 		match = {{tok.value}},
 		id = tok.multiply,
 		meta = true,
+		not_before = {tok.op_dot},
 	},
 
 	--Addition (lower precedence than multiplication)

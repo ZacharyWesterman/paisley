@@ -47,6 +47,7 @@ opers = {
 	['~='] = tok.op_ne,
 	['!='] = tok.op_ne,
 	[','] = tok.op_comma,
+	['.'] = tok.op_dot,
 }
 
 oper_block = {
@@ -281,6 +282,35 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					end
 				end
 
+				--Numbers (can have formats 0xAAAA, 0bAAAA, AA.AAA, A_AAA_AAA.AAA)
+				if not match then
+					match = text:match('^0[xb][0-9%._a-fA-F]*') --0x12af / 0b0011
+					if not match then match = text:match('^%.[0-9]+') end --.123456
+					if not match then match = text:match('^[0-9][0-9_]*%.[0-9]+') end --1_234.657
+					if not match then match = text:match('^[0-9][0-9_]*') end --1_234_567
+
+					if match then
+						local m = match:gsub('_', '')
+						local n
+						local tp = ''
+						if m:sub(2,2) == 'x' then
+							n = tonumber(m:sub(3, #m), 16)
+							tp = 'hexadecimal '
+						elseif m:sub(2,2) == 'b' then
+							n = tonumber(m:sub(3, #m), 2)
+							tp = 'binary '
+						else
+							n = tonumber(m)
+						end
+
+						if n == nil then
+							parse_error(line, col, 'Invalid '..tp..'number "'..match..'"', file)
+						end
+						tok_type = tok.lit_number
+						real_value = n
+					end
+				end
+
 				--Operators
 				if not match then
 					local key
@@ -325,35 +355,6 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^[a-zA-Z_][a-zA-Z_0-9]*')
 					if match then tok_type = tok.variable end
-				end
-
-				--Numbers (can have formats 0xAAAA, 0bAAAA, AA.AAA, A_AAA_AAA.AAA)
-				if not match then
-					match = text:match('^0[xb][0-9%._a-fA-F]*')
-					if not match then
-						match = text:match('^[0-9%.][0-9%._a-zA-Z]*')
-					end
-
-					if match then
-						local m = match:gsub('_', '')
-						local n
-						local tp = ''
-						if m:sub(2,2) == 'x' then
-							n = tonumber(m:sub(3, #m), 16)
-							tp = 'hexadecimal '
-						elseif m:sub(2,2) == 'b' then
-							n = tonumber(m:sub(3, #m), 2)
-							tp = 'binary '
-						else
-							n = tonumber(m)
-						end
-
-						if n == nil then
-							parse_error(line, col, 'Invalid '..tp..'number "'..match..'"', file)
-						end
-						tok_type = tok.lit_number
-						real_value = n
-					end
 				end
 
 				--Special "list of vars" and "list of commands" variables
