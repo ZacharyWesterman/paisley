@@ -197,10 +197,11 @@ local functions = {
 		--For performance, limit how big slices can be.
 		local max_arr_sz = 65535
 		if stop - start > max_arr_sz then
-			runtime_error(line, 'Attempt to create an array of '..(stop - start)..' elements (max is '..max_arr_sz..')')
+			print('WARNING: line '..line..': Attempt to create an array of '..(stop - start)..' elements (max is '..max_arr_sz..')')
+			stop = start + 65535
 		end
 
-		for i = stop, start, -1 do
+		for i = start, stop do
 			table.insert(array, i)
 		end
 		PUSH(array)
