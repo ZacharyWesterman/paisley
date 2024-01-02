@@ -78,7 +78,7 @@ In Paisley, this does not matter much since all variables are global. Just keep 
 
 An example subroutine usage might look like the following:
 ```sh
-subroutine print_numbers:
+subroutine print_numbers
 	for i in {0:max_number} do
 		if {i > 30} do
 			print "whoa, too big!"
@@ -206,6 +206,15 @@ Expressions give access to a decent suite of operations and functions, listed be
 - Left-pad a string with a given character: `lpad(string, character, to_width) -> string`
 - Right-pad a string with a given character: `rpad(string, character, to_width) -> string`
 - Convert a number to a hexadecimal string: `hex(value) -> string`
+- Remove all characters that do not match the given pattern: `filter(text, pattern) -> string`
+- Check if a string is numeric: `isnumber(text) -> boolean`
+- Convert a “seconds since midnight” timestamp into (hour, min, sec, milli): `clocktime(value) -> array`
+
+Note that functions can be called in one of two ways:
+1. The usual syntax, e.g. `split(var, delim)`
+2. Using dot-notation, e.g. `var.split(delim)`
+Both are exactly equivalent, the latter syntax is included simply for convenience.
+
 
 ### Arrays in expressions
 While you can absolutely create an array using the `array(...)` function, the simpler way to do it is to just include a comma in expressions.
