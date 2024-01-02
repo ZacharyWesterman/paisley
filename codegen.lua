@@ -198,6 +198,8 @@ function generate_bytecode(root, file)
 	--Create a termination label which will be appended to the end
 	local EOF_LABEL = label_id()
 
+	local LIST_COMP_VAR = {}
+
 	--[[
 		CODE GENERATION RULES
 	]]
@@ -292,7 +294,11 @@ function generate_bytecode(root, file)
 
 		--CODEGEN FOR VARIABLES
 		[tok.variable] = function(token, file)
-			emit(bc.get, token.text)
+			if LIST_COMP_VAR[token.text] then
+				emit(bc.get, LIST_COMP_VAR[token.text])
+			else
+				emit(bc.get, token.text)
+			end
 		end,
 
 		--DELETE STATEMENT
@@ -509,6 +515,78 @@ function generate_bytecode(root, file)
 			emit(bc.call, 'jump', loop_beg_label)
 			emit(bc.label, loop_end_label)
 			emit(bc.pop)
+		end,
+
+		--LIST COMPREHENSION
+		[tok.list_comp] = function(token, file)
+			local loop_beg_label = label_id()
+			local loop_end_label = label_id()
+			local loop_var = label_id()
+
+			local orig_v = token.children[2].text
+			LIST_COMP_VAR[orig_v] = label_id()
+
+			--Loop setup
+			emit(bc.push, nil)
+			codegen_rules.recur_push(token.children[3]) --list to pull from
+
+			--Initialize loop var
+			emit(bc.push, {})
+			emit(bc.set, loop_var)
+
+			--SMALL OPTIMIZATION:
+			--If previously emitted token was an "implode" and then we're "exploding"
+			--Just remove the previous token!
+			if instructions[#instructions][3] == call_codes.implode then
+				table.remove(instructions)
+			else
+				emit(bc.call, 'explode')
+			end
+			emit(bc.label, loop_beg_label)
+			table.insert(loop_term_labels, loop_end_label)
+			table.insert(loop_begn_labels, loop_beg_label)
+
+			--Run loop
+			emit(bc.call, 'jumpifnil', loop_end_label)
+			emit(bc.set, LIST_COMP_VAR[orig_v]) --set the loop iter variable
+
+			if token.children[4] then
+				--Only add the value to the list if the condition is met.
+				codegen_rules.recur_push(token.children[4])
+				true_label = label_id()
+				false_label = label_id()
+				emit(bc.call, 'jumpiffalse', false_label)
+				emit(bc.pop)
+				emit(bc.call, 'jump', true_label)
+				emit(bc.label, false_label)
+				emit(bc.pop)
+				emit(bc.call, 'jump', loop_beg_label)
+				emit(bc.label, true_label)
+			end
+
+			--Emit the output expression
+			codegen_rules.recur_push(token.children[1])
+			emit(bc.set, LIST_COMP_VAR[orig_v])
+
+			--append it to the loop var
+			emit(bc.get, loop_var)
+			emit(bc.get, LIST_COMP_VAR[orig_v])
+			emit(bc.call, 'implode', 2)
+			emit(bc.call, 'append')
+			emit(bc.set, loop_var)
+
+			-- if token.children[3] then enter(token.children[3]) end
+
+			--End of loop
+			emit(bc.call, 'jump', loop_beg_label)
+			emit(bc.label, loop_end_label)
+			emit(bc.pop)
+			emit(bc.get, loop_var)
+			emit(bc.delete, loop_var)
+
+			table.remove(loop_term_labels)
+			table.remove(loop_begn_labels)
+			LIST_COMP_VAR[orig_v] = nil
 		end,
 
 		--BREAK STATEMENT

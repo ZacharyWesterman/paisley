@@ -48,7 +48,7 @@ local rules = {
 
 	--Treat all literals the same.
 	{
-		match = {{tok.lit_number, tok.lit_boolean, tok.lit_null, tok.negate, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat, tok.lambda, tok.lambda_ref, tok.ternary}},
+		match = {{tok.lit_number, tok.lit_boolean, tok.lit_null, tok.negate, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat, tok.lambda, tok.lambda_ref, tok.ternary, tok.list_comp}},
 		id = tok.value,
 		meta = true,
 	},
@@ -57,6 +57,7 @@ local rules = {
 		id = tok.value,
 		meta = true,
 		not_before = {tok.paren_open},
+		not_after = {tok.kwd_for_expr},
 	},
 
 	--Length operator
@@ -171,6 +172,29 @@ local rules = {
 		id = tok.boolean,
 		keep = {1, 3},
 		text = 2,
+	},
+	{
+		match = {{tok.array_concat, tok.boolean, tok.comparison}, {tok.op_in}, {tok.array_concat, tok.boolean, tok.comparison}},
+		id = tok.boolean,
+		keep = {1, 3},
+		text = 2,
+		not_after = {tok.kwd_for_expr},
+	},
+
+	--List comprehension
+	{
+		match = {{tok.comparison}, {tok.kwd_for_expr}, {tok.variable}, {tok.op_in}, {tok.comparison}},
+		id = tok.list_comp,
+		keep = {1, 3, 5},
+		text = 2,
+		not_before = {tok.kwd_if_expr},
+	},
+	{
+		match = {{tok.comparison}, {tok.kwd_for_expr}, {tok.variable}, {tok.op_in}, {tok.comparison}, {tok.kwd_if_expr}, {tok.comparison}},
+		id = tok.list_comp,
+		keep = {1, 3, 5, 7},
+		text = 2,
+		not_before = {tok.kwd_else_expr},
 	},
 
 	--If no other boolean op was detected, just promote the value to bool status.

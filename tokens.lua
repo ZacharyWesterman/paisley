@@ -24,6 +24,7 @@ tok = {
 	kwd_stop = k(),
 	kwd_if_expr = k(),
 	kwd_else_expr = k(),
+	kwd_for_expr = k(),
 
 	expr_open = k(),
 	expr_close = k(),
@@ -84,6 +85,7 @@ tok = {
 	concat = k(),
 	length = k(),
 	ternary = k(),
+	list_comp = k(),
 
 	string_open = k(),
 	string_close = k(),

@@ -192,6 +192,9 @@ function fold_constants(token)
 		return
 	end
 
+	--List comprehension is also unique: if the condition (exists and) only references the loop variable, and the output only references the loop variable, then it can be reduced
+	--May have to hold off on this for now, it's pretty complicated...
+
 	--If this token does not contain only constant children, we cannot fold it.
 	local i
 	for i = 1, #token.children do
