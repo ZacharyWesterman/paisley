@@ -47,6 +47,7 @@ builtin_funcs = {
 	filter = 2,
 	isnumber = 1,
 	clocktime = 1,
+	reverse = 1,
 }
 
 type_signatures = {
@@ -234,6 +235,10 @@ type_signatures = {
 		valid = {{'number'}},
 		out = 'array',
 	},
+	reverse = {
+		valid = {{'array'}},
+		out = 'array',
+	},
 	[tok.add] = {
 		valid = {{'number'}, {'array'}},
 		out = 'number',
@@ -266,6 +271,9 @@ type_signatures = {
 	},
 	[tok.string_open] = {
 		out = 'string',
+	},
+	[tok.list_comp] = {
+		out = 'array',
 	},
 }
 

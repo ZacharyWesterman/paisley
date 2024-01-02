@@ -152,6 +152,14 @@ func_operations = {
 			math.floor(value * 1000) % 1000,
 		}
 	end,
+
+	reverse = function(value)
+		local result, i = {}
+		for i = #value, 1, -1 do
+			table.insert(result, value[i])
+		end
+		return result
+	end,
 }
 
 local function number_op(v1, v2, operator)

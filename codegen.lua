@@ -88,6 +88,7 @@ local call_codes = {
 	filter = 70,
 	isnumber = 71,
 	clocktime = 72,
+	reverse = 73,
 }
 
 local function bc_get_key(code, lookup)

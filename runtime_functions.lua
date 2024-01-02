@@ -568,6 +568,22 @@ local functions = {
 			math.floor(v * 1000) % 1000,
 		})
 	end,
+
+	--REVERSE ARRAY
+	function()
+		local v = POP()[1]
+		if type(v) ~= 'table' then
+			PUSH({v})
+			return
+		end
+
+		local result, i = {}
+		for i = #v, 1, -1 do
+			table.insert(result, v[i])
+		end
+
+		PUSH(result)
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT
