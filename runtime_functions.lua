@@ -556,6 +556,17 @@ local functions = {
 		local v = POP()
 		PUSH(std.isnumber(v[1]))
 	end,
+
+	--SPLIT A NUMBER INTO CLOCK TIME
+	function()
+		local v = std.num(POP()[1])
+		PUSH({
+			math.floor(v / 3600),
+			math.floor(v / 60) % 60,
+			math.floor(v) % 60,
+			math.floor(v * 1000) % 1000,
+		})
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT

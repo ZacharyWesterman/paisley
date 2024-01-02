@@ -144,6 +144,14 @@ func_operations = {
 	isnumber = function(text)
 		return std.isnumber(text)
 	end,
+	clocktime = function(value)
+		return {
+			math.floor(value / 3600),
+			math.floor(value / 60) % 60,
+			math.floor(value) % 60,
+			math.floor(value * 1000) % 1000,
+		}
+	end,
 }
 
 local function number_op(v1, v2, operator)

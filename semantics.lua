@@ -46,6 +46,7 @@ builtin_funcs = {
 	hex = 1,
 	filter = 2,
 	isnumber = 1,
+	clocktime = 1,
 }
 
 type_signatures = {
@@ -228,6 +229,10 @@ type_signatures = {
 	isnumber = {
 		valid = {{'string'}},
 		out = 'boolean',
+	},
+	clocktime = {
+		valid = {{'number'}},
+		out = 'array',
 	},
 	[tok.add] = {
 		valid = {{'number'}, {'array'}},
