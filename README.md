@@ -209,12 +209,13 @@ Expressions give access to a decent suite of operations and functions, listed be
 - Remove all characters that do not match the given pattern: `filter(text, pattern) -> string`
 - Check if a string is numeric: `isnumber(text) -> boolean`
 - Convert a “seconds since midnight” timestamp into (hour, min, sec, milli): `clocktime(value) -> array`
+- Reduce an array to a single element: `reduce(array, operator) -> any`, e.g. `reduce(1:9, +)` sums the numbers from 1 to 9, resulting in 45
 
 Note that functions can be called in one of two ways:
 1. The usual syntax, e.g. `split(var, delim)`
 2. Using dot-notation, e.g. `var.split(delim)`
-Both are exactly equivalent, the latter syntax is included simply for convenience.
 
+Both are exactly equivalent, the latter syntax is included simply for convenience.
 
 ### Arrays in expressions
 While you can absolutely create an array using the `array(...)` function, the simpler way to do it is to just include a comma in expressions.
