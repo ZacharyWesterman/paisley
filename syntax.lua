@@ -38,6 +38,21 @@ local rules = {
 		text = 1,
 	},
 
+	--Special "reduce" function call
+	{
+		match = {{tok.text, tok.variable}, {tok.paren_open}, {tok.comparison}, {tok.op_comma}, {tok.op_plus, tok.op_minus, tok.op_times, tok.op_idiv, tok.op_div, tok.op_mod, tok.op_and, tok.op_or, tok.op_xor, tok.op_ge, tok.op_gt, tok.op_le, tok.op_lt, tok.op_eq, tok.op_ne}, {tok.paren_close}},
+		id = tok.func_call,
+		keep = {3, 5},
+		text = 1,
+	},
+	--Special "reduce", function call (for dot notation)
+	{
+		match = {{tok.text, tok.variable}, {tok.paren_open}, {tok.op_plus, tok.op_minus, tok.op_times, tok.op_idiv, tok.op_div, tok.op_mod, tok.op_and, tok.op_or, tok.op_xor, tok.op_ge, tok.op_gt, tok.op_le, tok.op_lt, tok.op_eq, tok.op_ne}, {tok.paren_close}},
+		id = tok.func_call,
+		keep = {3},
+		text = 1,
+	},
+
 	--Array indexing
 	{
 		match = {{tok.comparison}, {tok.index_open}, {tok.comparison}, {tok.index_close}},
@@ -83,7 +98,7 @@ local rules = {
 	{
 		match = {{tok.value, tok.multiply, tok.comparison}, {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod}, {tok.value, tok.multiply, tok.comparison}},
 		id = tok.multiply,
-		not_after = {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod},
+		not_after = {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod, tok.op_dot},
 		keep = {1, 3},
 		text = 2,
 		not_before = {tok.op_dot},
@@ -103,7 +118,7 @@ local rules = {
 		match = {{tok.multiply, tok.add, tok.comparison}, {tok.op_plus, tok.op_minus}, {tok.multiply, tok.add, tok.comparison}},
 		id = tok.add,
 		not_before = {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod},
-		not_after = {tok.op_plus, tok.op_minus, tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod},
+		not_after = {tok.op_plus, tok.op_minus, tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod, tok.op_dot},
 		keep = {1, 3},
 		text = 2,
 	},
@@ -136,6 +151,7 @@ local rules = {
 		keep = {1, 3},
 		text = 2,
 		not_before = {tok.index_open},
+		not_after = {tok.op_dot},
 	},
 	{
 		match = {{tok.array_slice}},
@@ -147,7 +163,7 @@ local rules = {
 		id = tok.array_concat,
 		keep = {1},
 		text = 2,
-		not_before = {tok.lit_boolean, tok.lit_null, tok.lit_number, tok.string_open, tok.command_open, tok.expr_open, tok.array_slice, tok.array_concat, tok.comparison, tok.paren_open, tok.index_open, tok.parentheses, tok.variable, tok.func_call, tok.index},
+		not_before = {tok.lit_boolean, tok.lit_null, tok.lit_number, tok.string_open, tok.command_open, tok.expr_open, tok.array_slice, tok.array_concat, tok.comparison, tok.paren_open, tok.index_open, tok.parentheses, tok.variable, tok.func_call, tok.index, tok.op_plus, tok.op_minus, tok.op_times, tok.op_idiv, tok.op_div, tok.op_mod, tok.op_and, tok.op_or, tok.op_xor, tok.op_ge, tok.op_gt, tok.op_le, tok.op_lt, tok.op_eq, tok.op_ne},
 	},
 
 	--Prefix Boolean not
@@ -172,13 +188,14 @@ local rules = {
 		id = tok.boolean,
 		keep = {1, 3},
 		text = 2,
+		not_after = {tok.op_dot},
 	},
 	{
 		match = {{tok.array_concat, tok.boolean, tok.comparison}, {tok.op_in}, {tok.array_concat, tok.boolean, tok.comparison}},
 		id = tok.boolean,
 		keep = {1, 3},
 		text = 2,
-		not_after = {tok.kwd_for_expr},
+		not_after = {tok.kwd_for_expr, tok.op_dot},
 	},
 
 	--List comprehension
@@ -215,6 +232,7 @@ local rules = {
 			if token.text == '~=' then token.text = '!=' end
 			if token.text == '=' then token.text = '==' end
 		end,
+		not_after = {tok.op_dot},
 	},
 	{
 		match = {{tok.boolean, tok.length}},
@@ -814,10 +832,12 @@ function SyntaxParser(tokens, file)
 
 		loops_since_reduction = loops_since_reduction + 1
 
-		-- for _, t in pairs(tokens) do
-		-- 	print_tokens_recursive(t)
+		-- if COMPILER_DEBUG then
+		-- 	for _, t in pairs(tokens) do
+		-- 		print_tokens_recursive(t)
+		-- 	end
+		-- 	print()
 		-- end
-		-- print()
 
 		if not did_reduce or loops_since_reduction > 500 then
 			if first_failure == nil then

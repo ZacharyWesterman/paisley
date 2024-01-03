@@ -12,6 +12,7 @@ local bc = {
 	pop_goto_index = 9,
 	copy = 10,
 	delete = 11,
+	swap = 12,
 }
 
 local call_codes = {
@@ -709,6 +710,54 @@ function generate_bytecode(root, file)
 
 		--BUILT-IN FUNCTION CALLS
 		[tok.func_call] = function(token, file)
+			--Handle the reduce() function differently.
+			--It's actually a loop that acts on all the elements.
+			if token.text == 'reduce' then
+				loop_beg_label = label_id()
+				loop_end_label = label_id()
+				loop_skip_label = label_id()
+
+				emit(bc.push, nil)
+				codegen_rules.recur_push(token.children[1])
+				emit(bc.call, 'explode')
+				emit(bc.call, 'jumpifnil', loop_end_label) --Skip entirely if array is null
+				emit(bc.label, loop_beg_label)
+				emit(bc.swap)
+				emit(bc.call, 'jumpifnil', loop_end_label)
+
+				local op_id = token.children[2].id
+				if op_id == tok.op_idiv then
+					emit(bc.call, 'div')
+					emit(bc.call, 'implode', 1)
+					emit(bc.call, 'floor')
+				else
+					ops = {
+						[tok.op_plus] = 'add',
+						[tok.op_minus] = 'sub',
+						[tok.op_times] = 'mul',
+						[tok.op_div] = 'div',
+						[tok.op_mod] = 'rem',
+						[tok.op_and] = 'booland',
+						[tok.op_or] = 'boolor',
+						[tok.op_xor] = 'boolxor',
+						[tok.op_eq] = 'equal',
+						[tok.op_ne] = 'notequal',
+						[tok.op_gt] = 'greater',
+						[tok.op_ge] = 'greaterequal',
+						[tok.op_lt] = 'less',
+						[tok.op_le] = 'lessequal',
+					}
+					emit(bc.call, ops[op_id])
+				end
+				emit(bc.call, 'jump', loop_beg_label)
+				emit(bc.label, loop_end_label)
+				emit(bc.pop)
+				emit(bc.label, loop_skip_label)
+
+				return
+			end
+
+			--Normal functions call the respective function logic at run time.
 			local i
 			local has_slices = false
 			for i = 1, #token.children do

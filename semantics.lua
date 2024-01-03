@@ -49,6 +49,7 @@ builtin_funcs = {
 	clocktime = 1,
 	reverse = 1,
 	sort = 1,
+	reduce = 2,
 }
 
 type_signatures = {
@@ -243,6 +244,9 @@ type_signatures = {
 	sort = {
 		valid = {{'array'}},
 		out = 'array',
+	},
+	reduce = {
+		valid = {{'array', 'any'}},
 	},
 	[tok.add] = {
 		valid = {{'number'}, {'array'}},
@@ -520,6 +524,19 @@ function SemanticAnalyzer(tokens, file)
 			end
 		end
 
+		--For reduce() function, make sure that its second parameter is an operator!
+		if token.text == 'reduce' then
+			local correct, i, k = false
+			for i, k in pairs({tok.op_plus, tok.op_minus, tok.op_times, tok.op_idiv, tok.op_div, tok.op_mod, tok.op_and, tok.op_or, tok.op_xor, tok.op_ge, tok.op_gt, tok.op_le, tok.op_lt, tok.op_eq, tok.op_ne}) do
+				if token.children[2].id == k then
+					correct = true
+					break
+				end
+			end
+			if not correct then
+				parse_error(token.children[2].line, token.children[2].col, 'The second parameter of "reduce(a,b)" must be a binary operator', file)
+			end
+		end
 	end)
 
 	--Prep plain (non-interpolated) strings to allow constant folding
@@ -705,7 +722,7 @@ function SemanticAnalyzer(tokens, file)
 				end
 			end
 
-			token.type = signature.out
+			if signature.out then token.type = signature.out end
 		end
 
 	end

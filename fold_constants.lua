@@ -216,6 +216,52 @@ function fold_constants(token)
 		return
 	end
 
+	--Another unique case: the reduce() function takes an operator as the second parameter, not a value
+	if token.id == tok.func_call and token.text == 'reduce' then
+		if c1.value then
+			if #c1.value == 0 then
+				token.id = tok.lit_null
+				token.children = nil
+				token.text = tostring(nil)
+				return
+			end
+
+			operator = c2.text
+			local result, i = c1.value[1]
+			for i = 2, #c1.value do
+				local v = c1.value[i]
+				if operator == '==' then result = result == v
+				elseif operator == '<' then result = result < v
+				elseif operator == '<=' then result = result <= v
+				elseif operator == '>' then result = result > v
+				elseif operator == '>=' then result = result >= v
+				elseif operator == '!=' then result = result ~= v
+				elseif operator == '+' then result = std.num(result) + std.num(v)
+				elseif operator == '-' then result = std.num(result) - std.num(v)
+				elseif operator == '*' then result = std.num(result) * std.num(v)
+				elseif operator == '/' then result = std.num(result) / std.num(v)
+				elseif operator == '//' then result = math.floor(std.num(result) / std.num(v))
+				elseif operator == '%' then result = std.num(result) % std.num(v)
+				elseif operator == 'and' then result = std.bool(result) and std.bool(v)
+				elseif operator == 'or' then result = std.bool(result) or std.bool(v)
+				elseif operator == 'xor' then result = (std.bool(result) or std.bool(v)) and not (std.bool(result) and std.bool(v))
+				else
+					parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for "reduce(a,b)" operator "'..operator..'"!', file)
+				end
+			end
+
+			token.value = result
+			token.text = tostring(result)
+			token.children = nil
+		else
+			--Even if the parameter is not constant, we can still deduce the output type based on the operator
+			if std.arrfind({'+', '-', '/', '//', '%'}, c2.text) > 0 then token.type = 'number'
+			elseif std.arrfind({'==', '<', '<=', '>', '>=', '!=', 'and', 'or', 'xor'}, c2.text) > 0 then token.type = 'boolean'
+			end
+		end
+		return
+	end
+
 	--If this token does not contain only constant children, we cannot fold it.
 	local i
 	for i = 1, #token.children do

@@ -748,4 +748,12 @@ commands = {
 	[11] = function(line, p1, p2)
 		VARS[p1] = nil
 	end,
+
+	--SWAP THE TOP 2 ELEMENTS ON THE STACK
+	[12] = function(line, p1, p2)
+		v1 = STACK[#STACK]
+		v2 = STACK[#STACK-1]
+		STACK[#STACK-1] = v1
+		STACK[#STACK] = v2
+	end,
 }

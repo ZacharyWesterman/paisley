@@ -160,9 +160,7 @@ function print_token(token, indent)
 				meta = '    ('..token.type..'='..std.debug_str(token.value)..')'
 			end
 		elseif token.type ~= nil then
-			if token.type ~= nil then
-				meta = '    ('..token.type..')'
-			end
+			meta = '    ('..token.type..')'
 		end
 	-- end
 
