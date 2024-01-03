@@ -32,6 +32,13 @@ end
 local function PUSH(value)
 	if value == nil then
 		table.insert(STACK, NULL)
+	elseif type(value) == 'table' then
+		--DEEP COPY tables into the stack. It's slower, but it prevents data from randomly mutating!
+		local result, i = {}
+		for i = 1, #value do
+			table.insert(result, value[i])
+		end
+		table.insert(STACK, result)
 	else
 		table.insert(STACK, value)
 	end
