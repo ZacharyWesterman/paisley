@@ -180,6 +180,13 @@ local rules = {
 		text = 2,
 		not_before = {tok.lit_boolean, tok.lit_null, tok.lit_number, tok.string_open, tok.command_open, tok.expr_open, tok.array_slice, tok.array_concat, tok.comparison, tok.paren_open, tok.index_open, tok.parentheses, tok.variable, tok.func_call, tok.index, tok.op_plus, tok.op_minus, tok.op_times, tok.op_idiv, tok.op_div, tok.op_mod, tok.op_and, tok.op_or, tok.op_xor, tok.op_ge, tok.op_gt, tok.op_le, tok.op_lt, tok.op_eq, tok.op_ne},
 	},
+	{
+		match = {{tok.op_comma}},
+		id = tok.array_concat,
+		keep = {},
+		text = 1,
+		only_after = {tok.expr_open, tok.paren_open},
+	},
 
 	--Prefix Boolean not
 	{
@@ -681,6 +688,18 @@ function SyntaxParser(tokens, file)
 						end
 					end
 				end
+
+				if not rule_failed and rule.only_after and index > 1 then
+					rule_failed = true
+					local prev_token, i = tokens[index - 1]
+					for i = 1, #rule.only_after do
+						if prev_token.id == rule.only_after[i] then
+							rule_failed = false
+							break
+						end
+					end
+				end
+
 				if not rule_failed and rule.not_after_range and index > 1 then
 					local prev_token = tokens[index - 1]
 					if prev_token.id >= rule.not_after_range[1] and prev_token.id <= rule.not_after_range[2] then
