@@ -640,6 +640,30 @@ local functions = {
 		end
 		PUSH(v[1])
 	end,
+
+	--UPDATE ELEMENT IN ARRAY
+	function()
+		local v = POP()
+		if type(v[1]) ~= 'table' then v[1] = {v[1]} end
+		v[1][std.num(v[2])] = v[3]
+		PUSH(v[1])
+	end,
+
+	--INSERT ELEMENT IN ARRAY
+	function()
+		local v = POP()
+		if type(v[1]) ~= 'table' then v[1] = {v[1]} end
+		table.insert(v[1], std.num(v[2]), v[3])
+		PUSH(v[1])
+	end,
+
+	--DELETE ELEMENT FROM ARRAY
+	function()
+		local v = POP()
+		if type(v[1]) ~= 'table' then v[1] = {v[1]} end
+		table.remove(v[1], std.num(v[2]))
+		PUSH(v[1])
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT

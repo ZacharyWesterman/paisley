@@ -52,6 +52,9 @@ builtin_funcs = {
 	reduce = 2,
 	frombytes = 1,
 	merge = 2,
+	update = 3,
+	insert = 3,
+	delete = 2,
 }
 
 type_signatures = {
@@ -256,6 +259,18 @@ type_signatures = {
 	},
 	merge = {
 		valid = {{'array', 'array'}},
+		out = 'array',
+	},
+	update = {
+		valid = {{'array', 'number', 'any'}},
+		out = 'array',
+	},
+	insert = {
+		valid = {{'array', 'number', 'any'}},
+		out = 'array',
+	},
+	delete = {
+		valid = {{'array', 'number'}},
 		out = 'array',
 	},
 

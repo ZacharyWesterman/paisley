@@ -187,6 +187,18 @@ func_operations = {
 		end
 		return array1
 	end,
+	update = function(array, index, value)
+		array[index] = value
+		return array
+	end,
+	insert = function(array, index, value)
+		table.insert(array, index, value)
+		return array
+	end,
+	delete = function(array, index)
+		table.remove(array, index)
+		return array
+	end,
 }
 
 local function number_op(v1, v2, operator)

@@ -213,6 +213,9 @@ Expressions give access to a decent suite of operations and functions, listed be
 - Reverse an array: `reverse(array) -> array`
 - Sort an array in ascending order: `sort(array) -> array`
 - Join two arrays together: `merge(array, array) -> array`
+- Replace an element in an array: `update(array, index, value) -> array`
+- Insert an element in an array: `insert(array, index, value) -> array`
+- Delete an element from an array: `delete(array, index) -> array`
 
 Note that functions can be called in one of two ways:
 1. The usual syntax, e.g. `split(var, delim)`

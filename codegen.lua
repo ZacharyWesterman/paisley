@@ -94,6 +94,9 @@ local call_codes = {
 	bytes = 75,
 	frombytes = 76,
 	merge = 77,
+	update = 78,
+	insert = 79,
+	delete = 80,
 }
 
 local function bc_get_key(code, lookup)
