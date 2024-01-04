@@ -24,6 +24,21 @@ local rules = {
 		text = '..',
 	},
 
+	--Empty expressions (ERROR)
+	{
+		match = {{tok.expr_open, tok.command_open}, {tok.expr_close}},
+		onmatch = function(token, file)
+			parse_error(token.line, token.col, 'Expression has no body', file)
+		end,
+	},
+	--Empty command (ERROR)
+	{
+		match = {{tok.command_open}, {tok.command_close}},
+		onmatch = function(token, file)
+			parse_error(token.line, token.col, 'Inline command evaluation has no body', file)
+		end,
+	},
+
 	--Function call
 	{
 		match = {{tok.text, tok.variable}, {tok.paren_open}, {tok.comparison}, {tok.paren_close}},
