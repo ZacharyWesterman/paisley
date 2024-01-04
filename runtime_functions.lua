@@ -602,6 +602,32 @@ local functions = {
 		table.sort(v)
 		PUSH(v)
 	end,
+
+	--BYTES FROM NUMBER
+	function()
+		local v = POP()
+		local result, i = {}
+		local value = math.floor(std.num(v[1]))
+		for i = math.min(4, std.num(v[2])), 1, -1 do
+			result[i] = value % 256
+			value = math.floor(value / 256)
+		end
+		PUSH(result)
+	end,
+
+	--NUMBER FROM BYTES
+	function()
+		local v = POP()
+		if type(v[1]) ~= 'table' then
+			PUSH(0)
+		else
+			local result, i = 0
+			for i = #v[1], 1, -1 do
+				result = result * 256 + v[1][i]
+			end
+			PUSH(result)
+		end
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT

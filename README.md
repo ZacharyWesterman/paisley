@@ -174,7 +174,8 @@ Expressions give access to a decent suite of operations and functions, listed be
 - Euclidean distance (numbers or vectors of N dimension): `dist(point1, point2) -> number`
 - Trig functions: `sin(x), cos(x), tan(x), asin(h), acos(h), atan(h), atan2(x, y) -> number`
 - Square root: `sqrt(x) -> number`
-- Average of N values: `mean(a,b,c,...) or mean(array) -> number`
+- Split a number into bytes: `bytes(number, count) -> array`
+- Convert a list of bytes into a number: `frombytes(array) -> number`
 - Sum of N values: `sum(a,b,c,...) or sum(array) -> number`
 - Multiply N values: `mult(a,b,c,...) or mult(array) -> number`
 - Exponent/Power: `pow(value, power) -> number`

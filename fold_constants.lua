@@ -1,5 +1,21 @@
 func_operations = {
-	mean = function(values) return func_operators.sum(values) / #values end,
+	bytes = function(number, count)
+		local result, i = {}
+		for i = math.min(4, count), 1, -1 do
+			result[i] = math.floor(number) % 256
+			number = number / 256
+		end
+		return result
+	end,
+
+	frombytes = function(values)
+		local result, i = 0
+		for i = #values, 1, -1 do
+			result = result * 256 + values[i]
+		end
+		return result
+	end,
+
 	sum = function(values)
 		local total, i = 0, nil
 		for i = 1, #values do

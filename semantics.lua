@@ -11,8 +11,8 @@ builtin_funcs = {
 	atan = 1,
 	atan2 = 2,
 	sqrt = 1,
-	mean = -1, --mean(a,b,...) = mean(list) = sum(list) / #list
-	sum = -1,
+	bytes = 2,
+	sum = -1, --at least 1 param
 	mult = -1,
 	pow = 2,
 	min = -1,
@@ -50,6 +50,7 @@ builtin_funcs = {
 	reverse = 1,
 	sort = 1,
 	reduce = 2,
+	frombytes = 1,
 }
 
 type_signatures = {
@@ -98,10 +99,6 @@ type_signatures = {
 		out = 'number',
 	},
 	sqrt = {
-		valid = {{'number'}},
-		out = 'number',
-	},
-	mean = {
 		valid = {{'number'}},
 		out = 'number',
 	},
@@ -248,6 +245,15 @@ type_signatures = {
 	reduce = {
 		valid = {{'array', 'any'}},
 	},
+	bytes = {
+		valid = {{'number', 'number'}},
+		out = 'array',
+	},
+	frombytes = {
+		valid = {{'array'}},
+		out = 'number',
+	},
+
 	[tok.add] = {
 		valid = {{'number'}, {'array'}},
 		out = 'number',
