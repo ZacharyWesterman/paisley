@@ -211,6 +211,9 @@ Expressions give access to a decent suite of operations and functions, listed be
 - Check if a string is numeric: `isnumber(text) -> boolean`
 - Convert a “seconds since midnight” timestamp into (hour, min, sec, milli): `clocktime(value) -> array`
 - Reduce an array to a single element: `reduce(array, operator) -> any`, e.g. `reduce(1:9, +)` sums the numbers from 1 to 9, resulting in 45
+- Reverse an array: `reverse(array) -> array`
+- Sort an array in ascending order: `sort(array) -> array`
+- Join two arrays together: `merge(array, array) -> array`
 
 Note that functions can be called in one of two ways:
 1. The usual syntax, e.g. `split(var, delim)`

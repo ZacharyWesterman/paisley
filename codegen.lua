@@ -93,6 +93,7 @@ local call_codes = {
 	sort = 74,
 	bytes = 75,
 	frombytes = 76,
+	merge = 77,
 }
 
 local function bc_get_key(code, lookup)

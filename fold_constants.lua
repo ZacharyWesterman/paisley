@@ -180,6 +180,13 @@ func_operations = {
 		table.sort(value)
 		return value
 	end,
+	merge = function(array1, array2)
+		local i
+		for i = 1, #array2 do
+			table.insert(array1, array2[i])
+		end
+		return array1
+	end,
 }
 
 local function number_op(v1, v2, operator)

@@ -51,6 +51,7 @@ builtin_funcs = {
 	sort = 1,
 	reduce = 2,
 	frombytes = 1,
+	merge = 2,
 }
 
 type_signatures = {
@@ -252,6 +253,10 @@ type_signatures = {
 	frombytes = {
 		valid = {{'array'}},
 		out = 'number',
+	},
+	merge = {
+		valid = {{'array', 'array'}},
+		out = 'array',
 	},
 
 	[tok.add] = {
