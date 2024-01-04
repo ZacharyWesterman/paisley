@@ -459,6 +459,15 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					end
 				end
 
+				--expression start indicates that we're setting a sub-value of the variable
+				if not match then
+					match = text:match('^{')
+					if match then
+						tok_type = tok.expr_open
+						table.insert(scopes, match)
+					end
+				end
+
 				--White space
 				if not match then
 					match = text:match('^[ \t\r]+')

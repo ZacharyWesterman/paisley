@@ -266,7 +266,25 @@ function generate_bytecode(root, file)
 
 		--CODEGEN FOR VARIABLE ASSIGNMENT
 		[tok.let_stmt] = function(token, file)
-			codegen_rules.recur_push(token.children[2])
+			if token.children[3] then
+				if token.children[3].id == tok.expr_open then
+					--Append to variable
+					emit(bc.get, token.children[1].text)
+					emit(bc.push, -1)
+					codegen_rules.recur_push(token.children[2])
+					emit(bc.call, 'implode', 3)
+					emit(bc.call, 'insert')
+				else
+					--Update element of variable
+					emit(bc.get, token.children[1].text)
+					codegen_rules.recur_push(token.children[3])
+					codegen_rules.recur_push(token.children[2])
+					emit(bc.call, 'implode', 3)
+					emit(bc.call, 'update')
+				end
+			else
+				codegen_rules.recur_push(token.children[2])
+			end
 			emit(bc.set, token.children[1].text)
 		end,
 

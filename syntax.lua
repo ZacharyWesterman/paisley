@@ -26,7 +26,8 @@ local rules = {
 
 	--Empty expressions (ERROR)
 	{
-		match = {{tok.expr_open, tok.command_open}, {tok.expr_close}},
+		match = {{tok.expr_open}, {tok.expr_close}},
+		not_after = {tok.var_assign},
 		onmatch = function(token, file)
 			parse_error(token.line, token.col, 'Expression has no body', file)
 		end,
@@ -312,7 +313,7 @@ local rules = {
 		match = {{tok.text, tok.expression, tok.inline_command, tok.string, tok.comparison}},
 		id = tok.command,
 		not_after_range = {tok.expr_open, tok.command}, --Command cannot come after anything in this range
-		not_after = {tok.kwd_for, tok.kwd_subroutine, tok.kwd_if_expr, tok.kwd_else_expr},
+		not_after = {tok.kwd_for, tok.kwd_subroutine, tok.kwd_if_expr, tok.kwd_else_expr, tok.var_assign},
 		text = 'cmd',
 	},
 	{
@@ -529,18 +530,42 @@ local rules = {
 		text = 1,
 		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
 	},
-
 	{
 		match = {{tok.kwd_let}, {tok.var_assign}},
 		id = tok.let_stmt,
 		keep = {2},
 		text = 1,
-		not_before = {tok.op_assign},
+		not_before = {tok.op_assign, tok.expr_open, tok.expression},
+	},
+
+	--SUB variable assignment
+	{
+		match = {{tok.kwd_let}, {tok.var_assign}, {tok.expression}, {tok.op_assign}, {tok.command, tok.expression, tok.string}},
+		id = tok.let_stmt,
+		keep = {2, 5, 3},
+		text = 1,
+		not_before = {tok.op_assign, tok.expr_open, tok.expression},
+	},
+
+	--APPEND variable assignment
+	{
+		match = {{tok.kwd_let}, {tok.var_assign}, {tok.expr_open}, {tok.expr_close}, {tok.op_assign}, {tok.command, tok.expression, tok.string}},
+		id = tok.let_stmt,
+		keep = {2, 6, 3},
+		text = 1,
+		not_before = {tok.op_assign, tok.expr_open, tok.expression},
 	},
 
 	--INVALID variable assignment
 	{
 		match = {{tok.kwd_let}, {tok.var_assign}, {tok.op_assign}},
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.command},
+		onmatch = function(token, file)
+			parse_error(token.children[3].line, token.children[3].col, 'Missing expression after variable assignment', file)
+		end,
+	},
+	{
+		match = {{tok.kwd_let}, {tok.var_assign}, {tok.expression}, {tok.op_assign}},
 		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.command},
 		onmatch = function(token, file)
 			parse_error(token.children[3].line, token.children[3].col, 'Missing expression after variable assignment', file)
@@ -564,6 +589,7 @@ local rules = {
 		match = {{tok.command, tok.program, tok.statement}, {tok.command, tok.program, tok.statement}},
 		id = tok.program,
 		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
+		not_after = {tok.op_assign},
 		text = 'stmt_list',
 	},
 	{
@@ -866,12 +892,12 @@ function SyntaxParser(tokens, file)
 
 		loops_since_reduction = loops_since_reduction + 1
 
-		-- if COMPILER_DEBUG then
-		-- 	for _, t in pairs(tokens) do
-		-- 		print_tokens_recursive(t)
-		-- 	end
-		-- 	print()
-		-- end
+		if COMPILER_DEBUG then
+			for _, t in pairs(tokens) do
+				print_tokens_recursive(t)
+			end
+			print()
+		end
 
 		if not did_reduce or loops_since_reduction > 500 then
 			if first_failure == nil then
