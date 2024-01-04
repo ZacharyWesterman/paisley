@@ -72,6 +72,21 @@ var = 99
 ```
 The second line will **not** set var's value to 13. Instead, that would attempt to run a command called "var" with the parameters `["=", "99"]`.
 
+Of course, sometimes a variable will contain an array that you don't want to overwrite, instead you just want to update a *single element* or *append* to the array.
+
+The following will result in var containing the array `(1, 2, 123, 4, 99)`. Note that giving negative values as the index will start counting from the end, so index of -1 will update the last element.
+```sh
+let var = 1 2 3 4 5
+let var{3} = 123
+let var{-1} = 99
+```
+
+Appending is just as simple. The following will result in var containing the array `(1, 2, 3, 4, 5, 6)`.
+```sh
+let var = 1 2 3 4 5
+let var{} = 6
+```
+
 ## Subroutines:
 Subroutines are a lot like functions, except they do not take any parameters, and do not return any value.
 In Paisley, this does not matter much since all variables are global. Just keep in mind that you don't accidentally overwrite variables that are needed elsewhere.
