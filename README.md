@@ -73,7 +73,6 @@ var = 99
 The second line will **not** set var's value to 13. Instead, that would attempt to run a command called "var" with the parameters `["=", "99"]`.
 
 Of course, sometimes a variable will contain an array that you don't want to overwrite, instead you just want to update a *single element* or *append* to the array.
-
 The following will result in var containing the array `(1, 2, 123, 4, 99)`. Note that giving negative values as the index will start counting from the end, so index of -1 will update the last element.
 ```sh
 let var = 1 2 3 4 5
@@ -86,6 +85,8 @@ Appending is just as simple. The following will result in var containing the arr
 let var = 1 2 3 4 5
 let var{} = 6
 ```
+
+**REMEMBER:** All variables are global, so any “re-definition” of a variable just sets it to the new value.
 
 ## Subroutines:
 Subroutines are a lot like functions, except they do not take any parameters, and do not return any value.
