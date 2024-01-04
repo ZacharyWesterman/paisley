@@ -217,14 +217,14 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					end
 				end
 
-				--expression start
-				if not match then
-					match = text:match('^{')
-					if match then
-						tok_type = tok.expr_open
-						table.insert(scopes, match)
-					end
-				end
+				-- --expression start
+				-- if not match then
+				-- 	match = text:match('^{')
+				-- 	if match then
+				-- 		tok_type = tok.expr_open
+				-- 		table.insert(scopes, match)
+				-- 	end
+				-- end
 
 				--expression end
 				if not match then

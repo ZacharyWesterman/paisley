@@ -164,7 +164,6 @@ Expressions give access to a decent suite of operations and functions, listed be
 - variables, `var_name`, `x`, etc.
 - The "global" variable, containing the names of all currently defined variables, `@`
 - The "command list" variable, containing the names of all allowed commands, `$`
-- Sub-expressions, `{}`
 - Inline command evaluation, `${}`
 
 ### Built-in functions:
