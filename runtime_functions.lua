@@ -108,14 +108,10 @@ local functions = {
 
 	--IMPLODE
 	function(line, param)
-		local array, i = {}
-		for i = 1, param do
-			table.insert(array, POP())
-		end
 		--Reverse the table so it's in the correct order
 		local res = {}
-		for i = 1, #array do
-			table.insert(res, array[#array - i + 1])
+		for i = param, 1, -1 do
+			res[i] = POP()
 		end
 		PUSH(res)
 	end,
@@ -687,6 +683,13 @@ local functions = {
 		if type(v[1]) ~= 'table' then v[1] = {v[1]} end
 		table.remove(v[1], std.num(v[2]))
 		PUSH(v[1])
+	end,
+
+	--LINEAR INTERPOLATION
+	function()
+		local v = POP()
+		local perc, a, b = std.num(v[1]), std.num(v[2]), std.num(v[3])
+		PUSH(a + perc * (b - a))
 	end,
 }
 

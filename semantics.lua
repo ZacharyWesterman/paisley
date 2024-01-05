@@ -513,8 +513,21 @@ function SemanticAnalyzer(tokens, file)
 		--Move all params to be direct children
 		if not token.children then
 			token.children = {}
-		elseif #token.children > 0 and token.children[1].id == tok.array_concat then
-			token.children = token.children[1].children
+		elseif #token.children > 0 then
+			local kids, i = {}
+			for i = 1, #token.children do
+				local child = token.children[i]
+				if token.children[i].id == tok.array_concat then
+					local k
+					for k = 1, #token.children[i].children do
+						table.insert(kids, token.children[i].children[k])
+					end
+				else
+					table.insert(kids, token.children[i])
+				end
+			end
+
+			token.children = kids
 		end
 
 		local func = builtin_funcs[token.text]
@@ -562,6 +575,20 @@ function SemanticAnalyzer(tokens, file)
 			if not correct then
 				parse_error(token.children[2].line, token.children[2].col, 'The second parameter of "reduce(a,b)" must be a binary operator', file)
 			end
+		elseif token.text == 'clamp' then
+			--Convert "clamp" into max(min(upper_bound, x), lower_bound)
+			mintok = {
+				id = token.id,
+				line = token.line,
+				col = token.col,
+				text = 'min',
+				children = {
+					token.children[1],
+					token.children[3],
+				},
+			}
+			token.text = 'max'
+			token.children = {mintok, token.children[2]}
 		end
 	end)
 

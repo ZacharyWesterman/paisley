@@ -54,8 +54,8 @@ func_operations = {
 		for i = 2, #values do most = math.max(most, values[i]) end
 		return most
 	end,
-	clamp = function(min, max, value) return math.min(max, math.max(min, value)) end,
-	lerp = function(a, b, x) return a + x * (b - a) end,
+	clamp = function(value, min, max) return math.min(max, math.max(min, value)) end,
+	lerp = function(x, a, b) return a + x * (b - a) end,
 	pow = function(a, b) return math.pow(a, b) end,
 	bool = function(data) return std.bool(data) end,
 	str = function(data) return std.str(data) end,

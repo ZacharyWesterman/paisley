@@ -187,7 +187,7 @@ Expressions give access to a decent suite of operations and functions, listed be
 - Random real number: `frandom(min_value, max_value) -> number`
 - Difference between two strings: `worddiff(str1, str2) -> number` (levenschtein distance)
 - Euclidean distance (numbers or vectors of N dimension): `dist(point1, point2) -> number`
-- Trig functions: `sin(x), cos(x), tan(x), asin(h), acos(h), atan(h), atan2(x, y) -> number`
+- Trig functions: `sin(x), cos(x), tan(x), asin(x), acos(x), atan(x), atan2(x, y) -> number`
 - Square root: `sqrt(x) -> number`
 - Split a number into bytes: `bytes(number, count) -> array`
 - Convert a list of bytes into a number: `frombytes(array) -> number`
@@ -196,8 +196,8 @@ Expressions give access to a decent suite of operations and functions, listed be
 - Exponent/Power: `pow(value, power) -> number`
 - Minimum of N values: `min(a,b,c,...) or min(array) -> number`
 - Maximum of N values: `max(a,b,c,...) or max(array) -> number`
-- Keep value inside range: `clamp(min_value, max_value, variable) -> number`
-- Linear interpolation of two numbers: `lerp(start, stop, ratio) -> number`
+- Keep value inside range: `clamp(number, min_value, max_value) -> number`
+- Linear interpolation of two numbers: `lerp(ratio, start, stop) -> number`
 - Split string into array: `split(value, delimiter) -> array`
 - Merge array into string: `join(values, delimiter) -> string`
 - Get data type: `type(value) -> string`. Output will be one of "null", "boolean", "number", "string", or "array"
