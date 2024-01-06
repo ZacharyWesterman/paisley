@@ -107,14 +107,156 @@ end
 
 for name, config in pairs(funcs) do check_config(name, config) end
 
-
+---TEMP COMPILER HERE
 local lexer = require 'src.compiler.lexer'
-local iter = lexer('for i in {1,2,3} do print "{^"')
+local iter = lexer('{3}')
 
-while iter.get() do end
+local tokens = {}
+while true do
+	local t = iter.get()
+	if t == nil then break end
+	table.insert(tokens,t)
+end
+
+
 if #iter.err() > 0 then
 	local err, i = iter.err()
 	for i = 1, #err do
 		print(err[i])
 	end
+	return
 end
+
+--Build syntax tree
+local rules = require 'src.compiler.syntax_rules'
+
+--Build reverse lookup table, so we can see what possible rules each token leads to
+local lookup, id, config = {}
+for id, config in pairs(rules) do
+	local i
+	for i = 1, #config.match do
+		local first = config.match[i][1]
+		if not lookup[first] then lookup[first] = {} end
+
+		local already_exists, k = false
+		for k = 1, #lookup[first] do
+			if lookup[first][k] == id then
+				already_exists = true
+				break
+			end
+		end
+		if not already_exists then table.insert(lookup[first], id) end
+	end
+end
+
+--DEBUG: print reverse lookup table
+local debug = require 'src.compiler.debug'
+-- local i, k
+-- for i, k in pairs(lookup) do
+-- 	local m, j = ''
+-- 	for j = 1, #k do
+-- 		m = m .. ' ' .. debug.token_text(k[j])
+-- 	end
+-- 	print(debug.token_text(i)..' :'..m)
+-- end
+
+local function pick_rule_to_reduce(index, rule_id, reduce)
+	local synrule, i = rules[rule_id]
+
+	for i = 1, #synrule.match do
+		local rule = synrule.match[i]
+
+		--Match the syntax rule
+		local children, matched, k = {}, true
+		for k = 1, #rule do
+			local this_token = tokens[index + k - 1]
+
+			if this_token and (this_token.meta_id == rule[k] or this_token.id == rule[k]) then
+				table.insert(children, this_token)
+			else
+				matched = false
+				break
+			end
+		end
+
+		if matched and #children > 0 then
+			return {
+				id = rule_id,
+				text = synrule.text,
+				line = children[1].line,
+				col = children[1].col,
+				children = children,
+			}
+		end
+	end
+end
+
+
+
+local function reduce(index)
+	local first_node = tokens[index]
+
+	local possible_output_tokens, i = lookup[first_node.id]
+	if not possible_output_tokens then return nil end
+	for i = 1, #possible_output_tokens do
+		local this_token = pick_rule_to_reduce(index, possible_output_tokens[i], reduce)
+		if this_token then return this_token end
+	end
+
+	return nil
+end
+
+local function reduce_all_once()
+	local new_tokens, i, did_reduce = {}, 1, false
+	while i <= #tokens do
+		local this_token = reduce(i)
+		if this_token then
+			i = i + #this_token.children
+			did_reduce = true
+
+			if #this_token.children == 1 then
+				if this_token.meta_id then
+					this_token.children[1].meta_id = this_token.meta_id
+				else
+					this_token.children[1].meta_id = this_token.id
+				end
+
+				table.insert(new_tokens, this_token.children[1])
+				i = i + 1
+			else
+				table.insert(new_tokens, this_token)
+			end
+		else
+			table.insert(new_tokens, tokens[i])
+			i = i + 1
+		end
+	end
+
+	local i
+	for i=1, #tokens do
+		debug.print_tokens_recursive(tokens[i])
+	end
+
+	return new_tokens, did_reduce
+end
+
+
+
+local did_reduce = true
+while did_reduce do
+	tokens, did_reduce = reduce_all_once()
+end
+
+print('------------------')
+local i
+for i=1, #tokens do
+	debug.print_tokens_recursive(tokens[i])
+end
+
+-- local root = recursive_descent(1)
+-- if not root then
+-- 	--There are no tokens in the input.
+-- 	--Not an error, just an empty program.
+-- else
+-- 	debug.print_tokens_recursive(root)
+-- end
