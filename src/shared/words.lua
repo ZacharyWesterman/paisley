@@ -82,3 +82,5 @@ function closest_word(this_word --[[string]], word_list --[[table]], threshold -
 		return pInput
 	end
 end
+
+return {lev = lev, closest = closest_word}

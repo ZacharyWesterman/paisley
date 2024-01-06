@@ -1,19 +1,5 @@
 --List of possible bytecode instructions
-local bc = {
-	call = 0,
-	label = 1,
-	set = 2,
-	get = 3,
-	push = 4,
-	pop = 5,
-	run_command = 6,
-	push_cmd_result = 7,
-	push_index = 8,
-	pop_goto_index = 9,
-	copy = 10,
-	delete = 11,
-	swap = 12,
-}
+local bc = require 'src.compiler.instructions'
 
 local call_codes = {
 	jump = 0,

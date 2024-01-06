@@ -1,6 +1,6 @@
-require "src.compiler.tokens"
+local tok = require "src.compiler.tokens"
 
-kwds = {
+local kwds = {
 	['for'] = tok.kwd_for,
 	['while'] = tok.kwd_while,
 	['in'] = tok.kwd_in,
@@ -20,7 +20,7 @@ kwds = {
 	['stop'] = tok.kwd_stop,
 }
 
-opers = {
+local opers = {
 	['for'] = tok.kwd_for_expr,
 	['if'] = tok.kwd_if_expr,
 	['else'] = tok.kwd_else_expr,
@@ -51,14 +51,14 @@ opers = {
 	['.'] = tok.op_dot,
 }
 
-oper_block = {
+local oper_block = {
 	['/'] = '/',
 	['>'] = '=',
 	['<'] = '=',
 	['='] = '=',
 }
 
-literals = {
+local literals = {
 	['true'] = tok.lit_boolean,
 	['false'] = tok.lit_boolean,
 	['null'] = tok.lit_null,
@@ -76,11 +76,16 @@ Iterator generates tokens of the form:
 	col: int,
 }
 --]]
-function Lexer(text --[[string]], file --[[string | nil]])
+return function(text --[[string]])
 	local line = 1
 	local col = 1
 	local scopes = {}
 	local var_assignment = false
+	local errors = {}
+
+	local function parse_error(line, col, msg)
+		table.insert(errors, line..','..col..': '..msg)
+	end
 
 	local function check_parens(last_paren, this_paren)
 		local errtype = {
@@ -96,7 +101,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 		}
 
 		if errtype[last_paren][this_paren] then
-			parse_error(line, col, 'Mismatched parentheses, expected "'..expected[last_paren]..'", got "'..this_paren..'"', file)
+			parse_error(line, col, 'Mismatched parentheses, expected "'..expected[last_paren]..'", got "'..this_paren..'"')
 		end
 	end
 
@@ -199,7 +204,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				--line endings cause errors inside expressions
 				match = text:match('^\n')
 				if match then
-					parse_error(line, col, 'Unexpected line ending inside expression', file)
+					parse_error(line, col, 'Unexpected line ending inside expression')
 				end
 
 				--White space
@@ -305,7 +310,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 						end
 
 						if n == nil then
-							parse_error(line, col, 'Invalid '..tp..'number "'..match..'"', file)
+							parse_error(line, col, 'Invalid '..tp..'number "'..match..'"')
 						end
 						tok_type = tok.lit_number
 						real_value = n
@@ -371,12 +376,15 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					local this_chr = text:sub(this_ix, this_ix)
 
 					if this_chr == '' then
-						parse_error(line, col + #this_str, 'Unexpected EOF inside string', file)
+						parse_error(line, col, 'String is missing a closing quote')
+						match = this_str
+						table.remove(scopes)
+						break
 					end
 
 					--No line breaks are allowed inside strings
 					if this_chr == '\n' then
-						parse_error(line, col + #this_str, 'Unexpected line ending inside string', file)
+						parse_error(line, col + #this_str, 'Unexpected line ending inside string')
 					end
 
 					--Once string ends, add text to token list and exit string.
@@ -403,7 +411,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 						elseif this_chr == '$' then
 							--Make sure command eval is formatted correctly
 							if text:sub(this_ix+1,this_ix+1) ~= '{' then
-								parse_error(line, col, 'Found command marker but no body (expected "{")', file)
+								parse_error(line, col, 'Found command marker but no body (expected "{")')
 							end
 							match = '${'
 
@@ -424,8 +432,10 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					if this_chr == '\\' then
 						this_ix = this_ix + 1
 						this_chr = text:sub(this_ix, this_ix)
-						if this_chr == '' then
-							parse_error(line, col + #this_str, 'Unexpected EOF inside string (after "\\")', file)
+						if this_chr == '' or this_chr == '\n' then
+							this_chr = '\\'
+							parse_error(line, col + #this_str, 'Incomplete escape sequence, backslash must be followed by some character')
+							-- break
 						elseif this_chr == 'n' then
 							this_chr = '\n'
 						elseif this_chr == 't' then
@@ -495,24 +505,33 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					}
 				end
 			else
-				parse_error(line, col, 'Unexpected character "'..text:sub(1,1)..'"', file)
+				parse_error(line, col, 'Unexpected character "'..text:sub(1,1)..'"')
+				text = text:sub(2,#text)
+				col = col + 1
 			end
 		end
 
 		--Make sure all strings, parens, and brackets all match up.
-		local remaining_scope = scopes[#scopes]
-		if remaining_scope == '"' or remaining_scope == '\'' then
-			parse_error(line, col, 'Unexpected EOF inside string', file)
-		elseif remaining_scope == '(' then
-			parse_error(line, col, 'Missing parenthesis, expected ")"', file)
-		elseif remaining_scope == '[' then
-			parse_error(line, col, 'Missing bracket, expected "]"', file)
-		elseif remaining_scope == '{' then
-			parse_error(line, col, 'Missing brace after expression, expected "}"', file)
-		elseif remaining_scope == '$' then
-			parse_error(line, col, 'Missing brace after command eval, expected "}"', file)
+		local i
+		for i = #scopes, 1, -1 do
+			local remaining_scope = scopes[i]
+
+			if remaining_scope == '"' or remaining_scope == '\'' then
+				parse_error(line, col, 'String is missing a closing quote')
+			elseif remaining_scope == '(' then
+				parse_error(line, col, 'Missing parenthesis, expected ")"')
+			elseif remaining_scope == '[' then
+				parse_error(line, col, 'Missing bracket, expected "]"')
+			elseif remaining_scope == '{' then
+				parse_error(line, col, 'Missing brace after expression, expected "}"')
+			elseif remaining_scope == '$' then
+				parse_error(line, col, 'Missing brace after command eval, expected "}"')
+			end
 		end
 	end
 
-	return token_iterator
+	return {
+		get = token_iterator,
+		err = function() return errors end,
+	}
 end

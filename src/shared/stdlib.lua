@@ -1,6 +1,6 @@
 --This is a "standard library" of sorts, containing code that's shared between the Paisley compiler and runtime engine.
 
-std = {
+return {
 	--Convert arbitrary data to a string (with "Lua-ness" removed)
 	str = function(data --[[any]])
 		if data == nil then return '' end

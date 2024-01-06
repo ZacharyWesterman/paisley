@@ -5,7 +5,7 @@
 --]]
 
 
-json = {
+return {
 	--[[
 		Convert an object into a JSON string.
 	--]]
