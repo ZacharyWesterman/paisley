@@ -1,4 +1,4 @@
-require "tokens"
+require "src.compiler.tokens"
 
 kwds = {
 	['for'] = tok.kwd_for,

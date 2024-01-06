@@ -13,7 +13,7 @@ function output(data, _)
 	TRANSFER = data
 end
 
-require "compiler"
+require "src.compiler"
 
 print_header('Raw Bytecode')
 print(TRANSFER)
@@ -38,7 +38,7 @@ V5 = nil --LAST CMD RESULT
 PORT = 0
 DATA = nil
 
-require "runtime"
+require "src.runtime"
 
 DEBUG_INSTRUCTION_NUM = 1
 while PORT ~= 3 do

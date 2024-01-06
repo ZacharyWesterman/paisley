@@ -3,15 +3,15 @@
 	It takes Paisley code and compiles it into bytecode that is easy to interpret and run.
 ]]
 
-require "stdlib"
-require "json"
+require "src.shared.stdlib"
+require "src.shared.json"
+require "src.shared.closest_word"
 
-require "lex"
-require "syntax"
-require "closest_word"
-require "fold_constants"
-require "semantics"
-require "codegen"
+require "src.compiler.lex"
+require "src.compiler.syntax"
+require "src.compiler.fold_constants"
+require "src.compiler.semantics"
+require "src.compiler.codegen"
 
 local expression = V1:gsub('\x0b', '\n')
 local file = V2
@@ -32,7 +32,7 @@ local file = V2
 	Note that this IS case-sensitive!
 ]]
 ALLOWED_COMMANDS = V3
-require "builtin_commands"
+require "src.shared.builtin_commands"
 
 local lexer = Lexer(expression, file)
 local t
