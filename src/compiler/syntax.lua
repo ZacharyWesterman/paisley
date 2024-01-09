@@ -18,7 +18,7 @@ local rules = {
 	{
 		match = {{tok.comparison, tok.array_concat}, {tok.comparison, tok.array_concat}},
 		id = tok.concat,
-		not_after = {tok.op_assign},
+		not_after = {tok.op_assign, tok.string_close, tok.text},
 		not_before = {tok.index_open},
 		expr_only = true,
 		text = '..',
@@ -535,7 +535,7 @@ local rules = {
 		id = tok.let_stmt,
 		keep = {2},
 		text = 1,
-		not_before = {tok.op_assign, tok.expr_open, tok.expression},
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
 	},
 
 	--SUB variable assignment
@@ -544,7 +544,7 @@ local rules = {
 		id = tok.let_stmt,
 		keep = {2, 5, 3},
 		text = 1,
-		not_before = {tok.op_assign, tok.expr_open, tok.expression},
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
 	},
 
 	--APPEND variable assignment
@@ -553,7 +553,7 @@ local rules = {
 		id = tok.let_stmt,
 		keep = {2, 6, 3},
 		text = 1,
-		not_before = {tok.op_assign, tok.expr_open, tok.expression},
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
 	},
 
 	--INVALID variable assignment
