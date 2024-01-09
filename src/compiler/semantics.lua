@@ -432,24 +432,13 @@ function SemanticAnalyzer(tokens, file)
 		end
 	end)
 
-	--Check subroutine references
+	--Check subroutine references.
 	recurse(root, {tok.gosub_stmt}, function(token)
 		local ch = token.children[1]
 		if #ch.children > 1 then
 			parse_error(token.line, token.col, 'More than one subroutine given to '..token.text, file)
 		end
 
-		local label = ch.children[1].text
-		if labels[label] == nil then
-			local msg = 'Subroutine "'..label..'" not declared anywhere'
-			local guess = closest_word(label, labels, 4)
-			if guess ~= nil then
-				msg = msg .. ' (did you mean "'.. guess ..'"?)'
-			end
-			parse_error(token.line, token.col, msg, file)
-		end
-
-		token.ignore = labels[label].ignore
 		token.children = ch.children
 	end)
 
@@ -911,6 +900,24 @@ function SemanticAnalyzer(tokens, file)
 		if #token.children > 1 or math.type(val) ~= 'integer' or val < 1 then
 			parse_error(token.line, token.col, 'Only a constant positive integer is allowed as a parameter for "'..token.text..'"', file)
 		end
+	end)
+
+	--Check gosub uses. Gosub IS allowed to have a single, constant value as its parameter.
+	recurse(root, {tok.gosub_stmt}, function(token)
+		local label = std.str(token.children[1].value)
+		if label == '' then label = token.children[1].text end
+
+		if labels[label] == nil then
+			local msg = 'Subroutine "'..label..'" not declared anywhere'
+			local guess = closest_word(label, labels, 4)
+			if guess ~= nil and guess ~= '' then
+				msg = msg .. ' (did you mean "'.. guess ..'"?)'
+			end
+			parse_error(token.line, token.col, msg, file)
+		end
+
+		token.ignore = labels[label].ignore
+		token.children = token.children
 	end)
 
 	return root
