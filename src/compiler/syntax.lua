@@ -334,13 +334,22 @@ local rules = {
 		keep = {2, 3, 4},
 		text = 1,
 	},
+	{
+		match = {{tok.kwd_if}, {tok.command}, {tok.else_stmt}},
+		id = tok.if_stmt,
+		keep = {2, 1, 3},
+		text = 1,
+		onmatch = function(token, file)
+			token.children[2].id = tok.kwd_then
+		end,
+	},
 	{ --Invalid if
 		match = {{tok.kwd_if}, {tok.command}},
 		id = tok.if_stmt,
 		text = 1,
-		not_before = {tok.kwd_then, tok.line_ending},
+		not_before = {tok.kwd_then, tok.line_ending, tok.kwd_else, tok.else_stmt},
 		onmatch = function(token, file)
-			parse_error(token.line, token.col, 'Missing "then" after if statement', file)
+			parse_error(token.line, token.col, 'Missing "then" or "else" after if statement', file)
 		end,
 	},
 	--ELSE block

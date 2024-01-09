@@ -679,7 +679,7 @@ function generate_bytecode(root, file)
 					enter(token.children[2])
 				end
 
-				emit(bc.call, 'jump', endif_label)
+				if not const then emit(bc.call, 'jump', endif_label) end
 
 				--Jump to here if "if" section does not execute
 				if not const then
@@ -693,7 +693,9 @@ function generate_bytecode(root, file)
 			if has_else then
 				local else_block = token.children[3]
 				if else_block.id == tok.else_stmt then
-					enter(else_block.children[1])
+					if else_block.children and #else_block.children > 0 then
+						enter(else_block.children[1])
+					end
 				else
 					enter(else_block)
 				end
