@@ -904,8 +904,14 @@ function SemanticAnalyzer(tokens, file)
 
 	--Check gosub uses. Gosub IS allowed to have a single, constant value as its parameter.
 	recurse(root, {tok.gosub_stmt}, function(token)
-		local label = std.str(token.children[1].value)
-		if label == '' then label = token.children[1].text end
+		local label
+		if token.children[1].value ~= nil or token.children[1].id == tok.lit_null then
+			label = std.str(token.children[1].value)
+		elseif token.children[1].id == tok.text then
+			label = token.children[1].text
+		end
+
+		if label == nil then return end
 
 		if labels[label] == nil then
 			local msg = 'Subroutine "'..label..'" not declared anywhere'
@@ -917,7 +923,6 @@ function SemanticAnalyzer(tokens, file)
 		end
 
 		token.ignore = labels[label].ignore
-		token.children = token.children
 	end)
 
 	return root

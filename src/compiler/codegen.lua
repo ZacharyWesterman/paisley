@@ -710,9 +710,13 @@ function generate_bytecode(root, file)
 
 		--GOSUB STATEMENT
 		[tok.gosub_stmt] = function(token, file)
-			if not token.ignore then
+			if token.ignore then return end
+
+			if is_const(token.children[1]) then
 				emit(bc.push_index)
 				emit(bc.call, 'jump', token.children[1].text)
+			else
+				parse_error(token.line, token.col, 'Label for gosub must either be a constant, or wrapped inside an if statement', file)
 			end
 		end,
 

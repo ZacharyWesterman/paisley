@@ -323,19 +323,19 @@ local rules = {
 
 	--IF block
 	{
-		match = {{tok.kwd_if}, {tok.command}, {tok.kwd_then}, {tok.command, tok.program, tok.statement}, {tok.kwd_end, tok.elif_stmt, tok.else_stmt}},
+		match = {{tok.kwd_if}, {tok.command, tok.gosub_stmt}, {tok.kwd_then}, {tok.command, tok.program, tok.statement}, {tok.kwd_end, tok.elif_stmt, tok.else_stmt}},
 		id = tok.if_stmt,
 		keep = {2, 4, 5},
 		text = 1,
 	},
 	{
-		match = {{tok.kwd_if}, {tok.command}, {tok.kwd_then}, {tok.kwd_end, tok.elif_stmt, tok.else_stmt}},
+		match = {{tok.kwd_if}, {tok.command, tok.gosub_stmt}, {tok.kwd_then}, {tok.kwd_end, tok.elif_stmt, tok.else_stmt}},
 		id = tok.if_stmt,
 		keep = {2, 3, 4},
 		text = 1,
 	},
 	{
-		match = {{tok.kwd_if}, {tok.command}, {tok.else_stmt}},
+		match = {{tok.kwd_if}, {tok.command, tok.gosub_stmt}, {tok.else_stmt}},
 		id = tok.if_stmt,
 		keep = {2, 1, 3},
 		text = 1,
@@ -344,7 +344,7 @@ local rules = {
 		end,
 	},
 	{ --Invalid if
-		match = {{tok.kwd_if}, {tok.command}},
+		match = {{tok.kwd_if}, {tok.command, tok.gosub_stmt}},
 		id = tok.if_stmt,
 		text = 1,
 		not_before = {tok.kwd_then, tok.line_ending, tok.kwd_else, tok.else_stmt},
