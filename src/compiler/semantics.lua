@@ -642,10 +642,12 @@ function SemanticAnalyzer(tokens, file)
 
 	--Tidy up WHILE loops and IF/ELIF statements (replace command with cmd contents)
 	recurse(root, {tok.while_stmt, tok.if_stmt, tok.elif_stmt}, function(token)
-		if #token.children[1].children > 1 then
-			parse_error(token.line, token.col, 'Too many parameters passed to "'..token.text..'" statement', file)
+		if token.children[1].id ~= tok.gosub_stmt then
+			if #token.children[1].children > 1 then
+				parse_error(token.line, token.col, 'Too many parameters passed to "'..token.text..'" statement', file)
+			end
+			token.children[1] = token.children[1].children[1]
 		end
-		token.children[1] = token.children[1].children[1]
 	end)
 
 	--Tidy up FOR loops (replace command with cmd contents)
@@ -911,7 +913,12 @@ function SemanticAnalyzer(tokens, file)
 			label = token.children[1].text
 		end
 
-		if label == nil then return end
+		if label == nil then
+			local l, i, k = {}
+			for k, i in pairs(labels) do table.insert(l, k) end
+			token.all_labels = l
+			return
+		end
 
 		if labels[label] == nil then
 			local msg = 'Subroutine "'..label..'" not declared anywhere'

@@ -669,6 +669,7 @@ function generate_bytecode(root, file)
 				if not const then
 					else_label = label_id()
 					endif_label = label_id()
+					if token.children[1].id == tok.gosub_stmt then token.children[1].dynamic = true end
 					enter(token.children[1])
 					emit(bc.call, 'jumpiffalse', else_label)
 					emit(bc.pop)
@@ -712,7 +713,30 @@ function generate_bytecode(root, file)
 		[tok.gosub_stmt] = function(token, file)
 			if token.ignore then return end
 
-			if is_const(token.children[1]) then
+			if token.dynamic then
+				local i
+				local end_label, label_var = label_id(), label_id()
+				codegen_rules.recur_push(token.children[1])
+
+				if #token.all_labels == 0 then
+					emit(bc.pop)
+					emit(bc.push, false)
+				else
+					emit(bc.set, label_var)
+					for i = 1, #token.all_labels do
+						if i > 1 then emit(bc.pop) end
+						emit(bc.get, label_var)
+						emit(bc.push, token.all_labels[i])
+						emit(bc.call, 'equal')
+						emit(bc.call, 'jumpiffalse', end_label)
+						emit(bc.push_index)
+						emit(bc.call, 'jump', token.all_labels[i])
+						emit(bc.call, 'jump', end_label)
+					end
+					emit(bc.label, end_label)
+				end
+
+			elseif is_const(token.children[1]) then
 				emit(bc.push_index)
 				emit(bc.call, 'jump', token.children[1].text)
 			else
