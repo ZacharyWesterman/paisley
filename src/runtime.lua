@@ -69,7 +69,7 @@ function RUN()
 
 	local I = INSTRUCTIONS[CURRENT_INSTRUCTION]
 	if I then
-		output(I[3], 1)
+		output(1, 1)
 	end
 end
 
