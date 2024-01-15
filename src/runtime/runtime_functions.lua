@@ -77,7 +77,11 @@ end
 local functions = {
 	--JUMP
 	function(line, param)
-		CURRENT_INSTRUCTION = param
+		if param == nil then
+			CURRENT_INSTRUCTION = POP()
+		else
+			CURRENT_INSTRUCTION = param
+		end
 	end,
 
 	--JUMP IF NIL
@@ -822,7 +826,7 @@ commands = {
 		CURRENT_INSTRUCTION = table.remove(INSTR_STACK)
 
 		--Shrink stack back down to how big it should be
-		while new_stack_size > #STACK do
+		while new_stack_size < #STACK do
 			table.remove(STACK)
 		end
 	end,

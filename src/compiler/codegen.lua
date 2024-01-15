@@ -152,6 +152,7 @@ function generate_bytecode(root, file)
 	local codegen_rules
 
 	local current_line = 0
+	local emit_after_labels = {}
 
 	local function emit(instruction_id, param1, param2)
 		if instruction_id == bc.call then
@@ -717,23 +718,42 @@ function generate_bytecode(root, file)
 				local i
 				local end_label, label_var = label_id(), label_id()
 				codegen_rules.recur_push(token.children[1])
+				emit(bc.push_index)
+				emit(bc.call, 'jump', '?dynamic-gosub')
 
-				if #token.all_labels == 0 then
-					emit(bc.pop)
-					emit(bc.push, false)
-				else
-					emit(bc.set, label_var)
-					for i = 1, #token.all_labels do
-						if i > 1 then emit(bc.pop) end
-						emit(bc.get, label_var)
-						emit(bc.push, token.all_labels[i])
-						emit(bc.call, 'equal')
-						emit(bc.call, 'jumpiffalse', end_label)
-						emit(bc.push_index)
-						emit(bc.call, 'jump', token.all_labels[i])
-						emit(bc.call, 'jump', end_label)
+				emit_after_labels['dynamic-gosub'] = function(labels)
+					emit(bc.call, 'jump', EOF_LABEL)
+					emit(bc.label, '?dynamic-gosub')
+
+					local names, indexes, name, index = {}, {}
+					for name, index in pairs(labels) do
+						if name:sub(1, 1) ~= '?' then
+							table.insert(names, name)
+							table.insert(indexes, index-1)
+						end
 					end
-					emit(bc.label, end_label)
+
+					emit(bc.push, names)
+					emit(bc.swap)
+					emit(bc.call, 'implode', 2)
+					emit(bc.call, 'index')
+
+					--If the label doesn't exist in the program, leave zero on the stack, and go back to the caller.
+					local fail_label = label_id()
+					emit(bc.call, 'jumpiffalse', fail_label)
+
+					--If the label DOES exist, jump to the appropriate index
+					emit(bc.push, indexes)
+					emit(bc.swap)
+					emit(bc.call, 'arrayindex')
+					emit(bc.push_index)
+					emit(bc.call, 'jump') --JUMP without param will pop the param from the stack
+
+					--Then push TRUE and return to caller
+					emit(bc.push, true)
+
+					emit(bc.label, fail_label)
+					emit(bc.pop_goto_index)
 				end
 
 			elseif is_const(token.children[1]) then
@@ -864,9 +884,8 @@ function generate_bytecode(root, file)
 	}
 
 	enter(root)
-	emit(bc.label, EOF_LABEL)
 
-	--CLEAN OUT LABEL PSEUDO-COMMANDS
+	--BUILD LABEL LISTS AND EMIT DYNAMIC GOSUB CODE BASED ON THAT
 	local labels, result2, ct, i = {}, {}, 1
 	for i = 1, #instructions do
 		local instr = instructions[i]
@@ -874,6 +893,28 @@ function generate_bytecode(root, file)
 			labels[instr[3]] = ct
 		else
 			ct = ct + 1
+		end
+	end
+	local old_instr_ct, routine = #instructions
+	for i, routine in pairs(emit_after_labels) do
+		routine(labels)
+	end
+
+	emit(bc.label, EOF_LABEL)
+	for i = old_instr_ct, #instructions do
+		local instr = instructions[i]
+		if instr[1] == bc.label then
+			labels[instr[3]] = ct
+		else
+			ct = ct + 1
+		end
+	end
+
+	--CLEAN OUT LABEL PSEUDO-COMMANDS
+	local result2 = {}
+	for i = 1, #instructions do
+		local instr = instructions[i]
+		if instr[1] ~= bc.label then
 			table.insert(result2, instr)
 		end
 	end
@@ -883,11 +924,13 @@ function generate_bytecode(root, file)
 	for i = 1, #result2 do
 		local instr = result2[i]
 		if instr[1] == bc.call and (instr[3] == call_codes.jump or instr[3] == call_codes.jumpifnil or instr[3] == call_codes.jumpiffalse) then
-			if labels[instr[4]] == nil then
-				parse_error(instr[2], 0, 'COMPILER BUG: Attempt to reference unknown label of ID "'..std.str(instr[4])..'"!', file)
-			end
+			if instr[4] ~= nil then
+				if labels[instr[4]] == nil then
+					parse_error(instr[2], 0, 'COMPILER BUG: Attempt to reference unknown label of ID "'..std.str(instr[4])..'"!', file)
+				end
 
-			instr[4] = labels[instr[4]] - 1
+				instr[4] = labels[instr[4]] - 1
+			end
 		end
 
 		table.insert(result, instr)
