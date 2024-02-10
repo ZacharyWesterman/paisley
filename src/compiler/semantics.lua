@@ -930,7 +930,7 @@ function SemanticAnalyzer(tokens, file)
 			if guess ~= nil and guess ~= '' then
 				msg = msg .. ' (did you mean "'.. guess ..'"?)'
 			end
-			parse_error(token.line, token.col, msg, file)
+			parse_error(token.children[1].line, token.children[1].col, msg, file)
 		end
 
 		token.ignore = labels[label].ignore
