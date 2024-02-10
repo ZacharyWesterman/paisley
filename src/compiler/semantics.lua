@@ -329,6 +329,8 @@ function funcsig(func_name)
 end
 
 function SemanticAnalyzer(tokens, file)
+	--[[minify-delete]] SHOW_MULTIPLE_ERRORS = true --[[/minify-delete]]
+
 	local function recurse(root, token_ids, operation, on_exit)
 		local _, id
 		local correct_token = false
@@ -878,6 +880,8 @@ function SemanticAnalyzer(tokens, file)
 
 		--Set any variables we can
 		recurse(root, {tok.for_stmt, tok.let_stmt, tok.variable}, variable_assignment, variable_unassignment)
+
+		if ERRORED then terminate() end
 	end
 
 	--One last pass at deducing all types (after any constant folding)
@@ -931,6 +935,8 @@ function SemanticAnalyzer(tokens, file)
 
 		token.ignore = labels[label].ignore
 	end)
+
+	if ERRORED then terminate() end
 
 	return root
 end

@@ -150,6 +150,8 @@ end
 --[[/minify-delete]]
 
 function generate_bytecode(root, file)
+	SHOW_MULTIPLE_ERRORS = false
+
 	local instructions = {}
 	local codegen_rules
 

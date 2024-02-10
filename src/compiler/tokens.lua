@@ -118,6 +118,8 @@ tok = {
 	lit_array = k(), --This only gets created during constant folding
 }
 
+SHOW_MULTIPLE_ERRORS = false
+ERRORED = false
 function parse_error(line, col, msg, file)
 	if msg:sub(1, 12) == 'COMPILER BUG' then
 		msg = msg .. '\nTHIS IS A BUG IN THE PAISLEY COMPILER, PLEASE REPORT IT!'
@@ -128,6 +130,14 @@ function parse_error(line, col, msg, file)
 	else
 		print(line..', '..col..': '..msg)
 	end
+
+	ERRORED = true
+	--[[minify-delete]] if not SHOW_MULTIPLE_ERRORS then --[[/minify-delete]]
+	terminate()
+	--[[minify-delete]] end --[[/minify-delete]]
+end
+
+function terminate()
 	error('ERROR in user-supplied Paisley script.')
 end
 
