@@ -229,8 +229,6 @@ local rules = {
 		text = 3,
 		not_after = {tok.op_dot},
 		onmatch = function(token, file)
-			print_tokens_recursive(token)
-
 			return {
 				text = 'not',
 				id = tok.boolean,
