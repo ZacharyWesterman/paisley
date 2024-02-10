@@ -1,6 +1,14 @@
 #!/usr/bin/env lua
 V1 = io.read('*all') --program text
 V2 = nil --filename
-V3 = nil --non-builtin commands
+V3 = {} --non-builtin commands
+
+for i, v in ipairs(arg) do
+	if v:sub(1,2) == '-c' then
+		table.insert(V3, v:sub(3,#v))
+	end
+end
+
+function output() end
 
 require "src.compiler"
