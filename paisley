@@ -1,0 +1,6 @@
+#!/usr/bin/env lua
+V1 = io.read('*all') --program text
+V2 = nil --filename
+V3 = nil --non-builtin commands
+
+require "src.compiler"
