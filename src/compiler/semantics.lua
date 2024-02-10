@@ -459,7 +459,7 @@ function SemanticAnalyzer(tokens, file)
 
 			--Lambda is defined, so replace it with the appropriate node
 			local lambda_node, i, _ = lambdas[token.text][#lambdas[token.text]].node
-			for _, i in ipairs({'text', 'line', 'col', 'id', 'meta_id'}) do
+			for _, i in ipairs({'text', 'line', 'col', 'id', 'meta_id', 'value'}) do
 				token[i] = lambda_node[i]
 			end
 			token.children = lambda_node.children
