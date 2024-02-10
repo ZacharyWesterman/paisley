@@ -221,6 +221,26 @@ local rules = {
 		not_after = {tok.kwd_for_expr, tok.op_dot},
 	},
 
+	--Special "{value not in array}" syntax
+	{
+		match = {{tok.array_concat, tok.boolean, tok.comparison}, {tok.op_not}, {tok.op_in}, {tok.array_concat, tok.boolean, tok.comparison}},
+		id = tok.boolean,
+		keep = {1, 4},
+		text = 3,
+		not_after = {tok.op_dot},
+		onmatch = function(token, file)
+			print_tokens_recursive(token)
+
+			return {
+				text = 'not',
+				id = tok.boolean,
+				line = token.line,
+				col = token.col,
+				children = {token},
+			}
+		end,
+	},
+
 	--List comprehension
 	{
 		match = {{tok.comparison}, {tok.kwd_for_expr}, {tok.variable}, {tok.op_in}, {tok.comparison}},
