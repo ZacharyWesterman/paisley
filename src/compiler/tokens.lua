@@ -142,6 +142,7 @@ function token_text(token_id)
 	return string.format('%d', token_id)
 end
 
+--[[minify-delete]]
 function print_token(token, indent)
 	if indent == nil then indent = '' end
 
@@ -178,3 +179,4 @@ function print_tokens_recursive(root, indent)
 		end
 	end
 end
+--[[/minify-delete]]

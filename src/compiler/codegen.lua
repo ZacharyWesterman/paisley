@@ -108,6 +108,7 @@ local function bc_get_key(code, lookup)
 	return nil
 end
 
+--[[minify-delete]]
 function print_bytecode(instructions)
 	local i
 	for i = 1, #instructions do
@@ -146,6 +147,7 @@ function print_bytecode(instructions)
 		print(line)
 	end
 end
+--[[/minify-delete]]
 
 function generate_bytecode(root, file)
 	local instructions = {}
