@@ -112,6 +112,19 @@ gosub print_numbers
 ```
 Proper use of subroutines can let you easily reuse common code.
 
+Note that it is also possible to jump to subroutines with an arbitrary label ID. See how in the following example, the program will randomly call one of 5 possible subroutines, and then print "Subroutine exists".
+```sh
+if gosub "{irandom(1,5)}" then
+	print "Subroutine exists"
+end
+
+subroutine 1 end
+subroutine 2 end
+subroutine 3 end
+subroutine 4 end
+subroutine 5 end
+```
+
 ## Lambdas:
 Lambdas are another good way to reuse code, however unlike subroutines, these are specifically for reusing parts of expressions.
 Lambdas are defined with the syntax `![expression]`, and are referred to with that same `!` identifier, just without the brackets. Note that the `!` can be any number of exclamation marks, optionally followed by an alphanumeric identifier. So for example, `!!`, `!2`, and `!!lambda_1` are all valid lambda identifiers.
