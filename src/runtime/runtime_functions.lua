@@ -3,7 +3,7 @@
 -- CURRENT_INSTRUCTION = 0
 -- LAST_CMD_RESULT = nil
 -- RANDOM_SEED = 0 --Change this later
-MAX_ITER = 30 --Max number of instructions to run before pausing execution (performance reasons mostly)
+MAX_ITER = 100 --Max number of instructions to run before pausing execution (performance reasons mostly)
 
 NULL = {}
 -- STACK = {}

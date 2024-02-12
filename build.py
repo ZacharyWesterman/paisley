@@ -10,6 +10,8 @@ indents = re.compile(r'\n[ \t]+')
 
 Path('build/').mkdir(exist_ok=True)
 
+VERSION = open('version.txt', 'r').readline().strip()
+
 for i in ['compiler.lua', 'runtime.lua']:
 	with open('src/'+i, 'r') as fp:
 		text = fp.read()
@@ -29,5 +31,9 @@ for i in ['compiler.lua', 'runtime.lua']:
 		text = endline.sub('\n', text)
 		text = indents.sub('\n', text)
 
+		module = i.split('.')[0]
+
+		prefix = f'--[[Paisley {module} v{VERSION}, written by Senor Cluckens]]\n--[[This build has been minified to reduce file size]]'
+
 		with open('build/'+i, 'w') as out:
-			out.write(text)
+			out.write(prefix + text)
