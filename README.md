@@ -42,6 +42,14 @@ else
 	...
 end
 ```
+
+You can also leave out the “then” clause if all that’s needed is the “else” clause, e.g.:
+```sh
+if {expression is true-ish} else
+	... do this if expression is false-ish ...
+end
+```
+
 Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression’s trueness: false, null, zero, and empty strings are false-ish, everything else is true-ish.
 
 ## Loops:
