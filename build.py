@@ -33,7 +33,7 @@ for i in ['compiler.lua', 'runtime.lua']:
 
 		module = i.split('.')[0]
 
-		prefix = f'--[[Paisley {module} v{VERSION}, written by Senor Cluckens]]\n--[[This build has been minified to reduce file size]]'
+		prefix = f'--[[Paisley {module} v{VERSION}, written by SenorCluckens]]\n--[[This build has been minified to reduce file size]]'
 
 		with open('build/'+i, 'w') as out:
 			out.write(prefix + text)

@@ -1,7 +1,9 @@
-#Calculate the 8th fibonacci number
-let n = 8
-gosub fibonacci
-print "fib({n}) = {fibonacci}"
+#Calculate a bunch of numbers in the fibonacci sequence.
+#See how the higher numbers take longer to calculate, but still do not cause lag spikes.
+for n in {0:100} do
+    gosub fibonacci
+    print "fib({n}) = {fibonacci}"
+end
 
 #@input n:number The index of the Fibonacci sequence to calculate.
 #@output result:number The respective Fibonacci number.
