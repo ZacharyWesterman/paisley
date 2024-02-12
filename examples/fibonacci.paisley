@@ -16,3 +16,5 @@ subroutine fibonacci
         let __prev = {fibonacci - __prev}
     end
 end
+
+print "{(1:9).select_random()}"

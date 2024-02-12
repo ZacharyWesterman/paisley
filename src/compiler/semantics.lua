@@ -55,6 +55,7 @@ builtin_funcs = {
 	update = 3,
 	insert = 3,
 	delete = 2,
+	select_random = 1,
 }
 
 type_signatures = {
@@ -272,6 +273,10 @@ type_signatures = {
 	delete = {
 		valid = {{'array', 'number'}},
 		out = 'array',
+	},
+	select_random = {
+		valid = {{'array'}},
+		out = 'any',
 	},
 
 	[tok.add] = {

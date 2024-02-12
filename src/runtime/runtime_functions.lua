@@ -695,6 +695,15 @@ local functions = {
 		local perc, a, b = std.num(v[1]), std.num(v[2]), std.num(v[3])
 		PUSH(a + perc * (b - a))
 	end,
+
+	--SELECT RANDOM ELEMENT FROM ARRAY
+	function()
+		local v = POP()
+		if type(v[1]) ~= 'table' then PUSH(v[1])
+		else
+			PUSH(v[1][math.random(0, #v[1])])
+		end
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT

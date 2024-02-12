@@ -98,6 +98,7 @@ local call_codes = {
 	insert = 79,
 	delete = 80,
 	lerp = 81,
+	select_random = 82,
 }
 
 local function bc_get_key(code, lookup)
