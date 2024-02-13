@@ -1,0 +1,20 @@
+USAGE:
+    paisley [FLAGS] <input>
+
+FLAGS:
+    -h, --help             Prints help information
+    -V, --version          Prints version information
+    -b, --bytecode         Output bytecode instead of running the script
+	-p, --pretty           Pretty-print bytecode output
+        --language-server  Output detailed info in an easy-to-parse format
+    -c[CMD]                Define an existing command on the target device
+
+ARGS:
+    <input>    The input file. Replace with `-` to read from stdin.
+
+CMD Example:
+	To define a command `status` which returns a value of type boolean:
+	    paisley -cstatus:boolean [FLAGS] <input>
+
+	Return type must be one of `null`, `boolean`, `number`, `string`,
+	`array` or `any`. If no return type is specified, `any` is assumed.

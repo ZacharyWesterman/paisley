@@ -1,14 +1,73 @@
 #!/usr/bin/env lua
-V1 = io.read('*all') --program text
 V2 = nil --filename
 V3 = {} --non-builtin commands
 
+local PRINT_BYTECODE = false
+local PRETTY_PRINT = false
+LANGUAGE_SERVER = false
+
+local ENDED = false
+
 for i, v in ipairs(arg) do
-	if v:sub(1,2) == '-c' then
-		table.insert(V3, v:sub(3,#v))
+	if v:sub(1,1) == '-' and v ~= '-' then
+		if v:sub(1,2) == '-c' then
+			table.insert(V3, v:sub(3,#v))
+		elseif v == '--help' or v == '-h' then
+			print('Paisley ' .. io.open( debug.getinfo(1, "S").source:sub(2):match('(.*[/\\])') .. 'version.txt'):read() )
+			print('\n' .. io.open( debug.getinfo(1, "S").source:sub(2):match('(.*[/\\])') .. 'helptext.txt'):read('*all'):gsub('[\r\n]+$', ''):gsub('^[\r\n]+', '') )
+			ENDED = true
+		elseif v == '--version' or v == '-V' then
+			print('Paisley ' .. io.open( debug.getinfo(1, "S").source:sub(2):match('(.*[/\\])') .. 'version.txt'):read() )
+			ENDED = true
+		elseif v == '--bytecode' or v == '-b' then
+			PRINT_BYTECODE = true
+		elseif v == '--pretty' or v == '-p' then
+			PRETTY_PRINT = true
+		elseif v == '--language-server' then
+			LANGUAGE_SERVER = true
+		else
+			error('Unknown flag `'..v..'`. Try running with `--help` to see all options.')
+		end
+	else
+		V2 = v --filename
 	end
 end
 
-function output() end
+if not ENDED then
+	if V2 == nil then
+		error('Error: No input file given. Use `-` to read from stdin, or re-run with `--help` to see all options.')
+	end
 
-require "src.compiler"
+	if V2 == '-' then
+		V2 = nil
+		V1 = io.read('*all') --program text
+	else
+		--Read from file
+		local file = io.open(V2)
+		if file then
+			V1 = file:read('*all')
+		else
+			error('Error: Cannot open file `'..V2..'`.')
+		end
+	end
+
+	function output() end
+
+	require "src.compiler"
+
+	if PRINT_BYTECODE then
+		if PRETTY_PRINT then
+			print('[')
+			for i = 1, #bytecode do
+				local comma = ''
+				if i < #bytecode then comma = ',' end
+				print('  ' .. json.stringify(bytecode[i]) .. comma)
+			end
+			print(']')
+		else
+			print(json.stringify(bytecode))
+		end
+
+		ENDED = true
+	end
+end

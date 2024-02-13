@@ -480,8 +480,8 @@ function fold_constants(token)
 	elseif token.id == tok.array_slice then
 		local start, stop, i = token.children[1].value, token.children[2].value
 
-		--For the sake of performance, don't fold if the array slice is too large!
-		if (stop - start) <= 200 then
+		--For the sake of output bytecode size, don't fold if the array slice is too large!
+		if (stop - start) <= 20 then
 			token.id = tok.lit_array
 			token.text = '[]'
 			token.value = {}
