@@ -131,7 +131,7 @@ function parse_error(line, col, msg, file)
 	--[[minify-delete]]
 	if not HIDE_ERRORS then
 		if LANGUAGE_SERVER then
-			print(line..','..col..','..(line-1)..','..col..'|'..msg)
+			print((line-1)..','..col..','..(line-1)..','..col..'|'..msg)
 		else --[[/minify-delete]]
 			if file ~= nil and file ~= '' then
 				print(file..': '..line..', '..col..': '..msg)
