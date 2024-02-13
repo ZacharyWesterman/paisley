@@ -924,10 +924,13 @@ function generate_bytecode(root, file)
 		end
 	end
 
-	--CLEAN OUT LABEL REFERENCES
+	local constants = {} --lookup table for constants to reduce output file size
+	local reverse_constants = {}
+	local const_len = 0
 	local result = {}
 	for i = 1, #result2 do
 		local instr = result2[i]
+		--CLEAN OUT LABEL REFERENCES
 		if instr[1] == bc.call and (instr[3] == call_codes.jump or instr[3] == call_codes.jumpifnil or instr[3] == call_codes.jumpiffalse) then
 			if instr[4] ~= nil then
 				if labels[instr[4]] == nil then
@@ -938,8 +941,22 @@ function generate_bytecode(root, file)
 			end
 		end
 
+		--Output constants to lookup table
+		if (instr[1] == bc.set or instr[1] == bc.get or instr[1] == bc.push) and instr[3] ~= nil then
+			if constants[instr[3]] == nil then
+				const_len = const_len + 1
+				constants[instr[3]] = const_len
+				reverse_constants[const_len] = instr[3]
+			end
+
+			instr[3] = constants[instr[3]]
+		end
+
 		table.insert(result, instr)
 	end
 
+	if #result then
+		table.insert(result, reverse_constants)
+	end
 	return result
 end
