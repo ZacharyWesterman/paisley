@@ -118,18 +118,30 @@ tok = {
 	lit_array = k(), --This only gets created during constant folding
 }
 
+--[[minify-delete]]
 SHOW_MULTIPLE_ERRORS = false
+HIDE_ERRORS = false
+--[[/minify-delete]]
 ERRORED = false
 function parse_error(line, col, msg, file)
 	if msg:sub(1, 12) == 'COMPILER BUG' then
 		msg = msg .. '\nTHIS IS A BUG IN THE PAISLEY COMPILER, PLEASE REPORT IT!'
 	end
 
-	if file ~= nil and file ~= '' then
-		print(file..': '..line..', '..col..': '..msg)
-	else
-		print(line..', '..col..': '..msg)
+	--[[minify-delete]]
+	if not HIDE_ERRORS then
+		if LANGUAGE_SERVER then
+			print(line..','..col..','..(line-1)..','..col..'|'..msg)
+		else --[[/minify-delete]]
+			if file ~= nil and file ~= '' then
+				print(file..': '..line..', '..col..': '..msg)
+			else
+				print(line..', '..col..': '..msg)
+			end
+		--[[minify-delete]]
+		end
 	end
+	--[[/minify-delete]]
 
 	ERRORED = true
 	--[[minify-delete]] if not SHOW_MULTIPLE_ERRORS then --[[/minify-delete]]
