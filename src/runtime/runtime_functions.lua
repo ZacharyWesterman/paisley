@@ -622,7 +622,7 @@ local functions = {
 			PUSH(0)
 		else
 			local result, i = 0
-			for i = #v[1], 1, -1 do
+			for i = 1, #v[1] do
 				result = result * 256 + v[1][i]
 			end
 			PUSH(result)

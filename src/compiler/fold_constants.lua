@@ -10,7 +10,7 @@ func_operations = {
 
 	frombytes = function(values)
 		local result, i = 0
-		for i = #values, 1, -1 do
+		for i = 1, #values do
 			result = result * 256 + values[i]
 		end
 		return result
