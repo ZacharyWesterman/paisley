@@ -9,16 +9,19 @@ SUPPRESS_AST_ERRORS = false
 
 local ENDED = false
 
+local dir = debug.getinfo(1, "S").source:sub(2):match('(.*[/\\])')
+if dir == nil then dir = '' end
+
 for i, v in ipairs(arg) do
 	if v:sub(1,1) == '-' and v ~= '-' then
 		if v:sub(1,2) == '-c' then
 			table.insert(V3, v:sub(3,#v))
 		elseif v == '--help' or v == '-h' then
-			print('Paisley ' .. io.open( debug.getinfo(1, "S").source:sub(2):match('(.*[/\\])') .. 'version.txt'):read() )
-			print('\n' .. io.open( debug.getinfo(1, "S").source:sub(2):match('(.*[/\\])') .. 'helptext.txt'):read('*all'):gsub('[\r\n]+$', ''):gsub('^[\r\n]+', '') )
+			print('Paisley ' .. io.open( dir .. 'version.txt'):read() )
+			print('\n' .. io.open( dir .. 'helptext.txt'):read('*all'):gsub('[\r\n]+$', ''):gsub('^[\r\n]+', '') )
 			ENDED = true
 		elseif v == '--version' or v == '-V' then
-			print('Paisley ' .. io.open( debug.getinfo(1, "S").source:sub(2):match('(.*[/\\])') .. 'version.txt'):read() )
+			print('Paisley ' .. io.open( dir .. 'version.txt'):read() )
 			ENDED = true
 		elseif v == '--bytecode' or v == '-b' then
 			PRINT_BYTECODE = true
