@@ -1,9 +1,10 @@
 local rules = {
 	--Function call, dot-notation
 	{
-		match = {{tok.value, tok.func_call}, {tok.op_dot}, {tok.comparison}},
+		match = {{tok.value, tok.func_call}, {tok.op_dot}, {tok.value, tok.func_call, tok.comparison}},
 		id = tok.func_call,
 		text = 3,
+		not_after = {tok.op_dot},
 		onmatch = function(token, file)
 			if token.children[3].id ~= tok.func_call then
 				parse_error(token.line, token.col, 'Dot notation can only be used with function calls', file)
@@ -75,6 +76,7 @@ local rules = {
 		id = tok.index,
 		keep = {1, 3},
 		text = 2,
+		not_after = {tok.op_dot},
 	},
 
 	--Treat all literals the same.
@@ -219,6 +221,7 @@ local rules = {
 		keep = {1, 3},
 		text = 2,
 		not_after = {tok.kwd_for_expr, tok.op_dot},
+		not_before = {tok.op_dot},
 	},
 
 	--Special "{value not in array}" syntax
@@ -245,14 +248,14 @@ local rules = {
 		id = tok.list_comp,
 		keep = {1, 3, 5},
 		text = 2,
-		not_before = {tok.kwd_if_expr},
+		not_before = {tok.kwd_if_expr, tok.op_dot},
 	},
 	{
 		match = {{tok.comparison}, {tok.kwd_for_expr}, {tok.variable}, {tok.op_in}, {tok.comparison}, {tok.kwd_if_expr}, {tok.comparison}},
 		id = tok.list_comp,
 		keep = {1, 3, 5, 7},
 		text = 2,
-		not_before = {tok.kwd_else_expr},
+		not_before = {tok.kwd_else_expr, tok.op_dot},
 	},
 
 	--If no other boolean op was detected, just promote the value to bool status.
