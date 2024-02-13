@@ -285,7 +285,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 
 				--Numbers (can have formats 0xAAAA, 0bAAAA, AA.AAA, A_AAA_AAA.AAA)
 				if not match then
-					match = text:match('^0[xb][0-9%._a-fA-F]*') --0x12af / 0b0011
+					match = text:match('^0[xb][0-9_a-fA-F]*') --0x12af / 0b0011
 					if not match then match = text:match('^%.[0-9]+') end --.123456
 					if not match then match = text:match('^[0-9][0-9_]*%.[0-9]+') end --1_234.657
 					if not match then match = text:match('^[0-9][0-9_]*') end --1_234_567
