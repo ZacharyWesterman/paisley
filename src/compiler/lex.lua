@@ -198,7 +198,15 @@ function Lexer(text --[[string]], file --[[string | nil]])
 
 				--Ignore white space inside expressions, including line endings
 				if not match then
-					match = text:match('^[ \t\r\n]+')
+					match = text:match('^\n')
+					if match then
+						line = line + 1
+						col = 0
+						tok_ignore = true
+					end
+				end
+				if not match then
+					match = text:match('^[ \t\r]+')
 					if match then tok_ignore = true end
 				end
 
