@@ -196,15 +196,9 @@ function Lexer(text --[[string]], file --[[string | nil]])
 			elseif curr_scope == '{' or curr_scope == '(' or curr_scope == '[' then
 				--Parse rules when inside expressions
 
-				--line endings cause errors inside expressions
-				match = text:match('^\n')
-				if match then
-					parse_error(line, col, 'Unexpected line ending inside expression', file)
-				end
-
-				--White space
+				--Ignore white space inside expressions, including line endings
 				if not match then
-					match = text:match('^[ \t\r]+')
+					match = text:match('^[ \t\r\n]+')
 					if match then tok_ignore = true end
 				end
 
