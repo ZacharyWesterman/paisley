@@ -168,8 +168,13 @@ If you would like to avoid interpolation in double-quoted strings, simply escape
 print "the expression \{1+2} evaluates to {1+2}"
 print "you can also put \"quotes\" and line breaks (\n) inside strings!"
 ```
+There are a few special escape codes:
+- `\n` outputs a line ending.
+- `\t` outputs a tab.
+- `\s` outputs a non-breaking space.
+- Any others just output the character after the backslash, e.g. `\"` &rarr; "
 
-Expressions give access to a decent suite of operations and functions, listed below:
+Expressions also give access to a full suite of operators and functions, listed below:
 
 ### Operators:
 - addition, `+`
