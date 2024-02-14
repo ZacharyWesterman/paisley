@@ -421,7 +421,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 						break
 					end
 
-					--Parse escape chars. Currently only 2 of them, don't see much need to add more.
+					--Parse escape chars. Only a few have special meaning.
 					--Every other "escape" char is just the same character without the backslash.
 					if this_chr == '\\' then
 						this_ix = this_ix + 1
@@ -432,6 +432,8 @@ function Lexer(text --[[string]], file --[[string | nil]])
 							this_chr = '\n'
 						elseif this_chr == 't' then
 							this_chr = '\t'
+						elseif this_chr == 's' then
+							this_chr = ' ' --non-breaking space
 						end
 					end
 
