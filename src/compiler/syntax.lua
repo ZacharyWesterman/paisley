@@ -213,7 +213,7 @@ local rules = {
 		id = tok.boolean,
 		keep = {1, 3},
 		text = 2,
-		not_after = {tok.op_dot},
+		not_after = {tok.op_dot, tok.op_plus, tok.op_minus, tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod},
 	},
 	{
 		match = {{tok.array_concat, tok.boolean, tok.comparison}, {tok.op_in}, {tok.array_concat, tok.boolean, tok.comparison}},
@@ -221,7 +221,7 @@ local rules = {
 		keep = {1, 3},
 		text = 2,
 		not_after = {tok.kwd_for_expr, tok.op_dot},
-		not_before = {tok.op_dot},
+		not_before = {tok.op_dot, tok.op_plus, tok.op_minus, tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod},
 	},
 
 	--Special "{value not in array}" syntax
@@ -230,7 +230,7 @@ local rules = {
 		id = tok.boolean,
 		keep = {1, 4},
 		text = 3,
-		not_after = {tok.op_dot},
+		not_after = {tok.op_dot, tok.op_plus, tok.op_minus, tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod},
 		onmatch = function(token, file)
 			return {
 				text = 'not',
@@ -276,7 +276,7 @@ local rules = {
 			if token.text == '~=' then token.text = '!=' end
 			if token.text == '=' then token.text = '==' end
 		end,
-		not_after = {tok.op_dot},
+		not_after = {tok.op_dot, tok.op_plus, tok.op_minus, tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod},
 	},
 	{
 		match = {{tok.boolean, tok.length}},
