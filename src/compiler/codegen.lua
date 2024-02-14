@@ -111,11 +111,16 @@ end
 
 --[[minify-delete]]
 function print_bytecode(instructions)
-	local i
-	for i = 1, #instructions do
+	local lookup = instructions[#instructions]
+	for i = 1, #instructions - 1 do
 		local instr = instructions[i]
 		local instr_text = bc_get_key(instr[1], bc)
 		local call_text = instr[3]
+
+		if (instr[1] == bc.push or instr[1] == bc.set or instr[1] == bc.get) and call_text ~= nil then
+			call_text = lookup[call_text]
+		end
+
 		if instr[1] == bc.call then
 			call_text = bc_get_key(call_text, call_codes)
 		end
@@ -301,7 +306,7 @@ function generate_bytecode(root, file)
 			local has_slices = false
 			for i = 1, #token.children do
 				local chid = token.children[i].id
-				if chid == tok.array_slice or chid == tok.lit_array then has_slices = true end
+				if chid == tok.array_slice or token.children[i].reduce_array_concat then has_slices = true end
 				codegen_rules.recur_push(token.children[i])
 			end
 
@@ -854,7 +859,7 @@ function generate_bytecode(root, file)
 			local has_slices = false
 			for i = 1, #token.children do
 				local chid = token.children[i].id
-				if chid == tok.array_slice or chid == tok.lit_array then has_slices = true end
+				if chid == tok.array_slice or token.children[i].reduce_array_concat then has_slices = true end
 				codegen_rules.recur_push(token.children[i])
 			end
 
@@ -943,13 +948,14 @@ function generate_bytecode(root, file)
 
 		--Output constants to lookup table
 		if (instr[1] == bc.set or instr[1] == bc.get or instr[1] == bc.push) and instr[3] ~= nil then
-			if constants[instr[3]] == nil then
+			local text = json.stringify(instr[3])
+			if constants[text] == nil then
 				const_len = const_len + 1
-				constants[instr[3]] = const_len
+				constants[text] = const_len
 				reverse_constants[const_len] = instr[3]
 			end
 
-			instr[3] = constants[instr[3]]
+			instr[3] = constants[text]
 		end
 
 		table.insert(result, instr)

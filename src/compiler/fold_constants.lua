@@ -475,7 +475,6 @@ function fold_constants(token)
 			end
 		end
 		token.children = nil
-		token.reduce_array_concat = true
 
 	elseif token.id == tok.array_slice then
 		local start, stop, i = token.children[1].value, token.children[2].value
