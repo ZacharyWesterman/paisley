@@ -95,6 +95,7 @@ if not ENDED and not LANGUAGE_SERVER and bytecode ~= nil then
 	function output(value, port)
 		if port == 1 then
 			--continue program
+			os.execute('sleep 0.01') --emulate behavior in Plasma where program execution pauses periodicaly to avoid lag.
 		elseif port == 2 then
 			--run a non-builtin command (currently not supported outside of Plasma)
 			error('Error on line '.. line_no .. ': Cannot run program `' .. std.str(value) .. '`')
@@ -134,6 +135,7 @@ if not ENDED and not LANGUAGE_SERVER and bytecode ~= nil then
 			--Print text or error
 			table.remove(value, 1)
 			print(std.str(value))
+			io.flush()
 			V5 = nil
 		elseif port == 8 then
 			--value is current line number
