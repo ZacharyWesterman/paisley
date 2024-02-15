@@ -9,10 +9,18 @@ end
 #@output result:number The respective Fibonacci number.
 #@mutate __prev:number
 subroutine fibonacci
-    let __prev = 1
-    let fibonacci = 0
-    for i in {1:n} do
+    #Cache results, never recompute fibonacci numbers if we calculated it before
+    if {__fibonacci exists} else let __fibonacci = {0,1} end
+    if {__fibonacci[n+1] != null} then
+        let fibonacci = {__fibonacci[n+1]}
+        return
+    end
+
+    let __prev = {__fibonacci[#__fibonacci-1]}
+    let fibonacci = {__fibonacci[#__fibonacci]}
+    for i in {(#__fibonacci+1):(n+1)} do
         let fibonacci = {__prev + fibonacci}
         let __prev = {fibonacci - __prev}
+        let __fibonacci{i} = {fibonacci}
     end
 end
