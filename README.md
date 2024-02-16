@@ -21,11 +21,11 @@ The only use of line endings is to separate commands, which can also be done wit
 
 A Paisley script may consist of a series of comments, statements, and/or commands.
 - Comments begin with a `#` character and continue to the end of the line. There are no multi-line comments.
-- There are 4 types of statements: conditionals (if/else/elif), loops (for/while), variable assignment, and subroutines.
+- There are 5 types of statements: conditionals (if/else/elif), loops (for/while), variable assignment, subroutines, and miscellaneous statements (return/break/etc).
 - Any text that is not a keyword or otherwise part of a statement is considered a command. More on that later.
 
 Before continuing, note that commands do not have to be hard-coded. You can put expressions in them, such as
-```sh
+```
 let r = 500
 print "r = {r}, d = {3.14 * r * r}"
 ```
@@ -33,7 +33,7 @@ See how in the above, expressions are contained inside curly braces, `{}`. More 
 
 ## Conditionals:
 "If" statements have the following structure:
-```sh
+```
 if {expression is true-ish} then
 	...
 elif {expression is true-ish} then
@@ -44,17 +44,17 @@ end
 ```
 
 You can also leave out the “then” clause if all that’s needed is the “else” clause, e.g.:
-```sh
+```
 if {expression is true-ish} else
 	... do this if expression is false-ish ...
 end
 ```
 
-Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression’s trueness: false, null, zero, and empty strings are false-ish, everything else is true-ish.
+Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression’s trueness: false, null, zero, and empty strings are false-ish, everything else is true-ish. Arrays are always true-ish.
 
 ## Loops:
 While and For loops have a similar syntax to Lua:
-```sh
+```
 while {expression is true-ish} do
 	...
 end
@@ -68,13 +68,13 @@ If you want syntax similar to Lua's integer for loops (`for i = 1, 10 do ... end
 
 ## Variable Assignment:
 Variable assignment always starts with `let`, e.g.
-```sh
+```
 let pi = 3.14
 let circumference = {2 * pi * r}
 ```
 Note that the `let` keyword is required even when reassigning variables.
 For example, consider the following:
-```sh
+```
 let var = 13
 var = 99
 ```
@@ -82,14 +82,14 @@ The second line will **not** set var's value to 13. Instead, that would attempt 
 
 Of course, sometimes a variable will contain an array that you don't want to overwrite, instead you just want to update a *single element* or *append* to the array.
 The following will result in var containing the array `(1, 2, 123, 4, 99)`. Note that giving negative values as the index will start counting from the end, so index of -1 will update the last element.
-```sh
+```
 let var = 1 2 3 4 5
 let var{3} = 123
 let var{-1} = 99
 ```
 
 Appending is just as simple. The following will result in var containing the array `(1, 2, 3, 4, 5, 6)`.
-```sh
+```
 let var = 1 2 3 4 5
 let var{} = 6
 ```
@@ -101,7 +101,7 @@ Subroutines are a lot like functions, except they do not take any parameters, an
 In Paisley, this does not matter much since all variables are global. Just keep in mind that you don't accidentally overwrite variables that are needed elsewhere.
 
 An example subroutine usage might look like the following:
-```sh
+```
 subroutine print_numbers
 	for i in {0:max_number} do
 		if {i > 30} do
@@ -121,7 +121,7 @@ gosub print_numbers
 Proper use of subroutines can let you easily reuse common code.
 
 Note that it is also possible to jump to subroutines with an arbitrary label ID. See how in the following example, the program will randomly call one of 5 possible subroutines, and then print "Subroutine exists".
-```sh
+```
 if gosub "{irandom(1,5)}" then
 	print "Subroutine exists"
 end
@@ -135,7 +135,7 @@ subroutine 5 end
 
 ## Lambdas:
 Lambdas are another good way to reuse code, however unlike subroutines, these are specifically for reusing parts of expressions.
-Lambdas are defined with the syntax `![expression]`, and are referred to with that same `!` identifier, just without the brackets. Note that the `!` can be any number of exclamation marks, optionally followed by an alphanumeric identifier. So for example, `!!`, `!2`, and `!!lambda_1` are all valid lambda identifiers.
+Lambdas are defined with the syntax `![expression]`, and are referred to with that same `!` identifier, just without the brackets. Note that the `!` can be any number of exclamation marks, optionally followed by an alphanumeric identifier. So for example, `!!`, `!2`, and `!!lambda_1` are all valid lambda identifiers. Note that unlike lambdas in other languages, lambdas in Paisley are not true functions; they don't take any parameters. However, they do have access to the same global scope as the rest of the program.
 
 Below is an example of lambda usage. Both the top and bottom commands will print 5 random numbers in the range 0-100.
 ```
@@ -164,7 +164,7 @@ First and foremost, expressions will only be evaluated inside curly braces, `{}`
 Expressions can be placed anywhere inside a command or statement operand. In addition, they can also be placed inside double-quoted strings (e.g. `"a = {1+2}"` gives `a = 3`) to perform easy string interpolation. Note that single-quoted strings **do not** interpolate expressions, so for example `'a = {1+2}'` would give exactly `a = {1+2}` without parsing any expression.
 
 If you would like to avoid interpolation in double-quoted strings, simply escape the opening curly brace with a backslash, e.g.
-```sh
+```
 print "the expression \{1+2} evaluates to {1+2}"
 print "you can also put \"quotes\" and line breaks (\n) inside strings!"
 ```
@@ -189,7 +189,7 @@ Expressions also give access to a full suite of operators and functions, listed 
 - comparison (not equal), `!=` or `~=` (both are the same)
 - check for whether variables are set, `exists` (e.g. `x exists`)
 - string or array length, `#` (e.g. `#variable`)
-- array slicing, `:` (e.g. `0:5` gives `(0,1,2,3,4,5)`)
+- array slicing, `:`. Note that slices are inclusive of both their upper and lower bounds (e.g. `0:5` gives `(0,1,2,3,4,5)`)
 - array listing, `,` (e.g. `1,2,3` is an array with 3 elements, `(1,)` is an array with 1 element, `(,)` has 0 elements, etc). can combine this with slicing, e.g. `1,3:5,9` gives `(1,3,4,5,9)`.
 - array searching `in` (e.g. `3 in (1,2,4,5,6)` gives `false`)
 - string concatenation: There is no string concatenation operator. Seriously, two values next to each other, without an operator between them, results in string concatenation.
@@ -306,7 +306,7 @@ let y = {i for i in x if i % 5 = 0}
 
 ### Inline Command Evaluation
 Since commands can return values to Paisley after execution, you can also use those values in further calculations. For example:
-```sh
+```
 #Get an integer value representing in-game time, and convert it to a human-readable format
 let t = {floor(${time})}
 let hour = {t // 3600}
@@ -330,7 +330,7 @@ Note that all commands take a little bit of time to run (at least 0.02s), whethe
 
 Lastly, to give an idea of the syntax, here is an example program that will create a clock that stays in sync with the client system.
 
-```sh
+```
 #Repeat forever. "while 1 do" would also work.
 while {true} do
 	#Format date as YYYY-MM-DD
