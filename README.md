@@ -13,6 +13,12 @@ This language is meant to make complex device logic very easy to implement, whil
 **Q:** *How do I connect the Paisley engine to my device?*<br>
 **A:** Get the Paisley Engine device from the Steam workshop (ID **3087775427**), and attach it to your device. Then in a different controller, set the inputs (Paisley code, a list of valid commands for this device, and optional file name), and make sure the "Run Command" output will eventually flow back into the "Command Return" input. Keep in mind this MUST have a slight delay (0.02s at least) or Plasma will detect it as an infinite loop!
 
+**Q:** Why???<br>
+**A:** haha
+
+**Q:** Isn’t writing an entire compiler in Plasma a bit overkill?<br>
+**A:** Your face is overkill. Compilers are fun, fight me.
+
 ---
 ## Main program structures
 
@@ -193,6 +199,7 @@ Expressions also give access to a full suite of operators and functions, listed 
 - string or array length, `#` (e.g. `#variable`)
 - array slicing, `:`. Note that slices are inclusive of both their upper and lower bounds (e.g. `0:5` gives `(0,1,2,3,4,5)`)
 - array listing, `,` (e.g. `1,2,3` is an array with 3 elements, `(1,)` is an array with 1 element, `(,)` has 0 elements, etc). can combine this with slicing, e.g. `1,3:5,9` gives `(1,3,4,5,9)`.
+- pattern matching, `like`, checks whether a string matches a given pattern (e.g. `"123" like "%d+"` gives `true`).
 - array searching `in` (e.g. `3 in (1,2,4,5,6)` gives `false`)
 - string concatenation: There is no string concatenation operator. Seriously, two values next to each other, without an operator between them, results in string concatenation.
 - ternary operator, `val1 if expression else val2`. Like Python’s ternary syntax, this will result in `val1` if `expression` evaluates to true, otherwise it will result in `val2`.
