@@ -792,7 +792,7 @@ commands = {
 
 		if not ALLOWED_COMMANDS[cmd_name] then
 			if cmd_name == 'sleep' then
-				local amt = math.max(0.05, std.num(command_array[2])) - 0.05
+				local amt = math.max(0.02, std.num(command_array[2])) - 0.02
 				output(amt, 4)
 			elseif cmd_name == 'time' then
 				output(nil, 5)
