@@ -337,7 +337,7 @@ while {true} do
 	let date = {${sysdate}.reverse().join('-')}
 
 	#Format time as HH:MM:SS
-	#Note the lpad() uses make sure that hours/minutes/seconds are always 2 digits
+	#Note the lpad() use makes sure that hours/minutes/seconds are always 2 digits
 	let time = {(i.lpad('0', 2) for i in ${systime}.clocktime()[1:3]).join(':')}
 	print {date ' @ ' time}
 
