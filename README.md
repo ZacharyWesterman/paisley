@@ -334,13 +334,11 @@ Lastly, to give an idea of the syntax, here is an example program that will crea
 #Repeat forever. "while 1 do" would also work.
 while {true} do
 	#Format date as YYYY-MM-DD
-	let date = ${sysdate}
-	let date = {date[3] '-' date[2] '-' date[1]}
+	let date = {${sysdate}.reverse().join('-')}
 
 	#Format time as HH:MM:SS
-	#Note the lpad() uses make sure that minutes/seconds are always 2 digits
-	let time = ${systime}
-	let time = {floor(time/3600) ':' lpad(floor(time/60)%60, '0', 2) ':' lpad(floor(time%60), '0', 2)}
+	#Note the lpad() uses make sure that hours/minutes/seconds are always 2 digits
+	let time = {(i.lpad('0', 2) for i in ${systime}.clocktime()[1:3]).join(':')}
 	print {date ' @ ' time}
 
 	#Only update once per second

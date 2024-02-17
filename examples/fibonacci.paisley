@@ -6,7 +6,7 @@ for n in {0:100} do
 end
 
 #@input n:number The index of the Fibonacci sequence to calculate.
-#@output result:number The respective Fibonacci number.
+#@output fibonacci:number The respective Fibonacci number.
 #@mutate __prev:number
 subroutine fibonacci
     #Cache results, never recompute fibonacci numbers if we calculated it before
