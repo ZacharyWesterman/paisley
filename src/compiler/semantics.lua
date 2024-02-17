@@ -372,6 +372,11 @@ function SemanticAnalyzer(tokens, file)
 		if token.id == tok.subroutine and tok_level > 0 then
 			parse_error(token.line, token.col, 'Subroutines cannot be defined inside other structures', file)
 		end
+
+		if token.text:sub(1,1) == '?' then
+			parse_error(token.line, token.col, 'Subroutine name cannot begin with `?`', file)
+		end
+
 		tok_level = tok_level + 1
 	end, function(token)
 		--Exit scope
