@@ -299,6 +299,7 @@ type_signatures = {
 		out = 'array',
 	},
 	[tok.array_slice] = {
+		valid = {{'number', 'number'}},
 		out = 'array',
 	},
 	[tok.comparison] = {
@@ -406,6 +407,10 @@ function SemanticAnalyzer(tokens, file)
 		local _
 		local kids = {}
 		for _, child in ipairs(token.children) do
+			if child.id == tok.lit_null or child.type == 'null' then
+				parse_error(child.line, child.col, 'Arrays cannot contain null elements', file)
+			end
+
 			if child.id == tok.array_concat then
 				local __
 				local kid
@@ -654,6 +659,10 @@ function SemanticAnalyzer(tokens, file)
 			else
 				token.children[2] = body.children[1]
 			end
+		end
+
+		if #token.children > 2 and (token.children[2].id == tok.lit_null or token.children[2].type == 'null') then
+			parse_error(token.children[2].line, token.children[2].col, 'Arrays cannot contain null elements', file)
 		end
 	end)
 
