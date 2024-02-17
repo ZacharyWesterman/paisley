@@ -10,7 +10,7 @@ end
 #@mutate __prev:number
 subroutine fibonacci
     #Cache results, never recompute fibonacci numbers if we calculated it before
-    if {__fibonacci exists} else let __fibonacci = {0,1} end
+    initial __fibonacci = 0 1
     if {__fibonacci[n+1] != null} then
         let fibonacci = {__fibonacci[n+1]}
         return
