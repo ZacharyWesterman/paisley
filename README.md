@@ -314,6 +314,10 @@ let minute = {(t // 60) % 60}
 let second = {t % 60}
 print {hour ":" minute ":" second}
 ```
+Of course, there is also a simpler version that does the same thing:
+```
+print {${time}.clocktime()[1:3].join(":")}
+```
 
 ### Built-in commands
 For ease of use and consistency, there are 6 built-in commands that will always be the same regardless of device.
