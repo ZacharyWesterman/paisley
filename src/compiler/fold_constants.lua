@@ -222,6 +222,15 @@ function fold_constants(token)
 
 	local function not_const(token) return token.value == nil and token.id ~= tok.lit_null end
 
+	if token.id == tok.array_concat then
+		for i = 1, #token.children do
+			local child = token.children[i]
+			if child.id == tok.lit_null or child.type == 'null' then
+				parse_error(child.line, child.col, 'Arrays cannot contain null elements', file)
+			end
+		end
+	end
+
 	--Ternary operators are unique: if the condition is constant, they can be folded
 	if token.id == tok.ternary then
 		local child

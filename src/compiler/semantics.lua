@@ -407,10 +407,6 @@ function SemanticAnalyzer(tokens, file)
 		local _
 		local kids = {}
 		for _, child in ipairs(token.children) do
-			if child.id == tok.lit_null or child.type == 'null' then
-				parse_error(child.line, child.col, 'Arrays cannot contain null elements', file)
-			end
-
 			if child.id == tok.array_concat then
 				local __
 				local kid
@@ -660,10 +656,6 @@ function SemanticAnalyzer(tokens, file)
 				token.children[2] = body.children[1]
 			end
 		end
-
-		if #token.children > 2 and (token.children[2].id == tok.lit_null or token.children[2].type == 'null') then
-			parse_error(token.children[2].line, token.children[2].col, 'Arrays cannot contain null elements', file)
-		end
 	end)
 
 	--Tidy up WHILE loops and IF/ELIF statements (replace command with cmd contents)
@@ -869,6 +861,12 @@ function SemanticAnalyzer(tokens, file)
 			local ch = token.children[2]
 
 			if var.type then return end
+
+			if #token.children > 2 then
+				if ch.id == tok.lit_null or ch.type == 'null' then
+					parse_error(ch.line, ch.col, 'Arrays cannot contain null elements', file)
+				end
+			end
 
 			if not ch then
 				set_var(var.text, 'null')

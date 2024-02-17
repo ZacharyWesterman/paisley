@@ -565,7 +565,20 @@ local rules = {
 		id = tok.let_stmt,
 		keep = {2},
 		text = 1,
-		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison, tok.op_assign},
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison, tok.op_assign, tok.var_assign},
+	},
+	--Assign multiple variables at the same time
+	{
+		match = {{tok.var_assign}, {tok.var_assign}},
+		id = tok.var_assign,
+		text = 1,
+		keep = {1, 2},
+		onmatch = function(token, file)
+			local t = token.children[1]
+			if t.children == nil then t.children = {} end
+			table.insert(t.children, token.children[2])
+			return token.children[1]
+		end,
 	},
 
 	--Variable initialization
