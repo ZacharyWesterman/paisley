@@ -56,6 +56,7 @@ builtin_funcs = {
 	insert = 3,
 	delete = 2,
 	select_random = 1,
+	hash = 1,
 }
 
 type_signatures = {
@@ -277,6 +278,10 @@ type_signatures = {
 	select_random = {
 		valid = {{'array'}},
 		out = 'any',
+	},
+	hash = {
+		valid = {{'string'}},
+		out = 'string',
 	},
 
 	[tok.add] = {

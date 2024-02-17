@@ -99,6 +99,7 @@ local call_codes = {
 	delete = 80,
 	lerp = 81,
 	select_random = 82,
+	hash = 83,
 }
 
 local function bc_get_key(code, lookup)

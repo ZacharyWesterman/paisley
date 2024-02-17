@@ -704,6 +704,11 @@ local functions = {
 			PUSH(v[1][math.random(0, #v[1])])
 		end
 	end,
+
+	--GENERATE SHA256 HASH OF A STRING
+	function()
+		PUSH( std.hash(std.str( POP()[1] )) )
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT
