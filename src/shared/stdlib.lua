@@ -1,5 +1,7 @@
 --This is a "standard library" of sorts, containing code that's shared between the Paisley compiler and runtime engine.
 
+require "src.shared.hash"
+
 std = {
 	--Convert arbitrary data to a string (with "Lua-ness" removed)
 	str = function(data --[[any]])
@@ -193,4 +195,7 @@ std = {
 		if type(text) ~= 'string' then return false end
 		if tonumber(text) then return true else return false end
 	end,
+
+	--Generate a sha256 hash of a given string
+	hash = SHA256,
 }
