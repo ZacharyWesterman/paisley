@@ -135,7 +135,7 @@ subroutine 5 end
 
 ## Lambdas:
 Lambdas are another good way to reuse code, however unlike subroutines, these are specifically for reusing parts of expressions.
-Lambdas are defined with the syntax `![expression]`, and are referred to with that same `!` identifier, just without the brackets. Note that the `!` can be any number of exclamation marks, optionally followed by an alphanumeric identifier. So for example, `!!`, `!2`, and `!!lambda_1` are all valid lambda identifiers. Note that unlike lambdas in other languages, lambdas in Paisley are not true functions; they don't take any parameters. However, they do have access to the same global scope as the rest of the program.
+Lambdas are defined with the syntax `![expression]`, and are referred to with that same `!` identifier, just without the brackets. Note that the `!` can be any number of exclamation marks, optionally followed by an alphanumeric identifier. So for example, `!!`, `!2`, and `!!lambda_1` are all valid lambda identifiers, all referring to different lambdas. Note that unlike lambdas in other languages, lambdas in Paisley are not true functions; they don't take any parameters. However, they do have access to the same global scope as the rest of the program.
 
 Below is an example of lambda usage. Both the top and bottom commands will print 5 random numbers in the range 0-100.
 ```
@@ -145,10 +145,12 @@ print {![irandom(0, 100)], !, !, !, !}
 define {!rnd[irandom(0, 100)]}
 print {!rnd, !rnd, !rnd, !rnd, !rnd}
 ```
-Note that either of the above commands are equivalent to the following
+Note that either of the above commands are equivalent to the following:
 ```
 print {irandom(0, 100), irandom(0, 100), irandom(0, 100), irandom(0, 100), irandom(0, 100)}
 ```
+
+Unlike variables, lambdas are restricted to their scope. Thus, for example, if you define a lambda in a subroutine, you cannot use it outside the subroutine, unless that outside scope also has a lambda definition with the same identifier.
 
 ## Other statements:
 - `break` or `break 1` or `break 2` etc, will exit as many while/for loops as are specified (defaults to 1 if not specified)
