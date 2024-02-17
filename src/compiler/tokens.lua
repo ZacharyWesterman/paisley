@@ -21,6 +21,7 @@ tok = {
 	kwd_gosub = k(),
 	kwd_return = k(),
 	kwd_let = k(),
+	kwd_initial = k(),
 	kwd_stop = k(),
 	kwd_if_expr = k(),
 	kwd_else_expr = k(),

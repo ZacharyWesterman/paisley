@@ -17,6 +17,7 @@ kwds = {
 	['gosub'] = tok.kwd_gosub,
 	['return'] = tok.kwd_return,
 	['let'] = tok.kwd_let,
+	['initial'] = tok.kwd_initial,
 	['stop'] = tok.kwd_stop,
 }
 
@@ -179,7 +180,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 							match = key
 							tok_type = value
 
-							if match == 'let' then
+							if match == 'let' or match == 'initial' then
 								table.insert(scopes, 'let')
 							end
 							break

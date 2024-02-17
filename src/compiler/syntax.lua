@@ -568,6 +568,25 @@ local rules = {
 		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison, tok.op_assign},
 	},
 
+	--Variable initialization
+	{
+		match = {{tok.kwd_initial}, {tok.var_assign}, {tok.op_assign}, {tok.command, tok.expression, tok.string}},
+		id = tok.let_stmt,
+		keep = {2, 4},
+		text = 1,
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
+	},
+	{
+		match = {{tok.kwd_initial}, {tok.var_assign}},
+		id = tok.let_stmt,
+		keep = {2},
+		text = 1,
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison, tok.op_assign},
+		onmatch = function(token, file)
+			parse_error(token.line, token.col, 'Incomplete variable initialization, `'.. token.children[1].text ..'`must have a value', file)
+		end,
+	},
+
 	--SUB variable assignment
 	{
 		match = {{tok.kwd_let}, {tok.var_assign}, {tok.expression}, {tok.op_assign}, {tok.command, tok.expression, tok.string}},

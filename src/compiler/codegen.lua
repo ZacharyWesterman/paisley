@@ -278,6 +278,19 @@ function generate_bytecode(root, file)
 
 		--CODEGEN FOR VARIABLE ASSIGNMENT
 		[tok.let_stmt] = function(token, file)
+			local label1, label2
+
+			if token.text == 'initial' then
+				label1, label2 = label_id(), label_id()
+				emit(bc.push, token.children[1].text)
+				emit(bc.call, 'varexists')
+				emit(bc.call, 'jumpiffalse', label1)
+				emit(bc.pop)
+				emit(bc.call, 'jump', label2)
+				emit(bc.label, label1)
+				emit(bc.pop)
+			end
+
 			if token.children[3] then
 				if token.children[3].id == tok.expr_open then
 					--Append to variable
@@ -298,6 +311,10 @@ function generate_bytecode(root, file)
 				codegen_rules.recur_push(token.children[2])
 			end
 			emit(bc.set, token.children[1].text)
+
+			if token.text == 'initial' then
+				emit(bc.label, label2)
+			end
 		end,
 
 		--CODEGEN FOR ARRAY CONCATENATION
