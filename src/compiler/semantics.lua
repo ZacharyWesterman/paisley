@@ -896,8 +896,14 @@ function SemanticAnalyzer(tokens, file)
 							if ch.children[i] and ch.children[i].type then
 								tp = ch.children[i].type
 							end
-						elseif ch.id == tok.lit_array then
-							tp = std.type(ch.value[i])
+						elseif ch.value or ch.id == tok.lit_null then
+							if ch.id == tok.lit_array then
+								tp = std.type(ch.value[i])
+							elseif i == 1 then
+								tp = std.type(ch.value)
+							else
+								tp = 'null'
+							end
 						else
 							tp = 'any'
 						end
