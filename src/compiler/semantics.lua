@@ -746,20 +746,21 @@ function SemanticAnalyzer(tokens, file)
 					return
 				end
 
-				if t2 == 'array' then
-					token.type = 'array'
-					return
+				if t1 == 'string' then
+					token.type = t1
+				elseif t2 == 'array' then
+					token.type = t2
 				else
-					local kids = token.children[2].children
+					local kids = token.children[1].children
 					for i = 1, #kids do
 						if kids[i].type then
 							token.type = kids[i].type
 							break
 						end
 					end
-					return
 				end
 			end
+			return
 		elseif token.id == tok.variable then
 			return
 		elseif type_signatures[token.id] ~= nil then
