@@ -751,7 +751,8 @@ commands = {
 			table.sort(res)
 			PUSH(res)
 		else
-			PUSH(VARS[p1])
+			local v = VARS[p1]
+			if v == NULL then PUSH(nil) else PUSH(v) end
 		end
 	end,
 
