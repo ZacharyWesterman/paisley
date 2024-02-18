@@ -44,15 +44,59 @@ func_operations = {
 		end
 		return total
 	end,
-	min = function(values)
-		local least, i = values[1], nil
-		for i = 2, #values do least = math.min(least, values[i]) end
-		return least
+	min = function(values, token, file)
+		if #values == 0 then
+			parse_error(token.line, token.col, 'Function min(...) requires at least one value', file)
+		end
+
+		local target = nil
+		for i = 1, #values do
+			if type(values[i]) == 'table' then
+				for k = 1, #values[i] do
+					if type(values[i][k]) ~= 'number' then
+						parse_error(token.line, token.col, 'All values passed to min(...) must be numeric', file)
+						return 0
+					end
+
+					if target then target = math.min(target, values[i][k]) else target = values[i][k] end
+				end
+			else
+				if type(values[i]) ~= 'number' then
+					parse_error(token.line, token.col, 'All values passed to min(...) must be numeric', file)
+					return 0
+				end
+				if target then target = math.min(target, values[i]) else target = values[i] end
+			end
+		end
+
+		return target
 	end,
-	max = function(values)
-		local most, i = values[1], nil
-		for i = 2, #values do most = math.max(most, values[i]) end
-		return most
+	max = function(values, token, file)
+		if #values == 0 then
+			parse_error(token.line, token.col, 'Function max(...) requires at least one value', file)
+		end
+
+		local target = nil
+		for i = 1, #values do
+			if type(values[i]) == 'table' then
+				for k = 1, #values[i] do
+					if type(values[i][k]) ~= 'number' then
+						parse_error(token.line, token.col, 'All values passed to max(...) must be numeric', file)
+						return 0
+					end
+
+					if target then target = math.max(target, values[i][k]) else target = values[i][k] end
+				end
+			else
+				if type(values[i]) ~= 'number' then
+					parse_error(token.line, token.col, 'All values passed to max(...) must be numeric', file)
+					return 0
+				end
+				if target then target = math.max(target, values[i]) else target = values[i] end
+			end
+		end
+
+		return target
 	end,
 	clamp = function(value, min, max) return math.min(max, math.max(min, value)) end,
 	lerp = function(x, a, b) return a + x * (b - a) end,
@@ -168,6 +212,10 @@ func_operations = {
 	end,
 
 	reverse = function(value)
+		if type(value) == 'string' then
+			return value:reverse()
+		end
+
 		local result, i = {}
 		for i = #value, 1, -1 do
 			table.insert(result, value[i])

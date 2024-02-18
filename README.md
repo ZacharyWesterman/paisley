@@ -262,7 +262,7 @@ Expressions also give access to a full suite of operators and functions, listed 
 - Get the first match of a pattern in the given text: `match(text, pattern) -> string`. If no match is found, a null string is returned.
 - Convert a “seconds since midnight” timestamp into (hour, min, sec, milli): `clocktime(value) -> array`
 - Reduce an array to a single element: `reduce(array, operator) -> any`, e.g. `reduce(1:9, +)` sums the numbers from 1 to 9, resulting in 45
-- Reverse an array: `reverse(array) -> array`
+- Reverse an array or a string: `reverse(array) -> array` or `reverse(string) -> string`
 - Sort an array in ascending order: `sort(array) -> array`
 - Join two arrays together: `merge(array, array) -> array`
 - Replace an element in an array: `update(array, index, value) -> array`

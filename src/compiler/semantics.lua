@@ -121,11 +121,11 @@ type_signatures = {
 		out = 'number',
 	},
 	min = {
-		valid = {{'number'}},
+		valid = {{'number'}, {'array'}},
 		out = 'number',
 	},
 	max = {
-		valid = {{'number'}},
+		valid = {{'number'}, {'array'}},
 		out = 'number',
 	},
 	clamp = {
@@ -241,8 +241,8 @@ type_signatures = {
 		out = 'array',
 	},
 	reverse = {
-		valid = {{'array'}},
-		out = 'array',
+		valid = {{'array'}, {'string'}},
+		out = 1, --output type is the same as that of the first parameter
 	},
 	sort = {
 		valid = {{'array'}},
@@ -752,6 +752,7 @@ function SemanticAnalyzer(tokens, file)
 			local i
 			local g
 			local exp_types, got_types = {}, {}
+			local found_correct_types = false
 
 			if signature.valid then
 				for g = 1, #signature.valid do
@@ -769,7 +770,6 @@ function SemanticAnalyzer(tokens, file)
 					end
 				end
 
-				local found_correct_types = false
 				local expt2 = {}
 				for i = 1, #exp_types do
 					expt2[i] = std.join(exp_types[i], ',')
@@ -796,7 +796,13 @@ function SemanticAnalyzer(tokens, file)
 				end
 			end
 
-			if signature.out then token.type = signature.out end
+			if signature.out then
+				if type(signature.out) == 'number' then
+					if found_correct_types then token.type = got_types[signature.out] end
+				else
+					token.type = signature.out
+				end
+			end
 		end
 
 	end

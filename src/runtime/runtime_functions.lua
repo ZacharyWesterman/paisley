@@ -371,34 +371,34 @@ local functions = {
 
 	--MIN of arbitrary number of arguments
 	function()
-		local v, min, i = POP()
+		local v, target = POP()
 
 		for i = 1, #v do
 			if type(v[i]) == 'table' then
-				local k
 				for k = 1, #v[i] do
-					if not min or min < std.num(v[i][k]) then min = std.num(v[i][k]) end
+					if target then target = math.min(target, std.num(v[i][k])) else target = std.num(v[i][k]) end
 				end
-			elseif not min or min < std.num(v[i]) then
-				min = std.num(v[i])
+			else
+				if target then target = math.min(target, std.num(v[i][k])) else target = std.num(v[i][k]) end
 			end
 		end
+		PUSH(target)
 	end,
 
 	--MAX of arbitrary number of arguments
 	function()
-		local v, max, i = POP()
+		local v, target = POP()
 
 		for i = 1, #v do
 			if type(v[i]) == 'table' then
-				local k
 				for k = 1, #v[i] do
-					if not max or max > std.num(v[i][k]) then min = std.num(v[i][k]) end
+					if target then target = math.max(target, std.num(v[i][k])) else target = std.num(v[i][k]) end
 				end
-			elseif not max or max > std.num(v[i]) then
-				min = std.num(v[i])
+			else
+				if target then target = math.max(target, std.num(v[i][k])) else target = std.num(v[i][k]) end
 			end
 		end
+		PUSH(target)
 	end,
 
 	--SPLIT string into array
@@ -574,10 +574,13 @@ local functions = {
 		})
 	end,
 
-	--REVERSE ARRAY
+	--REVERSE ARRAY OR STRING
 	function()
 		local v = POP()[1]
-		if type(v) ~= 'table' then
+		if type(v) == 'string' then
+			PUSH(v:reverse())
+			return
+		elseif type(v) ~= 'table' then
 			PUSH({v})
 			return
 		end
