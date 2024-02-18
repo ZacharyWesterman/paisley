@@ -656,6 +656,18 @@ function SemanticAnalyzer(tokens, file)
 				token.children[2] = body.children[1]
 			end
 		end
+
+		--Make sure there are no redundant variable assignments
+		if token.children[1].children then
+			local vars = {[token.children[1].text] = true}
+			for i = 1, #token.children[1].children do
+				local child = token.children[1].children[i]
+				if child.text ~= '_' and vars[child.text] then
+					parse_error(child.line, child.col, 'Redundant variable `'..child.text..'` in group assignment. To indicate that this element should be ignored, use an underscore for the variable name.')
+				end
+				vars[child.text] = true
+			end
+		end
 	end)
 
 	--Tidy up WHILE loops and IF/ELIF statements (replace command with cmd contents)
@@ -868,13 +880,42 @@ function SemanticAnalyzer(tokens, file)
 				end
 			end
 
-			if not ch then
-				set_var(var.text, 'null')
-				var.type = 'null'
-				deduced_variable_types = true
-			elseif ch.type then
-				set_var(var.text, ch.type)
-				var.type = ch.type
+			local tp = 'null'
+			if ch and ch.type then tp = ch.type end
+
+			if var.children then
+				local vars = {var.text}
+				for i = 1, #var.children do
+					table.insert(vars, var.children[i].text)
+				end
+
+				for i = 1, #vars do
+					tp = nil
+					if ch then
+						if ch.id == tok.array_concat then
+							if ch.children[i] and ch.children[i].type then
+								tp = ch.children[i].type
+							end
+						elseif ch.id == tok.lit_array then
+							tp = std.type(ch.value[i])
+						else
+							tp = 'any'
+						end
+					else
+						tp = 'null'
+					end
+
+					if tp ~= nil then
+						local child = var
+						if i > 1 then child = var.children[i-1] end
+						set_var(child.text, tp)
+						child.type = tp
+						deduced_variable_types = true
+					end
+				end
+			else
+				set_var(var.text, tp)
+				var.type = tp
 				deduced_variable_types = true
 			end
 		elseif token.id == tok.variable then

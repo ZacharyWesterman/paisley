@@ -308,10 +308,32 @@ function generate_bytecode(root, file)
 					emit(bc.call, 'implode', 3)
 					emit(bc.call, 'update')
 				end
-			else
+			elseif token.children[2] then
 				codegen_rules.recur_push(token.children[2])
+			else
+				emit(bc.push, nil)
 			end
-			emit(bc.set, token.children[1].text)
+
+			if token.children[1].children then
+				--Multi-var assignment is basically just getting the nth element of the array
+				local vars = {token.children[1].text}
+				for i = 1, #token.children[1].children do
+					table.insert(vars, token.children[1].children[i].text)
+				end
+
+				for i = 1, #vars do
+					if token.children[2] then
+						if i < #vars then emit(bc.copy, 0) end
+						emit(bc.push, i)
+						emit(bc.call, 'arrayindex')
+					else
+						if i > 1 then emit(bc.push, nil) end
+					end
+					emit(bc.set, vars[i])
+				end
+			else
+				emit(bc.set, token.children[1].text)
+			end
 
 			if token.text == 'initial' then
 				emit(bc.label, label2)

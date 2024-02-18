@@ -573,6 +573,7 @@ local rules = {
 		id = tok.var_assign,
 		text = 1,
 		keep = {1, 2},
+		not_after = {tok.var_assign},
 		onmatch = function(token, file)
 			local t = token.children[1]
 			if t.children == nil then t.children = {} end
@@ -596,7 +597,7 @@ local rules = {
 		text = 1,
 		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison, tok.op_assign},
 		onmatch = function(token, file)
-			parse_error(token.line, token.col, 'Incomplete variable initialization, `'.. token.children[1].text ..'`must have a value', file)
+			parse_error(token.line, token.col, 'Incomplete variable initialization, `'.. token.children[1].text ..'` must have a value', file)
 		end,
 	},
 
@@ -607,6 +608,11 @@ local rules = {
 		keep = {2, 5, 3},
 		text = 1,
 		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
+		onmatch = function(token, file)
+			if token.children[1].children then
+				parse_error(token.children[3].line, token.children[3].col, 'Expected "=" after group variable assignment, got expression', file)
+			end
+		end,
 	},
 
 	--APPEND variable assignment
@@ -616,6 +622,11 @@ local rules = {
 		keep = {2, 6, 3},
 		text = 1,
 		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
+		onmatch = function(token, file)
+			if token.children[1].children then
+				parse_error(token.children[3].line, token.children[3].col, 'Expected "=" after group variable assignment, got expression', file)
+			end
+		end,
 	},
 
 	--INVALID variable assignment
