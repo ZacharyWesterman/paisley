@@ -738,6 +738,28 @@ function SemanticAnalyzer(tokens, file)
 		if token.value ~= nil or token.id == tok.lit_null then
 			token.type = std.type(token.value)
 			return
+		elseif token.id == tok.index then
+			local t1, t2 = token.children[1].type, token.children[2].type
+			if t1 and t2 then
+				if t1 ~= 'string' and t1 ~= 'array' then
+					parse_error(token.line, token.col, 'Cannot index a value of type `'..t1..'`. Type must be `string` or `array`', file)
+					return
+				end
+
+				if t2 == 'array' then
+					token.type = 'array'
+					return
+				else
+					local kids = token.children[2].children
+					for i = 1, #kids do
+						if kids[i].type then
+							token.type = kids[i].type
+							break
+						end
+					end
+					return
+				end
+			end
 		elseif token.id == tok.variable then
 			return
 		elseif type_signatures[token.id] ~= nil then
