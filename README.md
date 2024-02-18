@@ -100,7 +100,36 @@ let var = 1 2 3 4 5
 let var{} = 6
 ```
 
+You can also assign multiple variables at the same time.
+```
+let a b c = 1 2 3
+
+#Alternately, you can assign variables from values in an array
+let list = {1:9}
+let a b c = {list}
+```
+
+To simply define a variable as null, you can just leave off the expression. The following all initialize variables as null.
+```
+let var
+let a b c
+let foo = {null}
+```
+
 **REMEMBER:** All variables are global, so any “re-definition” of a variable just sets it to the new value.
+
+### Variable initialization
+
+There is a special keyword for setting a variable's value if it hasn't been assigned already.
+```
+initial variable = {value}
+```
+Unlike the `let` keyword, `initial` can only define one variable, and it cannot insert or update sub-elements in arrays. The use of `initial` is instead a concise way to set a default value for un-initialized variables. Logically, it is identical to the following:
+```
+if {not (variable exists)} then
+	let variable = {value}
+end
+```
 
 ## Subroutines:
 Subroutines are a lot like functions, except they do not take any parameters, and do not return any value.
@@ -268,6 +297,7 @@ Expressions also give access to a full suite of operators and functions, listed 
 - Replace an element in an array: `update(array, index, value) -> array`
 - Insert an element in an array: `insert(array, index, value) -> array`
 - Delete an element from an array: `delete(array, index) -> array`
+- Generate the SHA256 hash of a string: `hash(string) -> string`
 
 Note that functions can be called in one of two ways:
 1. The usual syntax, e.g. `split(var, delim)`
