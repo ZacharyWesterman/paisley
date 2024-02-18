@@ -189,13 +189,6 @@ std = {
 		return result
 	end,
 
-	--Check if a given string is numeric
-	isnumber = function(text)
-		if type(text) == 'number' then return true end
-		if type(text) ~= 'string' then return false end
-		if tonumber(text) then return true else return false end
-	end,
-
 	--Generate a sha256 hash of a given string
 	hash = SHA256,
 }

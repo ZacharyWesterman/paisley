@@ -154,8 +154,9 @@ func_operations = {
 	filter = function(text, pattern)
 		return std.filter(text, pattern)
 	end,
-	isnumber = function(text)
-		return std.isnumber(text)
+	match = function(text, pattern)
+		local m = text:match(pattern)
+		if m then return m else return '' end
 	end,
 	clocktime = function(value)
 		return {

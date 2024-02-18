@@ -45,7 +45,7 @@ builtin_funcs = {
 	rpad = 3,
 	hex = 1,
 	filter = 2,
-	isnumber = 1,
+	match = 2,
 	clocktime = 1,
 	reverse = 1,
 	sort = 1,
@@ -232,9 +232,9 @@ type_signatures = {
 		valid = {{'string', 'string'}},
 		out = 'string',
 	},
-	isnumber = {
-		valid = {{'string'}},
-		out = 'boolean',
+	match = {
+		valid = {{'string', 'string'}},
+		out = 'string',
 	},
 	clocktime = {
 		valid = {{'number'}},

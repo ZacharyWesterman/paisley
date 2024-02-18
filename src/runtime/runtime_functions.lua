@@ -556,10 +556,11 @@ local functions = {
 		PUSH(std.filter(std.str(v[1]), std.str(v[2])))
 	end,
 
-	--CHECK IF A STRING IS NUMERIC
+	--GET NEXT PATTERN MATCH
 	function()
 		local v = POP()
-		PUSH(std.isnumber(v[1]))
+		local m = std.str(v[1]):match(std.str(v[2]))
+		if m then PUSH(m) else PUSH('') end
 	end,
 
 	--SPLIT A NUMBER INTO CLOCK TIME

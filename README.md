@@ -259,7 +259,7 @@ Expressions also give access to a full suite of operators and functions, listed 
 - Right-pad a string with a given character: `rpad(string, character, to_width) -> string`
 - Convert a number to a hexadecimal string: `hex(value) -> string`
 - Remove all characters that do not match the given pattern: `filter(text, pattern) -> string`
-- Check if a string is numeric: `isnumber(text) -> boolean`
+- Get the first match of a pattern in the given text: `match(text, pattern) -> string`. If no match is found, a null string is returned.
 - Convert a “seconds since midnight” timestamp into (hour, min, sec, milli): `clocktime(value) -> array`
 - Reduce an array to a single element: `reduce(array, operator) -> any`, e.g. `reduce(1:9, +)` sums the numbers from 1 to 9, resulting in 45
 - Reverse an array: `reverse(array) -> array`
