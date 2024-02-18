@@ -470,10 +470,7 @@ local functions = {
 	--CAMEL CASE
 	function()
 		local v = std.str(POP())
-		if #v > 0 then
-			v = v:sub(1,1):upper() .. v:sub(2,#v):lower()
-		end
-		PUSH(v)
+		PUSH(v:gsub('(%l)(%w*)', function(x,y) return x:upper()..y end))
 	end,
 
 	--STRING REPLACE

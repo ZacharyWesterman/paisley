@@ -103,8 +103,7 @@ func_operations = {
 		return std.str(a):lower()
 	end,
 	camel = function(a)
-		if #a == 0 then return '' end
-		return a:sub(1,1):upper() .. a:sub(2,#a):lower()
+		return a:gsub('(%l)(%w*)', function(x,y) return x:upper()..y end)
 	end,
 	replace = function(subject, search, replace)
 		--Not really memory efficient, but good enough.

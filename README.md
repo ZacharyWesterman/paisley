@@ -249,7 +249,7 @@ Expressions also give access to a full suite of operators and functions, listed 
 - Find index of value in an array: `index(array, value) -> number` (returns 0 if value was not found)
 - Convert string to lowercase: `lower(text) -> string`
 - Convert string to uppercase: `upper(text) -> string`
-- Capitalize the first letter: `camel(text) -> string`
+- Capitalize the first letter of every word: `camel(text) -> string`
 - Replace all occurrences of a sub-string: `replace(text, search, replace) -> string`
 - Serialize data to a JSON string: `json_encode(data) -> string`
 - Deserialize data from a JSON string: `json_decode(text) -> any`
