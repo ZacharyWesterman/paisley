@@ -372,7 +372,10 @@ local functions = {
 	end,
 
 	--MORE MATH FUNCTIONS
-	mathfunc('pow'),
+	function()
+		local b, a = std.num(POP()), std.num(POP())
+		if a == 0 then PUSH(0) else PUSH(a ^ b) end
+	end,
 
 	--MIN of arbitrary number of arguments
 	function()

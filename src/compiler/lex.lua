@@ -31,6 +31,7 @@ opers = {
 	['//'] = tok.op_idiv,
 	['/'] = tok.op_div,
 	['%'] = tok.op_mod,
+	['^'] = tok.op_exponent,
 	[':'] = tok.op_slice,
 	['#'] = tok.op_count,
 	['not'] = tok.op_not,

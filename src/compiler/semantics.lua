@@ -14,7 +14,6 @@ builtin_funcs = {
 	bytes = 2,
 	sum = -1, --at least 1 param
 	mult = -1,
-	pow = 2,
 	min = -1,
 	max = -1,
 	clamp = 3, --clamp(a, b, x) = min(b, max(a, x))
@@ -116,10 +115,10 @@ type_signatures = {
 		valid = {{'number', 'array'}},
 		out = 'number',
 	},
-	pow = {
-		valid = {{'number'}},
-		out = 'number',
-	},
+	-- pow = {
+	-- 	valid = {{'number'}},
+	-- 	out = 'number',
+	-- },
 	min = {
 		valid = {{'number'}, {'array'}},
 		out = 'number',
@@ -290,6 +289,10 @@ type_signatures = {
 	},
 	[tok.multiply] = {
 		valid = {{'number'}, {'array'}},
+		out = 'number',
+	},
+	[tok.exponent] = {
+		valid = {{'number'}},
 		out = 'number',
 	},
 	[tok.boolean] = {
@@ -970,10 +973,10 @@ function SemanticAnalyzer(tokens, file)
 		deduced_variable_types = false
 
 		--First pass at deducing all types
-		recurse(root, {tok.string_open, tok.add, tok.multiply, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.inline_command, tok.command}, nil, type_checking)
+		recurse(root, {tok.string_open, tok.add, tok.multiply, tok.exponent, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.inline_command, tok.command}, nil, type_checking)
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
-		recurse(root, {tok.add, tok.multiply, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice, tok.string_open, tok.index, tok.ternary, tok.list_comp}, nil, fold_constants)
+		recurse(root, {tok.add, tok.multiply, tok.exponent, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice, tok.string_open, tok.index, tok.ternary, tok.list_comp}, nil, fold_constants)
 
 		--Set any variables we can
 		recurse(root, {tok.for_stmt, tok.let_stmt, tok.variable}, variable_assignment, variable_unassignment)
@@ -982,7 +985,7 @@ function SemanticAnalyzer(tokens, file)
 	end
 
 	--One last pass at deducing all types (after any constant folding)
-	recurse(root, {tok.string_open, tok.add, tok.multiply, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.variable, tok.inline_command, tok.command}, nil, type_checking)
+	recurse(root, {tok.string_open, tok.add, tok.multiply, tok.exponent, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.variable, tok.inline_command, tok.command}, nil, type_checking)
 
 
 	--BREAK and CONTINUE statements are only allowed to have up to a single CONSTANT INTEGER operand

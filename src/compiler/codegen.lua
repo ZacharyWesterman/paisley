@@ -410,6 +410,11 @@ function generate_bytecode(root, file)
 			end
 		end,
 
+		--EXPONENT OPERATIONS
+		[tok.exponent] = function(token, file)
+			codegen_rules.binary_op(token, 'pow')
+		end,
+
 		--MULTIPLICATION OPERATIONS
 		[tok.multiply] = function(token, file)
 			if token.text == '//' then

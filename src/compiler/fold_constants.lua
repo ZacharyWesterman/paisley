@@ -100,7 +100,7 @@ func_operations = {
 	end,
 	clamp = function(value, min, max) return math.min(max, math.max(min, value)) end,
 	lerp = function(x, a, b) return a + x * (b - a) end,
-	pow = function(a, b) return a ^ b end,
+	-- pow = function(a, b) return a ^ b end,
 	bool = function(data) return std.bool(data) end,
 	str = function(data) return std.str(data) end,
 	num = function(data) return std.num(data) end,
@@ -339,6 +339,7 @@ function fold_constants(token)
 				elseif operator == '/' then result = std.num(result) / std.num(v)
 				elseif operator == '//' then result = math.floor(std.num(result) / std.num(v))
 				elseif operator == '%' then result = std.num(result) % std.num(v)
+				elseif operator == '^' then result = std.num(result) ^ std.num(v)
 				elseif operator == 'and' then result = std.bool(result) and std.bool(v)
 				elseif operator == 'or' then result = std.bool(result) or std.bool(v)
 				elseif operator == 'xor' then result = (std.bool(result) or std.bool(v)) and not (std.bool(result) and std.bool(v))
@@ -369,7 +370,7 @@ function fold_constants(token)
 	end
 
 
-	if token.id == tok.add or token.id == tok.multiply then
+	if token.id == tok.add or token.id == tok.multiply or token.id == tok.exponent then
 		--Fold the two values into a single value
 		local result
 		if operator == '+' then result = number_op(c1.value, c2.value, function(a, b) return a + b end)
@@ -378,6 +379,7 @@ function fold_constants(token)
 		elseif operator == '/' then result = number_op(c1.value, c2.value, function(a, b) return a / b end)
 		elseif operator == '//' then result = number_op(c1.value, c2.value, function(a, b) return math.floor(c1.value / c2.value) end)
 		elseif operator == '%' then result = number_op(c1.value, c2.value, function(a, b) return a % b end)
+		elseif operator == '^' then result = number_op(c1.value, c2.value, function(a, b) return a ^ b end)
 		else
 			parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
 		end

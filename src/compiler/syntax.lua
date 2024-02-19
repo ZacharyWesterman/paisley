@@ -112,6 +112,25 @@ local rules = {
 		not_before = {tok.op_dot},
 	},
 
+	--Exponentiation
+	{
+		match = {{tok.value, tok.exponent, tok.comparison}, {tok.op_exponent}, {tok.value}},
+		id = tok.exponent,
+		not_after = {tok.op_exponent, tok.op_dot},
+		keep = {1, 3},
+		text = 2,
+		not_before = {tok.op_dot},
+	},
+
+	--If no other exponent was detected, just promote the value.
+	--This is to keep exponent as higher precedence than multiplication.
+	{
+		match = {{tok.value}},
+		id = tok.multiply,
+		meta = true,
+		not_before = {tok.op_dot},
+	},
+
 	--Multiplication
 	{
 		match = {{tok.value, tok.multiply, tok.comparison}, {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod}, {tok.value, tok.multiply, tok.comparison}},
@@ -133,7 +152,7 @@ local rules = {
 
 	--Addition (lower precedence than multiplication)
 	{
-		match = {{tok.multiply, tok.add, tok.comparison}, {tok.op_plus, tok.op_minus}, {tok.multiply, tok.add, tok.comparison}},
+		match = {{tok.exponent, tok.multiply, tok.add, tok.comparison}, {tok.op_plus, tok.op_minus}, {tok.exponent, tok.multiply, tok.add, tok.comparison}},
 		id = tok.add,
 		not_before = {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod},
 		not_after = {tok.op_plus, tok.op_minus, tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod, tok.op_dot},
@@ -144,7 +163,7 @@ local rules = {
 	--If no other addition was detected, just promote the value to add status.
 	--This is to keep add as higher precedence than boolean.
 	{
-		match = {{tok.multiply}},
+		match = {{tok.exponent, tok.multiply}},
 		id = tok.add,
 		meta = true,
 	},
