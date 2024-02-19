@@ -233,6 +233,9 @@ Expressions also give access to a full suite of operators and functions, listed 
 - string concatenation: There is no string concatenation operator. Seriously, two values next to each other, without an operator between them, results in string concatenation.
 - ternary operator, `val1 if expression else val2`. Like Python’s ternary syntax, this will result in `val1` if `expression` evaluates to true, otherwise it will result in `val2`.
 
+An extra note on slices: when slicing an array or a string, it's possible to replace the second number with a colon, to indicate that the slice should go from the start index all the way to the end of the string or array.
+So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` would result in `(4,3,2,1)`, etc.
+
 ### Allowed values:
 - hexadecimal numbers, `0xFFFF`
 - binary numbers, `0b1111`
