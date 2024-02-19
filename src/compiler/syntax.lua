@@ -682,7 +682,7 @@ local rules = {
 		onmatch = function(token)
 			--Catch possible dead ends where line endings come before any commands.
 			local i, _
-			for _, i in ipairs({'text', 'line', 'col', 'id', 'meta_id'}) do
+			for _, i in ipairs({'text', 'line', 'col', 'id', 'meta_id', 'value'}) do
 				token[i] = token.children[2][i]
 			end
 			token.children = token.children[2].children

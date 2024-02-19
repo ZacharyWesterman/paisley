@@ -477,7 +477,7 @@ function SemanticAnalyzer(tokens, file)
 
 			--Lambda is defined, so replace it with the appropriate node
 			local lambda_node, i, _ = lambdas[token.text][#lambdas[token.text]].node
-			for _, i in ipairs({'text', 'line', 'col', 'id', 'meta_id', 'value'}) do
+			for _, i in ipairs({'text', 'line', 'col', 'id', 'value'}) do
 				token[i] = lambda_node[i]
 			end
 			token.children = lambda_node.children
@@ -509,7 +509,7 @@ function SemanticAnalyzer(tokens, file)
 	--Replace lambda definitions with the appropriate node.
 	recurse(root, {tok.lambda}, nil, function(token)
 		local lambda_node, i, _ = token.children[1]
-		for _, i in ipairs({'text', 'line', 'col', 'id', 'meta_id'}) do
+		for _, i in ipairs({'text', 'line', 'col', 'id', 'value'}) do
 			token[i] = lambda_node[i]
 		end
 		token.children = lambda_node.children
@@ -625,10 +625,9 @@ function SemanticAnalyzer(tokens, file)
 	recurse(root, {tok.parentheses, tok.expression}, nil, function(token)
 		if not token.children or #token.children ~= 1 then return end
 
-		local key, value
 		local child = token.children[1]
-		for key, value in pairs(child) do
-			token[key] = value
+		for _, key in ipairs({'value', 'id', 'text', 'line', 'col'}) do
+			token[key] = child[key]
 		end
 		token.children = child.children
 	end)
@@ -686,7 +685,7 @@ function SemanticAnalyzer(tokens, file)
 			if #token.children[2].children > 1 then
 				token.children[2].id = tok.array_concat
 			else
-				for _, i in ipairs({'text', 'line', 'col', 'id', 'meta_id'}) do
+				for _, i in ipairs({'text', 'line', 'col', 'id', 'value'}) do
 					token.children[2][i] = token.children[2].children[1][i]
 				end
 				token.children[2].children = token.children[2].children[1].children
@@ -733,6 +732,10 @@ function SemanticAnalyzer(tokens, file)
 				end
 			end
 			return
+		end
+
+		if token.id == tok.lit_number then
+			print(token.value)
 		end
 
 		if token.value ~= nil or token.id == tok.lit_null then
