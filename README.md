@@ -220,6 +220,7 @@ Expressions also give access to a full suite of operators and functions, listed 
 - division, `/`
 - *integer* division, `//` (divide then round down)
 - remainder/modulo, `%`
+- exponentiation, `^`, e.g. `a^3` raises `a` to the 3rd power.
 - boolean operators, `and`, `or`, `xor`, `not`
 - comparison, `>`, `>=`, `<`, `<=`
 - comparison (equality), `=` or `==` (both are the same)
@@ -261,7 +262,6 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Convert a list of bytes into a number: `frombytes(array) -> number`
 - Sum of N values: `sum(a,b,c,...) or sum(array) -> number`
 - Multiply N values: `mult(a,b,c,...) or mult(array) -> number`
-- Exponent/Power: `pow(value, power) -> number`
 - Minimum of N values: `min(a,b,c,...) or min(array) -> number`
 - Maximum of N values: `max(a,b,c,...) or max(array) -> number`
 - Keep value inside range: `clamp(number, min_value, max_value) -> number`
