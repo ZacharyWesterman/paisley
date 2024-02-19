@@ -266,7 +266,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Maximum of N values: `max(a,b,c,...) or max(array) -> number`
 - Keep value inside range: `clamp(number, min_value, max_value) -> number`
 - Linear interpolation of two numbers: `lerp(ratio, start, stop) -> number`
-- Split string into array: `split(value, delimiter) -> array`
+- Split string into array: `split(value, delimiter) -> array`. Note that unlike in Lua, the delimiter is just a string, not a pattern.
 - Merge array into string: `join(values, delimiter) -> string`
 - Get data type: `type(value) -> string`. Output will be one of "null", "boolean", "number", "string", or "array"
 - Convert to boolean: `bool(value)`

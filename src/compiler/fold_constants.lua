@@ -245,6 +245,8 @@ func_operations = {
 		table.remove(array, index)
 		return array
 	end,
+
+	hash = std.hash,
 }
 
 local function number_op(v1, v2, operator)
