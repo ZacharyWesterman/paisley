@@ -910,11 +910,7 @@ function generate_bytecode(root, file)
 				codegen_rules.recur_push(token.children[i])
 			end
 
-			if has_slices then
-				emit(bc.call, 'superimplode', #token.children)
-			else
-				emit(bc.call, 'implode', #token.children)
-			end
+			emit(bc.call, 'implode', #token.children)
 			emit(bc.call, token.text)
 		end,
 
