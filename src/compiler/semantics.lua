@@ -739,6 +739,11 @@ function SemanticAnalyzer(tokens, file)
 			token.type = std.type(token.value)
 			return
 		elseif token.id == tok.index then
+			local c2 = token.children[2]
+			if c2.id == tok.array_slice and #c2.children == 1 then
+				c2.unterminated = true
+			end
+
 			local t1, t2 = token.children[1].type, token.children[2].type
 			if t1 and t2 then
 				if t1 ~= 'string' and t1 ~= 'array' then

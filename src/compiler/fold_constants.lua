@@ -279,6 +279,11 @@ function fold_constants(token)
 		end
 	end
 
+	if token.id == tok.index and c2.unterminated and not_const(c1) then
+		c2.value = nil
+		return
+	end
+
 	--Ternary operators are unique: if the condition is constant, they can be folded
 	if token.id == tok.ternary then
 		local child
@@ -534,6 +539,15 @@ function fold_constants(token)
 		token.children = nil
 
 	elseif token.id == tok.array_slice then
+		token.type = 'array'
+		if #token.children == 1 then
+			if not token.unterminated then
+				parse_error(token.line, token.col, 'Unterminated slices can only be used when indexing an array or string, e.g. `value[begin_index:]`, and must be the only expression inside the brackets', file)
+			end
+			token.value = c1.value
+			return
+		end
+
 		local start, stop, i = token.children[1].value, token.children[2].value
 
 		--For the sake of output bytecode size, don't fold if the array slice is too large!
@@ -570,10 +584,22 @@ function fold_constants(token)
 
 	elseif token.id == tok.index then
 		local val = c1.value
+		local is_string = false
 		if type(val) == 'string' then
+			is_string = true
 			val = std.split(val, '')
 		elseif type(val) ~= 'table' then
 			parse_error(token.line, token.col, 'Cannot get subset of a value of type "'..std.type(val)..'"', file)
+		end
+
+		if c2.unterminated then
+			--can only happen if this is a non-terminated array slice
+			--in this case, slice is from the start pos to the full length of this token value.
+			local result = {}
+			for i = c2.value, #val do
+				table.insert(result, i)
+			end
+			c2.value = result
 		end
 
 		local result
@@ -592,8 +618,15 @@ function fold_constants(token)
 				end
 				table.insert(result, val[ix])
 			end
-			token.text = '[]'
-			token.id = tok.lit_array
+
+			if is_string then
+				token.text = '"'
+				result = std.join(result, '')
+				token.id = tok.string_open
+			else
+				token.text = '[]'
+				token.id = tok.lit_array
+			end
 		elseif type(c2.value) ~= 'number' then
 			parse_error(token.line, token.col, 'Cannot use a non-number value as an array index', file)
 		else

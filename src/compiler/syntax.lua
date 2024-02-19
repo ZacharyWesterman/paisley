@@ -156,6 +156,12 @@ local rules = {
 		keep = {1, 3},
 		text = 2,
 	},
+	{ --non-terminated array slicing
+		match = {{tok.add, tok.array_slice, tok.comparison}, {tok.op_slice}, {tok.op_slice}},
+		id = tok.array_slice,
+		keep = {1},
+		text = 2,
+	},
 	{
 		match = {{tok.add}},
 		id = tok.array_slice,

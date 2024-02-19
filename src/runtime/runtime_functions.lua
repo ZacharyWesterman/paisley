@@ -184,7 +184,11 @@ local functions = {
 	--ARRAY INDEX
 	function()
 		local index, data, i = POP(), POP()
-		if type(data) ~= 'table' then data = std.split(std.str(data), '') end
+		local is_string = false
+		if type(data) ~= 'table' then
+			is_string = true
+			data = std.split(std.str(data), '')
+		end
 		if type(index) ~= 'table' then
 			PUSH(data[std.num(index)])
 		else
@@ -192,6 +196,7 @@ local functions = {
 			for i = 1, #index do
 				table.insert(result, data[std.num(index[i])])
 			end
+			if is_string then result = std.join(result, '') end
 			PUSH(result)
 		end
 	end,
