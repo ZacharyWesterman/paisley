@@ -611,7 +611,6 @@ function fold_constants(token)
 			for i = 1, #c2.value do
 				local ix = c2.value[i]
 				if type(ix) ~= 'number' then
-					print(std.debug_str(c2.value))
 					parse_error(token.line, token.col, 'Cannot use a non-number value as an array index', file)
 				end
 

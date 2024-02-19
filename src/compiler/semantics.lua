@@ -734,10 +734,6 @@ function SemanticAnalyzer(tokens, file)
 			return
 		end
 
-		if token.id == tok.lit_number then
-			print(token.value)
-		end
-
 		if token.value ~= nil or token.id == tok.lit_null then
 			token.type = std.type(token.value)
 			return
