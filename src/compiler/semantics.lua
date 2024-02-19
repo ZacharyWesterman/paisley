@@ -756,13 +756,8 @@ function SemanticAnalyzer(tokens, file)
 				elseif t2 == 'array' then
 					token.type = t2
 				else
-					local kids = token.children[1].children
-					for i = 1, #kids do
-						if kids[i].type then
-							token.type = kids[i].type
-							break
-						end
-					end
+					--We don't store what TYPE of arrays are being stored, so result of non-const array index has to be "any"
+					token.type = 'any'
 				end
 			end
 			return
@@ -914,7 +909,7 @@ function SemanticAnalyzer(tokens, file)
 				end
 			end
 
-			local tp = 'null'
+			local tp = nil
 			if ch and ch.type then tp = ch.type end
 
 			if var.children then
