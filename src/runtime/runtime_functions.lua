@@ -34,10 +34,17 @@ local function PUSH(value)
 		table.insert(STACK, NULL)
 	elseif type(value) == 'table' then
 		--DEEP COPY tables into the stack. It's slower, but it prevents data from randomly mutating!
-		local result, i = {}
-		for i = 1, #value do
-			table.insert(result, value[i])
+		local result, i = setmetatable({}, getmetatable(value))
+		local meta = getmetatable(result)
+
+		if meta and not meta.is_array then
+			for key, val in pairs(value) do result[key] = val end
+		else
+			for i = 1, #value do
+				table.insert(result, value[i])
+			end
 		end
+
 		table.insert(STACK, result)
 	else
 		table.insert(STACK, value)
@@ -189,16 +196,21 @@ local functions = {
 			is_string = true
 			data = std.split(std.str(data), '')
 		end
+		local is_array = getmetatable(data)
+		if is_array then is_array = is_array.is_array end
+
+		local result
 		if type(index) ~= 'table' then
-			PUSH(data[std.num(index)])
+			result = data[index]
+			-- if is_array then result = data[std.num(index)] else result = data[std.str(index)] end
 		else
-			local result = {}
+			result = {}
 			for i = 1, #index do
 				table.insert(result, data[std.num(index[i])])
 			end
 			if is_string then result = std.join(result, '') end
-			PUSH(result)
 		end
+		PUSH(result)
 	end,
 
 	--ARRAYSLICE
@@ -858,7 +870,6 @@ commands = {
 	--COPY THE NTH STACK ELEMENT ONTO THE STACK AGAIN (BACKWARDS FROM TOP)
 	[10] = function(line, p1, p2)
 		PUSH(STACK[#STACK - p1])
-		-- error('AGGA')
 	end,
 
 	--DELETE VARIABLE
