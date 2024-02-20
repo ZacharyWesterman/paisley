@@ -410,7 +410,7 @@ function SemanticAnalyzer(tokens, file)
 		local _
 		local kids = {}
 		for _, child in ipairs(token.children) do
-			if child.id == tok.array_concat then
+			if child.id == tok.array_concat or child.id == tok.object then
 				local __
 				local kid
 				for __, kid in ipairs(child.children) do
@@ -424,7 +424,7 @@ function SemanticAnalyzer(tokens, file)
 		local is_object = false
 		local is_array = false
 		for _, child in ipairs(kids) do
-			if child.id ~= tok.array_concat and not child.errored then
+			if child.id ~= tok.array_concat and child.id ~= tok.object and not child.errored then
 				if child.id == tok.key_value_pair then
 					is_object = true
 					child.inside_object = true
@@ -442,7 +442,24 @@ function SemanticAnalyzer(tokens, file)
 			end
 		end
 
+		if is_object then token.id = tok.object end
 		token.children = kids
+	end)
+
+	--Extract key-value pairs into objects
+	recurse(root, {tok.key_value_pair}, nil, function(token)
+		if not token.inside_object then
+			local new_token = {
+				id = token.id,
+				line = token.line,
+				col = token.col,
+				text = token.text,
+				children = token.children,
+			}
+			token.id = tok.object
+			token.text = ','
+			token.children = {new_token}
+		end
 	end)
 
 	--Make a list of all subroutines, and check that return statements are only in subroutines

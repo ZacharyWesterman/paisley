@@ -122,6 +122,7 @@ tok = {
 
 	lit_array = k(), --This only gets created during constant folding
 	lit_object = k(),
+	object = k(),
 }
 
 --[[minify-delete]]
