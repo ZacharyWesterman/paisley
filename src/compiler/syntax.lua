@@ -193,7 +193,7 @@ local rules = {
 		id = tok.array_concat,
 		keep = {1, 3},
 		text = 2,
-		not_before = {tok.index_open},
+		not_before = {tok.index_open, tok.op_arrow},
 		not_after = {tok.op_dot, tok.op_arrow},
 	},
 	{
