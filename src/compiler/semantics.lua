@@ -420,6 +420,18 @@ function SemanticAnalyzer(tokens, file)
 				table.insert(kids, child)
 			end
 		end
+
+		local is_object = false
+		local is_array = false
+		for _, child in ipairs(kids) do
+			if child.id == tok.key_value_pair then is_object = true else is_array = true end
+
+			if is_object and is_array then
+				parse_error(child.line, child.col, 'Ambiguous mixture of object and array constructs. Objects require key-value pairs for every element (e.g. `"key" => value`)')
+				break
+			end
+		end
+
 		token.children = kids
 	end)
 
