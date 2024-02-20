@@ -41,6 +41,7 @@ opers = {
 	['in'] = tok.op_in,
 	['exists'] = tok.op_exists,
 	['like'] = tok.op_like,
+	['=>'] = tok.op_arrow,
 	['>='] = tok.op_ge,
 	['>'] = tok.op_gt,
 	['<='] = tok.op_le,

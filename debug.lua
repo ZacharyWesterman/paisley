@@ -1,8 +1,36 @@
 #!/usr/bin/env lua
+
 --Set up vars for testing
-V1 = io.read('*all') --input expression
 V2 = nil --filename
 V3 = nil --non-builtin commands
+
+DEBUG_EXTRA = false
+for i, v in ipairs(arg) do
+	if v:sub(1,1) == '-' and v ~= '-' then
+		if v == '--extra' then
+			DEBUG_EXTRA = true
+		end
+	else
+		V2 = v
+	end
+end
+
+if V2 == nil then
+	error('Error: No input file given. Use `-` to read from stdin, or re-run with `--help` to see all options.')
+end
+
+if V2 == '-' then
+	V2 = nil
+	V1 = io.read('*all') --program text
+else
+	--Read from file
+	local file = io.open(V2)
+	if file then
+		V1 = file:read('*all')
+	else
+		error('Error: Cannot open file `'..V2..'`.')
+	end
+end
 
 COMPILER_DEBUG = true
 V3 = {

@@ -191,4 +191,12 @@ std = {
 
 	--Generate a sha256 hash of a given string
 	hash = SHA256,
+
+	object = function()
+		return setmetatable({}, {is_array = false})
+	end,
+
+	array = function()
+		return setmetatable({}, {is_array = true})
+	end,
 }

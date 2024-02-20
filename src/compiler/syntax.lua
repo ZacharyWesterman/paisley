@@ -81,7 +81,7 @@ local rules = {
 
 	--Treat all literals the same.
 	{
-		match = {{tok.lit_number, tok.lit_boolean, tok.lit_null, tok.negate, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat, tok.lambda, tok.lambda_ref, tok.ternary, tok.list_comp}},
+		match = {{tok.lit_number, tok.lit_boolean, tok.lit_null, tok.negate, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat, tok.lambda, tok.lambda_ref, tok.ternary, tok.list_comp, tok.lit_object, tok.key_value_pair}},
 		id = tok.value,
 		meta = true,
 	},
@@ -194,7 +194,7 @@ local rules = {
 		keep = {1, 3},
 		text = 2,
 		not_before = {tok.index_open},
-		not_after = {tok.op_dot},
+		not_after = {tok.op_dot, tok.op_arrow},
 	},
 	{
 		match = {{tok.array_slice}},
@@ -206,11 +206,28 @@ local rules = {
 		id = tok.array_concat,
 		keep = {1},
 		text = 2,
-		not_before = {tok.lit_boolean, tok.lit_null, tok.lit_number, tok.string_open, tok.command_open, tok.expr_open, tok.array_slice, tok.array_concat, tok.comparison, tok.paren_open, tok.index_open, tok.parentheses, tok.variable, tok.func_call, tok.index, tok.op_plus, tok.op_minus, tok.op_times, tok.op_idiv, tok.op_div, tok.op_mod, tok.op_and, tok.op_or, tok.op_xor, tok.op_ge, tok.op_gt, tok.op_le, tok.op_lt, tok.op_eq, tok.op_ne},
+		not_before = {tok.lit_boolean, tok.lit_null, tok.lit_number, tok.string_open, tok.command_open, tok.expr_open, tok.array_slice, tok.array_concat, tok.comparison, tok.paren_open, tok.index_open, tok.parentheses, tok.variable, tok.func_call, tok.index, tok.op_plus, tok.op_minus, tok.op_times, tok.op_idiv, tok.op_div, tok.op_mod, tok.op_and, tok.op_or, tok.op_xor, tok.op_ge, tok.op_gt, tok.op_le, tok.op_lt, tok.op_eq, tok.op_ne, tok.op_arrow},
+		not_after = {tok.op_arrow},
 	},
 	{
 		match = {{tok.op_comma}},
 		id = tok.array_concat,
+		keep = {},
+		text = 1,
+		only_after = {tok.expr_open, tok.paren_open},
+	},
+
+	--Object definitions, key-value pairs
+	{
+		match = {{tok.comparison}, {tok.op_arrow}, {tok.comparison}},
+		id = tok.key_value_pair,
+		keep = {1, 3},
+		text = 2,
+		not_before = {tok.lit_boolean, tok.lit_null, tok.lit_number, tok.string_open, tok.command_open, tok.expr_open, tok.array_slice, tok.array_concat, tok.comparison, tok.paren_open, tok.index_open, tok.parentheses, tok.variable, tok.func_call, tok.index, tok.op_plus, tok.op_minus, tok.op_times, tok.op_idiv, tok.op_div, tok.op_mod, tok.op_and, tok.op_or, tok.op_xor, tok.op_ge, tok.op_gt, tok.op_le, tok.op_lt, tok.op_eq, tok.op_ne},
+	},
+	{
+		match = {{tok.op_arrow}},
+		id = tok.key_value_pair,
 		keep = {},
 		text = 1,
 		only_after = {tok.expr_open, tok.paren_open},
@@ -990,12 +1007,12 @@ function SyntaxParser(tokens, file)
 
 		loops_since_reduction = loops_since_reduction + 1
 
-		-- if COMPILER_DEBUG then
-		-- 	for _, t in pairs(tokens) do
-		-- 		print_tokens_recursive(t)
-		-- 	end
-		-- 	print()
-		-- end
+		if DEBUG_EXTRA then
+			for _, t in pairs(tokens) do
+				print_tokens_recursive(t)
+			end
+			print()
+		end
 
 		if not did_reduce or loops_since_reduction > 500 then
 			if first_failure == nil then
