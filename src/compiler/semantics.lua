@@ -424,14 +424,21 @@ function SemanticAnalyzer(tokens, file)
 		local is_object = false
 		local is_array = false
 		for _, child in ipairs(kids) do
-			if child.id == tok.key_value_pair then
-				is_object = true
-				child.inside_object = true
-			else is_array = true end
+			if child.id ~= tok.array_concat and not child.errored then
+				if child.id == tok.key_value_pair then
+					is_object = true
+					child.inside_object = true
+					if #child.children == 0 and #kids > 1 then
+						parse_error(child.line, child.col, 'Missing key and value for object construct')
+						child.errored = true
+					end
+				else is_array = true end
 
-			if is_object and is_array then
-				parse_error(child.line, child.col, 'Ambiguous mixture of object and array constructs. Objects require key-value pairs for every element (e.g. `"key" => value`)')
-				break
+				if is_object and is_array then
+					parse_error(child.line, child.col, 'Ambiguous mixture of object and array constructs. Objects require key-value pairs for every element (e.g. `"key" => value`)')
+					child.errored = true
+					break
+				end
 			end
 		end
 
