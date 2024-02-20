@@ -360,6 +360,25 @@ function fold_constants(token)
 		return
 	end
 
+	--Objects must be handled differently: their children will not directly have a value, but must have constant children themselves
+	if token.id == tok.object then
+		local value = std.object()
+		for i = 1, #token.children do
+			local pair = token.children[i]
+			--make sure all children are constant
+			if not pair.is_constant then return end
+
+			if #pair.children > 0 then
+				value[std.str(pair.children[1].value)] = pair.children[2].value
+			end
+		end
+
+		token.id = tok.lit_object
+		token.value = value
+		token.text = '{}'
+		return
+	end
+
 	--If this token does not contain only constant children, we cannot fold it.
 	local i
 	for i = 1, #token.children do
@@ -658,6 +677,8 @@ function fold_constants(token)
 			number = tok.lit_number,
 		}
 		token.id = rs[token.type]
+	elseif token.id == tok.key_value_pair then
+		token.is_constant = true
 	else
 		parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for token id "'..token_text(token.id)..'"!', file)
 	end

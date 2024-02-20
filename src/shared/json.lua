@@ -52,9 +52,11 @@ json = {
 					if indent ~= nil then return result .. (' '):rep(__indent) .. ']' else return result .. ']' end
 				else
 					if indent ~= nil then result = '{\n' else result = '{' end
+					local ct = 0
 					for key, value in pairs(data) do
+						if ct > 0 then result = result .. ',' end
+						ct = ct + 1
 						local str = __stringify(tostring(key), indent, next_indent) .. ':' .. __stringify(value, indent, next_indent)
-						if key ~= #data then str = str .. ',' end
 						if indent ~= nil then
 							result = result .. (' '):rep(next_indent) .. str .. '\n'
 						else

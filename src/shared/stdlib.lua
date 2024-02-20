@@ -25,10 +25,11 @@ std = {
 	debug_str = function(data)
 		if type(data) == 'table' then
 			local result = ''
-			local key, value
+			local meta = getmetatable(data)
 			local first = true
 			for key, value in pairs(data) do
 				if not first then result = result .. ',' end
+				if meta and meta.is_array == false then result = result .. std.debug_str(key) .. ':' end
 				result = result .. std.debug_str(value)
 				first = false
 			end

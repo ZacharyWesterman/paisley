@@ -1015,7 +1015,7 @@ function SemanticAnalyzer(tokens, file)
 		recurse(root, {tok.string_open, tok.add, tok.multiply, tok.exponent, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.inline_command, tok.command}, nil, type_checking)
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
-		recurse(root, {tok.add, tok.multiply, tok.exponent, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice, tok.string_open, tok.index, tok.ternary, tok.list_comp}, nil, fold_constants)
+		recurse(root, {tok.add, tok.multiply, tok.exponent, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice, tok.string_open, tok.index, tok.ternary, tok.list_comp, tok.object, tok.key_value_pair}, nil, fold_constants)
 
 		--Set any variables we can
 		recurse(root, {tok.for_stmt, tok.let_stmt, tok.variable}, variable_assignment, variable_unassignment)
