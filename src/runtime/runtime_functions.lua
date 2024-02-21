@@ -666,17 +666,24 @@ local functions = {
 	function()
 		local v = POP()
 		if type(v[1]) ~= 'table' then v[1] = {v[1]} end
-		local n = std.num(v[2])
 
-		--If index is negative, update starting at the end
-		if n < 0 then n = #v[1] + n + 1 end
-
-		if n > 0 then
-			--Update the value if non-negative (this can also increase array lengths)
+		local meta = getmetatable(v[1])
+		if meta and not meta.is_array then
+			local n = std.str(v[2])
 			v[1][n] = v[3]
 		else
-			--Insert at beginning if index is less than 1
-			table.insert(v[1], 1, v[3])
+			local n = std.num(v[2])
+
+			--If index is negative, update starting at the end
+			if n < 0 then n = #v[1] + n + 1 end
+
+			if n > 0 then
+				--Update the value if non-negative (this can also increase array lengths)
+				v[1][n] = v[3]
+			else
+				--Insert at beginning if index is less than 1
+				table.insert(v[1], 1, v[3])
+			end
 		end
 
 		PUSH(v[1])
@@ -688,16 +695,19 @@ local functions = {
 		if type(v[1]) ~= 'table' then v[1] = {v[1]} end
 		local n = std.num(v[2])
 
-		--If index is negative, insert starting at the end
-		if n < 0 then n = #v[1] + n + 2 end
+		local meta = getmetatable(v[1])
+		if not meta or meta.is_array then
+			--If index is negative, insert starting at the end
+			if n < 0 then n = #v[1] + n + 2 end
 
-		if n > #v[1] then
-			table.insert(v[1], v[3])
-		elseif n > 0 then
-			table.insert(v[1], n, v[3])
-		else
-			--Insert at beginning if index is less than 1
-			table.insert(v[1], 1, v[3])
+			if n > #v[1] then
+				table.insert(v[1], v[3])
+			elseif n > 0 then
+				table.insert(v[1], n, v[3])
+			else
+				--Insert at beginning if index is less than 1
+				table.insert(v[1], 1, v[3])
+			end
 		end
 		PUSH(v[1])
 	end,
