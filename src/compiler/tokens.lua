@@ -133,6 +133,9 @@ ERRORED = false
 function parse_error(line, col, msg, file)
 	if msg:sub(1, 12) == 'COMPILER BUG' then
 		msg = msg .. '\nTHIS IS A BUG IN THE PAISLEY COMPILER, PLEASE REPORT IT!'
+		--[[minify-delete]]
+		msg = msg:gsub('\n', ' ')
+		--[[/minify-delete]]
 	end
 
 	--[[minify-delete]]
