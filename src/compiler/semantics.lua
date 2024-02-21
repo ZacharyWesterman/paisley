@@ -590,6 +590,7 @@ function SemanticAnalyzer(tokens, file)
 				msg = msg .. ' (did you mean "'..guess..'('..funcsig(guess)..')"?)'
 			end
 			parse_error(token.line, token.col, msg, file)
+			return
 		end
 
 		if func == -2 then return end --Function can have any number of params
