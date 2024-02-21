@@ -946,10 +946,6 @@ function SemanticAnalyzer(tokens, file)
 			if var.type then return end
 
 			if #token.children > 2 then
-				if ch.id == tok.lit_null or ch.type == 'null' then
-					parse_error(ch.line, ch.col, 'Arrays cannot contain null elements', file)
-				end
-
 				--Don't deduce types for let statements that are updating variables.
 				--Those don't define what the variable's actual type is.
 				return
