@@ -222,7 +222,18 @@ func_operations = {
 		return result
 	end,
 	sort = function(value)
-		table.sort(value)
+		local is_table = false
+		for key, val in pairs(value) do
+			if type(val) == 'table' then
+				is_table = true
+				break
+			end
+		end
+		if is_table then
+			table.sort(value, function(a, b) return std.str(a) < std.str(b) end)
+		else
+			table.sort(value)
+		end
 		return value
 	end,
 	merge = function(array1, array2)

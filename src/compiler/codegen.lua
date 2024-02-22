@@ -516,9 +516,16 @@ function generate_bytecode(root, file)
 				--If list is entirely constant, just use the last value.
 				if is_const(list) then
 					local val = list.value
-					if type(val) == 'table' then val = val[#val] end
-					emit(bc.push, val)
-					emit(bc.set, token.children[1].text)
+					if val ~= nil then
+						if std.type(val) == 'array' then val = val[#val]
+						elseif std.type(val) == 'object' then
+							local v
+							for key, value in pairs(val) do v = key end
+							val = v
+						end
+						emit(bc.push, val)
+						emit(bc.set, token.children[1].text)
+					end
 					return
 				end
 

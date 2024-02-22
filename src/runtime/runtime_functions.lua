@@ -105,15 +105,17 @@ local functions = {
 
 	--EXPLODE: only used in for loops
 	function(line, param)
-		local array, i = POP()
-		if type(array) ~= 'table' then
-			PUSH(array)
-			return
-		end
+		local array = POP()
 
-		for i = 1, #array do
-			local val = array[#array - i + 1]
-			PUSH(val)
+		if std.type(array) == 'object' then
+			for key, value in pairs(array) do PUSH(key) end
+		elseif std.type(array) == 'array' then
+			for i = 1, #array do
+				local val = array[#array - i + 1]
+				PUSH(val)
+			end
+		else
+			PUSH(array)
 		end
 	end,
 
@@ -611,13 +613,24 @@ local functions = {
 	end,
 	--SORT ARRAY
 	function()
-		local v = POP()[1]
+		local is_table, v = false, POP()[1]
 		if type(v) ~= 'table' then
 			PUSH({v})
 			return
 		end
 
-		table.sort(v)
+		for key, val in pairs(v) do
+			if type(val) == 'table' then
+				is_table = true
+				break
+			end
+		end
+
+		if is_table then
+			table.sort(v, function(a, b) return std.str(a) < std.str(b) end)
+		else
+			table.sort(v)
+		end
 		PUSH(v)
 	end,
 
