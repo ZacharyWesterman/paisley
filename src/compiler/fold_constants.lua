@@ -104,8 +104,7 @@ func_operations = {
 	bool = function(data) return std.bool(data) end,
 	str = function(data) return std.str(data) end,
 	num = function(data) return std.num(data) end,
-	array = function(values) return values end, --Interesting short-cut due to compiler quirks!
-	worddiff = function(a, b, token, file) return lev(a, b) end,
+	word_diff = function(a, b, token, file) return lev(a, b) end,
 	split = function(a, b) return std.split(a, b) end,
 	join = function(a, b) return std.join(a, b) end,
 	type = function(a) return std.type(a) end,
@@ -247,6 +246,51 @@ func_operations = {
 	end,
 
 	hash = std.hash,
+
+	--Object-related functions
+	object = function(array)
+		local result = std.object()
+		for i = 1, #array, 2 do
+			result[std.str(array[i])] = array[i+1]
+		end
+		return result
+	end,
+	array = function(object)
+		local result = {}
+		for key, value in pairs(object) do
+			table.insert(result, key)
+			table.insert(result, value)
+		end
+		return result
+	end,
+
+	keys = function(object)
+		local result = {}
+		for key, value in pairs(object) do table.insert(result, key) end
+		return result
+	end,
+	values = function(object)
+		local result = {}
+		for key, value in pairs(object) do table.insert(result, value) end
+		return result
+	end,
+	pairs = function(object)
+		local result = {}
+		for key, value in pairs(object) do table.insert(result, {key, value}) end
+		return result
+	end,
+
+	interleave = function(array1, array2)
+		local result, length = {}, math.min(#array1, #array2)
+		for i = 1, length do
+			table.insert(result, array1[i])
+			table.insert(result, array2[i])
+		end
+
+		for i = length + 1, #array1 do table.insert(result, array1[i]) end
+		for i = length + 1, #array2 do table.insert(result, array2[i]) end
+		return result
+	end,
 }
 
 local function number_op(v1, v2, operator)
@@ -289,8 +333,19 @@ function fold_constants(token)
 	--Ternary operators are unique: if the condition is constant, they can be folded
 	if token.id == tok.ternary then
 		local child
+		local c3 = token.children[3]
+
+		--regardless of whether they're constant, we can deduce the type if both possible results have a type
+		if c2.type and c3.type and not token.type then
+			if c2.type == c3.type then
+				token.type = c2.type
+			else
+				token.type = 'any'
+			end
+		end
+
 		if not_const(c1) then return end
-		if std.bool(c1.value) then child = token.children[2] else child = token.children[3] end
+		if std.bool(c1.value) then child = c2 else child = c3 end
 
 		token.id = child.id
 		token.value = child.value
@@ -357,6 +412,27 @@ function fold_constants(token)
 			elseif std.arrfind({'==', '<', '<=', '>', '>=', '!=', 'and', 'or', 'xor'}, c2.text) > 0 then token.type = 'boolean'
 			end
 		end
+		return
+	end
+
+	--Objects must be handled differently: their children will not directly have a value, but must have constant children themselves
+	if token.id == tok.object then
+		local value = std.object()
+		for i = 1, #token.children do
+			local pair = token.children[i]
+			--make sure all children are constant
+			if not pair.is_constant then return end
+
+			if #pair.children > 0 then
+				value[std.str(pair.children[1].value)] = pair.children[2].value
+			end
+		end
+
+		token.id = tok.lit_object
+		token.value = value
+		token.text = '{}'
+		token.type = 'object'
+		token.children = {}
 		return
 	end
 
@@ -431,6 +507,8 @@ function fold_constants(token)
 							break
 						end
 					end
+				elseif c2.id == tok.lit_object then
+					result = c2.value[std.str(c1.value)] ~= nil
 				else
 					result = std.contains(std.str(c2.value), std.str(c1.value))
 				end
@@ -501,13 +579,16 @@ function fold_constants(token)
 			--Fold values of only the deterministic functions
 			if token.value ~= nil then
 				token.text = tostring(token.value)
-				local tp = type(token.value)
+				local tp = std.type(token.value)
 				if tp == 'boolean' then token.id = tok.lit_boolean
 				elseif tp == 'number' then token.id = tok.lit_number
 				elseif tp == 'string' then token.id = tok.string_open
-				elseif tp == 'table' then
+				elseif tp == 'array' then
 					token.id = tok.lit_array
 					token.text = '[]'
+				elseif tp == 'object' then
+					token.id = tok.lit_object
+					token.text = '{}'
 				else
 					parse_error(token.line, token.col, 'COMPILER BUG: Folding of function "'..token.text..'" resulted in data of type "'..tp..'"!', file)
 				end
@@ -630,18 +711,14 @@ function fold_constants(token)
 				token.text = '[]'
 				token.id = tok.lit_array
 			end
-		elseif type(c2.value) ~= 'number' then
+		elseif type(c2.value) ~= 'number' and std.type(val) ~= 'object' then
 			parse_error(token.line, token.col, 'Cannot use a non-number value as an array index', file)
 		else
 			local ix = c2.value
-			if type(ix) ~= 'number' then
-				parse_error(token.line, token.col, 'Cannot use a non-number value as an array index', file)
-			end
-
-			if ix < 1 then
+			if type(ix) == 'number' and ix < 1 then
 				parse_error(token.line, token.col, 'Indexes start at 1, but an index of '..ix..' was found', file)
 			end
-			result = val[ix]
+			if std.type(val) == 'object' then result = val[std.str(ix)] else result = val[ix] end
 			token.text = std.debug_str(result)
 			if type(result) == 'string' then token.text = '"' end
 		end
@@ -656,8 +733,11 @@ function fold_constants(token)
 			null = tok.lit_null,
 			boolean = tok.lit_boolean,
 			number = tok.lit_number,
+			object = tok.lit_object,
 		}
 		token.id = rs[token.type]
+	elseif token.id == tok.key_value_pair then
+		token.is_constant = true
 	else
 		parse_error(token.line, token.col, 'COMPILER BUG: No constant folding rule for token id "'..token_text(token.id)..'"!', file)
 	end

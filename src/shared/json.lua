@@ -25,8 +25,9 @@ json = {
 
 				--Check if a table is an array or an object
 				local is_array = true
-				if data.__is_array ~= nil then
-					is_array = data.__is_array
+				local meta = getmetatable(data)
+				if meta and meta.is_array ~= nil then
+					is_array = meta.is_array
 				else
 					for key, value in pairs(data) do
 						if type(key) ~= 'number' then
@@ -51,9 +52,11 @@ json = {
 					if indent ~= nil then return result .. (' '):rep(__indent) .. ']' else return result .. ']' end
 				else
 					if indent ~= nil then result = '{\n' else result = '{' end
+					local ct = 0
 					for key, value in pairs(data) do
+						if ct > 0 then result = result .. ',' end
+						ct = ct + 1
 						local str = __stringify(tostring(key), indent, next_indent) .. ':' .. __stringify(value, indent, next_indent)
-						if key ~= #data then str = str .. ',' end
 						if indent ~= nil then
 							result = result .. (' '):rep(next_indent) .. str .. '\n'
 						else
@@ -249,8 +252,7 @@ json = {
 				return this_token.value, i
 			elseif this_token.kind == _tok.lbracket then
 				--Generate array-like tables
-				this_object = {}
-				setmetatable(this_object, {__is_array = true})
+				this_object = setmetatable({}, {is_array = true})
 				i = i + 1
 				this_token = tokens[i]
 
@@ -270,8 +272,7 @@ json = {
 				return this_object, i
 			elseif this_token.kind == _tok.lbrace then
 				--Generate object-like tables
-				this_object = {}
-				setmetatable(this_object, {__is_array = false})
+				this_object = setmetatable({}, {is_array = false})
 				i = i + 1
 				this_token = tokens[i]
 

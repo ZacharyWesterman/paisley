@@ -55,7 +55,7 @@ booland, boolor, boolxor, inarray, strlike, equal, notequal, greater, greaterequ
 boolnot, varexists
 	CONSUME the top element from the stack and PUSH the result of the appropriate boolean operation
 
-irandom, frandom, worddiff, dist, sin, cos, tan, asin, acos, atan, atan2, sqrt, sum, mult, pow, min, max, split, join, type, bool, num, str, array, floor, ceil, round, abs, append
+random_int, random_float, word_diff, dist, sin, cos, tan, asin, acos, atan, atan2, sqrt, sum, mult, pow, min, max, split, join, type, bool, num, str, array, floor, ceil, round, abs, append
 	CONSUME the top element from the stack, run the respective function, and PUSH the result to the stack.
 
 OPCODES:

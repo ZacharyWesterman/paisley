@@ -6,12 +6,26 @@ local rules = {
 		text = 3,
 		not_after = {tok.op_dot},
 		onmatch = function(token, file)
-			if token.children[3].id ~= tok.func_call then
-				parse_error(token.line, token.col, 'Dot notation can only be used with function calls', file)
-			end
+			local c3 = token.children[3]
+			if c3.id == tok.variable then
+				--Dot notation using variable names is just indexing with strings.
+				c3.id = token.string_open
+				c3.value = c3.text
+				local c1 = token.children[1]
 
-			table.insert(token.children[3].children, 1, token.children[1])
-			token.children = token.children[3].children
+				return {
+					id = tok.index,
+					line = token.children[2].line,
+					col = token.children[2].col,
+					text = '.',
+					children = {c1, c3},
+				}
+			elseif c3.id == tok.func_call then
+				table.insert(c3.children, 1, token.children[1])
+				token.children = c3.children
+			else
+				parse_error(token.children[2].line, token.children[2].col, 'Expected function name or object key after dot operator', file)
+			end
 		end,
 	},
 
@@ -81,7 +95,7 @@ local rules = {
 
 	--Treat all literals the same.
 	{
-		match = {{tok.lit_number, tok.lit_boolean, tok.lit_null, tok.negate, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat, tok.lambda, tok.lambda_ref, tok.ternary, tok.list_comp}},
+		match = {{tok.lit_number, tok.lit_boolean, tok.lit_null, tok.negate, tok.string, tok.parentheses, tok.func_call, tok.index, tok.expression, tok.inline_command, tok.concat, tok.lambda, tok.lambda_ref, tok.ternary, tok.list_comp, tok.key_value_pair}},
 		id = tok.value,
 		meta = true,
 	},
@@ -193,8 +207,8 @@ local rules = {
 		id = tok.array_concat,
 		keep = {1, 3},
 		text = 2,
-		not_before = {tok.index_open},
-		not_after = {tok.op_dot},
+		not_before = {tok.index_open, tok.op_arrow},
+		not_after = {tok.op_dot, tok.op_arrow},
 	},
 	{
 		match = {{tok.array_slice}},
@@ -206,7 +220,8 @@ local rules = {
 		id = tok.array_concat,
 		keep = {1},
 		text = 2,
-		not_before = {tok.lit_boolean, tok.lit_null, tok.lit_number, tok.string_open, tok.command_open, tok.expr_open, tok.array_slice, tok.array_concat, tok.comparison, tok.paren_open, tok.index_open, tok.parentheses, tok.variable, tok.func_call, tok.index, tok.op_plus, tok.op_minus, tok.op_times, tok.op_idiv, tok.op_div, tok.op_mod, tok.op_and, tok.op_or, tok.op_xor, tok.op_ge, tok.op_gt, tok.op_le, tok.op_lt, tok.op_eq, tok.op_ne},
+		not_before = {tok.lit_boolean, tok.lit_null, tok.lit_number, tok.string_open, tok.command_open, tok.expr_open, tok.array_slice, tok.array_concat, tok.comparison, tok.paren_open, tok.index_open, tok.parentheses, tok.variable, tok.func_call, tok.index, tok.op_plus, tok.op_minus, tok.op_times, tok.op_idiv, tok.op_div, tok.op_mod, tok.op_and, tok.op_or, tok.op_xor, tok.op_ge, tok.op_gt, tok.op_le, tok.op_lt, tok.op_eq, tok.op_ne, tok.op_arrow, tok.key_value_pair},
+		not_after = {tok.op_arrow},
 	},
 	{
 		match = {{tok.op_comma}},
@@ -214,6 +229,22 @@ local rules = {
 		keep = {},
 		text = 1,
 		only_after = {tok.expr_open, tok.paren_open},
+	},
+
+	--Object definitions, key-value pairs
+	{
+		match = {{tok.comparison}, {tok.op_arrow}, {tok.comparison}},
+		id = tok.key_value_pair,
+		keep = {1, 3},
+		text = 2,
+		not_before = {tok.lit_boolean, tok.lit_null, tok.lit_number, tok.string_open, tok.command_open, tok.expr_open, tok.array_slice, tok.array_concat, tok.comparison, tok.paren_open, tok.index_open, tok.parentheses, tok.variable, tok.func_call, tok.index, tok.op_plus, tok.op_minus, tok.op_times, tok.op_idiv, tok.op_div, tok.op_mod, tok.op_and, tok.op_or, tok.op_xor, tok.op_ge, tok.op_gt, tok.op_le, tok.op_lt, tok.op_eq, tok.op_ne},
+	},
+	{
+		match = {{tok.op_arrow}},
+		id = tok.key_value_pair,
+		keep = {},
+		text = 1,
+		only_after = {tok.op_comma, tok.expr_open, tok.paren_open},
 	},
 
 	--Prefix Boolean not
@@ -628,7 +659,7 @@ local rules = {
 
 	--SUB variable assignment
 	{
-		match = {{tok.kwd_let}, {tok.var_assign}, {tok.expression}, {tok.op_assign}, {tok.command, tok.expression, tok.string}},
+		match = {{tok.kwd_let}, {tok.var_assign}, {tok.expression, tok.comparison}, {tok.op_assign}, {tok.command, tok.expression, tok.string}},
 		id = tok.let_stmt,
 		keep = {2, 5, 3},
 		text = 1,
@@ -990,12 +1021,12 @@ function SyntaxParser(tokens, file)
 
 		loops_since_reduction = loops_since_reduction + 1
 
-		-- if COMPILER_DEBUG then
-		-- 	for _, t in pairs(tokens) do
-		-- 		print_tokens_recursive(t)
-		-- 	end
-		-- 	print()
-		-- end
+		if DEBUG_EXTRA then
+			for _, t in pairs(tokens) do
+				print_tokens_recursive(t)
+			end
+			print()
+		end
 
 		if not did_reduce or loops_since_reduction > 500 then
 			if first_failure == nil then

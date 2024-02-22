@@ -60,6 +60,7 @@ tok = {
 	op_comma = k(),
 	op_exclamation = k(),
 	op_dot = k(),
+	op_arrow = k(),
 
 	paren_open = k(),
 	paren_close = k(),
@@ -80,6 +81,7 @@ tok = {
 	index = k(),
 	array_concat = k(),
 	array_slice = k(),
+	key_value_pair = k(),
 	comparison = k(),
 	negate = k(),
 	string = k(),
@@ -119,6 +121,8 @@ tok = {
 	statement = k(),
 
 	lit_array = k(), --This only gets created during constant folding
+	lit_object = k(),
+	object = k(),
 }
 
 --[[minify-delete]]
@@ -129,6 +133,9 @@ ERRORED = false
 function parse_error(line, col, msg, file)
 	if msg:sub(1, 12) == 'COMPILER BUG' then
 		msg = msg .. '\nTHIS IS A BUG IN THE PAISLEY COMPILER, PLEASE REPORT IT!'
+		--[[minify-delete]]
+		msg = msg:gsub('\n', ' ')
+		--[[/minify-delete]]
 	end
 
 	--[[minify-delete]]
@@ -174,12 +181,12 @@ function print_token(token, indent)
 	local id = token_text(token.id)
 	local meta = ''
 
-	-- if COMPILER_DEBUG then
-	-- 	if token.meta_id ~= nil then
-	-- 		id = token_text(token.id)..'*'
-	-- 		meta = '    (meta='..token_text(token.meta_id)..')'
-	-- 	end
-	-- else
+	if DEBUG_EXTRA then
+		if token.meta_id ~= nil then
+			id = token_text(token.id)..'*'
+			meta = '    (meta='..token_text(token.meta_id)..')'
+		end
+	else
 		if token.value ~= nil then
 			meta = '    (='..std.debug_str(token.value)..')'
 			if token.type ~= nil then
@@ -188,7 +195,7 @@ function print_token(token, indent)
 		elseif token.type ~= nil then
 			meta = '    ('..token.type..')'
 		end
-	-- end
+	end
 
 	print((indent..'%2d:%2d: %13s = %s%s'):format(token.line, token.col, id, token.text:gsub('\n', '<nl>'):gsub('\x09','<nl>'), meta))
 end

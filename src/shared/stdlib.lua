@@ -9,12 +9,21 @@ std = {
 		if data == true then return '1' end
 		if data == false then return '0' end
 
-		if type(data) == 'table' then
+		if std.type(data) == 'array' then
 			local result, i = ''
 			local first = true
 			for i = 1, #data do
 				if not first then result = result .. ' ' end
 				result = result .. std.str(data[i])
+				first = false
+			end
+			return result
+		elseif std.type(data) == 'object' then
+			local result = ''
+			local first = true
+			for key, value in pairs(data) do
+				if not first then result = result .. ' ' end
+				result = result .. std.str(key) .. ' ' .. std.str(value)
 				first = false
 			end
 			return result
@@ -25,10 +34,11 @@ std = {
 	debug_str = function(data)
 		if type(data) == 'table' then
 			local result = ''
-			local key, value
+			local meta = getmetatable(data)
 			local first = true
 			for key, value in pairs(data) do
 				if not first then result = result .. ',' end
+				if meta and meta.is_array == false then result = result .. std.debug_str(key) .. ':' end
 				result = result .. std.debug_str(value)
 				first = false
 			end
@@ -69,7 +79,10 @@ std = {
 	--Get the type of some data, with the "Lua-ness" removed
 	type = function(data --[[any]])
 		if data == nil then return 'null' end
-		if type(data) == 'table' then return 'array' end
+		if type(data) == 'table' then
+			local meta = getmetatable(data)
+			if meta and not meta.is_array then return 'object' else return 'array' end
+		end
 		return type(data)
 	end,
 
@@ -191,4 +204,12 @@ std = {
 
 	--Generate a sha256 hash of a given string
 	hash = SHA256,
+
+	object = function()
+		return setmetatable({}, {is_array = false})
+	end,
+
+	array = function()
+		return setmetatable({}, {is_array = true})
+	end,
 }

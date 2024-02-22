@@ -1,7 +1,7 @@
 builtin_funcs = {
-	irandom = 2,
-	frandom = 2,
-	worddiff = 2,
+	random_int = 2,
+	random_float = 2,
+	word_diff = 2,
 	dist = 2,
 	sin = 1,
 	cos = 1,
@@ -24,7 +24,6 @@ builtin_funcs = {
 	bool = 1,
 	num = 1,
 	str = 1,
-	array = -2,
 	floor = 1,
 	ceil = 1,
 	round = 1,
@@ -54,20 +53,26 @@ builtin_funcs = {
 	update = 3,
 	insert = 3,
 	delete = 2,
-	select_random = 1,
+	random_element = 1,
 	hash = 1,
+	object = 1,
+	array = 1,
+	keys = 1,
+	values = 1,
+	pairs = 1,
+	interleave = 2,
 }
 
 type_signatures = {
-	irandom = {
+	random_int = {
 		valid = {{'number'}},
 		out = 'number',
 	},
-	frandom = {
+	random_float = {
 		valid = {{'number'}},
 		out = 'number',
 	},
-	worddiff = {
+	word_diff = {
 		valid = {{'string'}},
 		out = 'number',
 	},
@@ -175,9 +180,6 @@ type_signatures = {
 	str = {
 		out = 'string',
 	},
-	array = {
-		out = 'array',
-	},
 	index = {
 		valid = {{'array', 'any'}, {'string', 'any'}},
 		out = 'number',
@@ -274,13 +276,37 @@ type_signatures = {
 		valid = {{'array', 'number'}},
 		out = 'array',
 	},
-	select_random = {
+	random_element = {
 		valid = {{'array'}},
 		out = 'any',
 	},
 	hash = {
 		valid = {{'string'}},
 		out = 'string',
+	},
+	object = {
+		valid = {{'array'}},
+		out = 'object',
+	},
+	array = {
+		valid = {{'object'}},
+		out = 'array',
+	},
+	keys = {
+		valid = {{'object'}},
+		out = 'array',
+	},
+	values = {
+		valid = {{'object'}},
+		out = 'array',
+	},
+	pairs = {
+		valid = {{'object'}, {'array'}},
+		out = 'array',
+	},
+	interleave = {
+		valid = {{'array'}},
+		out = 'array',
 	},
 
 	[tok.add] = {
@@ -410,7 +436,7 @@ function SemanticAnalyzer(tokens, file)
 		local _
 		local kids = {}
 		for _, child in ipairs(token.children) do
-			if child.id == tok.array_concat then
+			if child.id == tok.array_concat or child.id == tok.object then
 				local __
 				local kid
 				for __, kid in ipairs(child.children) do
@@ -420,7 +446,50 @@ function SemanticAnalyzer(tokens, file)
 				table.insert(kids, child)
 			end
 		end
+
+		local is_object = false
+		local is_array = false
+		for _, child in ipairs(kids) do
+			if child.id ~= tok.array_concat and child.id ~= tok.object and not child.errored then
+				if child.id == tok.key_value_pair then
+					is_object = true
+					child.inside_object = true
+					if #child.children == 0 and #kids > 1 then
+						parse_error(child.line, child.col, 'Missing key and value for object construct')
+						child.errored = true
+					end
+				else is_array = true end
+
+				if is_object and is_array then
+					parse_error(child.line, child.col, 'Ambiguous mixture of object and array constructs. Objects require key-value pairs for every element (e.g. `"key" => value`)')
+					child.errored = true
+					break
+				end
+			end
+		end
+
+		if is_object then
+			token.id = tok.object
+			token.type = 'object'
+		end
 		token.children = kids
+	end)
+
+	--Extract key-value pairs into objects
+	recurse(root, {tok.key_value_pair}, nil, function(token)
+		if not token.inside_object then
+			local new_token = {
+				id = token.id,
+				line = token.line,
+				col = token.col,
+				text = token.text,
+				children = token.children,
+			}
+			token.id = tok.object
+			token.text = '{}'
+			token.type = 'object'
+			token.children = {new_token}
+		end
 	end)
 
 	--Make a list of all subroutines, and check that return statements are only in subroutines
@@ -480,7 +549,7 @@ function SemanticAnalyzer(tokens, file)
 
 			--Lambda is defined, so replace it with the appropriate node
 			local lambda_node, i, _ = lambdas[token.text][#lambdas[token.text]].node
-			for _, i in ipairs({'text', 'line', 'col', 'id', 'value'}) do
+			for _, i in ipairs({'text', 'line', 'col', 'id', 'value', 'type'}) do
 				token[i] = lambda_node[i]
 			end
 			token.children = lambda_node.children
@@ -512,7 +581,7 @@ function SemanticAnalyzer(tokens, file)
 	--Replace lambda definitions with the appropriate node.
 	recurse(root, {tok.lambda}, nil, function(token)
 		local lambda_node, i, _ = token.children[1]
-		for _, i in ipairs({'text', 'line', 'col', 'id', 'value'}) do
+		for _, i in ipairs({'text', 'line', 'col', 'id', 'value', 'type'}) do
 			token[i] = lambda_node[i]
 		end
 		token.children = lambda_node.children
@@ -551,6 +620,7 @@ function SemanticAnalyzer(tokens, file)
 				msg = msg .. ' (did you mean "'..guess..'('..funcsig(guess)..')"?)'
 			end
 			parse_error(token.line, token.col, msg, file)
+			return
 		end
 
 		if func == -2 then return end --Function can have any number of params
@@ -629,7 +699,7 @@ function SemanticAnalyzer(tokens, file)
 		if not token.children or #token.children ~= 1 then return end
 
 		local child = token.children[1]
-		for _, key in ipairs({'value', 'id', 'text', 'line', 'col'}) do
+		for _, key in ipairs({'value', 'id', 'text', 'line', 'col', 'type'}) do
 			token[key] = child[key]
 		end
 		token.children = child.children
@@ -688,7 +758,7 @@ function SemanticAnalyzer(tokens, file)
 			if #token.children[2].children > 1 then
 				token.children[2].id = tok.array_concat
 			else
-				for _, i in ipairs({'text', 'line', 'col', 'id', 'value'}) do
+				for _, i in ipairs({'text', 'line', 'col', 'id', 'value', 'type'}) do
 					token.children[2][i] = token.children[2].children[1][i]
 				end
 				token.children[2].children = token.children[2].children[1].children
@@ -748,8 +818,8 @@ function SemanticAnalyzer(tokens, file)
 
 			local t1, t2 = token.children[1].type, token.children[2].type
 			if t1 and t2 then
-				if t1 ~= 'string' and t1 ~= 'array' then
-					parse_error(token.line, token.col, 'Cannot index a value of type `'..t1..'`. Type must be `string` or `array`', file)
+				if t1 ~= 'string' and t1 ~= 'array' and t1 ~= 'object' then
+					parse_error(token.children[1].line, token.children[1].col, 'Cannot index a value of type `'..t1..'`. Type must be `string`,  `array`, or `object`', file)
 					return
 				end
 
@@ -906,9 +976,9 @@ function SemanticAnalyzer(tokens, file)
 			if var.type then return end
 
 			if #token.children > 2 then
-				if ch.id == tok.lit_null or ch.type == 'null' then
-					parse_error(ch.line, ch.col, 'Arrays cannot contain null elements', file)
-				end
+				--Don't deduce types for let statements that are updating variables.
+				--Those don't define what the variable's actual type is.
+				return
 			end
 
 			local tp = nil
@@ -950,7 +1020,7 @@ function SemanticAnalyzer(tokens, file)
 						deduced_variable_types = true
 					end
 				end
-			else
+			elseif tp ~= nil then
 				set_var(var.text, tp)
 				var.type = tp
 				deduced_variable_types = true
@@ -976,7 +1046,7 @@ function SemanticAnalyzer(tokens, file)
 		recurse(root, {tok.string_open, tok.add, tok.multiply, tok.exponent, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.inline_command, tok.command}, nil, type_checking)
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
-		recurse(root, {tok.add, tok.multiply, tok.exponent, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice, tok.string_open, tok.index, tok.ternary, tok.list_comp}, nil, fold_constants)
+		recurse(root, {tok.add, tok.multiply, tok.exponent, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice, tok.string_open, tok.index, tok.ternary, tok.list_comp, tok.object, tok.key_value_pair}, nil, fold_constants)
 
 		--Set any variables we can
 		recurse(root, {tok.for_stmt, tok.let_stmt, tok.variable}, variable_assignment, variable_unassignment)

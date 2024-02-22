@@ -44,9 +44,9 @@ local call_codes = {
 	lessequal = 25,
 	boolnot = 26,
 	varexists = 27,
-	irandom = 28,
-	frandom = 29,
-	worddiff = 30,
+	random_int = 28,
+	random_float = 29,
+	word_diff = 30,
 	dist = 31,
 	sin = 32,
 	cos = 33,
@@ -67,39 +67,44 @@ local call_codes = {
 	bool = 48,
 	num = 49,
 	str = 50,
-	array = 51,
-	floor = 52,
-	ceil = 53,
-	round = 54,
-	abs = 55,
-	append = 56,
-	index = 57,
-	lower = 58,
-	upper = 59,
-	camel = 60,
-	replace = 61,
-	json_encode = 62,
-	json_decode = 63,
-	json_valid = 64,
-	b64_encode = 65,
-	b64_decode = 66,
-	lpad = 67,
-	rpad = 68,
-	hex = 69,
-	filter = 70,
-	match = 71,
-	clocktime = 72,
-	reverse = 73,
-	sort = 74,
-	bytes = 75,
-	frombytes = 76,
-	merge = 77,
-	update = 78,
-	insert = 79,
-	delete = 80,
-	lerp = 81,
-	select_random = 82,
-	hash = 83,
+	floor = 51,
+	ceil = 52,
+	round = 53,
+	abs = 54,
+	append = 55,
+	index = 56,
+	lower = 57,
+	upper = 58,
+	camel = 59,
+	replace = 60,
+	json_encode = 61,
+	json_decode = 62,
+	json_valid = 63,
+	b64_encode = 64,
+	b64_decode = 65,
+	lpad = 66,
+	rpad = 67,
+	hex = 68,
+	filter = 69,
+	match = 70,
+	clocktime = 71,
+	reverse = 72,
+	sort = 73,
+	bytes = 74,
+	frombytes = 75,
+	merge = 76,
+	update = 77,
+	insert = 78,
+	delete = 79,
+	lerp = 80,
+	random_element = 81,
+	hash = 82,
+	object = 83,
+	array = 84,
+	keys = 85,
+	values = 86,
+	pairs = 87,
+	interleave = 88,
 }
 
 local function bc_get_key(code, lookup)
@@ -256,10 +261,14 @@ function generate_bytecode(root, file)
 					all_const = false
 					break
 				end
-				if type(token.children[i].value) == 'table' then
-					local k
+				if std.type(token.children[i].value) == 'array' then
 					for k = 1, #token.children[i].value do
 						table.insert(p, std.str(token.children[i].value[k]))
+					end
+				elseif std.type(token.children[i].value) == 'object' then
+					for key, value in pairs(token.children[i].value) do
+						table.insert(p, std.str(key))
+						table.insert(p, std.str(value))
 					end
 				else
 					table.insert(p, std.str(token.children[i].value))
@@ -938,6 +947,23 @@ function generate_bytecode(root, file)
 			emit(bc.pop)
 			codegen_rules.recur_push(token.children[3])
 			emit(bc.label, endif_label)
+		end,
+
+		--OBJECT CONSTRUCTION
+		[tok.object] = function(token, file)
+			emit(bc.push, std.object())
+
+			for i = 1, #token.children do
+				codegen_rules.recur_push(token.children[i])
+				emit(bc.call, 'implode', 3)
+				emit(bc.call, 'update')
+			end
+		end,
+
+		--KEY-VALUE PAIR
+		[tok.key_value_pair] = function(token, file)
+			codegen_rules.recur_push(token.children[1])
+			codegen_rules.recur_push(token.children[2])
 		end,
 	}
 

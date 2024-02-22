@@ -34,10 +34,17 @@ local function PUSH(value)
 		table.insert(STACK, NULL)
 	elseif type(value) == 'table' then
 		--DEEP COPY tables into the stack. It's slower, but it prevents data from randomly mutating!
-		local result, i = {}
-		for i = 1, #value do
-			table.insert(result, value[i])
+		local result, i = setmetatable({}, getmetatable(value))
+		local meta = getmetatable(result)
+
+		if meta and not meta.is_array then
+			for key, val in pairs(value) do result[key] = val end
+		else
+			for i = 1, #value do
+				table.insert(result, value[i])
+			end
 		end
+
 		table.insert(STACK, result)
 	else
 		table.insert(STACK, value)
@@ -189,16 +196,20 @@ local functions = {
 			is_string = true
 			data = std.split(std.str(data), '')
 		end
+		local is_array = getmetatable(data)
+		if is_array then is_array = is_array.is_array end
+
+		local result
 		if type(index) ~= 'table' then
-			PUSH(data[std.num(index)])
+			if is_array then result = data[std.num(index)] else result = data[std.str(index)] end
 		else
-			local result = {}
+			result = {}
 			for i = 1, #index do
 				table.insert(result, data[std.num(index[i])])
 			end
 			if is_string then result = std.join(result, '') end
-			PUSH(result)
 		end
+		PUSH(result)
 	end,
 
 	--ARRAYSLICE
@@ -245,14 +256,15 @@ local functions = {
 	function()
 		local data, val = POP(), POP()
 		local result = false
-		if type(data) == 'table' then
-			local i
+		if std.type(data) == 'array' then
 			for i = 1, #data do
 				if data[i] == val then
 					result = true
 					break
 				end
 			end
+		elseif std.type(data) == 'object' then
+			result = data[std.str(val)] ~= nil
 		else
 			result = std.contains(std.str(data), val)
 		end
@@ -432,9 +444,6 @@ local functions = {
 
 	--STR
 	function() PUSH(std.str(POP()[1])) end,
-
-	--ARRAY
-	function() end, --Due to a quirk of the compiler, don't have to do anything.
 
 	--MORE MATH FUNCTIONS
 	mathfunc('floor'),
@@ -654,17 +663,24 @@ local functions = {
 	function()
 		local v = POP()
 		if type(v[1]) ~= 'table' then v[1] = {v[1]} end
-		local n = std.num(v[2])
 
-		--If index is negative, update starting at the end
-		if n < 0 then n = #v[1] + n + 1 end
-
-		if n > 0 then
-			--Update the value if non-negative (this can also increase array lengths)
+		local meta = getmetatable(v[1])
+		if meta and not meta.is_array then
+			local n = std.str(v[2])
 			v[1][n] = v[3]
 		else
-			--Insert at beginning if index is less than 1
-			table.insert(v[1], 1, v[3])
+			local n = std.num(v[2])
+
+			--If index is negative, update starting at the end
+			if n < 0 then n = #v[1] + n + 1 end
+
+			if n > 0 then
+				--Update the value if non-negative (this can also increase array lengths)
+				v[1][n] = v[3]
+			else
+				--Insert at beginning if index is less than 1
+				table.insert(v[1], 1, v[3])
+			end
 		end
 
 		PUSH(v[1])
@@ -676,16 +692,19 @@ local functions = {
 		if type(v[1]) ~= 'table' then v[1] = {v[1]} end
 		local n = std.num(v[2])
 
-		--If index is negative, insert starting at the end
-		if n < 0 then n = #v[1] + n + 2 end
+		local meta = getmetatable(v[1])
+		if not meta or meta.is_array then
+			--If index is negative, insert starting at the end
+			if n < 0 then n = #v[1] + n + 2 end
 
-		if n > #v[1] then
-			table.insert(v[1], v[3])
-		elseif n > 0 then
-			table.insert(v[1], n, v[3])
-		else
-			--Insert at beginning if index is less than 1
-			table.insert(v[1], 1, v[3])
+			if n > #v[1] then
+				table.insert(v[1], v[3])
+			elseif n > 0 then
+				table.insert(v[1], n, v[3])
+			else
+				--Insert at beginning if index is less than 1
+				table.insert(v[1], 1, v[3])
+			end
 		end
 		PUSH(v[1])
 	end,
@@ -717,6 +736,79 @@ local functions = {
 	--GENERATE SHA256 HASH OF A STRING
 	function()
 		PUSH( std.hash(std.str( POP()[1] )) )
+	end,
+
+	--FOLD ARRAY INTO OBJECT
+	function()
+		local result, array = std.object(), POP()[1]
+		if type(array) == 'table' then
+			for i = 1, #array, 2 do
+				result[std.str(array[i])] = array[i+1]
+			end
+		end
+		PUSH(result)
+	end,
+
+	--UNFOLD OBJECT INTO ARRAY
+	function()
+		local result, object = {}, POP()[1]
+		if type(object) == 'table' then
+			for key, value in pairs(object) do
+				table.insert(result, key)
+				table.insert(result, value)
+			end
+		end
+		PUSH(result)
+	end,
+
+	--GET OBJECT KEYS
+	function()
+		local result, object = {}, POP()[1]
+		if type(object) == 'table' then
+			for key, value in pairs(object) do
+				table.insert(result, key)
+			end
+		end
+		PUSH(result)
+	end,
+
+	--GET OBJECT VALUES
+	function()
+		local result, object = {}, POP()[1]
+		if type(object) == 'table' then
+			for key, value in pairs(object) do
+				table.insert(result, value)
+			end
+		end
+		PUSH(result)
+	end,
+
+	--GET OBJECT KEY-VALUE PAIRS
+	function()
+		local result, object = {}, POP()[1]
+		if type(object) == 'table' then
+			for key, value in pairs(object) do
+				table.insert(result, {key, value})
+			end
+		end
+		PUSH(result)
+	end,
+
+	--INTERLEAVE TWO ARRAYS
+	function()
+		local result, v = {}, POP()
+		if type(v[1]) == 'table' and type(v[2]) == 'table' then
+			local length = math.min(#v[1], #v[2])
+			for i = 1, length do
+				table.insert(result, v[1][i])
+				table.insert(result, v[2][i])
+			end
+			for i = length + 1, #v[1] do table.insert(result, v[1][i]) end
+			for i = length + 1, #v[2] do table.insert(result, v[2][i]) end
+		elseif type(v[1]) == 'table' then result = v[1]
+		elseif type(v[2]) == 'table' then result = v[2]
+		end
+		PUSH(result)
 	end,
 }
 
@@ -779,10 +871,14 @@ commands = {
 		local command_array = POP()
 		local cmd_array, i = {}
 		for i = 1, #command_array do
-			if type(command_array[i]) == 'table' then
-				local k
+			if std.type(command_array[i]) == 'array' then
 				for k = 1, #command_array[i] do
 					table.insert(cmd_array, std.str(command_array[i][k]))
+				end
+			elseif std.type(command_array[i]) == 'object' then
+				for key, value in pairs(command_array[i]) do
+					table.insert(cmd_array, std.str(key))
+					table.insert(cmd_array, std.str(value))
 				end
 			else
 				table.insert(cmd_array, std.str(command_array[i]))
@@ -858,7 +954,6 @@ commands = {
 	--COPY THE NTH STACK ELEMENT ONTO THE STACK AGAIN (BACKWARDS FROM TOP)
 	[10] = function(line, p1, p2)
 		PUSH(STACK[#STACK - p1])
-		-- error('AGGA')
 	end,
 
 	--DELETE VARIABLE
