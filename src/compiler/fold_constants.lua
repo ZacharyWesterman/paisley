@@ -711,18 +711,14 @@ function fold_constants(token)
 				token.text = '[]'
 				token.id = tok.lit_array
 			end
-		elseif type(c2.value) ~= 'number' then
+		elseif type(c2.value) ~= 'number' and std.type(val) ~= 'object' then
 			parse_error(token.line, token.col, 'Cannot use a non-number value as an array index', file)
 		else
 			local ix = c2.value
-			if type(ix) ~= 'number' then
-				parse_error(token.line, token.col, 'Cannot use a non-number value as an array index', file)
-			end
-
-			if ix < 1 then
+			if type(ix) == 'number' and ix < 1 then
 				parse_error(token.line, token.col, 'Indexes start at 1, but an index of '..ix..' was found', file)
 			end
-			result = val[ix]
+			if std.type(val) == 'object' then result = val[std.str(ix)] else result = val[ix] end
 			token.text = std.debug_str(result)
 			if type(result) == 'string' then token.text = '"' end
 		end

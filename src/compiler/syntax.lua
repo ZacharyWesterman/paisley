@@ -6,12 +6,26 @@ local rules = {
 		text = 3,
 		not_after = {tok.op_dot},
 		onmatch = function(token, file)
-			if token.children[3].id ~= tok.func_call then
-				parse_error(token.line, token.col, 'Dot notation can only be used with function calls', file)
-			end
+			local c3 = token.children[3]
+			if c3.id == tok.variable then
+				--Dot notation using variable names is just indexing with strings.
+				c3.id = token.string_open
+				c3.value = c3.text
+				local c1 = token.children[1]
 
-			table.insert(token.children[3].children, 1, token.children[1])
-			token.children = token.children[3].children
+				return {
+					id = tok.index,
+					line = token.children[2].line,
+					col = token.children[2].col,
+					text = '.',
+					children = {c1, c3},
+				}
+			elseif c3.id == tok.func_call then
+				table.insert(c3.children, 1, token.children[1])
+				token.children = c3.children
+			else
+				parse_error(token.children[2].line, token.children[2].col, 'Expected function name or object key after dot operator', file)
+			end
 		end,
 	},
 
