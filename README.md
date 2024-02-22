@@ -56,7 +56,7 @@ if {expression is true-ish} else
 end
 ```
 
-Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression’s trueness: false, null, zero, and empty strings are false-ish, everything else is true-ish. Arrays are always true-ish.
+Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression’s trueness: false, null, zero, and empty strings are false-ish, everything else is true-ish. Arrays and objects are always true-ish.
 
 ## Loops:
 While and For loops have a similar syntax to Lua:
@@ -104,7 +104,7 @@ You can also assign multiple variables at the same time.
 ```
 let a b c = 1 2 3
 
-#Alternately, you can assign variables from values in an array
+#Alternatively, you can assign variables from values in an array
 let list = {1:9}
 let a b c = {list}
 ```
@@ -118,7 +118,7 @@ let foo = {null}
 
 **REMEMBER:** All variables are global, so any “re-definition” of a variable just sets it to the new value.
 
-### Variable initialization
+### Variable Initialization:
 
 There is a special keyword for setting a variable's value if it hasn't been assigned already.
 ```
@@ -340,14 +340,14 @@ let object = {
 	),
 }
 ```
-In some cases, it can be useful to to create an *empty object*. To do so, just use the arrow operator by itself.
+In some cases, it can be useful to create an *empty object*. To do so, just use the arrow operator by itself.
 ```
 let object = {=>}
 print {'my object is "' (=>) '"'}
 ```
 
 Object values can of course be accessed the same way array values can, with the regular indexing `[]` syntax. However, attributes can also be accessed with dot notation.
-!he following lines do the exact same thing.
+The following lines do the exact same thing.
 ```
 print {object['name']}
 print {object.name}
@@ -357,7 +357,7 @@ print {object.name}
 Often you need to take an array and mutate every element in some way. While you could very well use a for loop for this, this operation comes up often enough that there is a convenient shorthand for it. See how in the following script, we're taking the array `x` and multiplying every element by `2`, then assigning the result to `y`.
 ```
 let x = {1,2,3}
-let y = {array()}
+let y = {,}
 for i in {x} do
 	let y = {append(y, x * 2)}
 end
@@ -371,7 +371,7 @@ let y = {i * 2 for i in x}
 Those of you familiar with Python will realize where the syntax comes from, and like in Python, you can filter out array elements based on a condition. See how in the following script, `x` is all numbers from 1 to 100, and we're selecting only those numbers divisible by `5`, and storing the result in `y`.
 ```
 let x = {1:100}
-let y = {array()}
+let y = {,}
 for i in {x} do
 	if {i % 5 = 0} then
 		let y = {append(y, x)}
