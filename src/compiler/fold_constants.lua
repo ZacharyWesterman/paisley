@@ -289,8 +289,19 @@ function fold_constants(token)
 	--Ternary operators are unique: if the condition is constant, they can be folded
 	if token.id == tok.ternary then
 		local child
+		local c3 = token.children[3]
+
+		--regardless of whether they're constant, we can deduce the type if both possible results have a type
+		if c2.type and c3.type and not token.type then
+			if c2.type == c3.type then
+				token.type = c2.type
+			else
+				token.type = 'any'
+			end
+		end
+
 		if not_const(c1) then return end
-		if std.bool(c1.value) then child = token.children[2] else child = token.children[3] end
+		if std.bool(c1.value) then child = c2 else child = c3 end
 
 		token.id = child.id
 		token.value = child.value
