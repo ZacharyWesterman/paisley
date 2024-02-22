@@ -201,8 +201,7 @@ local functions = {
 
 		local result
 		if type(index) ~= 'table' then
-			result = data[index]
-			-- if is_array then result = data[std.num(index)] else result = data[std.str(index)] end
+			if is_array then result = data[std.num(index)] else result = data[std.str(index)] end
 		else
 			result = {}
 			for i = 1, #index do
