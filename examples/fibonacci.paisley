@@ -16,9 +16,9 @@ subroutine fibonacci
         return
     end
 
-    let __prev = {__fibonacci[#__fibonacci-1]}
-    let fibonacci = {__fibonacci[#__fibonacci]}
-    for i in {(#__fibonacci+1):(n+1)} do
+    let __prev = {__fibonacci[&__fibonacci-1]}
+    let fibonacci = {__fibonacci[&__fibonacci]}
+    for i in {(&__fibonacci+1):(n+1)} do
         let fibonacci = {__prev + fibonacci}
         let __prev = {fibonacci - __prev}
         let __fibonacci{i} = {fibonacci}
