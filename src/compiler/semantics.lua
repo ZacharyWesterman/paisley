@@ -56,6 +56,12 @@ builtin_funcs = {
 	delete = 2,
 	select_random = 1,
 	hash = 1,
+	fold = 1,
+	unfold = 1,
+	keys = 1,
+	values = 1,
+	pairs = 1,
+	interleave = 2,
 }
 
 type_signatures = {
@@ -282,6 +288,30 @@ type_signatures = {
 		valid = {{'string'}},
 		out = 'string',
 	},
+	fold = {
+		valid = {{'array'}},
+		out = 'object',
+	},
+	unfold = {
+		valid = {{'object'}},
+		out = 'array',
+	},
+	keys = {
+		valid = {{'object'}},
+		out = 'array',
+	},
+	values = {
+		valid = {{'object'}},
+		out = 'array',
+	},
+	pairs = {
+		valid = {{'object'}, {'array'}},
+		out = 'array',
+	},
+	interleave = {
+		valid = {{'array'}},
+		out = 'array',
+	},
 
 	[tok.add] = {
 		valid = {{'number'}, {'array'}},
@@ -460,7 +490,8 @@ function SemanticAnalyzer(tokens, file)
 				children = token.children,
 			}
 			token.id = tok.object
-			token.text = ','
+			token.text = '{}'
+			token.type = 'object'
 			token.children = {new_token}
 		end
 	end)
@@ -522,7 +553,7 @@ function SemanticAnalyzer(tokens, file)
 
 			--Lambda is defined, so replace it with the appropriate node
 			local lambda_node, i, _ = lambdas[token.text][#lambdas[token.text]].node
-			for _, i in ipairs({'text', 'line', 'col', 'id', 'value'}) do
+			for _, i in ipairs({'text', 'line', 'col', 'id', 'value', 'type'}) do
 				token[i] = lambda_node[i]
 			end
 			token.children = lambda_node.children
@@ -554,7 +585,7 @@ function SemanticAnalyzer(tokens, file)
 	--Replace lambda definitions with the appropriate node.
 	recurse(root, {tok.lambda}, nil, function(token)
 		local lambda_node, i, _ = token.children[1]
-		for _, i in ipairs({'text', 'line', 'col', 'id', 'value'}) do
+		for _, i in ipairs({'text', 'line', 'col', 'id', 'value', 'type'}) do
 			token[i] = lambda_node[i]
 		end
 		token.children = lambda_node.children
@@ -672,7 +703,7 @@ function SemanticAnalyzer(tokens, file)
 		if not token.children or #token.children ~= 1 then return end
 
 		local child = token.children[1]
-		for _, key in ipairs({'value', 'id', 'text', 'line', 'col'}) do
+		for _, key in ipairs({'value', 'id', 'text', 'line', 'col', 'type'}) do
 			token[key] = child[key]
 		end
 		token.children = child.children
@@ -731,7 +762,7 @@ function SemanticAnalyzer(tokens, file)
 			if #token.children[2].children > 1 then
 				token.children[2].id = tok.array_concat
 			else
-				for _, i in ipairs({'text', 'line', 'col', 'id', 'value'}) do
+				for _, i in ipairs({'text', 'line', 'col', 'id', 'value', 'type'}) do
 					token.children[2][i] = token.children[2].children[1][i]
 				end
 				token.children[2].children = token.children[2].children[1].children

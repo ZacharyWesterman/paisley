@@ -100,6 +100,12 @@ local call_codes = {
 	lerp = 81,
 	select_random = 82,
 	hash = 83,
+	fold = 84,
+	unfold = 85,
+	keys = 86,
+	values = 87,
+	pairs = 88,
+	interleave = 89,
 }
 
 local function bc_get_key(code, lookup)

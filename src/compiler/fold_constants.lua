@@ -247,6 +247,51 @@ func_operations = {
 	end,
 
 	hash = std.hash,
+
+	--Object-related functions
+	fold = function(array)
+		local result = std.object()
+		for i = 1, #array, 2 do
+			result[std.str(array[i])] = array[i+1]
+		end
+		return result
+	end,
+	unfold = function(object)
+		local result = {}
+		for key, value in pairs(object) do
+			table.insert(result, key)
+			table.insert(result, value)
+		end
+		return result
+	end,
+
+	keys = function(object)
+		local result = {}
+		for key, value in pairs(object) do table.insert(result, key) end
+		return result
+	end,
+	values = function(object)
+		local result = {}
+		for key, value in pairs(object) do table.insert(result, value) end
+		return result
+	end,
+	pairs = function(object)
+		local result = {}
+		for key, value in pairs(object) do table.insert(result, {key, value}) end
+		return result
+	end,
+
+	interleave = function(array1, array2)
+		local result, length = {}, math.min(#array1, #array2)
+		for i = 1, length do
+			table.insert(result, array1[i])
+			table.insert(result, array2[i])
+		end
+
+		for i = length + 1, #array1 do table.insert(result, array1[i]) end
+		for i = length + 1, #array2 do table.insert(result, array2[i]) end
+		return result
+	end,
 }
 
 local function number_op(v1, v2, operator)
@@ -535,13 +580,16 @@ function fold_constants(token)
 			--Fold values of only the deterministic functions
 			if token.value ~= nil then
 				token.text = tostring(token.value)
-				local tp = type(token.value)
+				local tp = std.type(token.value)
 				if tp == 'boolean' then token.id = tok.lit_boolean
 				elseif tp == 'number' then token.id = tok.lit_number
 				elseif tp == 'string' then token.id = tok.string_open
-				elseif tp == 'table' then
+				elseif tp == 'array' then
 					token.id = tok.lit_array
 					token.text = '[]'
+				elseif tp == 'object' then
+					token.id = tok.lit_object
+					token.text = '{}'
 				else
 					parse_error(token.line, token.col, 'COMPILER BUG: Folding of function "'..token.text..'" resulted in data of type "'..tp..'"!', file)
 				end

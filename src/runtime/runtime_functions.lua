@@ -740,6 +740,79 @@ local functions = {
 	function()
 		PUSH( std.hash(std.str( POP()[1] )) )
 	end,
+
+	--FOLD ARRAY INTO OBJECT
+	function()
+		local result, array = std.object(), POP()[1]
+		if type(array) == 'table' then
+			for i = 1, #array, 2 do
+				result[std.str(array[i])] = array[i+1]
+			end
+		end
+		PUSH(result)
+	end,
+
+	--UNFOLD OBJECT INTO ARRAY
+	function()
+		local result, object = {}, POP()[1]
+		if type(object) == 'table' then
+			for key, value in pairs(object) do
+				table.insert(result, key)
+				table.insert(result, value)
+			end
+		end
+		PUSH(result)
+	end,
+
+	--GET OBJECT KEYS
+	function()
+		local result, object = {}, POP()[1]
+		if type(object) == 'table' then
+			for key, value in pairs(object) do
+				table.insert(result, key)
+			end
+		end
+		PUSH(result)
+	end,
+
+	--GET OBJECT VALUES
+	function()
+		local result, object = {}, POP()[1]
+		if type(object) == 'table' then
+			for key, value in pairs(object) do
+				table.insert(result, value)
+			end
+		end
+		PUSH(result)
+	end,
+
+	--GET OBJECT KEY-VALUE PAIRS
+	function()
+		local result, object = {}, POP()[1]
+		if type(object) == 'table' then
+			for key, value in pairs(object) do
+				table.insert(result, {key, value})
+			end
+		end
+		PUSH(result)
+	end,
+
+	--INTERLEAVE TWO ARRAYS
+	function()
+		local result, v = {}, POP()
+		if type(v[1]) == 'table' and type(v[2]) == 'table' then
+			local length = math.min(#v[1], #v[2])
+			for i = 1, length do
+				table.insert(result, v[1][i])
+				table.insert(result, v[2][i])
+			end
+			for i = length + 1, #v[1] do table.insert(result, v[1][i]) end
+			for i = length + 1, #v[2] do table.insert(result, v[2][i]) end
+		elseif type(v[1]) == 'table' then result = v[1]
+		elseif type(v[2]) == 'table' then result = v[2]
+		end
+		PUSH(result)
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT
