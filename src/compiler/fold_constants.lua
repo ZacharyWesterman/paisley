@@ -452,6 +452,8 @@ function fold_constants(token)
 							break
 						end
 					end
+				elseif c2.id == tok.lit_object then
+					result = c2.value[std.str(c1.value)] ~= nil
 				else
 					result = std.contains(std.str(c2.value), std.str(c1.value))
 				end

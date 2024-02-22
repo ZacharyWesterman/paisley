@@ -256,14 +256,15 @@ local functions = {
 	function()
 		local data, val = POP(), POP()
 		local result = false
-		if type(data) == 'table' then
-			local i
+		if std.type(data) == 'array' then
 			for i = 1, #data do
 				if data[i] == val then
 					result = true
 					break
 				end
 			end
+		elseif std.type(data) == 'object' then
+			result = data[std.str(val)] ~= nil
 		else
 			result = std.contains(std.str(data), val)
 		end
