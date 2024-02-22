@@ -645,7 +645,7 @@ local rules = {
 
 	--SUB variable assignment
 	{
-		match = {{tok.kwd_let}, {tok.var_assign}, {tok.expression}, {tok.op_assign}, {tok.command, tok.expression, tok.string}},
+		match = {{tok.kwd_let}, {tok.var_assign}, {tok.expression, tok.comparison}, {tok.op_assign}, {tok.command, tok.expression, tok.string}},
 		id = tok.let_stmt,
 		keep = {2, 5, 3},
 		text = 1,

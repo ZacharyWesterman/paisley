@@ -943,6 +943,23 @@ function generate_bytecode(root, file)
 			codegen_rules.recur_push(token.children[3])
 			emit(bc.label, endif_label)
 		end,
+
+		--OBJECT CONSTRUCTION
+		[tok.object] = function(token, file)
+			emit(bc.push, std.object())
+
+			for i = 1, #token.children do
+				codegen_rules.recur_push(token.children[i])
+				emit(bc.call, 'implode', 3)
+				emit(bc.call, 'update')
+			end
+		end,
+
+		--KEY-VALUE PAIR
+		[tok.key_value_pair] = function(token, file)
+			codegen_rules.recur_push(token.children[1])
+			codegen_rules.recur_push(token.children[2])
+		end,
 	}
 
 	enter(root)
