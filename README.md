@@ -157,7 +157,7 @@ Proper use of subroutines can let you easily reuse common code.
 
 Note that it is also possible to jump to subroutines with an arbitrary label ID. See how in the following example, the program will randomly call one of 5 possible subroutines, and then print "Subroutine exists".
 ```
-if gosub "{irandom(1,5)}" then
+if gosub "{random_int(1,5)}" then
 	print "Subroutine exists"
 end
 
@@ -174,15 +174,15 @@ Lambdas are defined with the syntax `![expression]`, and are referred to with th
 
 Below is an example of lambda usage. Both the top and bottom commands will print 5 random numbers in the range 0-100.
 ```
-print {![irandom(0, 100)], !, !, !, !}
+print {![random_int(0, 100)], !, !, !, !}
 
 #do the same thing, but using the define keyword
-define {!rnd[irandom(0, 100)]}
+define {!rnd[random_int(0, 100)]}
 print {!rnd, !rnd, !rnd, !rnd, !rnd}
 ```
 Note that either of the above commands are equivalent to the following:
 ```
-print {irandom(0, 100), irandom(0, 100), irandom(0, 100), irandom(0, 100), irandom(0, 100)}
+print {random_int(0, 100), random_int(0, 100), random_int(0, 100), random_int(0, 100), random_int(0, 100)}
 ```
 
 Unlike variables, lambdas are restricted to their scope. Thus, for example, if you define a lambda in a subroutine, you cannot use it outside the subroutine, unless that outside scope also has a lambda definition with the same identifier.
@@ -253,10 +253,10 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Objects, e.g. `("a" => 1, "b" => 2)`
 
 ### Built-in functions:
-- Random integer: `irandom(min_value, max_value) -> number`
-- Random real number: `frandom(min_value, max_value) -> number`
-- Select a random element from a list: `select_random(array) -> any`
-- Difference between two strings: `worddiff(str1, str2) -> number` (levenschtein distance)
+- Random integer: `random_int(min_value, max_value) -> number`
+- Random real number: `random_float(min_value, max_value) -> number`
+- Select a random element from a list: `random_element(array) -> any`
+- Difference between two strings: `word_diff(str1, str2) -> number` (levenschtein distance)
 - Euclidean distance (numbers or vectors of N dimension): `dist(point1, point2) -> number`
 - Trig functions: `sin(x), cos(x), tan(x), asin(x), acos(x), atan(x), atan2(x, y) -> number`
 - Square root: `sqrt(x) -> number`
@@ -274,7 +274,6 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Convert to boolean: `bool(value)`
 - Convert to number: `num(value)`
 - Convert to string: `str(value)`
-- Convert to array: `array(value)`
 - Round down: `floor(value) -> number`
 - Round up: `ceil(value) -> number`
 - Round to nearest integer: `round(value) -> number`
@@ -303,8 +302,8 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Insert an element in an array: `insert(array, index, value) -> array`
 - Delete an element from an array: `delete(array, index) -> array`
 - Generate the SHA256 hash of a string: `hash(string) -> string`
-- Convert an array into an object: `fold(array) -> object`, i.e. the array `(key1, val1, key2, val2)` will result in the object `(key1 => val1, key2 => val2)`
-- Convert an object into an array: `unfold(object) -> array`, i.e. the object `(key1 => val1, key2 => val2)` will result in the array `(key1, val1, key2, val2)`
+- Convert an array into an object: `object(array) -> object`, i.e. the array `(key1, val1, key2, val2)` will result in the object `(key1 => val1, key2 => val2)`
+- Convert an object into an array: `array(object) -> array`, i.e. the object `(key1 => val1, key2 => val2)` will result in the array `(key1, val1, key2, val2)`
 - List an object's keys: `keys(object) -> array`
 - List an object's values: `values(object) -> array`
 - Get a list of key-value pairs for an object or array: `pairs(object/array) -> array`, i.e. the object `(key1 => val1, key2 => val2)` will result in `((key1, value1), (key2, value2))`; and the array `(val1, val2)` will result in `((1, val1), (2, val2))`

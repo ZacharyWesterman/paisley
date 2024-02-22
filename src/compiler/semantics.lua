@@ -1,7 +1,7 @@
 builtin_funcs = {
-	irandom = 2,
-	frandom = 2,
-	worddiff = 2,
+	random_int = 2,
+	random_float = 2,
+	word_diff = 2,
 	dist = 2,
 	sin = 1,
 	cos = 1,
@@ -24,7 +24,6 @@ builtin_funcs = {
 	bool = 1,
 	num = 1,
 	str = 1,
-	array = -2,
 	floor = 1,
 	ceil = 1,
 	round = 1,
@@ -54,10 +53,10 @@ builtin_funcs = {
 	update = 3,
 	insert = 3,
 	delete = 2,
-	select_random = 1,
+	random_element = 1,
 	hash = 1,
-	fold = 1,
-	unfold = 1,
+	object = 1,
+	array = 1,
 	keys = 1,
 	values = 1,
 	pairs = 1,
@@ -65,15 +64,15 @@ builtin_funcs = {
 }
 
 type_signatures = {
-	irandom = {
+	random_int = {
 		valid = {{'number'}},
 		out = 'number',
 	},
-	frandom = {
+	random_float = {
 		valid = {{'number'}},
 		out = 'number',
 	},
-	worddiff = {
+	word_diff = {
 		valid = {{'string'}},
 		out = 'number',
 	},
@@ -181,9 +180,6 @@ type_signatures = {
 	str = {
 		out = 'string',
 	},
-	array = {
-		out = 'array',
-	},
 	index = {
 		valid = {{'array', 'any'}, {'string', 'any'}},
 		out = 'number',
@@ -280,7 +276,7 @@ type_signatures = {
 		valid = {{'array', 'number'}},
 		out = 'array',
 	},
-	select_random = {
+	random_element = {
 		valid = {{'array'}},
 		out = 'any',
 	},
@@ -288,11 +284,11 @@ type_signatures = {
 		valid = {{'string'}},
 		out = 'string',
 	},
-	fold = {
+	object = {
 		valid = {{'array'}},
 		out = 'object',
 	},
-	unfold = {
+	array = {
 		valid = {{'object'}},
 		out = 'array',
 	},

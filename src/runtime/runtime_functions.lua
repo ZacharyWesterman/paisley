@@ -445,9 +445,6 @@ local functions = {
 	--STR
 	function() PUSH(std.str(POP()[1])) end,
 
-	--ARRAY
-	function() end, --Due to a quirk of the compiler, don't have to do anything.
-
 	--MORE MATH FUNCTIONS
 	mathfunc('floor'),
 	mathfunc('ceil'),

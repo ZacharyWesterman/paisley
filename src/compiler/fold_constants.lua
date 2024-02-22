@@ -104,8 +104,7 @@ func_operations = {
 	bool = function(data) return std.bool(data) end,
 	str = function(data) return std.str(data) end,
 	num = function(data) return std.num(data) end,
-	array = function(values) return values end, --Interesting short-cut due to compiler quirks!
-	worddiff = function(a, b, token, file) return lev(a, b) end,
+	word_diff = function(a, b, token, file) return lev(a, b) end,
 	split = function(a, b) return std.split(a, b) end,
 	join = function(a, b) return std.join(a, b) end,
 	type = function(a) return std.type(a) end,
@@ -249,14 +248,14 @@ func_operations = {
 	hash = std.hash,
 
 	--Object-related functions
-	fold = function(array)
+	object = function(array)
 		local result = std.object()
 		for i = 1, #array, 2 do
 			result[std.str(array[i])] = array[i+1]
 		end
 		return result
 	end,
-	unfold = function(object)
+	array = function(object)
 		local result = {}
 		for key, value in pairs(object) do
 			table.insert(result, key)
@@ -738,6 +737,7 @@ function fold_constants(token)
 			null = tok.lit_null,
 			boolean = tok.lit_boolean,
 			number = tok.lit_number,
+			object = tok.lit_object,
 		}
 		token.id = rs[token.type]
 	elseif token.id == tok.key_value_pair then
