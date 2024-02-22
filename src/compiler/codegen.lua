@@ -256,10 +256,14 @@ function generate_bytecode(root, file)
 					all_const = false
 					break
 				end
-				if type(token.children[i].value) == 'table' then
-					local k
+				if std.type(token.children[i].value) == 'array' then
 					for k = 1, #token.children[i].value do
 						table.insert(p, std.str(token.children[i].value[k]))
+					end
+				elseif std.type(token.children[i].value) == 'object' then
+					for key, value in pairs(token.children[i].value) do
+						table.insert(p, std.str(key))
+						table.insert(p, std.str(value))
 					end
 				else
 					table.insert(p, std.str(token.children[i].value))

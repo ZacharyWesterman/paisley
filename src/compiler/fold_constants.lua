@@ -376,6 +376,8 @@ function fold_constants(token)
 		token.id = tok.lit_object
 		token.value = value
 		token.text = '{}'
+		token.type = 'object'
+		token.children = {}
 		return
 	end
 

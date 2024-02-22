@@ -442,7 +442,10 @@ function SemanticAnalyzer(tokens, file)
 			end
 		end
 
-		if is_object then token.id = tok.object end
+		if is_object then
+			token.id = tok.object
+			token.type = 'object'
+		end
 		token.children = kids
 	end)
 

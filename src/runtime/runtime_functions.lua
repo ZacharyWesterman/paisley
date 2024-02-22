@@ -666,17 +666,24 @@ local functions = {
 	function()
 		local v = POP()
 		if type(v[1]) ~= 'table' then v[1] = {v[1]} end
-		local n = std.num(v[2])
 
-		--If index is negative, update starting at the end
-		if n < 0 then n = #v[1] + n + 1 end
-
-		if n > 0 then
-			--Update the value if non-negative (this can also increase array lengths)
+		local meta = getmetatable(v[1])
+		if meta and not meta.is_array then
+			local n = std.str(v[2])
 			v[1][n] = v[3]
 		else
-			--Insert at beginning if index is less than 1
-			table.insert(v[1], 1, v[3])
+			local n = std.num(v[2])
+
+			--If index is negative, update starting at the end
+			if n < 0 then n = #v[1] + n + 1 end
+
+			if n > 0 then
+				--Update the value if non-negative (this can also increase array lengths)
+				v[1][n] = v[3]
+			else
+				--Insert at beginning if index is less than 1
+				table.insert(v[1], 1, v[3])
+			end
 		end
 
 		PUSH(v[1])
@@ -791,10 +798,14 @@ commands = {
 		local command_array = POP()
 		local cmd_array, i = {}
 		for i = 1, #command_array do
-			if type(command_array[i]) == 'table' then
-				local k
+			if std.type(command_array[i]) == 'array' then
 				for k = 1, #command_array[i] do
 					table.insert(cmd_array, std.str(command_array[i][k]))
+				end
+			elseif std.type(command_array[i]) == 'object' then
+				for key, value in pairs(command_array[i]) do
+					table.insert(cmd_array, std.str(key))
+					table.insert(cmd_array, std.str(value))
 				end
 			else
 				table.insert(cmd_array, std.str(command_array[i]))
