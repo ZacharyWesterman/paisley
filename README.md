@@ -238,17 +238,19 @@ An extra note on slices: when slicing an array or a string, it's possible to rep
 So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` would result in `(4,3,2,1)`, etc.
 
 ### Allowed values:
-- hexadecimal numbers, `0xFFFF`
-- binary numbers, `0b1111`
-- decimal numbers, `1.2345` or `12345` or `1_000_000`. Note that underscores are ignored by the compiler, you can use them for readability purposes.
-- booleans, `true` or `false`
+- Hexadecimal numbers, `0xFFFF`
+- Binary numbers, `0b1111`
+- Decimal numbers, `1.2345` or `12345` or `1_000_000`. Note that underscores are ignored by the compiler, you can use them for readability purposes.
+- Booleans, `true` or `false`
 - `null`, equivalent to Lua's "nil"
 - Strings with interpolation allowed, `"some text"`
 - Strings with NO interpolation, `'some text'`
-- variables, `var_name`, `x`, etc.
+- Variables, `var_name`, `x`, etc.
 - The "global" variable, containing the names of all currently defined variables, `@`
 - The "command list" variable, containing the names of all allowed commands, `$`
 - Inline command evaluation, `${}`
+- Arrays, e.g. `(1,2,3,4,5)`
+- Objects, e.g. `("a" => 1, "b" => 2)`
 
 ### Built-in functions:
 - Random integer: `irandom(min_value, max_value) -> number`
@@ -301,6 +303,12 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Insert an element in an array: `insert(array, index, value) -> array`
 - Delete an element from an array: `delete(array, index) -> array`
 - Generate the SHA256 hash of a string: `hash(string) -> string`
+- Convert an array into an object: `fold(array) -> object`, i.e. the array `(key1, val1, key2, val2)` will result in the object `(key1 => val1, key2 => val2)`
+- Convert an object into an array: `unfold(object) -> array`, i.e. the object `(key1 => val1, key2 => val2)` will result in the array `(key1, val1, key2, val2)`
+- List an object's keys: `keys(object) -> array`
+- List an object's values: `values(object) -> array`
+- Get a list of key-value pairs for an object or array: `pairs(object/array) -> array`, i.e. the object `(key1 => val1, key2 => val2)` will result in `((key1, value1), (key2, value2))`; and the array `(val1, val2)` will result in `((1, val1), (2, val2))`
+- Interleave the values of two arrays: `interleave(array) -> array`, i.e. the arrays `(1,2,3)` and `(4,5,6)` will result in `(1,4,2,5,3,6)`
 
 Note that functions can be called in one of two ways:
 1. The usual syntax, e.g. `split(var, delim)`
@@ -314,6 +322,37 @@ For example, `(1,2,3)` is an array, as are `array(1,2,3)`, `(1,2,3,)`, `(1,)` an
 
 Note that an expression must contain a comma `,` or slice `:` operator to be considered an array, just parentheses is not enough.
 So `(1,)` is an array and `(1:1)` is an equivalent array, but `(1)` is a number, not an array.
+
+Basically, if there's a comma, you have an array.
+
+### Objects in expressions
+Objects function very much like JavaScript objects. The keys are always strings, and the values can be anything.
+To define an object, just construct a list of key-value pairs, which are any two expressions separated by an arrow, e.g. `"key" => "value"`.
+Note that unlike in Lua, you **cannot** mix array and object syntax; it's either one or the other.
+
+Like with arrays, key-value pairs can have an optional trailing comma.
+```
+let object = {
+	'name' => 'Jerry',
+	'age' => 30,
+	'friend' => (
+		'name' => 'Susan',
+		'age' => 35,
+	)
+}
+```
+In some cases, it can be useful to to create an *empty object*. To do so, just use the arrow operator by itself.
+```
+let object = {=>}
+print {'my object is "' (=>) '"'}
+```
+
+Object values can of course be accessed the same way array values can, with the regular indexing `[]` syntax. However, attributes can also be accessed with dot notation.
+!he following lines do the exact same thing.
+```
+print {object['name']}
+print {object.name}
+```
 
 ### List comprehension
 Often you need to take an array and mutate every element in some way. While you could very well use a for loop for this, this operation comes up often enough that there is a convenient shorthand for it. See how in the following script, we're taking the array `x` and multiplying every element by `2`, then assigning the result to `y`.
