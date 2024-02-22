@@ -226,7 +226,7 @@ Expressions also give access to a full suite of operators and functions, listed 
 - comparison (equality), `=` or `==` (both are the same)
 - comparison (not equal), `!=` or `~=` (both are the same)
 - check for whether variables are set, `exists` (e.g. `x exists`)
-- string or array length, `#` (e.g. `#variable`)
+- string or array length, `&` (e.g. `&variable`)
 - array slicing, `:`. Note that slices are inclusive of both their upper and lower bounds (e.g. `0:5` gives `(0,1,2,3,4,5)`)
 - array listing, `,` (e.g. `1,2,3` is an array with 3 elements, `(1,)` is an array with 1 element, `(,)` has 0 elements, etc). can combine this with slicing, e.g. `1,3:5,9` gives `(1,3,4,5,9)`.
 - pattern matching, `like`, checks whether a string matches a given pattern (e.g. `"123" like "%d+"` gives `true`).
@@ -330,7 +330,7 @@ Objects function very much like JavaScript objects. The keys are always strings,
 To define an object, just construct a list of key-value pairs, which are any two expressions separated by an arrow, e.g. `"key" => "value"`.
 Note that unlike in Lua, you **cannot** mix array and object syntax; it's either one or the other.
 
-Like with arrays, key-value pairs can have an optional trailing comma.
+Like with arrays, key-value pairs are allowed to have an optional trailing comma.
 ```
 let object = {
 	'name' => 'Jerry',
@@ -338,7 +338,7 @@ let object = {
 	'friend' => (
 		'name' => 'Susan',
 		'age' => 35,
-	)
+	),
 }
 ```
 In some cases, it can be useful to to create an *empty object*. To do so, just use the arrow operator by itself.

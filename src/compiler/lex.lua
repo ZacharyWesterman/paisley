@@ -33,7 +33,7 @@ opers = {
 	['%'] = tok.op_mod,
 	['^'] = tok.op_exponent,
 	[':'] = tok.op_slice,
-	['#'] = tok.op_count,
+	['&'] = tok.op_count,
 	['not'] = tok.op_not,
 	['and'] = tok.op_and,
 	['or'] = tok.op_or,
@@ -213,6 +213,12 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					if match then tok_ignore = true end
 				end
 
+				--Comments
+				if not match then
+					match = text:match('^#[^\n]*')
+					if match then tok_ignore = true end
+				end
+
 				--string start
 				if not match then
 					match = text:match('^[\'"]')
@@ -222,14 +228,14 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					end
 				end
 
-				-- --expression start
-				-- if not match then
-				-- 	match = text:match('^{')
-				-- 	if match then
-				-- 		tok_type = tok.expr_open
-				-- 		table.insert(scopes, match)
-				-- 	end
-				-- end
+				--expression start
+				if not match then
+					match = text:match('^{')
+					if match then
+						tok_type = tok.expr_open
+						table.insert(scopes, match)
+					end
+				end
 
 				--expression end
 				if not match then
