@@ -401,7 +401,7 @@ local functions = {
 					if target then target = math.min(target, std.num(v[i][k])) else target = std.num(v[i][k]) end
 				end
 			else
-				if target then target = math.min(target, std.num(v[i][k])) else target = std.num(v[i][k]) end
+				if target then target = math.min(target, std.num(v[i])) else target = std.num(v[i]) end
 			end
 		end
 		PUSH(target)
@@ -417,7 +417,7 @@ local functions = {
 					if target then target = math.max(target, std.num(v[i][k])) else target = std.num(v[i][k]) end
 				end
 			else
-				if target then target = math.max(target, std.num(v[i][k])) else target = std.num(v[i][k]) end
+				if target then target = math.max(target, std.num(v[i])) else target = std.num(v[i]) end
 			end
 		end
 		PUSH(target)
@@ -495,7 +495,7 @@ local functions = {
 	--STRING REPLACE
 	function()
 		local v = POP()
-		PUSH( std.join(std.split(std.str(v[3]), std.str(v[2])), std.str(v[1])) )
+		PUSH( std.join(std.split(std.str(v[1]), std.str(v[2])), std.str(v[3])) )
 	end,
 
 	--JSON_ENCODE
@@ -742,7 +742,7 @@ local functions = {
 		local v = POP()
 		if type(v[1]) ~= 'table' then PUSH(v[1])
 		else
-			PUSH(v[1][math.random(0, #v[1])])
+			PUSH(v[1][math.random(1, #v[1])])
 		end
 	end,
 

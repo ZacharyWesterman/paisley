@@ -768,6 +768,7 @@ local rules = {
 		keep = {3, 1, 5},
 		text = 'ternary',
 		id = tok.ternary,
+		not_after = {tok.op_dot, tok.op_plus, tok.op_minus, tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod},
 	},
 }
 
