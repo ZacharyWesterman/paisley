@@ -792,6 +792,16 @@ function generate_bytecode(root, file)
 		[tok.gosub_stmt] = function(token, file)
 			if token.ignore then return end
 
+			--Push any parameters passed to the gosub
+			if #token.children > 1 then
+				for i = 2, #token.children do
+					codegen_rules.recur_push(token.children[i])
+				end
+				emit(bc.call, 'implode', #token.children - 1)
+			else
+				emit(bc.push, {})
+			end
+
 			if token.dynamic then
 				local i
 				local end_label, label_var = label_id(), label_id()

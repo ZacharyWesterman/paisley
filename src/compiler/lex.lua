@@ -369,7 +369,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					if match then tok_type = tok.variable end
 				end
 
-				--Special "list of vars" and "list of commands" variables
+				--Special "list of params" and "list of commands" variables
 				if not match then
 					match = text:match('^[@%$]')
 					if match then tok_type = tok.variable end

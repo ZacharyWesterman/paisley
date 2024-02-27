@@ -525,9 +525,9 @@ function SemanticAnalyzer(tokens, file)
 	--Check subroutine references.
 	recurse(root, {tok.gosub_stmt}, function(token)
 		local ch = token.children[1]
-		if #ch.children > 1 then
-			parse_error(token.line, token.col, 'More than one subroutine given to '..token.text, file)
-		end
+		-- if #ch.children > 1 then
+		-- 	parse_error(token.line, token.col, 'More than one subroutine given to '..token.text, file)
+		-- end
 
 		token.children = ch.children
 	end)
@@ -1031,6 +1031,8 @@ function SemanticAnalyzer(tokens, file)
 			local tp = variables[token.text]
 			if tp then
 				token.type = tp[#tp]
+			elseif token.text == '@' or token.text == '$' then
+				token.type = 'array'
 			end
 		end
 	end

@@ -132,7 +132,7 @@ end
 ```
 
 ## Subroutines:
-Subroutines are a lot like functions, except they do not take any parameters, and do not return any value.
+Subroutines are a lot like functions. They can take parameters, however they do not return any value. Instead, they must set a variable to effectively "return" that value.
 In Paisley, this does not matter much since all variables are global. Just keep in mind that you don't accidentally overwrite variables that are needed elsewhere.
 
 An example subroutine usage might look like the following:
@@ -246,8 +246,8 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Strings with interpolation allowed, `"some text"`
 - Strings with NO interpolation, `'some text'`
 - Variables, `var_name`, `x`, etc.
-- The "global" variable, containing the names of all currently defined variables, `@`
-- The "command list" variable, containing the names of all allowed commands, `$`
+- The "parameter list" variable, an array containing any values passed to the current subroutine, `@`
+- The "command list" variable, an array containing the names of all allowed commands, `$`
 - Inline command evaluation, `${}`
 - Arrays, e.g. `(1,2,3,4,5)`
 - Objects, e.g. `("a" => 1, "b" => 2)`
