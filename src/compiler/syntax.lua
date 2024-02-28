@@ -384,7 +384,7 @@ local rules = {
 		keep = {2},
 		text = 1,
 		onmatch = function(token, file)
-			if token.children[1].meta_id ~= tok.statement and token.children[1].id ~= tok.gosub_stmt then
+			if token.children[1].id ~= tok.command and token.children[1].id ~= tok.gosub_stmt then
 				parse_error(token.line, token.col, 'Malformed statement inside command eval block. Must be a single command or gosub', file)
 			end
 		end,
