@@ -322,8 +322,8 @@ Note that functions can be called in one of two ways:
 Both are exactly equivalent, the latter syntax is included simply for convenience.
 
 ### Arrays in expressions
-While you can absolutely create an array using the `array(...)` function, the simpler way to do it is to just include a comma in expressions.
-For example, `(1,2,3)` is an array, as are `array(1,2,3)`, `(1,2,3,)`, `(1,)` and `(,)`. Note that expressions *are* allowed to have a trailing comma, which simply indicates that the expression is an array with a single element. Likewise, a single comma by itself indicates an empty array.
+The comma `,` and slice `:` operator always indicate an array.
+For example, `(1,2,3)` is an array, as are `(1,2,3,)`, `(1,)` and `(,)`. Note that expressions *are* allowed to have a trailing comma, which simply indicates that the expression is an array with a single element. Likewise, a single comma by itself indicates an empty array.
 
 Note that an expression must contain a comma `,` or slice `:` operator to be considered an array, just parentheses is not enough.
 So `(1,)` is an array and `(1:1)` is an equivalent array, but `(1)` is a number, not an array.
