@@ -330,6 +330,23 @@ So `(1,)` is an array and `(1:1)` is an equivalent array, but `(1)` is a number,
 
 Basically, if there's a comma, you have an array.
 
+To access an array's elements, use the usual square-brackets syntax, e.g.
+```
+let array = {'a', 'b', 'c'}
+print {array[1]} #prints "a"
+```
+And to change an array's elements,
+```
+let array{2} = 'd' #array is now ('a', 'd', 'c')
+let array{-1} = 'e' #array is now ('a', 'd', 'e')
+```
+You can also append to an array,
+```
+let array{} = 'f' #array is now ('a', 'd', 'e', 'f')
+```
+
+Note that array indexes start at 1, and can be negative to start from the end of the array instead of the beginning (e.g. -1 is the last element, -2 is the second to last, etc).
+
 ### Objects in expressions
 Objects function very much like JavaScript objects. The keys are always strings, and the values can be anything.
 To define an object, just construct a list of key-value pairs, which are any two expressions separated by an arrow, e.g. `"key" => "value"`.
@@ -357,6 +374,15 @@ The following lines do the exact same thing.
 ```
 print {object['name']}
 print {object.name}
+```
+
+Like with arrays, object values can be added or changed with the following syntax,
+```
+let object{'name'} = 'Jekyll'
+```
+However, you cannot use the append syntax on an object, as it does not make sense in that context. So the following will not work:
+```
+let object{} = 'some value'
 ```
 
 ### List comprehension
