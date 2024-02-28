@@ -132,13 +132,15 @@ end
 ```
 
 ## Subroutines:
-Subroutines are a lot like functions, except they do not take any parameters, and do not return any value.
-In Paisley, this does not matter much since all variables are global. Just keep in mind that you don't accidentally overwrite variables that are needed elsewhere.
+Proper use of subroutines can let you easily reuse common code.
+
+Subroutines are basically user-defined functions that are called as if they were commands. Like commands, they can take parameters and optionally return a value, but they don't have to.
+Unlike commands, they can modify global variables, which may or may not be desired. Just keep it in mind when writing subroutines.
 
 An example subroutine usage might look like the following:
 ```
 subroutine print_numbers
-	for i in {0:max_number} do
+	for i in {0 : @[1]} do
 		if {i > 30} do
 			print "whoa, too big!"
 			return
@@ -147,13 +149,17 @@ subroutine print_numbers
 	end
 end
 
-let max_number = 10
-gosub print_numbers
+gosub print_numbers 10
+gosub print_numbers 50
 
-let max_number = 50
-gosub print_numbers
+subroutine power
+    return {@[1] ^ @[2]}
+end
+
+print ${gosub power 2 10}
 ```
-Proper use of subroutines can let you easily reuse common code.
+See how in the above, the `@` variable stores any parameters passed to a subroutine as an array, so the first parameter is `@[1]`, the second is `@[2]` and so on.
+Also see that subroutines return values the same way that commands do, using the inline command evaluation syntax, `${...}`.
 
 Note that it is also possible to jump to subroutines with an arbitrary label ID. See how in the following example, the program will randomly call one of 5 possible subroutines, and then print "Subroutine exists".
 ```
@@ -246,8 +252,8 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Strings with interpolation allowed, `"some text"`
 - Strings with NO interpolation, `'some text'`
 - Variables, `var_name`, `x`, etc.
-- The "global" variable, containing the names of all currently defined variables, `@`
-- The "command list" variable, containing the names of all allowed commands, `$`
+- The "parameter list" variable, an array containing any values passed to the current subroutine, `@`
+- The "command list" variable, an array containing the names of all allowed commands, `$`
 - Inline command evaluation, `${}`
 - Arrays, e.g. `(1,2,3,4,5)`
 - Objects, e.g. `("a" => 1, "b" => 2)`

@@ -524,12 +524,7 @@ function SemanticAnalyzer(tokens, file)
 
 	--Check subroutine references.
 	recurse(root, {tok.gosub_stmt}, function(token)
-		local ch = token.children[1]
-		if #ch.children > 1 then
-			parse_error(token.line, token.col, 'More than one subroutine given to '..token.text, file)
-		end
-
-		token.children = ch.children
+		token.children = token.children[1].children
 	end)
 
 	--Resolve all lambda references
@@ -778,6 +773,8 @@ function SemanticAnalyzer(tokens, file)
 		--Unlike other tokens, "command" tokens only need the first child to be constant for us to deduce the type
 		if token.id == tok.inline_command or token.id == tok.command then
 			local ch = token.children[1]
+			if ch.id == tok.gosub_stmt then return end --subroutine eval is different
+
 			if token.id == tok.inline_command then ch = ch.children[1] end
 
 			--ignore "define" pseudo-command
@@ -1031,6 +1028,8 @@ function SemanticAnalyzer(tokens, file)
 			local tp = variables[token.text]
 			if tp then
 				token.type = tp[#tp]
+			elseif token.text == '@' or token.text == '$' then
+				token.type = 'array'
 			end
 		end
 	end

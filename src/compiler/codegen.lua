@@ -792,6 +792,16 @@ function generate_bytecode(root, file)
 		[tok.gosub_stmt] = function(token, file)
 			if token.ignore then return end
 
+			--Push any parameters passed to the gosub
+			if #token.children > 1 then
+				for i = 2, #token.children do
+					codegen_rules.recur_push(token.children[i])
+				end
+				emit(bc.call, 'implode', #token.children - 1)
+			else
+				emit(bc.push, {})
+			end
+
 			if token.dynamic then
 				local i
 				local end_label, label_var = label_id(), label_id()
@@ -851,13 +861,29 @@ function generate_bytecode(root, file)
 				emit(bc.call, 'jump', skipsub)
 				emit(bc.label, token.text)
 				enter(token.children[1])
+
+				--Make sure to push a value to the stack before returning
+				--TODO: optimize this away if return is guaranteed
+				emit(bc.push, nil)
 				emit(bc.pop_goto_index)
+
 				emit(bc.label, skipsub)
 			end
 		end,
 
 		--RETURN STATEMENT
-		[tok.kwd_return] = function(token, file)
+		[tok.return_stmt] = function(token, file)
+			if #token.children == 0 then
+				emit(bc.push, nil)
+			else
+				for i = 1, #token.children do
+					codegen_rules.recur_push(token.children[i])
+				end
+				if #token.children > 1 then
+					emit(bc.call, 'implode', #token.children)
+				end
+			end
+
 			emit(bc.pop_goto_index)
 		end,
 

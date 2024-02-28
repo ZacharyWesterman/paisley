@@ -198,8 +198,9 @@ local functions = {
 			is_string = true
 			data = std.split(std.str(data), '')
 		end
-		local is_array = getmetatable(data)
-		if is_array then is_array = is_array.is_array end
+		local meta = getmetatable(data)
+		local is_array = true
+		if meta and not meta.is_array then is_array = false end
 
 		local result
 		if type(index) ~= 'table' then
@@ -851,14 +852,15 @@ commands = {
 	--GET VARIABLE
 	[3] = function(line, p1, p2)
 		if p1 == '@' then
-			local res, k = {}
-			for k in pairs(VARS) do
-				if VARS[k] ~= nil then table.insert(res, k) end
+			--List-of-params variable
+			if #INSTR_STACK > 0 then
+				PUSH(INSTR_STACK[#INSTR_STACK])
+			else
+				PUSH({})
 			end
-			table.sort(res)
-			PUSH(res)
 		elseif p1 == '$' then
-			local res, k = {}
+			--List-of-commands variable
+			local res = {}
 			for k in pairs(BUILTIN_COMMANDS) do table.insert(res, k) end
 			for k in pairs(ALLOWED_COMMANDS) do table.insert(res, k) end
 			table.sort(res)
@@ -950,13 +952,18 @@ commands = {
 	--PUSH THE CURRENT INSTRUCTION INDEX TO THE STACK
 	[8] = function(line, p1, p2)
 		table.insert(INSTR_STACK, CURRENT_INSTRUCTION + 1)
-		table.insert(INSTR_STACK, #STACK) --Keep track of how big the stack SHOULD be when returning
+		table.insert(INSTR_STACK, #STACK-1) --Keep track of how big the stack SHOULD be when returning
+		table.insert(INSTR_STACK, STACK[#STACK]) --Append any subroutine parameters
 	end,
 
 	--POP THE NEW INSTRUCTION INDEX FROM THE STACK (GOTO THAT INDEX)
 	[9] = function(line, p1, p2)
+		table.remove(INSTR_STACK) --Remove any subroutine parameters
 		local new_stack_size = table.remove(INSTR_STACK)
 		CURRENT_INSTRUCTION = table.remove(INSTR_STACK)
+
+		--Put any subroutine return value in the "command return value" slot
+		V5 = table.remove(STACK)
 
 		--Shrink stack back down to how big it should be
 		while new_stack_size < #STACK do

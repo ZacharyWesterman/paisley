@@ -5,10 +5,13 @@ V2 = nil --filename
 V3 = nil --non-builtin commands
 
 DEBUG_EXTRA = false
+RUN_PROGRAM = false
 for i, v in ipairs(arg) do
 	if v:sub(1,1) == '-' and v ~= '-' then
 		if v == '--extra' then
 			DEBUG_EXTRA = true
+		elseif v == '--run' then
+			RUN_PROGRAM = true
 		end
 	else
 		V2 = v
@@ -47,37 +50,82 @@ require "src.compiler"
 print_header('Raw Bytecode')
 print(TRANSFER)
 
-local DATA, PORT
-function output(data, port)
-	DATA = data
-	PORT = port
-end
-function output_array(data, port)
-	DATA = data
-	PORT = port
-end
-
-function run_bytecode()
+if RUN_PROGRAM then
 	print()
 	print_header('RUNNING BYTECODE')
-	V1 = TRANSFER --Serialized bytecode
-	V2 = nil --FILE
-	V3 = ALLOWED_COMMANDS
-	V4 = 0 --RNG seed value
-	V5 = nil --LAST CMD RESULT
-	PORT = 0
-	DATA = nil
+
+	local tmp = ALLOWED_COMMANDS
+
+	V1 = json.stringify(bytecode)
+	V4 = os.time()
+	V5 = nil
 
 	require "src.runtime"
+	ALLOWED_COMMANDS = tmp
 
-	DEBUG_INSTRUCTION_NUM = 1
-	while PORT ~= 3 do
+	ENDED = false
+	local socket_installed, socket = pcall(require, 'socket')
+
+	local line_no = 0
+	function output(value, port)
+		if port == 1 then
+			--continue program
+			os.execute('sleep 0.01') --emulate behavior in Plasma where program execution pauses periodicaly to avoid lag.
+		elseif port == 2 then
+			--run a non-builtin command (currently not supported outside of Plasma)
+			error('Error on line '.. line_no .. ': Cannot run program `' .. std.str(value) .. '`')
+		elseif port == 3 then
+			ENDED = true --program successfully completed
+		elseif port == 4 then
+			--delay execution for an amount of time
+			os.execute('sleep ' .. value)
+			V5 = nil
+		elseif port == 5 then
+			--get current time (seconds since midnight)
+			local date = os.date('*t', os.time())
+			local sec_since_midnight = date.hour*3600 + date.min*60 + date.sec
+
+			if socket_installed then
+				sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
+			end
+
+			V5 = sec_since_midnight --command return value
+		elseif port == 6 then
+			if value == 2 then
+				--get system date (day, month, year)
+				date = os.date('*t', os.time())
+				V5 = {date.day, date.month, date.year} --command return value
+			elseif value == 1 then
+				--get system time (seconds since midnight)
+				local date = os.date('*t', os.time())
+				local sec_since_midnight = date.hour*3600 + date.min*60 + date.sec
+
+				if socket_installed then
+					sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
+				end
+
+				V5 = sec_since_midnight --command return value
+			end
+		elseif port == 7 then
+			--Print text or error
+			table.remove(value, 1)
+			print(std.str(value))
+			io.flush()
+			V5 = nil
+		elseif port == 8 then
+			--value is current line number
+		else
+			print(port, json.stringify(value))
+		end
+	end
+
+	function output_array(value, port) output(value, port) end
+
+	while not ENDED do
 		os.execute('sleep 1')
-		-- os.execute('clear')
+
 		ITER()
-		-- if PORT == 6 then
-		-- 	if DATA == 1 then V5 = ''
-		V5 = {10, 25, 2023}
+
 		DEBUG_INSTRUCTION_NUM = CURRENT_INSTRUCTION
 		if bytecode then
 			print_bytecode(bytecode)
@@ -91,13 +139,5 @@ function run_bytecode()
 		print_header('END STACK')
 
 		io.flush()
-	end
-end
-
-local i
-for i = 1, #arg do
-	if arg[i] == 'run' then
-		run_bytecode()
-		break
 	end
 end
