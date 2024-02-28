@@ -392,7 +392,8 @@ function Lexer(text --[[string]], file --[[string | nil]])
 
 					--Once string ends, add text to token list and exit string.
 					--If we found an expression instead, add to the stack (only in double-quoted strings).
-					if this_chr == curr_scope or ((this_chr == '{' or this_chr == '$') and curr_scope ~= '\'') then
+					local next_chr = text:sub(this_ix+1,this_ix+1)
+					if this_chr == curr_scope or ((this_chr == '{' or (this_chr == '$' and next_chr == '{')) and curr_scope ~= '\'') then
 						if #this_str > 0 then
 							--Insert current built string
 							text = text:sub(this_ix, #text)
@@ -412,13 +413,8 @@ function Lexer(text --[[string]], file --[[string | nil]])
 							tok_type = tok.expr_open
 							table.insert(scopes, match)
 						elseif this_chr == '$' then
-							--Make sure command eval is formatted correctly
-							if text:sub(this_ix+1,this_ix+1) ~= '{' then
-								parse_error(line, col, 'Found command marker but no body (expected "{")', file)
-							end
-							match = '${'
-
 							--enter inline command eval
+							match = '${'
 							tok_type = tok.command_open
 							table.insert(scopes, this_chr)
 						else
