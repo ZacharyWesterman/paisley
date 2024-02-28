@@ -198,8 +198,9 @@ local functions = {
 			is_string = true
 			data = std.split(std.str(data), '')
 		end
-		local is_array = getmetatable(data)
-		if is_array then is_array = is_array.is_array end
+		local meta = getmetatable(data)
+		local is_array = true
+		if meta and not meta.is_array then is_array = false end
 
 		local result
 		if type(index) ~= 'table' then
@@ -960,6 +961,9 @@ commands = {
 		table.remove(INSTR_STACK) --Remove any subroutine parameters
 		local new_stack_size = table.remove(INSTR_STACK)
 		CURRENT_INSTRUCTION = table.remove(INSTR_STACK)
+
+		--Put any subroutine return value in the "command return value" slot
+		V5 = table.remove(STACK)
 
 		--Shrink stack back down to how big it should be
 		while new_stack_size < #STACK do

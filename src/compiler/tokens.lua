@@ -118,6 +118,7 @@ tok = {
 	let_stmt = k(),
 	break_stmt = k(),
 	continue_stmt = k(),
+	return_stmt = k(),
 	statement = k(),
 
 	lit_array = k(), --This only gets created during constant folding

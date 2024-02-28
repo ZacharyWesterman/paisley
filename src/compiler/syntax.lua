@@ -128,7 +128,7 @@ local rules = {
 
 	--Exponentiation
 	{
-		match = {{tok.value, tok.exponent, tok.comparison}, {tok.op_exponent}, {tok.value}},
+		match = {{tok.value, tok.exponent, tok.comparison}, {tok.op_exponent}, {tok.value, tok.comparison}},
 		id = tok.exponent,
 		not_after = {tok.op_exponent, tok.op_dot},
 		keep = {1, 3},
@@ -149,7 +149,7 @@ local rules = {
 	{
 		match = {{tok.value, tok.multiply, tok.comparison}, {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod}, {tok.value, tok.multiply, tok.comparison}},
 		id = tok.multiply,
-		not_after = {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod, tok.op_dot},
+		not_after = {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod, tok.op_dot, tok.op_exponent},
 		keep = {1, 3},
 		text = 2,
 		not_before = {tok.op_dot},
@@ -169,7 +169,7 @@ local rules = {
 		match = {{tok.exponent, tok.multiply, tok.add, tok.comparison}, {tok.op_plus, tok.op_minus}, {tok.exponent, tok.multiply, tok.add, tok.comparison}},
 		id = tok.add,
 		not_before = {tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod},
-		not_after = {tok.op_plus, tok.op_minus, tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod, tok.op_dot},
+		not_after = {tok.op_plus, tok.op_minus, tok.op_times, tok.op_div, tok.op_idiv, tok.op_mod, tok.op_dot, tok.op_exponent},
 		keep = {1, 3},
 		text = 2,
 	},
@@ -379,10 +379,15 @@ local rules = {
 
 	--Inline commands
 	{
-		match = {{tok.command_open}, {tok.command, tok.program}, {tok.command_close}},
+		match = {{tok.command_open}, {tok.command, tok.program, tok.statement}, {tok.command_close}},
 		id = tok.inline_command,
 		keep = {2},
 		text = 1,
+		onmatch = function(token, file)
+			if token.children[1].meta_id ~= tok.statement and token.children[1].id ~= tok.gosub_stmt then
+				parse_error(token.line, token.col, 'Malformed statement inside command eval block. Must be a single command or gosub', file)
+			end
+		end,
 	},
 
 	--Commands
@@ -701,9 +706,29 @@ local rules = {
 		end,
 	},
 
+	--Return Statements
+	{
+		match = {{tok.kwd_return}, {tok.command}},
+		id = tok.return_stmt,
+		keep = {2},
+		text = 1,
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison},
+		onmatch = function(token, file)
+			--Return value is not really a command, it's a list of values.
+			token.children = token.children[1].children
+		end,
+	},
+	{
+		match = {{tok.kwd_return}},
+		id = tok.return_stmt,
+		keep = {},
+		text = 1,
+		not_before = {tok.text, tok.expression, tok.inline_command, tok.string, tok.expr_open, tok.command_open, tok.string_open, tok.comparison, tok.command},
+	},
+
 	--Statements
 	{
-		match = {{tok.if_stmt, tok.while_stmt, tok.for_stmt, tok.let_stmt, tok.delete_stmt, tok.subroutine, tok.gosub_stmt, tok.kwd_return, tok.continue_stmt, tok.kwd_stop, tok.break_stmt}},
+		match = {{tok.if_stmt, tok.while_stmt, tok.for_stmt, tok.let_stmt, tok.delete_stmt, tok.subroutine, tok.gosub_stmt, tok.return_stmt, tok.continue_stmt, tok.kwd_stop, tok.break_stmt}},
 		id = tok.statement,
 		meta = true,
 	},
