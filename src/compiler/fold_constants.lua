@@ -1,6 +1,6 @@
 func_operations = {
 	bytes = function(number, count)
-		local result, i = {}
+		local result = {}
 		for i = math.min(4, count), 1, -1 do
 			result[i] = math.floor(number) % 256
 			number = number / 256
@@ -9,7 +9,7 @@ func_operations = {
 	end,
 
 	frombytes = function(values)
-		local result, i = 0
+		local result = 0
 		for i = 1, #values do
 			result = result * 256 + values[i]
 		end
@@ -31,7 +31,7 @@ func_operations = {
 		return total
 	end,
 	mult = function(values)
-		local total, i = 1, nil
+		local total = 1
 		for i = 1, #values do
 			if type(values[i]) == 'table' then
 				local k
@@ -121,7 +121,7 @@ func_operations = {
 			parse_error(token.line, token.col, 'Function "dist(a,b)" expected arrays of equal length, got lengths '..#a..' and '..#b, file)
 		end
 
-		local total, i = 0
+		local total = 0
 		for i = 1, #a do
 			local p = a[i] - b[i]
 			total = total + p*p
@@ -215,7 +215,7 @@ func_operations = {
 			return value:reverse()
 		end
 
-		local result, i = {}
+		local result = {}
 		for i = #value, 1, -1 do
 			table.insert(result, value[i])
 		end
@@ -237,7 +237,6 @@ func_operations = {
 		return value
 	end,
 	merge = function(array1, array2)
-		local i
 		for i = 1, #array2 do
 			table.insert(array1, array2[i])
 		end
@@ -309,7 +308,7 @@ local function number_op(v1, v2, operator)
 		if type(v1) ~= 'table' then v1 = {v1} end
 		if type(v2) ~= 'table' then v2 = {v2} end
 
-		local result, i = {}
+		local result = {}
 		for i = 1, math.min(#v1, #v2) do
 			table.insert(result, operator(std.num(v1[i]), std.num(v2[i])))
 		end
@@ -390,7 +389,7 @@ function fold_constants(token)
 			end
 
 			operator = c2.text
-			local result, i = c1.value[1]
+			local result = c1.value[1]
 			for i = 2, #c1.value do
 				local v = c1.value[i]
 				if operator == '==' then result = result == v
@@ -644,7 +643,7 @@ function fold_constants(token)
 			return
 		end
 
-		local start, stop, i = token.children[1].value, token.children[2].value
+		local start, stop = token.children[1].value, token.children[2].value
 
 		--For the sake of output bytecode size, don't fold if the array slice is too large!
 		if (stop - start) <= 20 then

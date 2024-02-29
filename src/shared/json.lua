@@ -6,16 +6,17 @@
 
 
 json = {
-	--[[
-		Convert an object into a JSON string.
-	--]]
+	---Convert arbitrary data into a JSON string representation.
+	---Will error if data is something that cannot be serialized, such as a function, userdata or thread.
+	---@param data any The data to serialize.
+	---@param indent integer|nil The number of spaces to indent on each scope change.
+	---@param return_error boolean|nil If true, return the error as a second parameter. Otherwise halts program execution on error.
+	---@return string, string|nil
 	stringify = function(data, indent, return_error)
 		local function __stringify(data, indent, __indent)
 			local tp = type(data)
 
 			if tp == 'table' then
-				local key
-				local value
 				local next_indent
 
 				if indent ~= nil then
@@ -90,7 +91,7 @@ json = {
 			else
 				local msg = 'Unable to stringify data "'..tostring(data)..'" of type '..tp..'.'
 				if return_error then
-					return nil, msg
+					return '', msg
 				else
 					error(msg)
 				end
@@ -100,11 +101,12 @@ json = {
 		return __stringify(data, indent)
 	end,
 
-	--[[
-		Parse a JSON string into an arbitrary object.
-	--]]
+	---Parse a JSON string representation into arbitrary data.
+	---Will error if the JSON string is invalid.
+	---@param text string The JSON string to parse.
+	---@param return_error boolean|nil If true, return the error as a second parameter. Otherwise halts program execution on error.
+	---@return any, string|nil
 	parse = function(text, return_error)
-		local __text = text
 		local line = 1
 		local col = 1
 		local tokens = {}
@@ -117,11 +119,6 @@ json = {
 			rbrace = 4,
 			lbracket = 5,
 			rbracket = 6,
-		}
-
-		local repl_chars = {
-			{'\n', 'n'},
-			{'\t', 't'},
 		}
 
 		local newtoken = function(value, kind)
@@ -310,9 +307,10 @@ json = {
 	end,
 
 
-	--[[
-		Check if a JSON string is valid.
-	--]]
+	---Check if a JSON string is valid.
+	---Returns false and a descriptive error message if the text contains invalid JSON, or true if valid.
+	---@param text string The JSON string to parse.
+	---@return boolean, string|nil
 	verify = function(text)
 		local res, err = json.parse(text, true)
 		if err ~= nil then

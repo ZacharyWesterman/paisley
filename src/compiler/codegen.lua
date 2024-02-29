@@ -108,7 +108,6 @@ local call_codes = {
 }
 
 local function bc_get_key(code, lookup)
-	local i, k
 	for k, i in pairs(lookup) do
 		if i == code then return k end
 	end
@@ -255,7 +254,7 @@ function generate_bytecode(root, file)
 			--ignore "define" pseudo-command
 			if token.children[1].value == 'define' then return end
 
-			local all_const, p, i = true, {}
+			local all_const, p = true, {}
 			for i = 1, #token.children do
 				if not is_const(token.children[i]) then
 					all_const = false
@@ -813,7 +812,7 @@ function generate_bytecode(root, file)
 					emit(bc.call, 'jump', EOF_LABEL)
 					emit(bc.label, '?dynamic-gosub')
 
-					local names, indexes, name, index = {}, {}
+					local names, indexes = {}, {}
 					for name, index in pairs(labels) do
 						if name:sub(1, 1) ~= '?' then
 							table.insert(names, name)
@@ -1003,7 +1002,7 @@ function generate_bytecode(root, file)
 	enter(root)
 
 	--BUILD LABEL LISTS AND EMIT DYNAMIC GOSUB CODE BASED ON THAT
-	local labels, result2, ct, i = {}, {}, 1
+	local labels, ct = {}, 1
 	for i = 1, #instructions do
 		local instr = instructions[i]
 		if instr[1] == bc.label then
@@ -1012,7 +1011,7 @@ function generate_bytecode(root, file)
 			ct = ct + 1
 		end
 	end
-	local old_instr_ct, routine = #instructions
+	local old_instr_ct = #instructions
 	for i, routine in pairs(emit_after_labels) do
 		routine(labels)
 	end

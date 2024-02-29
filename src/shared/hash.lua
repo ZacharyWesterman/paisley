@@ -3,7 +3,10 @@
 	Serializing funcs: https://github.com/JustAPerson/LuaCrypt/blob/master/libbit.lua
 --]]
 
---Binary integer rotate right
+---Binary integer rotate right
+---@param val_in integer
+---@param count integer
+---@return integer
 local function ror(val_in, count)
 	for i=1, count do
 		rollover = (val_in % 2) * 0x80000000
@@ -12,7 +15,10 @@ local function ror(val_in, count)
 	return val_in
 end
 
---Binary integer shift right
+---Binary integer shift right
+---@param val_in integer
+---@param count integer
+---@return integer
 local function rshift(val_in, count)
 	for i=1, count do
 		val_in = math.floor(val_in / 2)
@@ -20,7 +26,11 @@ local function rshift(val_in, count)
 	return val_in
 end
 
---Perform bitwise operations on integers
+---Perform bitwise operations on integers
+---@param a integer
+---@param b integer
+---@param operator function
+---@return integer
 local function boolean(a, b, operator)
 	local result = 0
 	for i=1, 32 do
@@ -35,7 +45,10 @@ local function boolean(a, b, operator)
 	return result
 end
 
---Bitwise XOR
+---Bitwise XOR
+---@param a integer
+---@param b integer
+---@return integer
 local function bxor(a, b)
 	local function logical_xor(b1, b2)
 		if (b1 == 1 or b2 == 1) and (b1 ~= b2) then return true else return false end
@@ -44,7 +57,10 @@ local function bxor(a, b)
 	return boolean(a, b, logical_xor)
 end
 
---Bitwise AND
+---Bitwise AND
+---@param a integer
+---@param b integer
+---@return integer
 local function band(a, b)
 	local function logical_and(b1, b2)
 		if b1 == 1 and b2 == 1 then return true else return false end
@@ -53,7 +69,9 @@ local function band(a, b)
 	return boolean(a, b, logical_and)
 end
 
---Bitwise NOT
+---Bitwise NOT
+---@param a integer
+---@return integer
 local function bnot(a)
 	local function logical_not(b1, b2)
 		if b1 == 0 then return true else return false end
@@ -62,7 +80,9 @@ local function bnot(a)
 	return boolean(a, a, logical_not)
 end
 
---Serialize integer to string
+---Serialize integer to string
+---@param in_val integer
+---@return string
 local function int32_str(in_val)
 	local result = ""
 	for i=0, 3 do
@@ -73,9 +93,11 @@ local function int32_str(in_val)
 	return result
 end
 
---Unserialize integer from string
+---Unserialize integer from string
+---@param in_val string
+---@return integer
 local function str_int32(in_val)
-	local a, b, c, d = in_val:byte(1, 4, 4)
+	local a, b, c, d = in_val:byte(1, 4)
 	return a * 256^3 + b * 256^2 + c * 256 + d
 end
 
@@ -99,13 +121,19 @@ local k256 = {
    0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
 }
 
+---Pad a string to the appropriate length needed for SHA256 blocks
+---@param in_val string
+---@return string
 local function preprocess256(in_val)
 	local length = #in_val
 	local padding = (-length-9) % 64
 	return in_val .. "\128" .. ("\0"):rep(padding) .. "\0\0\0\0" .. int32_str(length*8)
 end
 
-local function digest_block256(in_val, t, H)
+---@param in_val string The value to digest.
+---@param iter integer The current iteration.
+---@param H integer[] The current internal state.
+local function digest_block256(in_val, iter, H)
 	local s10
 	local t1, t2
 	local chmaj
@@ -114,7 +142,7 @@ local function digest_block256(in_val, t, H)
 
 	local limit = 2^32
 	local W = {}
-	local chunk = in_val:sub(t, t + 63)
+	local chunk = in_val:sub(iter, iter + 63)
 	local c1 = 0
 
 	for i=1, 64, 4 do
@@ -161,6 +189,9 @@ local function digest_block256(in_val, t, H)
 	H[8] = (h + H[8]) % limit
 end
 
+---Calculate the SHA256 hash of a string
+---@param in_val string
+---@return string
 function SHA256(in_val)
 	local result = ""
 	local state = {

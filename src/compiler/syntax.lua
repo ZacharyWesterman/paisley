@@ -872,7 +872,7 @@ function SyntaxParser(tokens, file)
 
 				if not rule_failed and rule.only_after and index > 1 then
 					rule_failed = true
-					local prev_token, i = tokens[index - 1]
+					local prev_token = tokens[index - 1]
 					for i = 1, #rule.only_after do
 						if prev_token.id == rule.only_after[i] then
 							rule_failed = false

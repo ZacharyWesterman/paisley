@@ -420,7 +420,7 @@ function SemanticAnalyzer(tokens, file)
 
 	--Make sure "delete" statements only have text params. deleting expressions that resolve to variable names is a recipe for disaster.
 	recurse(root, {tok.delete_stmt}, function(token)
-		local kids, i = token.children[1].children
+		local kids = token.children[1].children
 		for i = 1, #kids do
 			if kids[i].id ~= tok.text then
 				parse_error(kids[i].line, kids[i].col, 'Expected only variable names after "delete" keyword', file)
@@ -543,7 +543,7 @@ function SemanticAnalyzer(tokens, file)
 			end
 
 			--Lambda is defined, so replace it with the appropriate node
-			local lambda_node, i, _ = lambdas[token.text][#lambdas[token.text]].node
+			local lambda_node = lambdas[token.text][#lambdas[token.text]].node
 			for _, i in ipairs({'text', 'line', 'col', 'id', 'value', 'type'}) do
 				token[i] = lambda_node[i]
 			end
@@ -575,7 +575,7 @@ function SemanticAnalyzer(tokens, file)
 
 	--Replace lambda definitions with the appropriate node.
 	recurse(root, {tok.lambda}, nil, function(token)
-		local lambda_node, i, _ = token.children[1]
+		local lambda_node = token.children[1]
 		for _, i in ipairs({'text', 'line', 'col', 'id', 'value', 'type'}) do
 			token[i] = lambda_node[i]
 		end
@@ -588,7 +588,7 @@ function SemanticAnalyzer(tokens, file)
 		if not token.children then
 			token.children = {}
 		elseif #token.children > 0 then
-			local kids, i = {}
+			local kids = {}
 			for i = 1, #token.children do
 				local child = token.children[i]
 				if token.children[i].id == tok.array_concat then
@@ -640,7 +640,7 @@ function SemanticAnalyzer(tokens, file)
 
 		--For reduce() function, make sure that its second parameter is an operator!
 		if token.text == 'reduce' then
-			local correct, i, k = false
+			local correct = false
 			for i, k in pairs({tok.op_plus, tok.op_minus, tok.op_times, tok.op_idiv, tok.op_div, tok.op_mod, tok.op_and, tok.op_or, tok.op_xor, tok.op_ge, tok.op_gt, tok.op_le, tok.op_lt, tok.op_eq, tok.op_ne}) do
 				if token.children[2].id == k then
 					correct = true
@@ -1087,7 +1087,7 @@ function SemanticAnalyzer(tokens, file)
 		end
 
 		if label == nil then
-			local l, i, k = {}
+			local l = {}
 			for k, i in pairs(labels) do table.insert(l, k) end
 			token.all_labels = l
 			return
