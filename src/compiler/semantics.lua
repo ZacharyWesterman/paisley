@@ -315,43 +315,43 @@ type_signatures = {
 		out = 'array',
 	},
 	unique = {
-		value = {{'array'}},
+		valid = {{'array'}},
 		out = 'array',
 	},
 	union = {
-		value = {{'array'}},
+		valid = {{'array'}},
 		out = 'array',
 	},
 	intersection = {
-		value = {{'array'}},
+		valid = {{'array'}},
 		out = 'array',
 	},
 	difference = {
-		value = {{'array'}},
+		valid = {{'array'}},
 		out = 'array',
 	},
 	symmetric_difference = {
-		value = {{'array'}},
+		valid = {{'array'}},
 		out = 'array',
 	},
 	is_disjoint = {
-		value = {{'array'}},
+		valid = {{'array'}},
 		out = 'boolean',
 	},
 	is_subset = {
-		value = {{'array'}},
+		valid = {{'array'}},
 		out = 'boolean',
 	},
 	is_superset = {
-		value = {{'array'}},
+		valid = {{'array'}},
 		out = 'boolean',
 	},
 	count = {
-		value = {{'array','any'}, {'string'}},
+		valid = {{'array','any'}, {'string'}},
 		out = 'number',
 	},
 	find = {
-		value = {{'array','any','number'},{'string','string','number'}},
+		valid = {{'array','any','number'},{'string','string','number'}},
 		out = 'number',
 	},
 
