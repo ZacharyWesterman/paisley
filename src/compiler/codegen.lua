@@ -112,6 +112,9 @@ local call_codes = {
 	symmetric_difference = 93,
 	is_disjoint = 94,
 	is_subset = 95,
+	is_superset = 96,
+	count = 97,
+	find = 98,
 }
 
 local function bc_get_key(code, lookup)

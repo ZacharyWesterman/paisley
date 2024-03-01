@@ -470,9 +470,9 @@ local functions = {
 		local v = POP()
 		local res
 		if type(v[1]) == 'table' then
-			res = std.arrfind(v[1], v[2])
+			res = std.arrfind(v[1], v[2], 1)
 		else
-			res = std.strfind(std.str(v[1]), std.str(v[2]))
+			res = std.strfind(std.str(v[1]), std.str(v[2]), 1)
 		end
 		PUSH(res)
 	end,
@@ -896,6 +896,30 @@ local functions = {
 		if type(a) ~= 'table' then a = {a} end
 		if type(b) ~= 'table' then b = {b} end
 		PUSH(std.is_superset(a, b))
+	end,
+
+	--COUNT OCCURRENCES OF A VALUE IN ARRAY OR SUBSTRING IN STRING
+	function()
+		local v = POP()
+		local res
+		if type(v[1]) == 'table' then
+			res = std.arrcount(v[1], v[2], std.num(v[3]))
+		else
+			res = std.strcount(std.str(v[1]), std.str(v[2]), std.num(v[3]))
+		end
+		PUSH(res)
+	end,
+
+	--FIND NTH OCCURRENCE OF A VALUE IN ARRAY OR SUBSTRING IN STRING
+	function()
+		local v = POP()
+		local res
+		if type(v[1]) == 'table' then
+			res = std.arrfind(v[1], v[2], std.num(v[3]))
+		else
+			res = std.strfind(std.str(v[1]), std.str(v[2]), std.num(v[3]))
+		end
+		PUSH(res)
 	end,
 }
 

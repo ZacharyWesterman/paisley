@@ -69,6 +69,8 @@ builtin_funcs = {
 	is_disjoint = 2,
 	is_subset = 2,
 	is_superset = 2,
+	count = 2,
+	find = 3,
 }
 
 type_signatures = {
@@ -128,10 +130,6 @@ type_signatures = {
 		valid = {{'number', 'array'}},
 		out = 'number',
 	},
-	-- pow = {
-	-- 	valid = {{'number'}},
-	-- 	out = 'number',
-	-- },
 	min = {
 		valid = {{'number'}, {'array'}},
 		out = 'number',
@@ -189,7 +187,7 @@ type_signatures = {
 		out = 'string',
 	},
 	index = {
-		valid = {{'array', 'any'}, {'string', 'any'}},
+		valid = {{'array', 'any'}, {'string'}},
 		out = 'number',
 	},
 	lower = {
@@ -261,7 +259,7 @@ type_signatures = {
 		valid = {{'array', 'any'}},
 	},
 	bytes = {
-		valid = {{'number', 'number'}},
+		valid = {{'number'}},
 		out = 'array',
 	},
 	frombytes = {
@@ -269,7 +267,7 @@ type_signatures = {
 		out = 'number',
 	},
 	merge = {
-		valid = {{'array', 'array'}},
+		valid = {{'array'}},
 		out = 'array',
 	},
 	update = {
@@ -347,6 +345,14 @@ type_signatures = {
 	is_superset = {
 		value = {{'array'}},
 		out = 'boolean',
+	},
+	count = {
+		value = {{'array','any'}, {'string'}},
+		out = 'number',
+	},
+	find = {
+		value = {{'array','any','number'},{'string','string','number'}},
+		out = 'number',
 	},
 
 	[tok.add] = {
@@ -658,8 +664,6 @@ function SemanticAnalyzer(tokens, file)
 			return
 		end
 
-		if func == -2 then return end --Function can have any number of params
-
 		--Check if function has the right number of params
 		local param_ct = #token.children
 
@@ -670,8 +674,10 @@ function SemanticAnalyzer(tokens, file)
 			if param_ct ~= 1 then verb = 'were' end
 
 			if func < 0 then
-				if param_ct == 0 then
-					parse_error(token.line, token.col, 'Function "'..token.text..'('..funcsig(token.text)..')" expects at least 1 parameter, but '..param_ct..' '..verb..' given', file)
+				if param_ct < -func then
+					local plural = ''
+					if func < -1 then plural = 's' end
+					parse_error(token.line, token.col, 'Function "'..token.text..'('..funcsig(token.text)..')" expects at least '..(-func)..' parameter'..plural..', but '..param_ct..' '..verb..' given', file)
 				end
 			else
 				parse_error(token.line, token.col, 'Function "'..token.text..'('..funcsig(token.text)..')" expects '..func..' parameter'..plural..', but '..param_ct..' '..verb..' given', file)

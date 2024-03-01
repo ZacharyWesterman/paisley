@@ -134,9 +134,9 @@ func_operations = {
 	end,
 	index = function(a, b)
 		if type(a) == 'table' then
-			return std.arrfind(a, b)
+			return std.arrfind(a, b, 1)
 		else
-			return std.strfind(a, std.str(b))
+			return std.strfind(a, std.str(b), 1)
 		end
 	end,
 	lower = function(a)
@@ -311,6 +311,22 @@ func_operations = {
 	is_subset = std.is_subset,
 	is_superset = function(array1, array2)
 		return std.is_subset(array2, array1)
+	end,
+
+	count = function(a, b)
+		if type(a) == 'table' then
+			return std.arrcount(a, b)
+		else
+			return std.strcount(a, std.str(b))
+		end
+	end,
+
+	find = function(a, b, n)
+		if type(a) == 'table' then
+			return std.arrfind(a, b, n)
+		else
+			return std.strfind(a, std.str(b), n)
+		end
 	end,
 }
 

@@ -137,22 +137,52 @@ std = {
 		return false
 	end,
 
-	strfind = function(text, substring)
-		local i
-		for i = 1, #text - #substring + 1 do
+	strfind = function(text, substring, occurrence)
+		local ct, i = 0, 1
+		while i <= #text do
 			if text:sub(i, i + #substring - 1) == substring then
-				return i
+				i = i + #substring
+				ct = ct + 1
+				if ct >= occurrence then return i end
+			else
+				i = i + 1
 			end
 		end
 		return 0
 	end,
 
-	arrfind = function(array, value)
-		local i
+	arrfind = function(array, value, occurrence)
+		local ct = 0
 		for i = 1, #array do
-			if array[i] == value then return i end
+			if array[i] == value then
+				ct = ct + 1
+				if ct >= occurrence then return i end
+			end
 		end
 		return 0
+	end,
+
+	strcount = function(text, substring)
+		local ct, i = 0, 1
+		while i <= #text do
+			if text:sub(i, i + #substring - 1) == substring then
+				i = i + #substring
+				ct = ct + 1
+			else
+				i = i + 1
+			end
+		end
+		return ct
+	end,
+
+	arrcount = function(array, value)
+		local ct = 0
+		for i = 1, #array do
+			if array[i] == value then
+				ct = ct + 1
+			end
+		end
+		return ct
 	end,
 
 	b64_encode = function(data)
