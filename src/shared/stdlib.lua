@@ -141,9 +141,9 @@ std = {
 		local ct, i = 0, 1
 		while i <= #text do
 			if text:sub(i, i + #substring - 1) == substring then
-				i = i + #substring
 				ct = ct + 1
 				if ct >= occurrence then return i end
+				i = i + #substring
 			else
 				i = i + 1
 			end
