@@ -276,9 +276,9 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Linear interpolation of two numbers: `lerp(ratio, start, stop) -> number`
 - Split string into array: `split(value, delimiter) -> array`. Note that unlike in Lua, the delimiter is just a string, not a pattern.
 - Merge array into string: `join(values, delimiter) -> string`
-- Count the number of occurrences of a substring: `count(string, substring) -> number`
-- Find the index of the n'th occurrence of a value in an array or string: `find(array/string, value, n) -> number`. Returns 0 if not found.
-- Find the index of the first occurrence of a value in an array or substring in a string: `index(array/string, value) -> number`. Returns 0 if not found.
+- Count the number of occurrences a value in an array or string: `count(array/string, value) -> number`
+- Find the index of the nth occurrence of a value in an array or string: `find(array/string, value, n) -> number`. Returns 0 if not found.
+- Find the index of the first occurrence of a value in an array or string: `index(array/string, value) -> number`. Returns 0 if not found.
 - Get data type: `type(value) -> string`. Output will be one of "null", "boolean", "number", "string", or "array"
 - Convert to boolean: `bool(value)`
 - Convert to number: `num(value)`
@@ -291,7 +291,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Convert string to lowercase: `lower(text) -> string`
 - Convert string to uppercase: `upper(text) -> string`
 - Capitalize the first letter of every word: `camel(text) -> string`
-- Replace all occurrences of a sub-string: `replace(text, search, replace) -> string`
+- Replace all occurrences of a substring: `replace(text, search, replace) -> string`
 - Serialize data to a JSON string: `json_encode(data) -> string`
 - Deserialize data from a JSON string: `json_decode(text) -> any`
 - Convert a string to base64: `b64_encode(text) -> string`
