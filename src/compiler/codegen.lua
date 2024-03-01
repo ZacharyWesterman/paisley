@@ -105,6 +105,13 @@ local call_codes = {
 	values = 86,
 	pairs = 87,
 	interleave = 88,
+	unique = 89,
+	union = 90,
+	intersection = 91,
+	difference = 92,
+	symmetric_difference = 93,
+	is_disjoint = 94,
+	is_subset = 95,
 }
 
 local function bc_get_key(code, lookup)

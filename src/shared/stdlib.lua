@@ -212,4 +212,84 @@ std = {
 	array = function()
 		return setmetatable({}, {is_array = true})
 	end,
+
+	invert_array = function(array)
+		local result = {}
+		for key, value in pairs(array) do result[value] = key end
+		return result
+	end,
+
+	unique = function(list)
+		local result = {}
+		for key, value in pairs(std.invert_array(list)) do table.insert(result, key) end
+		return result
+	end,
+
+	union = function(list1, list2)
+		local temp = std.invert_array(list1)
+		for key, value in pairs(list2) do temp[value] = true end
+		local result = {}
+		for key, value in pairs(temp) do table.insert(result, key) end
+		return result
+	end,
+
+	intersection = function(list1, list2)
+		local inv_l2, result = std.invert_array(list2), {}
+		for key, value in pairs(list1) do
+			if inv_l2[value] then
+				table.insert(result, value)
+			end
+		end
+		return result
+	end,
+
+	difference = function(list1, list2)
+		local inv_l2, result = std.invert_array(list2), {}
+		for key, value in pairs(list1) do
+			if not inv_l2[value] then
+				table.insert(result, value)
+			end
+		end
+		return result
+	end,
+
+	symmetric_difference = function(list1, list2)
+		local inv_l1, inv_l2, result = std.invert_array(list1), std.invert_array(list2), {}
+		for key, value in pairs(list1) do
+			if not inv_l2[value] then table.insert(result, value) end
+		end
+		for key, value in pairs(list2) do
+			if not inv_l1[value] then table.insert(result, value) end
+		end
+		return result
+	end,
+
+	is_disjoint = function(list1, list2)
+		local inv_l2 = std.invert_array(list2)
+		for key, value in pairs(list1) do
+			if inv_l2[value] then return false end
+		end
+		return true
+	end,
+
+	--These are not quite right...
+	is_subset = function(list1, list2)
+		if std.is_disjoint(list1, list2) then return false end
+
+		local inv_l2 = std.invert_array(list2)
+		for key, value in pairs(list1) do
+			if not inv_l2[value] then return false end
+		end
+		return #list1 <= #list2
+	end,
+
+	is_superset = function(list1, list2)
+		if std.is_disjoint(list1, list2) then return false end
+
+		local inv_l1 = std.invert_array(list1)
+		for key, value in pairs(list2) do
+			if not inv_l1[value] then return false end
+		end
+		return #list1 >= #list2
+	end,
 }

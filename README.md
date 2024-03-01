@@ -314,6 +314,14 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - List an object's values: `values(object) -> array`
 - Get a list of key-value pairs for an object or array: `pairs(object/array) -> array`, i.e. the object `(key1 => val1, key2 => val2)` will result in `((key1, value1), (key2, value2))`; and the array `(val1, val2)` will result in `((1, val1), (2, val2))`
 - Interleave the values of two arrays: `interleave(array) -> array`, i.e. the arrays `(1,2,3)` and `(4,5,6)` will result in `(1,4,2,5,3,6)`
+- Make sure an array has no repeated elements: `unique(array) -> array`
+- Get the union of two sets: `union(array1, array2) -> array`
+- Get the intersection of two sets: `intersection(array1, array2) -> array`
+- Get the difference of two sets: `difference(array1, array2) -> array`. Note that changing the order of the parameters can change the result!
+- Get the symmetric difference of two sets: `symmetric_difference(array1, array2) -> array`
+- Check if two sets are disjoint: `is_disjoint(array1, array2) -> boolean`
+- Check if the first set is a subset of the second: `is_subset(array1, array2) -> boolean`
+- Check if the first set is a superset of the second: `is_superset(array1, array2) -> boolean`
 
 Note that functions can be called in one of two ways:
 1. The usual syntax, e.g. `split(var, delim)`

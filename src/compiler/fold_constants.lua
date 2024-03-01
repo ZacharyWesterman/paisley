@@ -301,6 +301,17 @@ func_operations = {
 		for i = length + 1, #array2 do table.insert(result, array2[i]) end
 		return result
 	end,
+
+	unique = std.unique,
+	union = std.union,
+	intersection = std.intersection,
+	difference = std.difference,
+	symmetric_difference = std.symmetric_difference,
+	is_disjoint = std.is_disjoint,
+	is_subset = std.is_subset,
+	is_superset = function(array1, array2)
+		return std.is_subset(array2, array1)
+	end,
 }
 
 local function number_op(v1, v2, operator)

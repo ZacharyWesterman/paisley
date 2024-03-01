@@ -824,6 +824,79 @@ local functions = {
 		end
 		PUSH(result)
 	end,
+
+	--FILTER UNIQUE ELEMENTS IN ARRAY
+	function()
+		local v = POP()[1]
+		if type(v) == 'table' then
+			PUSH(std.unique(v))
+		else
+			PUSH {v}
+		end
+	end,
+
+	--UNION OF TWO SETS
+	function()
+		local v = POP()
+		local a, b = v[1], v[2]
+		if type(a) ~= 'table' then a = {a} end
+		if type(b) ~= 'table' then b = {b} end
+		PUSH(std.union(a, b))
+	end,
+
+	--INTERSECTION OF TWO SETS
+	function()
+		local v = POP()
+		local a, b = v[1], v[2]
+		if type(a) ~= 'table' then a = {a} end
+		if type(b) ~= 'table' then b = {b} end
+		PUSH(std.intersection(a, b))
+	end,
+
+	--DIFFERENCE OF TWO SETS
+	function()
+		local v = POP()
+		local a, b = v[1], v[2]
+		if type(a) ~= 'table' then a = {a} end
+		if type(b) ~= 'table' then b = {b} end
+		PUSH(std.difference(a, b))
+	end,
+
+	--SYMMETRIC DIFFERENCE OF TWO SETS
+	function()
+		local v = POP()
+		local a, b = v[1], v[2]
+		if type(a) ~= 'table' then a = {a} end
+		if type(b) ~= 'table' then b = {b} end
+		PUSH(std.symmetric_difference(a, b))
+	end,
+
+	--CHECK IF TWO SETS ARE DISJOINT
+	function()
+		local v = POP()
+		local a, b = v[1], v[2]
+		if type(a) ~= 'table' then a = {a} end
+		if type(b) ~= 'table' then b = {b} end
+		PUSH(std.is_disjoint(a, b))
+	end,
+
+	--CHECK IF ONE SET IS A SUBSET OF ANOTHER
+	function()
+		local v = POP()
+		local a, b = v[1], v[2]
+		if type(a) ~= 'table' then a = {a} end
+		if type(b) ~= 'table' then b = {b} end
+		PUSH(std.is_subset(a, b))
+	end,
+
+	--CHECK IF ONE SET IS A SUPERSET OF ANOTHER
+	function()
+		local v = POP()
+		local a, b = v[1], v[2]
+		if type(a) ~= 'table' then a = {a} end
+		if type(b) ~= 'table' then b = {b} end
+		PUSH(std.is_superset(a, b))
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT

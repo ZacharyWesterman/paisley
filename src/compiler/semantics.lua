@@ -61,6 +61,14 @@ builtin_funcs = {
 	values = 1,
 	pairs = 1,
 	interleave = 2,
+	unique = 1,
+	union = 2,
+	intersection = 2,
+	difference = 2,
+	symmetric_difference = 2,
+	is_disjoint = 2,
+	is_subset = 2,
+	is_superset = 2,
 }
 
 type_signatures = {
@@ -307,6 +315,38 @@ type_signatures = {
 	interleave = {
 		valid = {{'array'}},
 		out = 'array',
+	},
+	unique = {
+		value = {{'array'}},
+		out = 'array',
+	},
+	union = {
+		value = {{'array'}},
+		out = 'array',
+	},
+	intersection = {
+		value = {{'array'}},
+		out = 'array',
+	},
+	difference = {
+		value = {{'array'}},
+		out = 'array',
+	},
+	symmetric_difference = {
+		value = {{'array'}},
+		out = 'array',
+	},
+	is_disjoint = {
+		value = {{'array'}},
+		out = 'boolean',
+	},
+	is_subset = {
+		value = {{'array'}},
+		out = 'boolean',
+	},
+	is_superset = {
+		value = {{'array'}},
+		out = 'boolean',
 	},
 
 	[tok.add] = {
