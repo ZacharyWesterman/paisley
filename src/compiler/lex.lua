@@ -397,7 +397,7 @@ function Lexer(text, file)
 							text = text:sub(this_ix, #text)
 							---@type Token
 							local out = {
-								span = Span:new(line, col, line, col),
+								span = Span:new(line, col, line, col + #this_str - 1),
 								text = this_str,
 								id = TOK.text,
 							}
@@ -495,7 +495,7 @@ function Lexer(text, file)
 				if not tok_ignore then
 					---@type Token
 					return {
-						span = Span:new(line, col - #match, line, col - #match),
+						span = Span:new(line, col - #match, line, col - 1),
 						text = match,
 						id = tok_type,
 						value = real_value,
