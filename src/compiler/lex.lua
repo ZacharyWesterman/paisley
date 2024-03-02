@@ -318,7 +318,7 @@ function Lexer(text, file)
 						end
 
 						if n == nil then
-							parse_error(Span:new(line, col, line, col), 'Invalid '..tp..'number "'..match..'"', file)
+							parse_error(Span:new(line, col, line, col + #match - 1), 'Invalid '..tp..'number "'..match..'"', file)
 						end
 						tok_type = TOK.lit_number
 						real_value = n
@@ -397,7 +397,7 @@ function Lexer(text, file)
 							text = text:sub(this_ix, #text)
 							---@type Token
 							local out = {
-								span = Span:new(line, col, line, col + #this_str - 1),
+								span = Span:new(line, col - 1, line, col + #this_str - 1),
 								text = this_str,
 								id = TOK.text,
 							}
@@ -495,7 +495,7 @@ function Lexer(text, file)
 				if not tok_ignore then
 					---@type Token
 					return {
-						span = Span:new(line, col - #match, line, col - 1),
+						span = Span:new(line, col - #match - 1, line, col - 1),
 						text = match,
 						id = tok_type,
 						value = real_value,
