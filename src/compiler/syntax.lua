@@ -9,21 +9,23 @@ local rules = {
 		---@param file string?
 		onmatch = function(token, file)
 			local c3 = token.children[3]
+			local c1 = token.children[1]
+
 			if c3.id == TOK.variable then
 				--Dot notation using variable names is just indexing with strings.
 				c3.id = TOK.string_open
 				c3.value = c3.text
-				local c1 = token.children[1]
 
 				return {
 					id = TOK.index,
-					span = Span:merge(token.children[1].span, token.children[3].span),
+					span = Span:merge(c1.span, c3.span),
 					text = '.',
 					children = {c1, c3},
 				}
 			elseif c3.id == TOK.func_call then
-				table.insert(c3.children, 1, token.children[1])
+				table.insert(c3.children, 1, c1)
 				token.children = c3.children
+				token.span = Span:merge(c1.span, c3.span)
 			else
 				parse_error(token.children[2].span, 'Expected function name or object key after dot operator', file)
 			end
