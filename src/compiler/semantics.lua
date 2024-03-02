@@ -499,13 +499,13 @@ function SemanticAnalyzer(tokens, file)
 					is_object = true
 					child.inside_object = true
 					if #child.children == 0 and #kids > 1 then
-						parse_error(child.line, child.col, 'Missing key and value for object construct')
+						parse_error(child.span, 'Missing key and value for object construct')
 						child.errored = true
 					end
 				else is_array = true end
 
 				if is_object and is_array then
-					parse_error(child.line, child.col, 'Ambiguous mixture of object and array constructs. Objects require key-value pairs for every element (e.g. `"key" => value`)')
+					parse_error(child.span, 'Ambiguous mixture of object and array constructs. Objects require key-value pairs for every element (e.g. `"key" => value`)')
 					child.errored = true
 					break
 				end
@@ -546,7 +546,7 @@ function SemanticAnalyzer(tokens, file)
 			local prev = labels[label]
 			if prev ~= nil then
 				-- Don't allow tokens to be redeclared
-				parse_error(token.span, 'Redeclaration of subroutine "'..label..'" (previously declared on line '..prev.line..', col '..prev.col..')', file)
+				parse_error(token.span, 'Redeclaration of subroutine "'..label..'" (previously declared on line '..prev.span.from.line..', col '..prev.span.from.col..')', file)
 			end
 
 			if not token.children or #token.children == 0 then

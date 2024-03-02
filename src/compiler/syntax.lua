@@ -880,9 +880,7 @@ function SyntaxParser(tokens, file)
 		if not possible_rules then possible_rules = rule_lookup[this_token.id] end
 
 		if not possible_rules then
-			-- unexpected_token = index
 			possible_rules = {}
-			-- parse_error(this_token.line, this_token.col, 'COMPILER BUG: No AST rule for token "'..token_text(this_token.id)..'"', file)
 		end
 
 		for _, _r in ipairs(possible_rules) do
@@ -977,8 +975,6 @@ function SyntaxParser(tokens, file)
 							span = Span:merge(tokens[index].span, tokens[index + #rule.match - 1].span),
 							text = text,
 							id = rule.id,
-							line = this_token.line,
-							col = this_token.col,
 							children = {},
 						}
 
