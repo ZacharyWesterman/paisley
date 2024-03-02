@@ -40,7 +40,6 @@ end
 function closest_word(this_word --[[string]], word_list --[[table]], threshold --[[number]])
 	local cDist = -1
 	local cWord = ""
-	local _, value
 
 	--First, check if this_word is the start of an item in the word_list
 	local score = 0
@@ -79,6 +78,6 @@ function closest_word(this_word --[[string]], word_list --[[table]], threshold -
 	if cDist <= threshold then
 		return cWord
 	else
-		return pInput
+		return nil --No good or even close match
 	end
 end

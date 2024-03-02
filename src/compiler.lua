@@ -54,7 +54,7 @@ if COMPILER_DEBUG then
 end
 --[[/minify-delete]]
 
---[[minify-delete]] HIDE_ERRORS = SUPPRESS_AST_ERRORS --[[/minify-delete]]
+--[[minify-delete]] HIDE_ERRORS = _G['SUPPRESS_AST_ERRORS'] --[[/minify-delete]]
 
 local parser = SyntaxParser(tokens, file)
 while parser.fold() do end --Iterate on the syntax tree. Follows iterator-like behavior.

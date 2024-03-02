@@ -3,14 +3,16 @@
 require "src.shared.hash"
 
 std = {
-	--Convert arbitrary data to a string (with "Lua-ness" removed)
-	str = function(data --[[any]])
+	---Convert arbitrary data to a string, with "Lua-ness" removed.
+	---@param data any
+	---@return string
+	str = function(data)
 		if data == nil then return '' end
 		if data == true then return '1' end
 		if data == false then return '0' end
 
 		if std.type(data) == 'array' then
-			local result, i = ''
+			local result = ''
 			local first = true
 			for i = 1, #data do
 				if not first then result = result .. ' ' end
@@ -31,6 +33,9 @@ std = {
 		return tostring(data)
 	end,
 
+	---Convert arbitrary data to a string with all debug information.
+	---@param data any
+	---@return string
 	debug_str = function(data)
 		if type(data) == 'table' then
 			local result = ''
@@ -54,21 +59,32 @@ std = {
 		end
 	end,
 
-	--Cast data to a boolean
-	bool = function(data --[[any]])
+	---Cast data to a boolean.
+	---Empty strings, nil, false and zero all convert to false. Any other values convert to true.
+	---@param data any
+	---@return boolean
+	bool = function(data)
 		return not (not data or data == 0 or data == '' or (type(data) == 'table' and #data == 0))
 	end,
 
-	--Cast data to a number
+	---Cast data to a number.
+	---Numbers and purely numeric strings will convert to the appropriate number.
+	---True and false convert to 1 and 0 respectively.
+	---Any other values convert to 0.
+	---@param data any
+	---@return number
 	num = function(data --[[any]])
 		if data == true then return 1 end
 		local val = tonumber(data)
 		if val == nil then return 0 else return val end
 	end,
 
-	--Join an array of items into a string
-	join = function(items --[[table]], delimiter --[[string]])
-		local result, i = ''
+	---Join an array of items into a string.
+	---@param items any[]
+	---@param delimiter string
+	---@return string
+	join = function(items, delimiter)
+		local result = ''
 		for i = 1, #items do
 			if i > 1 then result = result .. delimiter end
 			result = result .. std.str(items[i])
@@ -76,8 +92,11 @@ std = {
 		return result
 	end,
 
-	--Get the type of some data, with the "Lua-ness" removed
-	type = function(data --[[any]])
+	---Get the type of some data, with the "Lua-ness" removed.
+	---Types will include one of "object" or "array" instead of table.
+	---@param data any
+	---@return string
+	type = function(data)
 		if data == nil then return 'null' end
 		if type(data) == 'table' then
 			local meta = getmetatable(data)
@@ -86,7 +105,10 @@ std = {
 		return type(data)
 	end,
 
-	--Split a string by delimiter
+	---Split a string by delimiter.
+	---@param text string
+	---@param delimiter string
+	---@return string[]
 	split = function(text, delimiter)
 		--Why am I writing my own split function?
 		--1. Lua doesn't have a built-in one.
@@ -127,6 +149,10 @@ std = {
 		return result
 	end,
 
+	---Check if a string contains a given substring.
+	---@param text string
+	---@param substring string
+	---@return boolean
 	contains = function(text, substring)
 		local i
 		for i = 1, #text - #substring + 1 do
@@ -137,6 +163,11 @@ std = {
 		return false
 	end,
 
+	---Find the nth occurrence of a given substring.
+	---@param text string The string to search.
+	---@param substring string The substring to search for.
+	---@param occurrence integer The nth occurrence to find.
+	---@return integer
 	strfind = function(text, substring, occurrence)
 		local ct, i = 0, 1
 		while i <= #text do
@@ -151,6 +182,11 @@ std = {
 		return 0
 	end,
 
+	---Find the nth occurrence of a value in an array.
+	---@param array table The array to search.
+	---@param value any The value to search for.
+	---@param occurrence integer The nth occurrence to find.
+	---@return integer
 	arrfind = function(array, value, occurrence)
 		local ct = 0
 		for i = 1, #array do
@@ -162,6 +198,10 @@ std = {
 		return 0
 	end,
 
+	---@about Count the number of occurrences of a given substring in a string.
+	---@param text string The string to search.
+	---@param substring string The substring to search for.
+	---@return integer
 	strcount = function(text, substring)
 		local ct, i = 0, 1
 		while i <= #text do
@@ -175,6 +215,10 @@ std = {
 		return ct
 	end,
 
+	---Count the number of occurrences of a given value in an array.
+	---@param array table The array to search.
+	---@param value any The value to search for.
+	---@return integer
 	arrcount = function(array, value)
 		local ct = 0
 		for i = 1, #array do
@@ -185,6 +229,9 @@ std = {
 		return ct
 	end,
 
+	---Decode a base64-encoded string.
+	---@param data string The base64-encoded string.
+	---@return string
 	b64_encode = function(data)
 		--[[Source: http://lua-users.org/wiki/BaseSixtyFour]]
 		local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
@@ -200,6 +247,9 @@ std = {
 		end)..({ '', '==', '=' })[#data%3+1])
 	end,
 
+	---Encode a string as its base64 representation.
+	---@param data string The string to encode.
+	---@return string
 	b64_decode = function(data)
 		--[[Source: http://lua-users.org/wiki/BaseSixtyFour]]
 		local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
@@ -217,9 +267,12 @@ std = {
 		end))
 	end,
 
-	--Filter a string so it only contains characters that match the given pattern
+	---Filter a string so it only contains characters that match the given pattern.
+	---@param text string The text to filter.
+	---@param pattern string The pattern to match against.
+	---@return string
 	filter = function(text, pattern)
-		local result, in_text, i = '', text
+		local result, in_text = '', text
 		while #in_text > 0 do
 			local m = in_text:match('^'..pattern)
 			if m and (#m > 0) then
@@ -232,29 +285,42 @@ std = {
 		return result
 	end,
 
-	--Generate a sha256 hash of a given string
 	hash = SHA256,
 
+	---Create an object with appropriate metatable data.
+	---@return table
 	object = function()
 		return setmetatable({}, {is_array = false})
 	end,
 
+	---Create an array with appropriate metatable data.
+	---@return table
 	array = function()
 		return setmetatable({}, {is_array = true})
 	end,
 
+	---Swap a table's keys and values.
+	---@param array table
+	---@return table
 	invert_array = function(array)
 		local result = {}
 		for key, value in pairs(array) do result[value] = key end
 		return result
 	end,
 
+	---Remove any duplicate values from a table.
+	---@param list table
+	---@return table
 	unique = function(list)
 		local result = {}
 		for key, value in pairs(std.invert_array(list)) do table.insert(result, key) end
 		return result
 	end,
 
+	---Create the union of two sets.
+	---@param list1 table
+	---@param list2 table
+	---@return table
 	union = function(list1, list2)
 		local temp = std.invert_array(list1)
 		for key, value in pairs(list2) do temp[value] = true end
@@ -263,6 +329,10 @@ std = {
 		return result
 	end,
 
+	---Create the intersection of two sets.
+	---@param list1 table
+	---@param list2 table
+	---@return table
 	intersection = function(list1, list2)
 		local inv_l2, result = std.invert_array(list2), {}
 		for key, value in pairs(list1) do
@@ -273,6 +343,10 @@ std = {
 		return result
 	end,
 
+	---Create the difference of two sets.
+	---@param list1 table
+	---@param list2 table
+	---@return table
 	difference = function(list1, list2)
 		local inv_l2, result = std.invert_array(list2), {}
 		for key, value in pairs(list1) do
@@ -283,6 +357,10 @@ std = {
 		return result
 	end,
 
+	---Create the symmetric difference of two sets.
+	---@param list1 table
+	---@param list2 table
+	---@return table
 	symmetric_difference = function(list1, list2)
 		local inv_l1, inv_l2, result = std.invert_array(list1), std.invert_array(list2), {}
 		for key, value in pairs(list1) do
@@ -294,6 +372,10 @@ std = {
 		return result
 	end,
 
+	---Check if two sets are disjoint.
+	---@param list1 table
+	---@param list2 table
+	---@return boolean
 	is_disjoint = function(list1, list2)
 		local inv_l2 = std.invert_array(list2)
 		for key, value in pairs(list1) do
@@ -302,7 +384,10 @@ std = {
 		return true
 	end,
 
-	--These are not quite right...
+	---Check if the first set is a subset of the second.
+	---@param list1 table
+	---@param list2 table
+	---@return boolean
 	is_subset = function(list1, list2)
 		if std.is_disjoint(list1, list2) then return false end
 
@@ -313,6 +398,10 @@ std = {
 		return #list1 <= #list2
 	end,
 
+	---Check if the first set is a superset of the second.
+	---@param list1 table
+	---@param list2 table
+	---@return boolean
 	is_superset = function(list1, list2)
 		if std.is_disjoint(list1, list2) then return false end
 
