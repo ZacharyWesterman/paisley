@@ -1,4 +1,4 @@
-func_operations = {
+FUNC_OPERATIONS = {
 	bytes = function(number, count)
 		local result = {}
 		for i = math.min(4, count), 1, -1 do
@@ -17,7 +17,7 @@ func_operations = {
 	end,
 
 	sum = function(values)
-		local total, i = 0, nil
+		local total = 0
 		for i = 1, #values do
 			if type(values[i]) == 'table' then
 				local k
@@ -345,7 +345,10 @@ local function number_op(v1, v2, operator)
 	end
 end
 
-function fold_constants(token)
+---AST: Fold constants
+---@param token table
+---@param file string?
+function FOLD_CONSTANTS(token, file)
 	if not token.children then return end
 
 	local operator = token.text
@@ -445,8 +448,8 @@ function fold_constants(token)
 			token.children = nil
 		else
 			--Even if the parameter is not constant, we can still deduce the output type based on the operator
-			if std.arrfind({'+', '-', '/', '//', '%'}, c2.text) > 0 then token.type = 'number'
-			elseif std.arrfind({'==', '<', '<=', '>', '>=', '!=', 'and', 'or', 'xor'}, c2.text) > 0 then token.type = 'boolean'
+			if std.arrfind({'+', '-', '/', '//', '%'}, c2.text, 1) > 0 then token.type = 'number'
+			elseif std.arrfind({'==', '<', '<=', '>', '>=', '!=', 'and', 'or', 'xor'}, c2.text, 1) > 0 then token.type = 'boolean'
 			end
 		end
 		return
@@ -474,7 +477,6 @@ function fold_constants(token)
 	end
 
 	--If this token does not contain only constant children, we cannot fold it.
-	local i
 	for i = 1, #token.children do
 		local ch = token.children[i]
 		if ch.value == nil and ch.id ~= tok.lit_null then
@@ -586,7 +588,7 @@ function fold_constants(token)
 			token.children = nil
 		end
 	elseif token.id == tok.func_call then
-		if func_operations[token.text] then
+		if FUNC_OPERATIONS[token.text] then
 			--Build list of parameters
 			local values = {}
 			for i = 1, #token.children do
@@ -594,8 +596,8 @@ function fold_constants(token)
 			end
 
 			--Run functions to get resultant value
-			local fn = func_operations[token.text]
-			local param_ct = builtin_funcs[token.text]
+			local fn = FUNC_OPERATIONS[token.text]
+			local param_ct = BUILTIN_FUNCS[token.text]
 			if param_ct < 0 then
 				token.value = fn(values, token, file)
 			elseif param_ct == 0 then
@@ -605,6 +607,7 @@ function fold_constants(token)
 					token.value = fn(nil, token, file)
 				else
 					local u = table.unpack
+					---@diagnostic disable-next-line
 					if not u then u = unpack end
 
 					table.insert(values, token)
@@ -652,10 +655,10 @@ function fold_constants(token)
 			if token.children[i].reduce_array_concat then
 				local k
 				for k = 1, #token.children[i].value do
-					table.insert(token.value, token.children[i].value[k])
+					table.insert(token.value --[[@as table]], token.children[i].value[k])
 				end
 			else
-				table.insert(token.value, token.children[i].value)
+				table.insert(token.value --[[@as table]], token.children[i].value)
 			end
 		end
 		token.children = nil
@@ -678,7 +681,7 @@ function fold_constants(token)
 			token.text = '[]'
 			token.value = {}
 			for i = start, stop do
-				table.insert(token.value, i)
+				table.insert(token.value --[[@as table]], i)
 			end
 			token.children = nil
 			token.reduce_array_concat = true --If a slice operator is nested in an array_concat operation, merge the arrays

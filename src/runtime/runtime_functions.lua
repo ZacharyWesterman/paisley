@@ -22,6 +22,8 @@ function runtime_error(line, msg)
 	error('ERROR in user-supplied Paisley script.')
 end
 
+---Pop the top value off of the data stack.
+---@return any
 local function POP()
 	local val = STACK[#STACK]
 	table.remove(STACK)
@@ -29,6 +31,8 @@ local function POP()
 	return val
 end
 
+---Push a value onto the top of the data stack.
+---@param value any
 local function PUSH(value)
 	if value == nil then
 		table.insert(STACK, NULL)
@@ -53,12 +57,13 @@ end
 
 local function mathfunc(funcname)
 	return function(line)
-		local v, p, i = POP(), {}
+		local v, p = POP(), {}
 		for i = 1, #v do
 			table.insert(p, std.num(v[i]))
 		end
 
 		local u = table.unpack
+		---@diagnostic disable-next-line
 		if not u then u = unpack end
 
 		PUSH(math[funcname](u(v)))
@@ -70,7 +75,7 @@ local function number_op(v1, v2, operator)
 		if type(v1) ~= 'table' then v1 = {v1} end
 		if type(v2) ~= 'table' then v2 = {v2} end
 
-		local result, i = {}
+		local result = {}
 		for i = 1, math.min(#v1, #v2) do
 			table.insert(result, operator(std.num(v1[i]), std.num(v2[i])))
 		end
@@ -131,7 +136,7 @@ local functions = {
 
 	--SUPERIMPLODE
 	function(line, param)
-		local array, i = {}
+		local array = {}
 		for i = 1, param do
 			local val = POP()
 			if type(val) == 'table' then
@@ -192,7 +197,7 @@ local functions = {
 
 	--ARRAY INDEX
 	function()
-		local index, data, i = POP(), POP()
+		local index, data = POP(), POP()
 		local is_string = false
 		if type(data) ~= 'table' then
 			is_string = true
@@ -336,7 +341,7 @@ local functions = {
 		end
 
 		if t1 == 'table' then
-			local total, i = 0
+			local total = 0
 			for i = 1, math.min(#a, #b) do
 				local p = a[i] - b[i]
 				total = total + p*p
@@ -360,10 +365,9 @@ local functions = {
 
 	--SUM
 	function()
-		local v, total, i = POP(), 0
+		local v, total = POP(), 0
 		for i = 1, #v do
 			if type(v[i]) == 'table' then
-				local k
 				for k = 1, #v[i] do total = total + std.num(v[i][k]) end
 			else
 				total = total + std.num(v[i])
@@ -374,10 +378,9 @@ local functions = {
 
 	--MULT
 	function()
-		local v, total, i = POP(), 1
+		local v, total = POP(), 1
 		for i = 1, #v do
 			if type(v[i]) == 'table' then
-				local k
 				for k = 1, #v[i] do total = total * std.num(v[i][k]) end
 			else
 				total = total * std.num(v[i])
@@ -605,7 +608,7 @@ local functions = {
 			return
 		end
 
-		local result, i = {}
+		local result = {}
 		for i = #v, 1, -1 do
 			table.insert(result, v[i])
 		end
@@ -638,7 +641,7 @@ local functions = {
 	--BYTES FROM NUMBER
 	function()
 		local v = POP()
-		local result, i = {}
+		local result = {}
 		local value = math.floor(std.num(v[1]))
 		for i = math.min(4, std.num(v[2])), 1, -1 do
 			result[i] = value % 256
@@ -653,7 +656,7 @@ local functions = {
 		if type(v[1]) ~= 'table' then
 			PUSH(0)
 		else
-			local result, i = 0
+			local result = 0
 			for i = 1, #v[1] do
 				result = result * 256 + v[1][i]
 			end
@@ -663,7 +666,7 @@ local functions = {
 
 	--MERGE TWO ARRAYS
 	function()
-		local v, i = POP()
+		local v = POP()
 		if type(v[1]) ~= 'table' then v[1] = {v[1]} end
 		if type(v[2]) ~= 'table' then v[2] = {v[2]} end
 
@@ -903,9 +906,9 @@ local functions = {
 		local v = POP()
 		local res
 		if type(v[1]) == 'table' then
-			res = std.arrcount(v[1], v[2], std.num(v[3]))
+			res = std.arrcount(v[1], v[2])
 		else
-			res = std.strcount(std.str(v[1]), std.str(v[2]), std.num(v[3]))
+			res = std.strcount(std.str(v[1]), std.str(v[2]))
 		end
 		PUSH(res)
 	end,
@@ -932,7 +935,7 @@ local functions = {
 	}
 ]]
 
-commands = {
+COMMANDS = {
 	--CALL
 	[0] = function(line, p1, p2) functions[p1+1](line, p2) end,
 
@@ -958,8 +961,8 @@ commands = {
 		elseif p1 == '$' then
 			--List-of-commands variable
 			local res = {}
-			for k in pairs(BUILTIN_COMMANDS) do table.insert(res, k) end
-			for k in pairs(ALLOWED_COMMANDS) do table.insert(res, k) end
+			for k in pairs(BUILTIN_COMMANDS --[[@as table]]) do table.insert(res, k) end
+			for k in pairs(ALLOWED_COMMANDS --[[@as table]]) do table.insert(res, k) end
 			table.sort(res)
 			PUSH(res)
 		else
@@ -981,7 +984,7 @@ commands = {
 	--RUN COMMAND
 	[6] = function(line, p1, p2)
 		local command_array = POP()
-		local cmd_array, i = {}
+		local cmd_array = {}
 		for i = 1, #command_array do
 			if std.type(command_array[i]) == 'array' then
 				for k = 1, #command_array[i] do
@@ -1001,7 +1004,7 @@ commands = {
 
 		if not ALLOWED_COMMANDS[cmd_name] and not BUILTIN_COMMANDS[cmd_name] then
 			--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
-			msg = 'Unknown command "'..cmd_name..'"'
+			local msg = 'Unknown command "'..cmd_name..'"'
 			local guess = closest_word(cmd_name, ALLOWED_COMMANDS, 4)
 			if guess == nil or guess == '' then
 				guess = closest_word(cmd_name, BUILTIN_COMMANDS, 4)
@@ -1030,6 +1033,7 @@ commands = {
 			elseif cmd_name == 'error' then
 				table.remove(command_array, 1)
 				local msg = line..': '..std.join(command_array, ' ')
+				---@diagnostic disable-next-line
 				if file then msg = file..': '..msg end
 				output_array({"error", msg}, 7)
 			else
@@ -1080,8 +1084,8 @@ commands = {
 
 	--SWAP THE TOP 2 ELEMENTS ON THE STACK
 	[12] = function(line, p1, p2)
-		v1 = STACK[#STACK]
-		v2 = STACK[#STACK-1]
+		local v1 = STACK[#STACK]
+		local v2 = STACK[#STACK-1]
 		STACK[#STACK-1] = v1
 		STACK[#STACK] = v2
 	end,

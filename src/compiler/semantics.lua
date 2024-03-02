@@ -1,4 +1,4 @@
-builtin_funcs = {
+BUILTIN_FUNCS = {
 	random_int = 2,
 	random_float = 2,
 	word_diff = 2,
@@ -399,8 +399,8 @@ type_signatures = {
 }
 
 --Helper func for generating func_call error messages.
-function funcsig(func_name)
-	local param_ct = builtin_funcs[func_name]
+local function funcsig(func_name)
+	local param_ct = BUILTIN_FUNCS[func_name]
 	local params = ''
 	if param_ct < 0 then
 		params = '...'
@@ -418,7 +418,6 @@ function SemanticAnalyzer(tokens, file)
 	--[[minify-delete]] SHOW_MULTIPLE_ERRORS = true --[[/minify-delete]]
 
 	local function recurse(root, token_ids, operation, on_exit)
-		local _, id
 		local correct_token = false
 		for _, id in ipairs(token_ids) do
 			if root.id == id then
@@ -428,19 +427,17 @@ function SemanticAnalyzer(tokens, file)
 		end
 
 		if correct_token and operation ~= nil then
-			operation(root)
+			operation(root, file)
 		end
 
 		if root.children then
-			local _
-			local token
 			for _, token in ipairs(root.children) do
 				recurse(token, token_ids, operation, on_exit)
 			end
 		end
 
 		if correct_token and on_exit ~= nil then
-			on_exit(root)
+			on_exit(root, file)
 		end
 	end
 
@@ -650,12 +647,12 @@ function SemanticAnalyzer(tokens, file)
 			token.children = kids
 		end
 
-		local func = builtin_funcs[token.text]
+		local func = BUILTIN_FUNCS[token.text]
 
 		--Function doesn't exist
 		if func == nil then
 			local msg = 'Unknown function "'..token.text..'"'
-			local guess = closest_word(token.text:lower(), builtin_funcs, 4)
+			local guess = closest_word(token.text:lower(), BUILTIN_FUNCS, 4)
 
 			if guess ~= nil then
 				msg = msg .. ' (did you mean "'..guess..'('..funcsig(guess)..')"?)'
@@ -925,7 +922,7 @@ function SemanticAnalyzer(tokens, file)
 
 				if not found_correct_types then
 					local msg
-					if builtin_funcs[token.text] then
+					if BUILTIN_FUNCS[token.text] then
 						msg = 'Function "'..token.text..'('..funcsig(token.text)..')"'
 					else
 						msg = 'Operator "'..token.text..'"'
@@ -1091,7 +1088,7 @@ function SemanticAnalyzer(tokens, file)
 		recurse(root, {tok.string_open, tok.add, tok.multiply, tok.exponent, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.inline_command, tok.command}, nil, type_checking)
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
-		recurse(root, {tok.add, tok.multiply, tok.exponent, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice, tok.string_open, tok.index, tok.ternary, tok.list_comp, tok.object, tok.key_value_pair}, nil, fold_constants)
+		recurse(root, {tok.add, tok.multiply, tok.exponent, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice, tok.string_open, tok.index, tok.ternary, tok.list_comp, tok.object, tok.key_value_pair}, nil, FOLD_CONSTANTS)
 
 		--Set any variables we can
 		recurse(root, {tok.for_stmt, tok.let_stmt, tok.variable}, variable_assignment, variable_unassignment)

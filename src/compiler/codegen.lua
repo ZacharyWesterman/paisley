@@ -125,7 +125,7 @@ local function bc_get_key(code, lookup)
 end
 
 --[[minify-delete]]
-function print_bytecode(instructions)
+function print_bytecode(instructions, file)
 	local lookup = instructions[#instructions]
 	for i = 1, #instructions - 1 do
 		local instr = instructions[i]
@@ -253,7 +253,6 @@ function generate_bytecode(root, file)
 
 		--CODEGEN FOR PROGRAM (Just a list of commands/statements)
 		[tok.program] = function(token, file)
-			local i
 			for i = 1, #token.children do
 				enter(token.children[i])
 			end

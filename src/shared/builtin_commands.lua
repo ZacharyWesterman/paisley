@@ -10,7 +10,7 @@ BUILTIN_COMMANDS = {
 local function _explode(cmdlist)
 	if not cmdlist then return {} end
 
-	local cmds, i = {}
+	local cmds = {}
 	for i = 1, #cmdlist do
 		local c = std.split(cmdlist[i], ':')
 		if not c[2] then c[2] = 'any' end

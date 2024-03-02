@@ -61,7 +61,7 @@ function ITER()
 		output(nil, 3) --Program successfully completed
 	else
 		output(I[2], 8) --Output line number
-		local external_cmd = commands[I[1]](I[2], I[3], I[4])
+		local external_cmd = COMMANDS[I[1]](I[2], I[3], I[4])
 		if not external_cmd then
 			return true
 		end
@@ -72,7 +72,6 @@ end
 
 --[[RUN THIS WHILE OUTPUT IS COMING FROM (1) OR WHEN COMMAND RETURNS]]
 function RUN()
-	local i
 	for i = 1, MAX_ITER do
 		if not ITER() then return end
 	end
