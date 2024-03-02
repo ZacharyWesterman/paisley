@@ -1,70 +1,70 @@
 require "src.compiler.tokens"
 
-kwds = {
-	['for'] = tok.kwd_for,
-	['while'] = tok.kwd_while,
-	['in'] = tok.kwd_in,
-	['do'] = tok.kwd_do,
-	['if'] = tok.kwd_if,
-	['then'] = tok.kwd_then,
-	['elif'] = tok.kwd_elif,
-	['else'] = tok.kwd_else,
-	['end'] = tok.kwd_end,
-	['continue'] = tok.kwd_continue,
-	['break'] = tok.kwd_break,
-	['delete'] = tok.kwd_delete,
-	['subroutine'] = tok.kwd_subroutine,
-	['gosub'] = tok.kwd_gosub,
-	['return'] = tok.kwd_return,
-	['let'] = tok.kwd_let,
-	['initial'] = tok.kwd_initial,
-	['stop'] = tok.kwd_stop,
+local kwds = {
+	['for'] = TOK.kwd_for,
+	['while'] = TOK.kwd_while,
+	['in'] = TOK.kwd_in,
+	['do'] = TOK.kwd_do,
+	['if'] = TOK.kwd_if,
+	['then'] = TOK.kwd_then,
+	['elif'] = TOK.kwd_elif,
+	['else'] = TOK.kwd_else,
+	['end'] = TOK.kwd_end,
+	['continue'] = TOK.kwd_continue,
+	['break'] = TOK.kwd_break,
+	['delete'] = TOK.kwd_delete,
+	['subroutine'] = TOK.kwd_subroutine,
+	['gosub'] = TOK.kwd_gosub,
+	['return'] = TOK.kwd_return,
+	['let'] = TOK.kwd_let,
+	['initial'] = TOK.kwd_initial,
+	['stop'] = TOK.kwd_stop,
 }
 
-opers = {
-	['for'] = tok.kwd_for_expr,
-	['if'] = tok.kwd_if_expr,
-	['else'] = tok.kwd_else_expr,
-	['+'] = tok.op_plus,
-	['-'] = tok.op_minus,
-	['*'] = tok.op_times,
-	['//'] = tok.op_idiv,
-	['/'] = tok.op_div,
-	['%'] = tok.op_mod,
-	['^'] = tok.op_exponent,
-	[':'] = tok.op_slice,
-	['&'] = tok.op_count,
-	['not'] = tok.op_not,
-	['and'] = tok.op_and,
-	['or'] = tok.op_or,
-	['xor'] = tok.op_xor,
-	['in'] = tok.op_in,
-	['exists'] = tok.op_exists,
-	['like'] = tok.op_like,
-	['=>'] = tok.op_arrow,
-	['>='] = tok.op_ge,
-	['>'] = tok.op_gt,
-	['<='] = tok.op_le,
-	['<'] = tok.op_lt,
-	['=='] = tok.op_eq,
-	['='] = tok.op_eq,
-	['~='] = tok.op_ne,
-	['!='] = tok.op_ne,
-	[','] = tok.op_comma,
-	['.'] = tok.op_dot,
+local opers = {
+	['for'] = TOK.kwd_for_expr,
+	['if'] = TOK.kwd_if_expr,
+	['else'] = TOK.kwd_else_expr,
+	['+'] = TOK.op_plus,
+	['-'] = TOK.op_minus,
+	['*'] = TOK.op_times,
+	['//'] = TOK.op_idiv,
+	['/'] = TOK.op_div,
+	['%'] = TOK.op_mod,
+	['^'] = TOK.op_exponent,
+	[':'] = TOK.op_slice,
+	['&'] = TOK.op_count,
+	['not'] = TOK.op_not,
+	['and'] = TOK.op_and,
+	['or'] = TOK.op_or,
+	['xor'] = TOK.op_xor,
+	['in'] = TOK.op_in,
+	['exists'] = TOK.op_exists,
+	['like'] = TOK.op_like,
+	['=>'] = TOK.op_arrow,
+	['>='] = TOK.op_ge,
+	['>'] = TOK.op_gt,
+	['<='] = TOK.op_le,
+	['<'] = TOK.op_lt,
+	['=='] = TOK.op_eq,
+	['='] = TOK.op_eq,
+	['~='] = TOK.op_ne,
+	['!='] = TOK.op_ne,
+	[','] = TOK.op_comma,
+	['.'] = TOK.op_dot,
 }
 
-oper_block = {
+local oper_block = {
 	['/'] = '/',
 	['>'] = '=',
 	['<'] = '=',
 	['='] = '=',
 }
 
-literals = {
-	['true'] = tok.lit_boolean,
-	['false'] = tok.lit_boolean,
-	['null'] = tok.lit_null,
+local literals = {
+	['true'] = TOK.lit_boolean,
+	['false'] = TOK.lit_boolean,
+	['null'] = TOK.lit_null,
 }
 
 --[[
@@ -79,12 +79,16 @@ Iterator generates tokens of the form:
 	col: int,
 }
 --]]
-function Lexer(text --[[string]], file --[[string | nil]])
+---@param text string
+---@param file string?
+---@return function iterator An iterator that fetches the next token when run.
+function Lexer(text, file)
 	local line = 1
 	local col = 1
 	local scopes = {}
-	local var_assignment = false
 
+	---@param last_paren string
+	---@param this_paren string
 	local function check_parens(last_paren, this_paren)
 		local errtype = {
 			['('] = {['}']=true, [']']=true},
@@ -99,14 +103,14 @@ function Lexer(text --[[string]], file --[[string | nil]])
 		}
 
 		if errtype[last_paren][this_paren] then
-			parse_error(line, col, 'Mismatched parentheses, expected "'..expected[last_paren]..'", got "'..this_paren..'"', file)
+			parse_error(Span:new(line, col, line, col), 'Mismatched parentheses, expected "'..expected[last_paren]..'", got "'..this_paren..'"', file)
 		end
 	end
 
 	local function token_iterator()
 		while #text > 0 do
 			local match = nil
-			local tok_type = nil
+			local tok_type = TOK.no_value
 			local tok_ignore = false
 			local curr_scope = scopes[#scopes]
 			local real_value = nil
@@ -117,7 +121,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				--line endings (separate individual commands)
 				match = text:match('^[\n;]')
 				if match then
-					tok_type = tok.line_ending
+					tok_type = TOK.line_ending
 
 					if match ~= ';' then
 						line = line + 1
@@ -141,7 +145,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^[\'"]')
 					if match then
-						tok_type = tok.string_open
+						tok_type = TOK.string_open
 						table.insert(scopes, match)
 					end
 				end
@@ -150,7 +154,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^{')
 					if match then
-						tok_type = tok.expr_open
+						tok_type = TOK.expr_open
 						table.insert(scopes, match)
 					end
 				end
@@ -159,7 +163,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^%${')
 					if match then
-						tok_type = tok.command_open
+						tok_type = TOK.command_open
 						table.insert(scopes, '$')
 					end
 				end
@@ -168,15 +172,13 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match and curr_scope == '$' then
 					match = text:match('^}')
 					if match then
-						tok_type = tok.command_close
+						tok_type = TOK.command_close
 						table.remove(scopes)
 					end
 				end
 
 				--keywords
 				if not match then
-					local key
-					local value
 					for key, value in pairs(kwds) do
 						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
 							match = key
@@ -193,7 +195,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				--non-quoted text
 				if not match then
 					match = text:match('^[^ \t\n\r"\'{};$]+')
-					if match then tok_type = tok.text end
+					if match then tok_type = TOK.text end
 				end
 
 			elseif curr_scope == '{' or curr_scope == '(' or curr_scope == '[' then
@@ -223,7 +225,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^[\'"]')
 					if match then
-						tok_type = tok.string_open
+						tok_type = TOK.string_open
 						table.insert(scopes, match)
 					end
 				end
@@ -232,7 +234,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^{')
 					if match then
-						tok_type = tok.expr_open
+						tok_type = TOK.expr_open
 						table.insert(scopes, match)
 					end
 				end
@@ -241,7 +243,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^}')
 					if match then
-						tok_type = tok.expr_close
+						tok_type = TOK.expr_close
 						table.remove(scopes)
 						check_parens(curr_scope, match)
 					end
@@ -251,7 +253,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^%)')
 					if match then
-						tok_type = tok.paren_close
+						tok_type = TOK.paren_close
 						table.remove(scopes)
 						check_parens(curr_scope, match)
 					end
@@ -261,7 +263,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^%(')
 					if match then
-						tok_type = tok.paren_open
+						tok_type = TOK.paren_open
 						table.insert(scopes, match)
 					end
 				end
@@ -270,7 +272,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^%]')
 					if match then
-						tok_type = tok.index_close
+						tok_type = TOK.index_close
 						table.remove(scopes)
 						check_parens(curr_scope, match)
 					end
@@ -280,7 +282,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^%[')
 					if match then
-						tok_type = tok.index_open
+						tok_type = TOK.index_open
 						table.insert(scopes, match)
 					end
 				end
@@ -289,7 +291,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^%${')
 					if match then
-						tok_type = tok.command_open
+						tok_type = TOK.command_open
 						table.insert(scopes, '$')
 					end
 				end
@@ -316,17 +318,15 @@ function Lexer(text --[[string]], file --[[string | nil]])
 						end
 
 						if n == nil then
-							parse_error(line, col, 'Invalid '..tp..'number "'..match..'"', file)
+							parse_error(Span:new(line, col, line, col), 'Invalid '..tp..'number "'..match..'"', file)
 						end
-						tok_type = tok.lit_number
+						tok_type = TOK.lit_number
 						real_value = n
 					end
 				end
 
 				--Operators
 				if not match then
-					local key
-					local value
 					for key, value in pairs(opers) do
 						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
 							--Look ahead to avoid ambiguity with operators
@@ -343,14 +343,12 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^!+%w*')
 					if match then
-						tok_type = tok.op_exclamation
+						tok_type = TOK.op_exclamation
 					end
 				end
 
 				--Named constants
 				if not match then
-					local key
-					local value
 					for key, value in pairs(literals) do
 						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
 							match = key
@@ -366,13 +364,13 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				--Variable references
 				if not match then
 					match = text:match('^[a-zA-Z_][a-zA-Z_0-9]*')
-					if match then tok_type = tok.variable end
+					if match then tok_type = TOK.variable end
 				end
 
 				--Special "list of params" and "list of commands" variables
 				if not match then
 					match = text:match('^[@%$]')
-					if match then tok_type = tok.variable end
+					if match then tok_type = TOK.variable end
 				end
 			elseif curr_scope == '"' or curr_scope == '\'' then
 				--Logic for inside strings
@@ -382,12 +380,12 @@ function Lexer(text --[[string]], file --[[string | nil]])
 					local this_chr = text:sub(this_ix, this_ix)
 
 					if this_chr == '' then
-						parse_error(line, col + #this_str, 'Unexpected EOF inside string', file)
+						parse_error(Span:new(line, col + #this_str, line, col + #this_str), 'Unexpected EOF inside string', file)
 					end
 
 					--No line breaks are allowed inside strings
 					if this_chr == '\n' then
-						parse_error(line, col + #this_str, 'Unexpected line ending inside string', file)
+						parse_error(Span:new(line, col + #this_str, line, col + #this_str), 'Unexpected line ending inside string', file)
 					end
 
 					--Once string ends, add text to token list and exit string.
@@ -397,11 +395,11 @@ function Lexer(text --[[string]], file --[[string | nil]])
 						if #this_str > 0 then
 							--Insert current built string
 							text = text:sub(this_ix, #text)
+							---@type Token
 							local out = {
+								span = Span:new(line, col, line, col),
 								text = this_str,
-								id = tok.text,
-								line = line,
-								col = col,
+								id = TOK.text,
 							}
 							col = col + #this_str
 							return out
@@ -410,16 +408,16 @@ function Lexer(text --[[string]], file --[[string | nil]])
 						match = this_chr
 						if this_chr == '{' then
 							--enter expression (add to scope stack)
-							tok_type = tok.expr_open
+							tok_type = TOK.expr_open
 							table.insert(scopes, match)
 						elseif this_chr == '$' then
 							--enter inline command eval
 							match = '${'
-							tok_type = tok.command_open
+							tok_type = TOK.command_open
 							table.insert(scopes, this_chr)
 						else
 							--exit string (pop to previous scope)
-							tok_type = tok.string_close
+							tok_type = TOK.string_close
 							table.remove(scopes)
 						end
 
@@ -432,7 +430,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 						this_ix = this_ix + 1
 						this_chr = text:sub(this_ix, this_ix)
 						if this_chr == '' then
-							parse_error(line, col + #this_str, 'Unexpected EOF inside string (after "\\")', file)
+							parse_error(Span:new(line, col + #this_str, line, col + #this_str), 'Unexpected EOF inside string (after "\\")', file)
 						elseif this_chr == 'n' then
 							this_chr = '\n'
 						elseif this_chr == 't' then
@@ -450,7 +448,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				--line endings (end of variable declaration)
 				match = text:match('^[\n;]')
 				if match then
-					tok_type = tok.line_ending
+					tok_type = TOK.line_ending
 
 					if match ~= ';' then
 						line = line + 1
@@ -463,7 +461,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^=')
 					if match then
-						tok_type = tok.op_assign
+						tok_type = TOK.op_assign
 						table.remove(scopes)
 					end
 				end
@@ -472,7 +470,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				if not match then
 					match = text:match('^{')
 					if match then
-						tok_type = tok.expr_open
+						tok_type = TOK.expr_open
 						table.insert(scopes, match)
 					end
 				end
@@ -486,7 +484,7 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				--Variable references
 				if not match then
 					match = text:match('^[a-zA-Z_][a-zA-Z_0-9]*')
-					if match then tok_type = tok.var_assign end
+					if match then tok_type = TOK.var_assign end
 				end
 			end
 
@@ -495,31 +493,31 @@ function Lexer(text --[[string]], file --[[string | nil]])
 				col = col + #match
 				text = text:sub(#match+1, #text)
 				if not tok_ignore then
+					---@type Token
 					return {
+						span = Span:new(line, col - #match, line, col - #match),
 						text = match,
 						id = tok_type,
-						line = line,
-						col = col - #match,
 						value = real_value,
 					}
 				end
 			else
-				parse_error(line, col, 'Unexpected character "'..text:sub(1,1)..'"', file)
+				parse_error(Span:new(line, col, line, col), 'Unexpected character "'..text:sub(1,1)..'"', file)
 			end
 		end
 
 		--Make sure all strings, parens, and brackets all match up.
 		local remaining_scope = scopes[#scopes]
 		if remaining_scope == '"' or remaining_scope == '\'' then
-			parse_error(line, col, 'Unexpected EOF inside string', file)
+			parse_error(Span:new(line, col, line, col), 'Unexpected EOF inside string', file)
 		elseif remaining_scope == '(' then
-			parse_error(line, col, 'Missing parenthesis, expected ")"', file)
+			parse_error(Span:new(line, col, line, col), 'Missing parenthesis, expected ")"', file)
 		elseif remaining_scope == '[' then
-			parse_error(line, col, 'Missing bracket, expected "]"', file)
+			parse_error(Span:new(line, col, line, col), 'Missing bracket, expected "]"', file)
 		elseif remaining_scope == '{' then
-			parse_error(line, col, 'Missing brace after expression, expected "}"', file)
+			parse_error(Span:new(line, col, line, col), 'Missing brace after expression, expected "}"', file)
 		elseif remaining_scope == '$' then
-			parse_error(line, col, 'Missing brace after command eval, expected "}"', file)
+			parse_error(Span:new(line, col, line, col), 'Missing brace after command eval, expected "}"', file)
 		end
 	end
 

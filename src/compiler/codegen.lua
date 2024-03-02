@@ -141,7 +141,7 @@ function print_bytecode(instructions, file)
 		end
 
 		if not instr_text then
-			parse_error(0, 0, 'COMPILER BUG: Unknown bytecode instruction with id '..instr[1]..'!', file)
+			parse_error(Span:new(0, 0, 0, 0), 'COMPILER BUG: Unknown bytecode instruction with id '..instr[1]..'!', file)
 		end
 
 		local line = ''
@@ -182,7 +182,7 @@ function generate_bytecode(root, file)
 	local function emit(instruction_id, param1, param2)
 		if instruction_id == bc.call then
 			if not call_codes[param1] then
-				parse_error(current_line, 0, 'COMPILER BUG: No call code for function "'..std.str(param1)..'"!', file)
+				parse_error(Span:new(current_line, 0, current_line, 0), 'COMPILER BUG: No call code for function "'..std.str(param1)..'"!', file)
 			end
 			param1 = call_codes[param1]
 		end
@@ -194,7 +194,7 @@ function generate_bytecode(root, file)
 		if instruction_id == bc.call then call_text = bc_get_key(param1, call_codes) end
 
 		if not instr_text then
-			parse_error(current_line, 0, 'COMPILER BUG: Unknown bytecode instruction with id '..instruction_id..'!', file)
+			parse_error(Span:new(current_line, 0, current_line, 0), 'COMPILER BUG: Unknown bytecode instruction with id '..instruction_id..'!', file)
 		end
 
 		--TEMP: print code as it's generated
@@ -212,14 +212,14 @@ function generate_bytecode(root, file)
 
 	local function enter(token)
 		if not codegen_rules[token.id] then
-			parse_error(token.line, token.col, 'COMPILER BUG: Unable to generate bytecode for token of type "'..token_text(token.id)..'"!', file)
+			parse_error(token.span, 'COMPILER BUG: Unable to generate bytecode for token of type "'..token_text(token.id)..'"!', file)
 		end
 
-		current_line = token.line
+		current_line = token.span.from.line
 		codegen_rules[token.id](token, file)
 	end
 
-	local function is_const(token) return token.value ~= nil or token.id == tok.lit_null end
+	local function is_const(token) return token.value ~= nil or token.id == TOK.lit_null end
 
 	--Generate unique label ids (ones that can't clash with subroutine names)
 	local label_counter = 0
@@ -252,14 +252,14 @@ function generate_bytecode(root, file)
 		end,
 
 		--CODEGEN FOR PROGRAM (Just a list of commands/statements)
-		[tok.program] = function(token, file)
+		[TOK.program] = function(token, file)
 			for i = 1, #token.children do
 				enter(token.children[i])
 			end
 		end,
 
 		--CODEGEN FOR COMMANDS
-		[tok.command] = function(token, file)
+		[TOK.command] = function(token, file)
 			--ignore "define" pseudo-command
 			if token.children[1].value == 'define' then return end
 
@@ -295,7 +295,7 @@ function generate_bytecode(root, file)
 		end,
 
 		--CODEGEN FOR VARIABLE ASSIGNMENT
-		[tok.let_stmt] = function(token, file)
+		[TOK.let_stmt] = function(token, file)
 			local label1, label2
 
 			if token.text == 'initial' then
@@ -310,7 +310,7 @@ function generate_bytecode(root, file)
 			end
 
 			if token.children[3] then
-				if token.children[3].id == tok.expr_open then
+				if token.children[3].id == TOK.expr_open then
 					--Append to variable
 					emit(bc.get, token.children[1].text)
 					emit(bc.push, -1)
@@ -358,12 +358,12 @@ function generate_bytecode(root, file)
 		end,
 
 		--CODEGEN FOR ARRAY CONCATENATION
-		[tok.array_concat] = function(token, file)
+		[TOK.array_concat] = function(token, file)
 			local i
 			local has_slices = false
 			for i = 1, #token.children do
 				local chid = token.children[i].id
-				if chid == tok.array_slice or token.children[i].reduce_array_concat then has_slices = true end
+				if chid == TOK.array_slice or token.children[i].reduce_array_concat then has_slices = true end
 				codegen_rules.recur_push(token.children[i])
 			end
 
@@ -375,7 +375,7 @@ function generate_bytecode(root, file)
 		end,
 
 		--ARRAY SLICE
-		[tok.array_slice] = function(token, file)
+		[TOK.array_slice] = function(token, file)
 			codegen_rules.recur_push(token.children[1])
 			if token.children[2] then
 				codegen_rules.recur_push(token.children[2])
@@ -389,14 +389,14 @@ function generate_bytecode(root, file)
 		end,
 
 		--STRING CONCAT
-		[tok.concat] = function(token, file)
+		[TOK.concat] = function(token, file)
 			codegen_rules.recur_push(token.children[1])
 			if token.children[2] then codegen_rules.recur_push(token.children[2]) end
 			emit(bc.call, 'concat', #token.children)
 		end,
 
 		--CODEGEN FOR VARIABLES
-		[tok.variable] = function(token, file)
+		[TOK.variable] = function(token, file)
 			if LIST_COMP_VAR[token.text] then
 				emit(bc.get, LIST_COMP_VAR[token.text])
 			else
@@ -405,7 +405,7 @@ function generate_bytecode(root, file)
 		end,
 
 		--DELETE STATEMENT
-		[tok.delete_stmt] = function(token, file)
+		[TOK.delete_stmt] = function(token, file)
 			local i
 			for i = 1, #token.children do
 				emit(bc.delete, token.children[i].text)
@@ -413,7 +413,7 @@ function generate_bytecode(root, file)
 		end,
 
 		--STRING CONCATENATION
-		[tok.string_open] = function(token, file)
+		[TOK.string_open] = function(token, file)
 			if #token.children > 0 then
 				local i
 				for i = 1, #token.children do
@@ -423,17 +423,17 @@ function generate_bytecode(root, file)
 			elseif token.value ~= nil then
 				emit(bc.push, token.value)
 			else
-				parse_error(token.line, token.col, 'COMPILER BUG: Codegen for "string_open", token has no children or const value!', file)
+				parse_error(token.span, 'COMPILER BUG: Codegen for "string_open", token has no children or const value!', file)
 			end
 		end,
 
 		--EXPONENT OPERATIONS
-		[tok.exponent] = function(token, file)
+		[TOK.exponent] = function(token, file)
 			codegen_rules.binary_op(token, 'pow')
 		end,
 
 		--MULTIPLICATION OPERATIONS
-		[tok.multiply] = function(token, file)
+		[TOK.multiply] = function(token, file)
 			if token.text == '//' then
 				--No such thing as integer division really, it's just division, rounded down.
 				codegen_rules.binary_op(token, 'div')
@@ -450,7 +450,7 @@ function generate_bytecode(root, file)
 		end,
 
 		--ADDITION OPERATIONS
-		[tok.add] = function(token, file)
+		[TOK.add] = function(token, file)
 			local op = {
 				['+'] = 'add',
 				['-'] = 'sub',
@@ -459,7 +459,7 @@ function generate_bytecode(root, file)
 		end,
 
 		--NEGATE
-		[tok.negate] = function(token, file)
+		[TOK.negate] = function(token, file)
 			--No real negate operation, it's just zero minus the value
 			emit(bc.push, 0)
 			codegen_rules.recur_push(token.children[1])
@@ -467,20 +467,20 @@ function generate_bytecode(root, file)
 		end,
 
 		--LENGTH OPERATOR
-		[tok.length] = function(token, file)
+		[TOK.length] = function(token, file)
 			codegen_rules.recur_push(token.children[1])
 			emit(bc.call, 'length')
 		end,
 
 		--INDEXING
-		[tok.index] = function(token, file)
+		[TOK.index] = function(token, file)
 			codegen_rules.recur_push(token.children[1])
 			codegen_rules.recur_push(token.children[2])
 			emit(bc.call, 'arrayindex')
 		end,
 
 		--BOOLEAN OPERATIONS
-		[tok.boolean] = function(token, file)
+		[TOK.boolean] = function(token, file)
 			local op = {
 				['and'] = 'booland',
 				['or'] = 'boolor',
@@ -500,7 +500,7 @@ function generate_bytecode(root, file)
 		end,
 
 		--COMPARISON OPERATIONS (also boolean technically)
-		[tok.comparison] = function(token, file)
+		[TOK.comparison] = function(token, file)
 			local op = {
 				['='] = 'equal',
 				['=='] = 'equal',
@@ -514,7 +514,7 @@ function generate_bytecode(root, file)
 		end,
 
 		--FOR LOOPS
-		[tok.for_stmt] = function(token, file)
+		[TOK.for_stmt] = function(token, file)
 			local loop_beg_label = label_id()
 			local loop_end_label = label_id()
 
@@ -541,7 +541,7 @@ function generate_bytecode(root, file)
 				--This does not optimize for size, but rather run time.
 				--The tradeoff here is that the generated code is 1 instruction more than an un-optimized version, but reduces loop to constant run time.
 				--For large slices, this can save a massive amount of time.
-				if list.id == tok.array_slice then
+				if list.id == TOK.array_slice then
 					--If list is a slice with constant values, optimize it away.
 					if is_const(list.children[1]) and is_const(list.children[2]) then
 						local start, stop = list.children[1].value, list.children[2].value
@@ -602,7 +602,7 @@ function generate_bytecode(root, file)
 		end,
 
 		--WHILE LOOPS
-		[tok.while_stmt] = function(token, file)
+		[TOK.while_stmt] = function(token, file)
 			local loop_beg_label = label_id()
 			local loop_end_label = label_id()
 
@@ -633,7 +633,7 @@ function generate_bytecode(root, file)
 		end,
 
 		--LIST COMPREHENSION
-		[tok.list_comp] = function(token, file)
+		[TOK.list_comp] = function(token, file)
 			local loop_beg_label = label_id()
 			local loop_end_label = label_id()
 			local loop_var = label_id()
@@ -705,48 +705,48 @@ function generate_bytecode(root, file)
 		end,
 
 		--BREAK STATEMENT
-		[tok.break_stmt] = function(token, file)
+		[TOK.break_stmt] = function(token, file)
 			if #loop_term_labels == 0 then
-				parse_error(token.line, token.col, 'Break statements are meaningless outside of a loop', file)
+				parse_error(token.span, 'Break statements are meaningless outside of a loop', file)
 			end
 
 			if #loop_term_labels < token.children[1].value then
 				local word = 'loop'
 				if #loop_term_labels ~= 1 then word = 'loops' end
-				parse_error(token.line, token.col, 'Unable to break out of '..token.children[1].value..' loops, only '..#loop_term_labels..' '..word..' found')
+				parse_error(token.span, 'Unable to break out of '..token.children[1].value..' loops, only '..#loop_term_labels..' '..word..' found')
 			end
 
 			emit(bc.call, 'jump', loop_term_labels[#loop_term_labels - token.children[1].value + 1])
 		end,
 
 		--CONTINUE STATEMENT
-		[tok.continue_stmt] = function(token, file)
+		[TOK.continue_stmt] = function(token, file)
 			if #loop_begn_labels == 0 then
-				parse_error(token.line, token.col, 'Continue statements are meaningless outside of a loop', file)
+				parse_error(token.span, 'Continue statements are meaningless outside of a loop', file)
 			end
 
 			if #loop_begn_labels < token.children[1].value then
 				local word = 'loop'
 				if #loop_begn_labels ~= 1 then word = 'loops' end
-				parse_error(token.line, token.col, 'Unable to skip iteration of '..token.children[1].value..' loops, only '..#loop_begn_labels..' '..word..' found')
+				parse_error(token.span, 'Unable to skip iteration of '..token.children[1].value..' loops, only '..#loop_begn_labels..' '..word..' found')
 			end
 
 			emit(bc.call, 'jump', loop_begn_labels[#loop_begn_labels - token.children[1].value + 1])
 		end,
 
 		--INLINE COMMAND EVALUATION
-		[tok.inline_command] = function(token, file)
+		[TOK.inline_command] = function(token, file)
 			enter(token.children[1])
 			emit(bc.push_cmd_result)
 		end,
 
 		--IF STATEMENT
-		[tok.if_stmt] = function(token, file)
+		[TOK.if_stmt] = function(token, file)
 			local const = is_const(token.children[1])
 			local val = std.bool(token.children[1].value)
 			local endif_label
 
-			local has_else = #token.children > 2 and token.children[3].id ~= tok.kwd_end and not (const and val)
+			local has_else = #token.children > 2 and token.children[3].id ~= TOK.kwd_end and not (const and val)
 
 			--Only generate the branch if it's possible for it to execute.
 			if not const or val then
@@ -756,14 +756,14 @@ function generate_bytecode(root, file)
 				if not const then
 					else_label = label_id()
 					endif_label = label_id()
-					if token.children[1].id == tok.gosub_stmt then token.children[1].dynamic = true end
+					if token.children[1].id == TOK.gosub_stmt then token.children[1].dynamic = true end
 					enter(token.children[1])
 					emit(bc.call, 'jumpiffalse', else_label)
 					emit(bc.pop)
 				end
 
 				--IF statement body
-				if token.children[2].id ~= tok.kwd_then then
+				if token.children[2].id ~= TOK.kwd_then then
 					enter(token.children[2])
 				end
 
@@ -780,7 +780,7 @@ function generate_bytecode(root, file)
 			--Only if it's possible for the "if" part to not execute.
 			if has_else then
 				local else_block = token.children[3]
-				if else_block.id == tok.else_stmt then
+				if else_block.id == TOK.else_stmt then
 					if else_block.children and #else_block.children > 0 then
 						enter(else_block.children[1])
 					end
@@ -794,10 +794,10 @@ function generate_bytecode(root, file)
 		end,
 
 		--ELIF STATEMENT (Functionally identical to the IF statement)
-		[tok.elif_stmt] = function(token, file) codegen_rules[tok.if_stmt](token, file) end,
+		[TOK.elif_stmt] = function(token, file) codegen_rules[TOK.if_stmt](token, file) end,
 
 		--GOSUB STATEMENT
-		[tok.gosub_stmt] = function(token, file)
+		[TOK.gosub_stmt] = function(token, file)
 			if token.ignore then return end
 
 			--Push any parameters passed to the gosub
@@ -856,12 +856,12 @@ function generate_bytecode(root, file)
 				emit(bc.push_index)
 				emit(bc.call, 'jump', token.children[1].text)
 			else
-				parse_error(token.line, token.col, 'Label for gosub must either be a constant, or wrapped inside an if statement', file)
+				parse_error(token.span, 'Label for gosub must either be a constant, or wrapped inside an if statement', file)
 			end
 		end,
 
 		--SUBROUTINES. These are basically just a label and a return statement
-		[tok.subroutine] = function(token, file)
+		[TOK.subroutine] = function(token, file)
 			--Don't generate code for the subroutine if it contains nothing.
 			--If it contains nothing then references to it have already been removed.
 			if not token.ignore then
@@ -880,7 +880,7 @@ function generate_bytecode(root, file)
 		end,
 
 		--RETURN STATEMENT
-		[tok.return_stmt] = function(token, file)
+		[TOK.return_stmt] = function(token, file)
 			if #token.children == 0 then
 				emit(bc.push, nil)
 			else
@@ -896,17 +896,17 @@ function generate_bytecode(root, file)
 		end,
 
 		--BUILT-IN FUNCTION CALLS
-		[tok.func_call] = function(token, file)
+		[TOK.func_call] = function(token, file)
 			--Handle the reduce() function differently.
 			--It's actually a loop that acts on all the elements.
 			if token.text == 'reduce' then
 				local op_id = token.children[2].id
 
-				if op_id == tok.op_plus then
+				if op_id == TOK.op_plus then
 					--built-in function for sum of list elements
 					token.text = 'sum'
 					token.children[2] = nil
-				elseif op_id == tok.op_times then
+				elseif op_id == TOK.op_times then
 					--built-in function for multiplying list elements
 					token.text = 'mult'
 					token.children[2] = nil
@@ -924,26 +924,26 @@ function generate_bytecode(root, file)
 					emit(bc.swap)
 					emit(bc.call, 'jumpifnil', loop_end_label)
 
-					if op_id == tok.op_idiv then
+					if op_id == TOK.op_idiv then
 						emit(bc.call, 'div')
 						emit(bc.call, 'implode', 1)
 						emit(bc.call, 'floor')
 					else
 						ops = {
-							[tok.op_plus] = 'add',
-							[tok.op_minus] = 'sub',
-							[tok.op_times] = 'mul',
-							[tok.op_div] = 'div',
-							[tok.op_mod] = 'rem',
-							[tok.op_and] = 'booland',
-							[tok.op_or] = 'boolor',
-							[tok.op_xor] = 'boolxor',
-							[tok.op_eq] = 'equal',
-							[tok.op_ne] = 'notequal',
-							[tok.op_gt] = 'greater',
-							[tok.op_ge] = 'greaterequal',
-							[tok.op_lt] = 'less',
-							[tok.op_le] = 'lessequal',
+							[TOK.op_plus] = 'add',
+							[TOK.op_minus] = 'sub',
+							[TOK.op_times] = 'mul',
+							[TOK.op_div] = 'div',
+							[TOK.op_mod] = 'rem',
+							[TOK.op_and] = 'booland',
+							[TOK.op_or] = 'boolor',
+							[TOK.op_xor] = 'boolxor',
+							[TOK.op_eq] = 'equal',
+							[TOK.op_ne] = 'notequal',
+							[TOK.op_gt] = 'greater',
+							[TOK.op_ge] = 'greaterequal',
+							[TOK.op_lt] = 'less',
+							[TOK.op_le] = 'lessequal',
 						}
 						emit(bc.call, ops[op_id])
 					end
@@ -961,7 +961,7 @@ function generate_bytecode(root, file)
 			local has_slices = false
 			for i = 1, #token.children do
 				local chid = token.children[i].id
-				if chid == tok.array_slice or token.children[i].reduce_array_concat then has_slices = true end
+				if chid == TOK.array_slice or token.children[i].reduce_array_concat then has_slices = true end
 				codegen_rules.recur_push(token.children[i])
 			end
 
@@ -970,12 +970,12 @@ function generate_bytecode(root, file)
 		end,
 
 		--STOP statement
-		[tok.kwd_stop] = function(token, file)
+		[TOK.kwd_stop] = function(token, file)
 			emit(bc.call, 'jump', EOF_LABEL)
 		end,
 
 		--TERNARY (X if Y else Z) operator
-		[tok.ternary] = function(token, file)
+		[TOK.ternary] = function(token, file)
 			local else_label = label_id()
 			local endif_label = label_id()
 
@@ -991,7 +991,7 @@ function generate_bytecode(root, file)
 		end,
 
 		--OBJECT CONSTRUCTION
-		[tok.object] = function(token, file)
+		[TOK.object] = function(token, file)
 			emit(bc.push, std.object())
 
 			for i = 1, #token.children do
@@ -1002,7 +1002,7 @@ function generate_bytecode(root, file)
 		end,
 
 		--KEY-VALUE PAIR
-		[tok.key_value_pair] = function(token, file)
+		[TOK.key_value_pair] = function(token, file)
 			codegen_rules.recur_push(token.children[1])
 			codegen_rules.recur_push(token.children[2])
 		end,
@@ -1054,7 +1054,7 @@ function generate_bytecode(root, file)
 		if instr[1] == bc.call and (instr[3] == call_codes.jump or instr[3] == call_codes.jumpifnil or instr[3] == call_codes.jumpiffalse) then
 			if instr[4] ~= nil then
 				if labels[instr[4]] == nil then
-					parse_error(instr[2], 0, 'COMPILER BUG: Attempt to reference unknown label of ID "'..std.str(instr[4])..'"!', file)
+					parse_error(Span:new(instr[2], 0, instr[2], 0), 'COMPILER BUG: Attempt to reference unknown label of ID "'..std.str(instr[4])..'"!', file)
 				end
 
 				instr[4] = labels[instr[4]] - 1

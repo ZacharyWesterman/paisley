@@ -1,10 +1,13 @@
-_tok_i = -1
-function k()
+local _tok_i = -1
+---Dynamically generate a new token ID.
+---@return integer
+local function k()
 	_tok_i = _tok_i + 1
 	return _tok_i
 end
 
-tok = {
+---@enum TOK Possible token ids.
+TOK = {
 	kwd_for = k(),
 	kwd_while = k(),
 	kwd_in = k(),
@@ -124,14 +127,37 @@ tok = {
 	lit_array = k(), --This only gets created during constant folding
 	lit_object = k(),
 	object = k(),
+
+	no_value = k(),
 }
+
+require "src.compiler.span"
+
+---@class (exact) Token
+---@field span Span The range of text this token spans.
+---@field id TOK The token ID.
+---@field private meta_id TOK? ONLY used during AST generation! The ID this token was coerced into.
+---@field text string The text from the input file that this token represents.
+---@field value any The literal value that was calculated for this token, if any. Used for constant folding.
+---@field children Token[]? A list of child nodes.
+---@field type string? The data type that was deduced for this token, if any.
+---@field inside_object boolean? If defined and true, this token is inside an object declaration.
+---@field ignore boolean? If true, optimize this token away. Only defined on subroutine definition tokens.
+---@field all_labels string[]? A list of all labels defined in the current program. Only defined on gosub tokens.
+---@field unterminated boolean? Whether this slice token is unterminated (e.g. var[1::]). Only defined on slices.
+Token = {}
 
 --[[minify-delete]]
 SHOW_MULTIPLE_ERRORS = false
 HIDE_ERRORS = false
 --[[/minify-delete]]
 ERRORED = false
-function parse_error(line, col, msg, file)
+
+---Print errors to the console.
+---@param span Span
+---@param msg string
+---@param file string?
+function parse_error(span, msg, file)
 	if msg:sub(1, 12) == 'COMPILER BUG' then
 		msg = msg .. '\nTHIS IS A BUG IN THE PAISLEY COMPILER, PLEASE REPORT IT!'
 		--[[minify-delete]]
@@ -142,12 +168,12 @@ function parse_error(line, col, msg, file)
 	--[[minify-delete]]
 	if not HIDE_ERRORS then
 		if _G['LANGUAGE_SERVER'] then
-			print((line-1)..','..col..','..(line-1)..','..col..'|'..msg)
+			print((span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
 		else --[[/minify-delete]]
 			if file ~= nil and file ~= '' then
-				print(file..': '..line..', '..col..': '..msg)
+				print(file..': '..span.from.line..', '..span.from.col..': '..msg)
 			else
-				print(line..', '..col..': '..msg)
+				print(span.from.line..', '..span.from.col..': '..msg)
 			end
 		--[[minify-delete]]
 		end
@@ -167,7 +193,7 @@ end
 function token_text(token_id)
 	local key
 	local value
-	for key, value in pairs(tok) do
+	for key, value in pairs(TOK) do
 		if token_id == value then
 			return key
 		end
@@ -198,12 +224,10 @@ function print_token(token, indent)
 		end
 	end
 
-	print((indent..'%2d:%2d: %13s = %s%s'):format(token.line, token.col, id, token.text:gsub('\n', '<nl>'):gsub('\x09','<nl>'), meta))
+	print((indent..'%2d:%2d: %13s = %s%s'):format(token.span.from.line, token.span.from.col, id, token.text:gsub('\n', '<nl>'):gsub('\x09','<nl>'), meta))
 end
 
 function print_tokens_recursive(root, indent)
-	local child
-	local _
 	if indent == nil then indent = '' end
 	print_token(root, indent)
 	if root.children then

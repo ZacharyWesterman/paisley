@@ -73,7 +73,7 @@ BUILTIN_FUNCS = {
 	find = 3,
 }
 
-type_signatures = {
+local type_signatures = {
 	random_int = {
 		valid = {{'number'}},
 		out = 'number',
@@ -355,45 +355,45 @@ type_signatures = {
 		out = 'number',
 	},
 
-	[tok.add] = {
+	[TOK.add] = {
 		valid = {{'number'}, {'array'}},
 		out = 'number',
 	},
-	[tok.multiply] = {
+	[TOK.multiply] = {
 		valid = {{'number'}, {'array'}},
 		out = 'number',
 	},
-	[tok.exponent] = {
+	[TOK.exponent] = {
 		valid = {{'number'}},
 		out = 'number',
 	},
-	[tok.boolean] = {
+	[TOK.boolean] = {
 		out = 'boolean',
 	},
-	[tok.array_concat] = {
+	[TOK.array_concat] = {
 		out = 'array',
 	},
-	[tok.array_slice] = {
+	[TOK.array_slice] = {
 		valid = {{'number', 'number'}},
 		out = 'array',
 	},
-	[tok.comparison] = {
+	[TOK.comparison] = {
 		out = 'boolean',
 	},
-	[tok.negate] = {
+	[TOK.negate] = {
 		valid = {{'number'}, {'array'}},
 		out = 'number',
 	},
-	[tok.concat] = {
+	[TOK.concat] = {
 		out = 'string',
 	},
-	[tok.length] = {
+	[TOK.length] = {
 		out = 'number',
 	},
-	[tok.string_open] = {
+	[TOK.string_open] = {
 		out = 'string',
 	},
-	[tok.list_comp] = {
+	[TOK.list_comp] = {
 		out = 'array',
 	},
 }
@@ -417,6 +417,10 @@ end
 function SemanticAnalyzer(tokens, file)
 	--[[minify-delete]] SHOW_MULTIPLE_ERRORS = true --[[/minify-delete]]
 
+	---@param root Token
+	---@param token_ids TOK[]
+	---@param operation fun(token: Token, file: string?)?
+	---@param on_exit fun(token: Token, file: string?)?
 	local function recurse(root, token_ids, operation, on_exit)
 		local correct_token = false
 		for _, id in ipairs(token_ids) do
@@ -445,14 +449,14 @@ function SemanticAnalyzer(tokens, file)
 
 	--Make sure subroutines are top-level statements
 	local tok_level = 0
-	recurse(root, {tok.subroutine, tok.if_stmt, tok.for_stmt, tok.while_stmt}, function(token)
+	recurse(root, {TOK.subroutine, TOK.if_stmt, TOK.for_stmt, TOK.while_stmt}, function(token)
 		--Enter scope
-		if token.id == tok.subroutine and tok_level > 0 then
-			parse_error(token.line, token.col, 'Subroutines cannot be defined inside other structures', file)
+		if token.id == TOK.subroutine and tok_level > 0 then
+			parse_error(token.span, 'Subroutines cannot be defined inside other structures', file)
 		end
 
 		if token.text:sub(1,1) == '?' then
-			parse_error(token.line, token.col, 'Subroutine name cannot begin with `?`', file)
+			parse_error(token.span, 'Subroutine name cannot begin with `?`', file)
 		end
 
 		tok_level = tok_level + 1
@@ -462,11 +466,12 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Make sure "delete" statements only have text params. deleting expressions that resolve to variable names is a recipe for disaster.
-	recurse(root, {tok.delete_stmt}, function(token)
+	recurse(root, {TOK.delete_stmt}, function(token)
+		---@type Token[]
 		local kids = token.children[1].children
 		for i = 1, #kids do
-			if kids[i].id ~= tok.text then
-				parse_error(kids[i].line, kids[i].col, 'Expected only variable names after "delete" keyword', file)
+			if kids[i].id ~= TOK.text then
+				parse_error(kids[i].span, 'Expected only variable names after "delete" keyword', file)
 			end
 		end
 
@@ -474,14 +479,10 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Fold nested array_concat tokens into a single array
-	recurse(root, {tok.array_concat}, nil, function(token)
-		local child
-		local _
+	recurse(root, {TOK.array_concat}, nil, function(token)
 		local kids = {}
 		for _, child in ipairs(token.children) do
-			if child.id == tok.array_concat or child.id == tok.object then
-				local __
-				local kid
+			if child.id == TOK.array_concat or child.id == TOK.object then
 				for __, kid in ipairs(child.children) do
 					table.insert(kids, kid)
 				end
@@ -493,8 +494,8 @@ function SemanticAnalyzer(tokens, file)
 		local is_object = false
 		local is_array = false
 		for _, child in ipairs(kids) do
-			if child.id ~= tok.array_concat and child.id ~= tok.object and not child.errored then
-				if child.id == tok.key_value_pair then
+			if child.id ~= TOK.array_concat and child.id ~= TOK.object and not child.errored then
+				if child.id == TOK.key_value_pair then
 					is_object = true
 					child.inside_object = true
 					if #child.children == 0 and #kids > 1 then
@@ -512,23 +513,22 @@ function SemanticAnalyzer(tokens, file)
 		end
 
 		if is_object then
-			token.id = tok.object
+			token.id = TOK.object
 			token.type = 'object'
 		end
 		token.children = kids
 	end)
 
 	--Extract key-value pairs into objects
-	recurse(root, {tok.key_value_pair}, nil, function(token)
+	recurse(root, {TOK.key_value_pair}, nil, function(token)
 		if not token.inside_object then
 			local new_token = {
 				id = token.id,
-				line = token.line,
-				col = token.col,
+				span = token.span,
 				text = token.text,
 				children = token.children,
 			}
-			token.id = tok.object
+			token.id = TOK.object
 			token.text = '{}'
 			token.type = 'object'
 			token.children = {new_token}
@@ -538,15 +538,15 @@ function SemanticAnalyzer(tokens, file)
 	--Make a list of all subroutines, and check that return statements are only in subroutines
 	local labels = {}
 	local inside_sub = 0
-	recurse(root, {tok.subroutine, tok.kwd_return}, function(token)
-		if token.id == tok.subroutine then
+	recurse(root, {TOK.subroutine, TOK.kwd_return}, function(token)
+		if token.id == TOK.subroutine then
 			inside_sub = inside_sub + 1
 
 			local label = token.text
 			local prev = labels[label]
 			if prev ~= nil then
 				-- Don't allow tokens to be redeclared
-				parse_error(token.line, token.col, 'Redeclaration of subroutine "'..label..'" (previously declared on line '..prev.line..', col '..prev.col..')', file)
+				parse_error(token.span, 'Redeclaration of subroutine "'..label..'" (previously declared on line '..prev.line..', col '..prev.col..')', file)
 			end
 
 			if not token.children or #token.children == 0 then
@@ -556,17 +556,17 @@ function SemanticAnalyzer(tokens, file)
 			labels[label] = token
 		else
 			if inside_sub < 1 then
-				parse_error(token.line, token.col, 'Return statements can only be inside subroutines', file)
+				parse_error(token.span, 'Return statements can only be inside subroutines', file)
 			end
 		end
 	end, function(token)
-		if token.id == tok.subroutine then
+		if token.id == TOK.subroutine then
 			inside_sub = inside_sub - 1
 		end
 	end)
 
 	--Check subroutine references.
-	recurse(root, {tok.gosub_stmt}, function(token)
+	recurse(root, {TOK.gosub_stmt}, function(token)
 		token.children = token.children[1].children
 	end)
 
@@ -574,15 +574,15 @@ function SemanticAnalyzer(tokens, file)
 	local lambdas = {}
 	local tok_level = 0
 	local pop_scope = function(token)
-		if token.id == tok.lambda then
+		if token.id == TOK.lambda then
 			if not lambdas[token.text] then lambdas[token.text] = {} end
 			table.insert(lambdas[token.text], {
 				level = tok_level,
 				node = token.children[1]
 			})
-		elseif token.id == tok.lambda_ref then
+		elseif token.id == TOK.lambda_ref then
 			if not lambdas[token.text] then
-				parse_error(token.line, token.col, 'Lambda "'..token.text..'" is not defined in the current scope', file)
+				parse_error(token.span, 'Lambda "'..token.text..'" is not defined in the current scope', file)
 			end
 
 			--Lambda is defined, so replace it with the appropriate node
@@ -606,9 +606,9 @@ function SemanticAnalyzer(tokens, file)
 			end
 		end
 	end
-	recurse(root, {tok.lambda, tok.lambda_ref, tok.if_stmt, tok.while_stmt, tok.for_stmt, tok.subroutine, tok.else_stmt, tok.elif_stmt}, function(token)
-		if token.id ~= tok.lambda and token.id ~= tok.lambda_ref then
-			if token.id == tok.else_stmt or token.id == tok.elif_stmt then
+	recurse(root, {TOK.lambda, TOK.lambda_ref, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.subroutine, TOK.else_stmt, TOK.elif_stmt}, function(token)
+		if token.id ~= TOK.lambda and token.id ~= TOK.lambda_ref then
+			if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
 				pop_scope(token)
 			end
 			--Make sure lambdas are only referenced in the appropriate scope, never outside the scope they're defined.
@@ -617,7 +617,7 @@ function SemanticAnalyzer(tokens, file)
 	end, pop_scope)
 
 	--Replace lambda definitions with the appropriate node.
-	recurse(root, {tok.lambda}, nil, function(token)
+	recurse(root, {TOK.lambda}, nil, function(token)
 		local lambda_node = token.children[1]
 		for _, i in ipairs({'text', 'line', 'col', 'id', 'value', 'type'}) do
 			token[i] = lambda_node[i]
@@ -626,7 +626,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Check function calls
-	recurse(root, {tok.func_call}, function(token)
+	recurse(root, {TOK.func_call}, function(token)
 		--Move all params to be direct children
 		if not token.children then
 			token.children = {}
@@ -634,7 +634,7 @@ function SemanticAnalyzer(tokens, file)
 			local kids = {}
 			for i = 1, #token.children do
 				local child = token.children[i]
-				if token.children[i].id == tok.array_concat then
+				if token.children[i].id == TOK.array_concat then
 					local k
 					for k = 1, #token.children[i].children do
 						table.insert(kids, token.children[i].children[k])
@@ -657,7 +657,7 @@ function SemanticAnalyzer(tokens, file)
 			if guess ~= nil then
 				msg = msg .. ' (did you mean "'..guess..'('..funcsig(guess)..')"?)'
 			end
-			parse_error(token.line, token.col, msg, file)
+			parse_error(token.span, msg, file)
 			return
 		end
 
@@ -674,31 +674,31 @@ function SemanticAnalyzer(tokens, file)
 				if param_ct < -func then
 					local plural = ''
 					if func < -1 then plural = 's' end
-					parse_error(token.line, token.col, 'Function "'..token.text..'('..funcsig(token.text)..')" expects at least '..(-func)..' parameter'..plural..', but '..param_ct..' '..verb..' given', file)
+					parse_error(token.span, 'Function "'..token.text..'('..funcsig(token.text)..')" expects at least '..(-func)..' parameter'..plural..', but '..param_ct..' '..verb..' given', file)
 				end
 			else
-				parse_error(token.line, token.col, 'Function "'..token.text..'('..funcsig(token.text)..')" expects '..func..' parameter'..plural..', but '..param_ct..' '..verb..' given', file)
+				parse_error(token.span, 'Function "'..token.text..'('..funcsig(token.text)..')" expects '..func..' parameter'..plural..', but '..param_ct..' '..verb..' given', file)
 			end
 		end
 
 		--For reduce() function, make sure that its second parameter is an operator!
 		if token.text == 'reduce' then
 			local correct = false
-			for i, k in pairs({tok.op_plus, tok.op_minus, tok.op_times, tok.op_idiv, tok.op_div, tok.op_mod, tok.op_and, tok.op_or, tok.op_xor, tok.op_ge, tok.op_gt, tok.op_le, tok.op_lt, tok.op_eq, tok.op_ne}) do
+			for i, k in pairs({TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_idiv, TOK.op_div, TOK.op_mod, TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne}) do
 				if token.children[2].id == k then
 					correct = true
 					break
 				end
 			end
 			if not correct then
-				parse_error(token.children[2].line, token.children[2].col, 'The second parameter of "reduce(a,b)" must be a binary operator', file)
+				parse_error(token.children[2].span, 'The second parameter of "reduce(a,b)" must be a binary operator', file)
 			end
 		elseif token.text == 'clamp' then
 			--Convert "clamp" into max(min(upper_bound, x), lower_bound)
-			mintok = {
+			---@type Token
+			local mintok = {
 				id = token.id,
-				line = token.line,
-				col = token.col,
+				span = token.span,
 				text = 'min',
 				children = {
 					token.children[1],
@@ -711,9 +711,9 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Prep plain (non-interpolated) strings to allow constant folding
-	recurse(root, {tok.string_open}, function(token)
+	recurse(root, {TOK.string_open}, function(token)
 		if token.children then
-			if token.children[1].id == tok.text and #token.children == 1 then
+			if token.children[1].id == TOK.text and #token.children == 1 then
 				token.value = token.children[1].text
 				token.children = nil
 			end
@@ -723,17 +723,17 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Check for variable existence by var name, not value
-	recurse(root, {tok.boolean}, function(token)
+	recurse(root, {TOK.boolean}, function(token)
 		local ch = token.children[1]
-		if token.text == 'exists' and ch.id == tok.variable then
-			ch.id = tok.string_open
+		if token.text == 'exists' and ch.id == TOK.variable then
+			ch.id = TOK.string_open
 			ch.value = ch.text
 			ch.type = 'string'
 		end
 	end)
 
 	--Get rid of parentheses and expression pseudo-tokens
-	recurse(root, {tok.parentheses, tok.expression}, nil, function(token)
+	recurse(root, {TOK.parentheses, TOK.expression}, nil, function(token)
 		if not token.children or #token.children ~= 1 then return end
 
 		local child = token.children[1]
@@ -744,7 +744,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Prep text to allow constant folding
-	recurse(root, {tok.text}, function(token)
+	recurse(root, {TOK.text}, function(token)
 		local val = tonumber(token.text)
 		if val then
 			token.value = val
@@ -756,11 +756,11 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Make variable assignment make sense, removing quirks of AST generation.
-	recurse(root, {tok.let_stmt}, function(token)
+	recurse(root, {TOK.let_stmt}, function(token, file)
 		local body = token.children[2]
-		if body and body.id == tok.command then
+		if body and body.id == TOK.command then
 			if #body.children > 1 then
-				body.id = tok.array_concat
+				body.id = TOK.array_concat
 				body.text = '[]'
 			else
 				token.children[2] = body.children[1]
@@ -773,7 +773,7 @@ function SemanticAnalyzer(tokens, file)
 			for i = 1, #token.children[1].children do
 				local child = token.children[1].children[i]
 				if child.text ~= '_' and vars[child.text] then
-					parse_error(child.line, child.col, 'Redundant variable `'..child.text..'` in group assignment. To indicate that this element should be ignored, use an underscore for the variable name.')
+					parse_error(child.span, 'Redundant variable `'..child.text..'` in group assignment. To indicate that this element should be ignored, use an underscore for the variable name.', file)
 				end
 				vars[child.text] = true
 			end
@@ -781,20 +781,20 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Tidy up WHILE loops and IF/ELIF statements (replace command with cmd contents)
-	recurse(root, {tok.while_stmt, tok.if_stmt, tok.elif_stmt}, function(token)
-		if token.children[1].id ~= tok.gosub_stmt then
+	recurse(root, {TOK.while_stmt, TOK.if_stmt, TOK.elif_stmt}, function(token)
+		if token.children[1].id ~= TOK.gosub_stmt then
 			if #token.children[1].children > 1 then
-				parse_error(token.line, token.col, 'Too many parameters passed to "'..token.text..'" statement', file)
+				parse_error(token.span, 'Too many parameters passed to "'..token.text..'" statement', file)
 			end
 			token.children[1] = token.children[1].children[1]
 		end
 	end)
 
 	--Tidy up FOR loops (replace command with cmd contents)
-	recurse(root, {tok.for_stmt}, function(token)
-		if token.children[2].id == tok.command then
+	recurse(root, {TOK.for_stmt}, function(token)
+		if token.children[2].id == TOK.command then
 			if #token.children[2].children > 1 then
-				token.children[2].id = tok.array_concat
+				token.children[2].id = TOK.array_concat
 			else
 				for _, i in ipairs({'text', 'line', 'col', 'id', 'value', 'type'}) do
 					token.children[2][i] = token.children[2].children[1][i]
@@ -810,23 +810,23 @@ function SemanticAnalyzer(tokens, file)
 	local variables = {}
 	local deduced_variable_types
 
-	local function type_checking(token)
-		local signature, kind
+	local function type_checking(token, file)
+		local signature
 
 		--Unlike other tokens, "command" tokens only need the first child to be constant for us to deduce the type
-		if token.id == tok.inline_command or token.id == tok.command then
+		if token.id == TOK.inline_command or token.id == TOK.command then
 			local ch = token.children[1]
-			if ch.id == tok.gosub_stmt then return end --subroutine eval is different
+			if ch.id == TOK.gosub_stmt then return end --subroutine eval is different
 
-			if token.id == tok.inline_command then ch = ch.children[1] end
+			if token.id == TOK.inline_command then ch = ch.children[1] end
 
 			--ignore "define" pseudo-command
 			if ch.value == 'define' then return end
 
-			if ch.value ~= nil and ch.id ~= tok.lit_null then
+			if ch.value ~= nil and ch.id ~= TOK.lit_null then
 				if not ALLOWED_COMMANDS[ch.value] and not BUILTIN_COMMANDS[ch.value] then
 					--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
-					msg = 'Unknown command "'..std.str(ch.value)..'"'
+					local msg = 'Unknown command "'..std.str(ch.value)..'"'
 					local guess = closest_word(std.str(ch.value), ALLOWED_COMMANDS, 4)
 					if guess == nil or guess == '' then
 						guess = closest_word(std.str(ch.value), BUILTIN_COMMANDS, 4)
@@ -835,7 +835,7 @@ function SemanticAnalyzer(tokens, file)
 					if guess ~= nil and guess ~= '' then
 						msg = msg .. ' (did you mean "'..std.str(guess)..'"?)'
 					end
-					parse_error(ch.line, ch.col, msg, file)
+					parse_error(ch.span, msg, file)
 				end
 
 				if ALLOWED_COMMANDS[ch.value] then
@@ -847,19 +847,19 @@ function SemanticAnalyzer(tokens, file)
 			return
 		end
 
-		if token.value ~= nil or token.id == tok.lit_null then
+		if token.value ~= nil or token.id == TOK.lit_null then
 			token.type = std.type(token.value)
 			return
-		elseif token.id == tok.index then
+		elseif token.id == TOK.index then
 			local c2 = token.children[2]
-			if c2.id == tok.array_slice and #c2.children == 1 then
+			if c2.id == TOK.array_slice and #c2.children == 1 then
 				c2.unterminated = true
 			end
 
 			local t1, t2 = token.children[1].type, token.children[2].type
 			if t1 and t2 then
 				if t1 ~= 'string' and t1 ~= 'array' and t1 ~= 'object' then
-					parse_error(token.children[1].line, token.children[1].col, 'Cannot index a value of type `'..t1..'`. Type must be `string`,  `array`, or `object`', file)
+					parse_error(token.children[1].span, 'Cannot index a value of type `'..t1..'`. Type must be `string`,  `array`, or `object`', file)
 					return
 				end
 
@@ -873,7 +873,7 @@ function SemanticAnalyzer(tokens, file)
 				end
 			end
 			return
-		elseif token.id == tok.variable then
+		elseif token.id == TOK.variable then
 			return
 		elseif type_signatures[token.id] ~= nil then
 			signature = type_signatures[token.id]
@@ -884,8 +884,6 @@ function SemanticAnalyzer(tokens, file)
 		end
 
 		if token.children then
-			local i
-			local g
 			local exp_types, got_types = {}, {}
 			local found_correct_types = false
 
@@ -909,7 +907,6 @@ function SemanticAnalyzer(tokens, file)
 				for i = 1, #exp_types do
 					expt2[i] = std.join(exp_types[i], ',')
 
-					local k
 					found_correct_types = true
 					for k = 1, #exp_types[i] do
 						if exp_types[i][k] ~= 'any' and got_types[k] ~= exp_types[i][k] and got_types[k] ~= 'any' then
@@ -927,7 +924,7 @@ function SemanticAnalyzer(tokens, file)
 					else
 						msg = 'Operator "'..token.text..'"'
 					end
-					parse_error(token.line, token.col, msg..' expected ('..std.join(expt2, ' or ')..') but got ('..std.join(got_types, ',')..')', file)
+					parse_error(token.span, msg..' expected ('..std.join(expt2, ' or ')..') but got ('..std.join(got_types, ',')..')', file)
 				end
 			end
 
@@ -963,18 +960,17 @@ function SemanticAnalyzer(tokens, file)
 	end
 
 	local function variable_assignment(token)
-		if token.id == tok.for_stmt then
+		if token.id == TOK.for_stmt then
 			local var = token.children[1]
 			local ch = token.children[2]
 
 			if var.type then return end
 
 			--Expression to iterate over is constant
-			if ch.value ~= nil or ch.id == tok.lit_null then
+			if ch.value ~= nil or ch.id == TOK.lit_null then
 				local tp
 
 				if type(ch.value) == 'table' then
-					local _, val
 					for _, val in pairs(ch.value) do
 						local _tp = std.type(val)
 						if tp == nil then tp = _tp
@@ -1000,7 +996,7 @@ function SemanticAnalyzer(tokens, file)
 	end
 
 	local function variable_unassignment(token)
-		if token.id == tok.for_stmt then
+		if token.id == TOK.for_stmt then
 			local var = token.children[1].text
 			if variables[var] then
 				if #variables[var] == 1 then
@@ -1009,7 +1005,7 @@ function SemanticAnalyzer(tokens, file)
 					table.remove(variables)
 				end
 			end
-		elseif token.id == tok.let_stmt then
+		elseif token.id == TOK.let_stmt then
 			local var = token.children[1]
 			local ch = token.children[2]
 
@@ -1033,12 +1029,12 @@ function SemanticAnalyzer(tokens, file)
 				for i = 1, #vars do
 					tp = nil
 					if ch then
-						if ch.id == tok.array_concat then
+						if ch.id == TOK.array_concat then
 							if ch.children[i] and ch.children[i].type then
 								tp = ch.children[i].type
 							end
-						elseif ch.value or ch.id == tok.lit_null then
-							if ch.id == tok.lit_array then
+						elseif ch.value or ch.id == TOK.lit_null then
+							if ch.id == TOK.lit_array then
 								tp = std.type(ch.value[i])
 							elseif i == 1 then
 								tp = std.type(ch.value)
@@ -1065,7 +1061,7 @@ function SemanticAnalyzer(tokens, file)
 				var.type = tp
 				deduced_variable_types = true
 			end
-		elseif token.id == tok.variable then
+		elseif token.id == TOK.variable then
 			if token.type then return end
 
 			local tp = variables[token.text]
@@ -1085,30 +1081,29 @@ function SemanticAnalyzer(tokens, file)
 		deduced_variable_types = false
 
 		--First pass at deducing all types
-		recurse(root, {tok.string_open, tok.add, tok.multiply, tok.exponent, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.inline_command, tok.command}, nil, type_checking)
+		recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.inline_command, TOK.command}, nil, type_checking)
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
-		recurse(root, {tok.add, tok.multiply, tok.exponent, tok.boolean, tok.length, tok.func_call, tok.array_concat, tok.negate, tok.comparison, tok.concat, tok.array_slice, tok.string_open, tok.index, tok.ternary, tok.list_comp, tok.object, tok.key_value_pair}, nil, FOLD_CONSTANTS)
+		recurse(root, {TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary, TOK.list_comp, TOK.object, TOK.key_value_pair}, nil, FOLD_CONSTANTS)
 
 		--Set any variables we can
-		recurse(root, {tok.for_stmt, tok.let_stmt, tok.variable}, variable_assignment, variable_unassignment)
+		recurse(root, {TOK.for_stmt, TOK.let_stmt, TOK.variable}, variable_assignment, variable_unassignment)
 
 		if ERRORED then terminate() end
 	end
 
 	--One last pass at deducing all types (after any constant folding)
-	recurse(root, {tok.string_open, tok.add, tok.multiply, tok.exponent, tok.boolean, tok.index, tok.array_concat, tok.array_slice, tok.comparison, tok.negate, tok.func_call, tok.concat, tok.length, tok.lit_array, tok.lit_boolean, tok.lit_null, tok.lit_number, tok.variable, tok.inline_command, tok.command}, nil, type_checking)
+	recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.variable, TOK.inline_command, TOK.command}, nil, type_checking)
 
 
 	--BREAK and CONTINUE statements are only allowed to have up to a single CONSTANT INTEGER operand
-	recurse(root, {tok.break_stmt, tok.continue_stmt}, function(token)
+	recurse(root, {TOK.break_stmt, TOK.continue_stmt}, function(token)
 		if not token.children or #token.children == 0 then
 			token.children = {{
-				id = tok.lit_number,
+				id = TOK.lit_number,
 				text = '1',
 				value = 1,
-				line = token.line,
-				col = token.col,
+				span = token.span,
 			}}
 			return
 		end
@@ -1116,16 +1111,16 @@ function SemanticAnalyzer(tokens, file)
 		token.children = token.children[1].children
 		local val = token.children[1].value
 		if #token.children > 1 or math.type(val) ~= 'integer' or val < 1 then
-			parse_error(token.line, token.col, 'Only a constant positive integer is allowed as a parameter for "'..token.text..'"', file)
+			parse_error(token.span, 'Only a constant positive integer is allowed as a parameter for "'..token.text..'"', file)
 		end
 	end)
 
 	--Check gosub uses. Gosub IS allowed to have a single, constant value as its parameter.
-	recurse(root, {tok.gosub_stmt}, function(token)
+	recurse(root, {TOK.gosub_stmt}, function(token)
 		local label
-		if token.children[1].value ~= nil or token.children[1].id == tok.lit_null then
+		if token.children[1].value ~= nil or token.children[1].id == TOK.lit_null then
 			label = std.str(token.children[1].value)
-		elseif token.children[1].id == tok.text then
+		elseif token.children[1].id == TOK.text then
 			label = token.children[1].text
 		end
 
@@ -1142,7 +1137,7 @@ function SemanticAnalyzer(tokens, file)
 			if guess ~= nil and guess ~= '' then
 				msg = msg .. ' (did you mean "'.. guess ..'"?)'
 			end
-			parse_error(token.children[1].line, token.children[1].col, msg, file)
+			parse_error(token.children[1].span, msg, file)
 		end
 
 		token.ignore = labels[label].ignore
