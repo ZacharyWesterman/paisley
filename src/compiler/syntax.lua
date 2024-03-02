@@ -17,7 +17,7 @@ local rules = {
 
 				return {
 					id = TOK.index,
-					span = token.children[2].span,
+					span = Span:merge(token.children[1].span, token.children[3].span),
 					text = '.',
 					children = {c1, c3},
 				}
@@ -792,8 +792,7 @@ local rules = {
 		id = TOK.program,
 		onmatch = function(token)
 			--Catch possible dead ends where line endings come before any commands.
-			local i, _
-			for _, i in ipairs({'text', 'line', 'col', 'id', 'meta_id', 'value'}) do
+			for _, i in ipairs({'text', 'span', 'id', 'meta_id', 'value'}) do
 				token[i] = token.children[2][i]
 			end
 			token.children = token.children[2].children
@@ -954,10 +953,11 @@ function SyntaxParser(tokens, file)
 						--This is an "append" token: the first token in the group does not get consumed, instead all other tokens are appended as children.
 						if this_token.children == nil then this_token.children = {} end
 
-						local i
 						for i = 2, #rule.match do
 							table.insert(this_token.children, tokens[index + i - 1])
 						end
+
+						this_token.span = Span:merge(this_token.span, tokens[index + #rule.match - 1].span)
 
 						return this_token, #rule.match, nil
 					else

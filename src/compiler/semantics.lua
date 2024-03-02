@@ -587,7 +587,7 @@ function SemanticAnalyzer(tokens, file)
 
 			--Lambda is defined, so replace it with the appropriate node
 			local lambda_node = lambdas[token.text][#lambdas[token.text]].node
-			for _, i in ipairs({'text', 'line', 'col', 'id', 'value', 'type'}) do
+			for _, i in ipairs({'text', 'span', 'id', 'value', 'type'}) do
 				token[i] = lambda_node[i]
 			end
 			token.children = lambda_node.children
@@ -619,7 +619,7 @@ function SemanticAnalyzer(tokens, file)
 	--Replace lambda definitions with the appropriate node.
 	recurse(root, {TOK.lambda}, nil, function(token)
 		local lambda_node = token.children[1]
-		for _, i in ipairs({'text', 'line', 'col', 'id', 'value', 'type'}) do
+		for _, i in ipairs({'text', 'span', 'id', 'value', 'type'}) do
 			token[i] = lambda_node[i]
 		end
 		token.children = lambda_node.children
@@ -737,7 +737,7 @@ function SemanticAnalyzer(tokens, file)
 		if not token.children or #token.children ~= 1 then return end
 
 		local child = token.children[1]
-		for _, key in ipairs({'value', 'id', 'text', 'line', 'col', 'type'}) do
+		for _, key in ipairs({'value', 'id', 'text', 'span', 'type'}) do
 			token[key] = child[key]
 		end
 		token.children = child.children
@@ -796,7 +796,7 @@ function SemanticAnalyzer(tokens, file)
 			if #token.children[2].children > 1 then
 				token.children[2].id = TOK.array_concat
 			else
-				for _, i in ipairs({'text', 'line', 'col', 'id', 'value', 'type'}) do
+				for _, i in ipairs({'text', 'span', 'id', 'value', 'type'}) do
 					token.children[2][i] = token.children[2].children[1][i]
 				end
 				token.children[2].children = token.children[2].children[1].children
@@ -835,7 +835,7 @@ function SemanticAnalyzer(tokens, file)
 					if guess ~= nil and guess ~= '' then
 						msg = msg .. ' (did you mean "'..std.str(guess)..'"?)'
 					end
-					parse_error(ch.span, msg, file)
+					parse_error(token.span, msg, file)
 				end
 
 				if ALLOWED_COMMANDS[ch.value] then
