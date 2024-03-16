@@ -60,11 +60,19 @@ std = {
 	end,
 
 	---Cast data to a boolean.
-	---Empty strings, nil, false and zero all convert to false. Any other values convert to true.
+	---Empty strings, empty arrays, empty objects, nil, false and zero all convert to false. Any other values convert to true.
 	---@param data any
 	---@return boolean
 	bool = function(data)
-		return not (not data or data == 0 or data == '' or (type(data) == 'table' and #data == 0))
+		local tp = std.type(data)
+		if tp == 'object' then
+			for key, val in pairs(data) do return true end
+			return false
+		elseif tp == 'array' then
+			return #data > 0
+		end
+
+		return data and data ~= 0 and data ~= ''
 	end,
 
 	---Cast data to a number.

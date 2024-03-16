@@ -56,7 +56,7 @@ if {expression is true-ish} else
 end
 ```
 
-Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression’s trueness: false, null, zero, and empty strings are false-ish, everything else is true-ish. Arrays and objects are always true-ish.
+Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression’s trueness: false, null, zero, and empty strings, arrays and objects are false-ish, everything else is true-ish.
 
 ## Loops:
 While and For loops have a similar syntax to Lua:
