@@ -619,11 +619,11 @@ function FOLD_CONSTANTS(token, file)
 			--Fold values of only the deterministic functions
 			if token.value ~= nil then
 				token.text = tostring(token.value)
-				local tp = std.type(token.value)
+				local tp = std.deep_type(token.value)
 				if tp == 'boolean' then token.id = TOK.lit_boolean
 				elseif tp == 'number' then token.id = TOK.lit_number
 				elseif tp == 'string' then token.id = TOK.string_open
-				elseif tp == 'array' then
+				elseif tp:sub(1,5) == 'array' then
 					token.id = TOK.lit_array
 					token.text = '[]'
 				elseif tp == 'object' then
@@ -664,7 +664,7 @@ function FOLD_CONSTANTS(token, file)
 		token.children = nil
 
 	elseif token.id == TOK.array_slice then
-		token.type = 'array'
+		token.type = 'array[number]'
 		if #token.children == 1 then
 			if not token.unterminated then
 				parse_error(token.span, 'Unterminated slices can only be used when indexing an array or string, e.g. `value[begin_index:]`, and must be the only expression inside the brackets', file)
@@ -764,7 +764,7 @@ function FOLD_CONSTANTS(token, file)
 		end
 
 		token.value = result
-		token.type = std.type(result)
+		token.type = std.deep_type(result)
 		token.children = nil
 
 		local rs = {

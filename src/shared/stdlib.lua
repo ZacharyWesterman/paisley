@@ -113,6 +113,23 @@ std = {
 		return type(data)
 	end,
 
+	deep_type = function(data)
+		local tp = std.type(data)
+
+		if tp == 'array' and #data > 0 then
+			local subtype = std.deep_type(data[1])
+			for i = 2, #data do
+				local subtp = std.deep_type(data[i])
+
+				--Array contains multiple types; cannot deduce a single sub-type.
+				if subtp ~= subtype then return 'array' end
+			end
+
+			tp = tp .. '[' .. subtype .. ']'
+		end
+		return tp
+	end,
+
 	---Split a string by delimiter.
 	---@param text string
 	---@param delimiter string

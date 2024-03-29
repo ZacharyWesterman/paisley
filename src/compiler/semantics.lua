@@ -87,7 +87,7 @@ local type_signatures = {
 		out = 'number',
 	},
 	dist = {
-		valid = {{'number'}, {'array'}},
+		valid = {{'number'}, {'array[number]'}},
 		out = 'number',
 	},
 	sin = {
@@ -123,19 +123,19 @@ local type_signatures = {
 		out = 'number',
 	},
 	sum = {
-		valid = {{'number', 'array'}},
+		valid = {{'number'}, {'array[number]'}},
 		out = 'number',
 	},
 	mult = {
-		valid = {{'number', 'array'}},
+		valid = {{'number'}, {'array[number]'}},
 		out = 'number',
 	},
 	min = {
-		valid = {{'number'}, {'array'}},
+		valid = {{'number'}, {'array[number]'}},
 		out = 'number',
 	},
 	max = {
-		valid = {{'number'}, {'array'}},
+		valid = {{'number'}, {'array[number]'}},
 		out = 'number',
 	},
 	clamp = {
@@ -148,7 +148,7 @@ local type_signatures = {
 	},
 	split = {
 		valid = {{'string', 'string'}},
-		out = 'array',
+		out = 'array[string]',
 	},
 	join = {
 		valid = {{'array', 'string'}},
@@ -187,7 +187,7 @@ local type_signatures = {
 		out = 'string',
 	},
 	index = {
-		valid = {{'array', 'any'}, {'string'}},
+		valid = {{'array', 'array[number]'}, {'array', 'number'}, {'string', 'array[number]'}, {'string', 'number'}},
 		out = 'number',
 	},
 	lower = {
@@ -245,7 +245,7 @@ local type_signatures = {
 	},
 	clocktime = {
 		valid = {{'number'}},
-		out = 'array',
+		out = 'array[number]',
 	},
 	reverse = {
 		valid = {{'array'}, {'string'}},
@@ -260,10 +260,10 @@ local type_signatures = {
 	},
 	bytes = {
 		valid = {{'number'}},
-		out = 'array',
+		out = 'array[number]',
 	},
 	frombytes = {
-		valid = {{'array'}},
+		valid = {{'array[number]'}},
 		out = 'number',
 	},
 	merge = {
@@ -300,7 +300,7 @@ local type_signatures = {
 	},
 	keys = {
 		valid = {{'object'}},
-		out = 'array',
+		out = 'array[string]',
 	},
 	values = {
 		valid = {{'object'}},
@@ -356,11 +356,11 @@ local type_signatures = {
 	},
 
 	[TOK.add] = {
-		valid = {{'number'}, {'array'}},
+		valid = {{'number'}, {'array[number]'}},
 		out = 'number',
 	},
 	[TOK.multiply] = {
-		valid = {{'number'}, {'array'}},
+		valid = {{'number'}, {'array[number]'}},
 		out = 'number',
 	},
 	[TOK.exponent] = {
@@ -375,7 +375,7 @@ local type_signatures = {
 	},
 	[TOK.array_slice] = {
 		valid = {{'number', 'number'}},
-		out = 'array',
+		out = 'array[number]',
 	},
 	[TOK.comparison] = {
 		out = 'boolean',
@@ -855,7 +855,7 @@ function SemanticAnalyzer(tokens, file)
 		end
 
 		if token.value ~= nil or token.id == TOK.lit_null then
-			token.type = std.type(token.value)
+			token.type = std.deep_type(token.value)
 			return
 		elseif token.id == TOK.index then
 			local c2 = token.children[2]
@@ -865,7 +865,7 @@ function SemanticAnalyzer(tokens, file)
 
 			local t1, t2 = token.children[1].type, token.children[2].type
 			if t1 and t2 then
-				if t1 ~= 'string' and t1 ~= 'array' and t1 ~= 'object' then
+				if t1 ~= 'string' and t1:sub(1,5) ~= 'array' and t1 ~= 'object' then
 					parse_error(token.children[1].span, 'Cannot index a value of type `'..t1..'`. Type must be `string`,  `array`, or `object`', file)
 					return
 				end
@@ -875,8 +875,12 @@ function SemanticAnalyzer(tokens, file)
 				elseif t2 == 'array' then
 					token.type = t2
 				else
-					--We don't store what TYPE of arrays are being stored, so result of non-const array index has to be "any"
-					token.type = 'any'
+					if t1:sub(6,6) == '[' then
+						token.type = t1:sub(7, #t1 - 1)
+					else
+						--We don't know what type of array this is, so result of non-const array index has to be "any"
+						token.type = 'any'
+					end
 				end
 			end
 			return
@@ -938,6 +942,15 @@ function SemanticAnalyzer(tokens, file)
 			if signature.out then
 				if type(signature.out) == 'number' then
 					if found_correct_types then token.type = got_types[signature.out] end
+				elseif signature.out == 'array' and #token.children > 0 then
+					local subtype = token.children[1].type
+					for i = 2, #token.children do
+						if token.children[i].type ~= subtype then
+							subtype = nil
+							break
+						end
+					end
+					if subtype then token.type = 'array[' .. subtype .. ']' else token.type = 'array' end
 				else
 					token.type = signature.out
 				end
@@ -979,7 +992,7 @@ function SemanticAnalyzer(tokens, file)
 
 				if type(ch.value) == 'table' then
 					for _, val in pairs(ch.value) do
-						local _tp = std.type(val)
+						local _tp = std.deep_type(val)
 						if tp == nil then tp = _tp
 						elseif tp ~= _tp then
 							--Type will change, so it can't be reduced to a constant state.
@@ -989,7 +1002,7 @@ function SemanticAnalyzer(tokens, file)
 						end
 					end
 				else
-					tp = std.type(ch.value)
+					tp = std.deep_type(ch.value)
 				end
 
 				--If loop variable has a consistent type, then we know for sure what it will be.
@@ -1005,12 +1018,17 @@ function SemanticAnalyzer(tokens, file)
 	local function variable_unassignment(token)
 		if token.id == TOK.for_stmt then
 			local var = token.children[1].text
+			local ch = token.children[2]
 			if variables[var] then
 				if #variables[var] == 1 then
 					variables[var] = nil
 				else
 					table.remove(variables)
 				end
+			end
+
+			if ch.type and ch.type:sub(1,5) == 'array' and ch.type:sub(6,6) == '[' then
+				token.children[1].type = ch.type:sub(7, #ch.type - 1)
 			end
 		elseif token.id == TOK.let_stmt then
 			local var = token.children[1]
@@ -1042,9 +1060,9 @@ function SemanticAnalyzer(tokens, file)
 							end
 						elseif ch.value or ch.id == TOK.lit_null then
 							if ch.id == TOK.lit_array then
-								tp = std.type(ch.value[i])
+								tp = std.deep_type(ch.value[i])
 							elseif i == 1 then
-								tp = std.type(ch.value)
+								tp = std.deep_type(ch.value)
 							else
 								tp = 'null'
 							end
@@ -1075,7 +1093,9 @@ function SemanticAnalyzer(tokens, file)
 			local tp = variables[token.text]
 			if tp then
 				token.type = tp[#tp]
-			elseif token.text == '@' or token.text == '$' then
+			elseif token.text == '@' then
+				token.type = 'array[string]'
+			elseif token.text == '$' then
 				token.type = 'array'
 			end
 		end
