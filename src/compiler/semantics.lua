@@ -1100,13 +1100,27 @@ function SemanticAnalyzer(tokens, file)
 		if ERRORED then terminate() end
 	end
 
-	--If running as language server, print type info for any variable declarations.
+	--If running as language server, print type info for any variable declarations or command calls.
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then
-		recurse(root, {TOK.let_stmt, TOK.for_stmt}, function(token)
+		recurse(root, {TOK.let_stmt, TOK.for_stmt, TOK.inline_command}, function(token)
 			local var = token.children[1]
-			if var.type then
-				INFO.datatype(var.span, var.type)
+			if token.id == TOK.inline_command then
+				local cmd = var.children[1]
+				if cmd.value then
+					local tp
+					if ALLOWED_COMMANDS[cmd.value] then
+						tp = ALLOWED_COMMANDS[cmd.value]
+					else
+						tp = BUILTIN_COMMANDS[cmd.value]
+					end
+
+					INFO.hint(cmd.span, 'returns: '..tp)
+				end
+			else
+				if var.type then
+					INFO.hint(var.span, 'type: '..var.type)
+				end
 			end
 		end)
 	end

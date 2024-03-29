@@ -188,8 +188,8 @@ end
 
 --[[minify-delete]]
 INFO = {
-	datatype = function(span, msg)
-		print('H,'..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|type: '..msg)
+	hint = function(span, msg)
+		print('H,'..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
 	end,
 }
 --[[/minify-delete]]
@@ -199,8 +199,6 @@ function terminate()
 end
 
 function token_text(token_id)
-	local key
-	local value
 	for key, value in pairs(TOK) do
 		if token_id == value then
 			return key
