@@ -920,9 +920,12 @@ function SemanticAnalyzer(tokens, file)
 
 					found_correct_types = true
 					for k = 1, #exp_types[i] do
-						if exp_types[i][k] ~= 'any' and got_types[k] ~= exp_types[i][k] and got_types[k] ~= 'any' then
-							found_correct_types = false
-							break
+						local t1, t2 = exp_types[i][k], got_types[k]
+						if t1 ~= 'any' and t2 ~= 'any' and t1 ~= t2 then
+							if t1 ~= 'array' or t2:sub(1,5) ~= 'array' then
+								found_correct_types = false
+								break
+							end
 						end
 					end
 					if found_correct_types then break end
@@ -961,15 +964,20 @@ function SemanticAnalyzer(tokens, file)
 
 	local function push_var(var, value)
 		if not variables[var] then variables[var] = {} end
-		table.insert(variables[var], value)
+		table.insert(variables[var], {
+			text = value,
+			line = var.span.from.line,
+			col = var.span.from.col,
+		})
 	end
 
 	local function set_var(var, value)
-		if not variables[var] then
-			variables[var] = {value}
-		else
-			variables[var][#variables[var]] = value
-		end
+		if not variables[var.text] then variables[var.text] = {} end
+		variables[var.text][#variables[var.text]] = {
+			text = value,
+			line = var.span.from.line,
+			col = var.span.from.col,
+		}
 	end
 
 	local function pop_var(var)
@@ -1007,7 +1015,7 @@ function SemanticAnalyzer(tokens, file)
 
 				--If loop variable has a consistent type, then we know for sure what it will be.
 				if tp ~= nil then
-					push_var(var.text, tp)
+					push_var(var, tp)
 					var.type = tp
 					deduced_variable_types = true
 				end
@@ -1076,13 +1084,13 @@ function SemanticAnalyzer(tokens, file)
 					if tp ~= nil then
 						local child = var
 						if i > 1 then child = var.children[i-1] end
-						set_var(child.text, tp)
+						set_var(child, tp)
 						child.type = tp
 						deduced_variable_types = true
 					end
 				end
 			elseif tp ~= nil then
-				set_var(var.text, tp)
+				set_var(var, tp)
 				var.type = tp
 				deduced_variable_types = true
 			end
@@ -1092,7 +1100,13 @@ function SemanticAnalyzer(tokens, file)
 
 			local tp = variables[token.text]
 			if tp then
-				token.type = tp[#tp]
+				local tp1 = tp[#tp]
+				if tp1.line > token.span.from.line or (tp1.line == token.span.from.line and tp1.col > token.span.from.col) then
+					if #tp < 2 then return end
+					token.type = tp[#tp - 1].text
+				else
+					token.type = tp[#tp].text
+				end
 			elseif token.text == '@' then
 				token.type = 'array[string]'
 			elseif token.text == '$' then
@@ -1117,7 +1131,7 @@ function SemanticAnalyzer(tokens, file)
 		--Set any variables we can
 		recurse(root, {TOK.for_stmt, TOK.let_stmt, TOK.variable}, variable_assignment, variable_unassignment)
 
-		if ERRORED then terminate() end
+		if ERRORED then break end
 	end
 
 	--If running as language server, print type info for any variable declarations or command calls.
@@ -1145,6 +1159,8 @@ function SemanticAnalyzer(tokens, file)
 		end)
 	end
 	--[[/minify-delete]]
+
+	if ERRORED then terminate() end
 
 	--One last pass at deducing all types (after any constant folding)
 	recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.variable, TOK.inline_command, TOK.command}, nil, type_checking)

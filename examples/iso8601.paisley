@@ -1,2 +1,8 @@
 #Print the current date and time in ISO-8601 format
-print "{ ${sysdate}.reverse().join('-') }T{ (i.lpad('0', 2) for i in ${time}.clocktime()[1:3]).join(':') }"
+subroutine iso_time
+	let date = {i.lpad('0', 2) for i in ${sysdate}.reverse()}
+	let time = {i.lpad('0', 2) for i in ${time}.clocktime()[1:3]}
+	return "{date.join('-')}T{time.join(':')}"
+end
+
+print ${gosub iso_time}
