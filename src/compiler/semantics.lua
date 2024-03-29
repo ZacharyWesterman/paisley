@@ -1061,6 +1061,13 @@ function SemanticAnalyzer(tokens, file)
 				var.type = tp
 				deduced_variable_types = true
 			end
+
+			--[[minify-delete]]
+			if deduced_variable_types and _G['LANGUAGE_SERVER'] then
+				INFO.datatype(var.span, tp)
+			end
+			--[[/minify-delete]]
+
 		elseif token.id == TOK.variable then
 			if token.type then return end
 

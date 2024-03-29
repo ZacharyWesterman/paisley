@@ -168,7 +168,7 @@ function parse_error(span, msg, file)
 	--[[minify-delete]]
 	if not HIDE_ERRORS then
 		if _G['LANGUAGE_SERVER'] then
-			print((span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
+			print('E,'..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
 		else --[[/minify-delete]]
 			if file ~= nil and file ~= '' then
 				print(file..': '..span.from.line..', '..span.from.col..': '..msg)
@@ -185,6 +185,14 @@ function parse_error(span, msg, file)
 	terminate()
 	--[[minify-delete]] end --[[/minify-delete]]
 end
+
+--[[minify-delete]]
+INFO = {
+	datatype = function(span, msg)
+		print('T,'..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
+	end,
+}
+--[[/minify-delete]]
 
 function terminate()
 	error('ERROR in user-supplied Paisley script.')
