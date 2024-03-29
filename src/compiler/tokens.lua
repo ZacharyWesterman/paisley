@@ -189,7 +189,7 @@ end
 --[[minify-delete]]
 INFO = {
 	datatype = function(span, msg)
-		print('T,'..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
+		print('H,'..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|type: '..msg)
 	end,
 }
 --[[/minify-delete]]

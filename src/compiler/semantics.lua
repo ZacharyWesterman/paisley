@@ -802,6 +802,13 @@ function SemanticAnalyzer(tokens, file)
 				token.children[2].children = token.children[2].children[1].children
 			end
 		end
+
+		--Don't automatically set var type to "string", let it deduce.
+		if token.children[1].id == TOK.text then
+			token.children[1].id = TOK.var_assign
+			token.children[1].value = nil
+			token.children[1].type = nil
+		end
 	end)
 
 	--[[
@@ -1062,12 +1069,6 @@ function SemanticAnalyzer(tokens, file)
 				deduced_variable_types = true
 			end
 
-			--[[minify-delete]]
-			if deduced_variable_types and _G['LANGUAGE_SERVER'] then
-				INFO.datatype(var.span, tp)
-			end
-			--[[/minify-delete]]
-
 		elseif token.id == TOK.variable then
 			if token.type then return end
 
@@ -1098,6 +1099,18 @@ function SemanticAnalyzer(tokens, file)
 
 		if ERRORED then terminate() end
 	end
+
+	--If running as language server, print type info for any variable declarations.
+	--[[minify-delete]]
+	if _G['LANGUAGE_SERVER'] then
+		recurse(root, {TOK.let_stmt, TOK.for_stmt}, function(token)
+			local var = token.children[1]
+			if var.type then
+				INFO.datatype(var.span, var.type)
+			end
+		end)
+	end
+	--[[/minify-delete]]
 
 	--One last pass at deducing all types (after any constant folding)
 	recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.variable, TOK.inline_command, TOK.command}, nil, type_checking)
