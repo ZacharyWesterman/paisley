@@ -408,6 +408,15 @@ function FOLD_CONSTANTS(token, file)
 		return
 	end
 
+	--Even if not const, we can still tell the output type of list comprehension
+	if token.id == TOK.list_comp then
+		if token.children[1].type then
+			token.type = 'array['..token.children[1].type..']'
+		else
+			token.type = 'array'
+		end
+	end
+
 	--Another unique case: the reduce() function takes an operator as the second parameter, not a value
 	if token.id == TOK.func_call and token.text == 'reduce' then
 		if c1.value then
