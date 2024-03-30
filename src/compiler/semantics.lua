@@ -1208,13 +1208,10 @@ function SemanticAnalyzer(tokens, file)
 		end
 
 		if label == nil then
-			local l = {}
+			--If we have a dynamic gosub then we can't remove any subroutines, as we don't really know what subroutine is referenced.
 			for k, i in pairs(labels) do
-				--If we have a dynamic gosub then we can't remove any subroutines, as we don't really know what subroutine is referenced.
 				i.is_referenced = true
-				table.insert(l, k)
 			end
-			token.all_labels = l
 			return
 		end
 
