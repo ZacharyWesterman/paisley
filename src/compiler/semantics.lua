@@ -538,7 +538,7 @@ function SemanticAnalyzer(tokens, file)
 	--Make a list of all subroutines, and check that return statements are only in subroutines
 	local labels = {}
 	local inside_sub = 0
-	recurse(root, {TOK.subroutine, TOK.kwd_return}, function(token)
+	recurse(root, {TOK.subroutine, TOK.return_stmt}, function(token)
 		if token.id == TOK.subroutine then
 			inside_sub = inside_sub + 1
 
@@ -816,6 +816,7 @@ function SemanticAnalyzer(tokens, file)
 	]]
 	local variables = {}
 	local deduced_variable_types
+	local current_sub = nil
 
 	local function type_checking(token, file)
 		local signature
@@ -823,7 +824,17 @@ function SemanticAnalyzer(tokens, file)
 		--Unlike other tokens, "command" tokens only need the first child to be constant for us to deduce the type
 		if token.id == TOK.inline_command or token.id == TOK.command then
 			local ch = token.children[1]
-			if ch.id == TOK.gosub_stmt then return end --subroutine eval is different
+
+			--subroutine eval is different
+			if ch.id == TOK.gosub_stmt then
+				if not token.type then
+					-- print(ch.children[1].text)
+					token.type = labels[ch.children[1].text].return_type
+				-- print_tokens_recursive(token)
+				end
+
+				return
+			end
 
 			if token.id == TOK.inline_command then ch = ch.children[1] end
 
@@ -851,6 +862,31 @@ function SemanticAnalyzer(tokens, file)
 					token.type = BUILTIN_COMMANDS[ch.value]
 				end
 			end
+			return
+		end
+
+		if token.id == TOK.return_stmt then
+			if token.children[1].type then
+				local sub = labels[current_sub]
+				if sub then
+					if sub.type then
+						if sub.type ~= token.children[1].type then
+							if sub.type:sub(1,5) == 'array' and token.children[1].type:sub(1,5) == 'array' then
+								sub.type = 'array'
+							else
+								sub.type = 'any'
+							end
+						end
+					else
+						sub.type = token.children[1].type
+					end
+				end
+			end
+			return
+		end
+
+		if token.id == TOK.subroutine then
+			current_sub = token.text
 			return
 		end
 
@@ -1123,7 +1159,7 @@ function SemanticAnalyzer(tokens, file)
 		deduced_variable_types = false
 
 		--First pass at deducing all types
-		recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.inline_command, TOK.command}, nil, type_checking)
+		recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.inline_command, TOK.command, TOK.return_stmt, TOK.subroutine}, nil, type_checking)
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
 		recurse(root, {TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary, TOK.list_comp, TOK.object, TOK.key_value_pair}, nil, FOLD_CONSTANTS)
@@ -1145,6 +1181,8 @@ function SemanticAnalyzer(tokens, file)
 					if var.id == TOK.gosub_stmt then
 						if labels[cmd.text] then
 							INFO.hint(cmd.span, 'Defined on line '..labels[cmd.text].span.from.line..', col '..labels[cmd.text].span.from.col)
+							local tp = labels[cmd.text].type
+							if tp then INFO.hint(cmd.span, 'returns: '..tp) end
 						end
 					else
 						local tp
@@ -1177,7 +1215,7 @@ function SemanticAnalyzer(tokens, file)
 
 	if not ERRORED then
 		--One last pass at deducing all types (after any constant folding)
-		recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.variable, TOK.inline_command, TOK.command}, nil, type_checking)
+		recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.variable, TOK.inline_command, TOK.command, TOK.return_stmt, TOK.subroutine}, nil, type_checking)
 	end
 
 
