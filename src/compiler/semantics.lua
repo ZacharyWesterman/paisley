@@ -1142,14 +1142,20 @@ function SemanticAnalyzer(tokens, file)
 			if token.id == TOK.inline_command then
 				local cmd = var.children[1]
 				if cmd.value then
-					local tp
-					if ALLOWED_COMMANDS[cmd.value] then
-						tp = ALLOWED_COMMANDS[cmd.value]
+					if var.id == TOK.gosub_stmt then
+						if labels[cmd.text] then
+							INFO.hint(cmd.span, 'Defined on line '..labels[cmd.text].span.from.line..', col '..labels[cmd.text].span.from.col)
+						end
 					else
-						tp = BUILTIN_COMMANDS[cmd.value]
-					end
+						local tp
+						if ALLOWED_COMMANDS[cmd.value] then
+							tp = ALLOWED_COMMANDS[cmd.value]
+						else
+							tp = BUILTIN_COMMANDS[cmd.value]
+						end
 
-					INFO.hint(cmd.span, 'returns: '..tp)
+						if tp then INFO.hint(cmd.span, 'returns: '..tp) end
+					end
 				end
 			else
 				if var.type then
@@ -1160,7 +1166,14 @@ function SemanticAnalyzer(tokens, file)
 	end
 	--[[/minify-delete]]
 
-	if ERRORED then terminate() end
+	--Check if subroutines are even used
+	recurse(root, {TOK.gosub_stmt}, function(token)
+		local sub = labels[token.children[1].text]
+
+		if sub then
+			sub.is_referenced = true
+		end
+	end)
 
 	--One last pass at deducing all types (after any constant folding)
 	recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.variable, TOK.inline_command, TOK.command}, nil, type_checking)
@@ -1196,7 +1209,11 @@ function SemanticAnalyzer(tokens, file)
 
 		if label == nil then
 			local l = {}
-			for k, i in pairs(labels) do table.insert(l, k) end
+			for k, i in pairs(labels) do
+				--If we have a dynamic gosub then we can't remove any subroutines, as we don't really know what subroutine is referenced.
+				i.is_referenced = true
+				table.insert(l, k)
+			end
 			token.all_labels = l
 			return
 		end
@@ -1212,6 +1229,20 @@ function SemanticAnalyzer(tokens, file)
 
 		token.ignore = labels[label].ignore
 	end)
+
+	--Warn if subroutines are not used.
+	--[[minify-delete]]
+	if _G['LANGUAGE_SERVER'] then
+		recurse(root, {TOK.subroutine}, function(token)
+			if not token.is_referenced then
+				INFO.warning({
+					from = token.span.from,
+					to = token.span.from,
+				}, 'Subroutine "'..token.text..'" is never used.')
+			end
+		end)
+	end
+	--[[/minify-delete]]
 
 	if ERRORED then terminate() end
 

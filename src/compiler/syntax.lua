@@ -156,10 +156,10 @@ local rules = {
 	{
 		match = {{TOK.value, TOK.multiply, TOK.comparison}, {TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod}, {TOK.value, TOK.multiply, TOK.comparison}},
 		id = TOK.multiply,
-		not_after = {TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_dot, TOK.op_exponent},
+		not_before = {TOK.op_dot, TOK.op_exponent, TOK.op_slice},
+		not_after = {TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_dot, TOK.op_exponent, TOK.op_slice},
 		keep = {1, 3},
 		text = 2,
-		not_before = {TOK.op_dot},
 	},
 
 	--If no other multiplication was detected, just promote the value to mult status.
@@ -175,8 +175,8 @@ local rules = {
 	{
 		match = {{TOK.exponent, TOK.multiply, TOK.add, TOK.comparison}, {TOK.op_plus, TOK.op_minus}, {TOK.exponent, TOK.multiply, TOK.add, TOK.comparison}},
 		id = TOK.add,
-		not_before = {TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod},
-		not_after = {TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_dot, TOK.op_exponent},
+		not_before = {TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_dot, TOK.op_exponent, TOK.op_slice},
+		not_after = {TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_dot, TOK.op_exponent, TOK.op_slice},
 		keep = {1, 3},
 		text = 2,
 	},

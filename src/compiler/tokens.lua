@@ -145,6 +145,7 @@ require "src.compiler.span"
 ---@field ignore boolean? If true, optimize this token away. Only defined on subroutine definition tokens.
 ---@field all_labels string[]? A list of all labels defined in the current program. Only defined on gosub tokens.
 ---@field unterminated boolean? Whether this slice token is unterminated (e.g. var[1::]). Only defined on slices.
+---@field is_referenced boolean? Whether this subroutine token is referenced. Only defined on subroutines.
 Token = {}
 
 --[[minify-delete]]
@@ -190,6 +191,10 @@ end
 INFO = {
 	hint = function(span, msg)
 		print('H,'..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
+	end,
+
+	warning = function(span, msg)
+		print('W,'..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
 	end,
 }
 --[[/minify-delete]]

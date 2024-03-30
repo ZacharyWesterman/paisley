@@ -668,8 +668,8 @@ function generate_bytecode(root, file)
 			if token.children[4] then
 				--Only add the value to the list if the condition is met.
 				codegen_rules.recur_push(token.children[4])
-				true_label = label_id()
-				false_label = label_id()
+				local true_label = label_id()
+				local false_label = label_id()
 				emit(bc.call, 'jumpiffalse', false_label)
 				emit(bc.pop)
 				emit(bc.call, 'jump', true_label)
@@ -846,6 +846,7 @@ function generate_bytecode(root, file)
 					emit(bc.call, 'jump') --JUMP without param will pop the param from the stack
 
 					--Then push TRUE and return to caller
+					emit(bc.pop)
 					emit(bc.push, true)
 
 					emit(bc.label, fail_label)
@@ -864,7 +865,8 @@ function generate_bytecode(root, file)
 		[TOK.subroutine] = function(token, file)
 			--Don't generate code for the subroutine if it contains nothing.
 			--If it contains nothing then references to it have already been removed.
-			if not token.ignore then
+			-- print_tokens_recursive(token)
+			if not token.ignore and token.is_referenced then
 				local skipsub = label_id()
 				emit(bc.call, 'jump', skipsub)
 				emit(bc.label, token.text)
@@ -912,9 +914,9 @@ function generate_bytecode(root, file)
 					token.children[2] = nil
 				else
 					--If there are no built-in functions for this type of reduce, emulate it.
-					loop_beg_label = label_id()
-					loop_end_label = label_id()
-					loop_skip_label = label_id()
+					local loop_beg_label = label_id()
+					local loop_end_label = label_id()
+					local loop_skip_label = label_id()
 
 					emit(bc.push, nil)
 					codegen_rules.recur_push(token.children[1])
@@ -929,7 +931,7 @@ function generate_bytecode(root, file)
 						emit(bc.call, 'implode', 1)
 						emit(bc.call, 'floor')
 					else
-						ops = {
+						local ops = {
 							[TOK.op_plus] = 'add',
 							[TOK.op_minus] = 'sub',
 							[TOK.op_times] = 'mul',
@@ -1028,7 +1030,7 @@ function generate_bytecode(root, file)
 	emit(bc.label, EOF_LABEL)
 	for i = old_instr_ct, #instructions do
 		local instr = instructions[i]
-		if instr[1] == bc.label then
+		if instr and instr[1] == bc.label then
 			labels[instr[3]] = ct
 		else
 			ct = ct + 1
