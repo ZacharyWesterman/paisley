@@ -143,7 +143,6 @@ require "src.compiler.span"
 ---@field type string? The data type that was deduced for this token, if any.
 ---@field inside_object boolean? If defined and true, this token is inside an object declaration.
 ---@field ignore boolean? If true, optimize this token away. Only defined on subroutine definition tokens.
----@field all_labels string[]? A list of all labels defined in the current program. Only defined on gosub tokens.
 ---@field unterminated boolean? Whether this slice token is unterminated (e.g. var[1::]). Only defined on slices.
 ---@field is_referenced boolean? Whether this subroutine token is referenced. Only defined on subroutines.
 Token = {}
