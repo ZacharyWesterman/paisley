@@ -866,9 +866,15 @@ function SemanticAnalyzer(tokens, file)
 		end
 
 		if token.id == TOK.return_stmt then
-			if token.children[1].type then
-				local sub = labels[current_sub]
-				if sub then
+			local sub = labels[current_sub]
+			if sub then
+				if #token.children == 0 then
+					if sub.type and sub.type ~= 'null' then
+						sub.type = 'any'
+					else
+						sub.type = 'null'
+					end
+				elseif token.children[1].type then
 					if sub.type then
 						if sub.type ~= token.children[1].type then
 							if sub.type:sub(1,5) == 'array' and token.children[1].type:sub(1,5) == 'array' then
