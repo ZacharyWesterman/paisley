@@ -1175,8 +1175,10 @@ function SemanticAnalyzer(tokens, file)
 		end
 	end)
 
-	--One last pass at deducing all types (after any constant folding)
-	recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.variable, TOK.inline_command, TOK.command}, nil, type_checking)
+	if not ERRORED then
+		--One last pass at deducing all types (after any constant folding)
+		recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.variable, TOK.inline_command, TOK.command}, nil, type_checking)
+	end
 
 
 	--BREAK and CONTINUE statements are only allowed to have up to a single CONSTANT INTEGER operand
