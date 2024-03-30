@@ -1149,9 +1149,9 @@ function SemanticAnalyzer(tokens, file)
 				else
 					token.type = tp[#tp].text
 				end
-			elseif token.text == '@' then
-				token.type = 'array[string]'
 			elseif token.text == '$' then
+				token.type = 'array[string]'
+			elseif token.text == '@' then
 				token.type = 'array'
 			end
 		end
