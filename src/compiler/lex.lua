@@ -1,4 +1,5 @@
 require "src.compiler.tokens"
+require "src.compiler.escape_codes"
 
 local kwds = {
 	['for'] = TOK.kwd_for,
@@ -424,19 +425,26 @@ function Lexer(text, file)
 						break
 					end
 
-					--Parse escape chars. Only a few have special meaning.
-					--Every other "escape" char is just the same character without the backslash.
+					--Parse escape sequences. Only a few have special meaning, see escape_codes.lua
 					if this_chr == '\\' then
 						this_ix = this_ix + 1
 						this_chr = text:sub(this_ix, this_ix)
 						if this_chr == '' then
 							parse_error(Span:new(line, col + #this_str, line, col + #this_str), 'Unexpected EOF inside string (after "\\")', file)
-						elseif this_chr == 'n' then
-							this_chr = '\n'
-						elseif this_chr == 't' then
-							this_chr = '\t'
-						elseif this_chr == 's' then
-							this_chr = ' ' --non-breaking space
+						else
+							local found_esc = false
+							for search, replace in pairs(ESCAPE_CODES) do
+								if text:sub(this_ix, this_ix + #search - 1) == search then
+									found_esc = true
+									this_ix = this_ix + #search - 1
+									this_chr = replace
+									break
+								end
+							end
+
+							if not found_esc then
+								parse_error(Span:new(line, col + #this_str, line, col + #this_str), 'Invalid escape sequence (after "\\")', file)
+							end
 						end
 					end
 

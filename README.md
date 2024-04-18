@@ -211,11 +211,48 @@ If you would like to avoid interpolation in double-quoted strings, simply escape
 print "the expression \{1+2} evaluates to {1+2}"
 print "you can also put \"quotes\" and line breaks (\n) inside strings!"
 ```
-There are a few special escape codes:
+There are a few special escape sequences:
 - `\n` outputs a line ending.
 - `\t` outputs a tab.
-- `\s` outputs a non-breaking space.
-- Any others just output the character after the backslash, e.g. `\"` &rarr; "
+- `\r` outputs a carriage return.
+- `\ ` (backslash + space) outputs a non-breaking space.
+- `\"` outputs a double quote.
+- `\'` outputs a single quote.
+- `\{` outputs a left curly brace.
+- `\}` outputs a right curly brace.
+There are also a bunch of escape sequences that correspond to emoticons, included for convenience:
+- `\^-^` outputs `<sprite=0>`
+- `\:relaxed:` outputs `<sprite=0>`
+- `\:P` outputs `<sprite=1>`
+- `\:yum:` outputs `<sprite=1>`
+- `\<3` outputs `<sprite=2>`
+- `\:heart_eyes:` outputs `<sprite=2>`
+- `\B)` outputs `<sprite=3>`
+- `\:sunglasses:` outputs `<sprite=3>`
+- `\:D` outputs `<sprite=4>`
+- `\:grinning:` outputs `<sprite=4>`
+- `\^o^` outputs `<sprite=5>`
+- `\:smile:` outputs `<sprite=5>`
+- `\XD` outputs `<sprite=6>`
+- `\:laughing:` outputs `<sprite=6>`
+- `\:lol:` outputs `<sprite=6>`
+- `\=D` outputs `<sprite=7>`
+- `\:smiley:` outputs `<sprite=7>`
+- `\:sweat_smile:` outputs `<sprite=9>`
+- `\DX` outputs `<sprite=10>`
+- `\:tired_face:` outputs `<sprite=10>`
+- `\;P` outputs `<sprite=11>`
+- `\:stuck_out_tongue_winking_eye:` outputs `<sprite=11>`
+- `\:-*` outputs `<sprite=12>`
+- `\;-*` outputs `<sprite=12>`
+- `\:kissing_heart:` outputs `<sprite=12>`
+- `\:kissing:` outputs `<sprite=12>`
+- `\:rofl:` outputs `<sprite=13>`
+- `\:)` outputs `<sprite=14>`
+- `\:slight_smile:` outputs `<sprite=14>`
+- `\:(` outputs `<sprite=15>`
+- `\:frown:` outputs `<sprite=15>`
+- `\:frowning:` outputs `<sprite=15>`
 
 Expressions also give access to a full suite of operators and functions, listed below:
 
