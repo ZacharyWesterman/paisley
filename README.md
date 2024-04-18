@@ -361,6 +361,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Check if two sets are disjoint: `is_disjoint(array1, array2) -> boolean`
 - Check if the first set is a subset of the second: `is_subset(array1, array2) -> boolean`
 - Check if the first set is a superset of the second: `is_superset(array1, array2) -> boolean`
+- Flatten an array of any dimension into a 1D array: `flatten(array) -> array`
 
 Note that functions can be called in one of two ways:
 1. The usual syntax, e.g. `split(var, delim)`

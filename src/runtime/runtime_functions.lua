@@ -924,6 +924,24 @@ local functions = {
 		end
 		PUSH(res)
 	end,
+
+	--FLATTEN AN ARRAY OF ANY DIMENSION TO A 1-DIMENSIONAL ARRAY
+	function()
+		function flatten(array)
+			local result = std.array()
+			for i = 1, #array do
+				if type(array[i]) == 'table' then
+					local flat = flatten(array[i])
+					for k = 1, #flat do table.insert(result, flat[k]) end
+				else
+					table.insert(result, array[i])
+				end
+			end
+			return result
+		end
+
+		PUSH(flatten(POP()))
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT

@@ -115,6 +115,7 @@ local call_codes = {
 	is_superset = 96,
 	count = 97,
 	find = 98,
+	flatten = 99,
 }
 
 local function bc_get_key(code, lookup)
@@ -597,6 +598,7 @@ function generate_bytecode(root, file)
 			--End of loop
 			emit(bc.call, 'jump', loop_beg_label)
 			emit(bc.label, loop_end_label)
+			emit(bc.pop)
 			table.remove(loop_term_labels)
 			table.remove(loop_begn_labels)
 		end,

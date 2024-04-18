@@ -6,12 +6,15 @@ V3 = nil --non-builtin commands
 
 DEBUG_EXTRA = false
 RUN_PROGRAM = false
+STEP_PROGRAM = false
 for i, v in ipairs(arg) do
 	if v:sub(1,1) == '-' and v ~= '-' then
 		if v == '--extra' then
 			DEBUG_EXTRA = true
 		elseif v == '--run' then
 			RUN_PROGRAM = true
+		elseif v == '--step' then
+			STEP_PROGRAM = true
 		end
 	else
 		V2 = v
@@ -122,7 +125,7 @@ if RUN_PROGRAM then
 	function output_array(value, port) output(value, port) end
 
 	while not ENDED do
-		os.execute('sleep 1')
+		if not STEP_PROGRAM then os.execute('sleep 1') end
 
 		ITER()
 
@@ -136,8 +139,15 @@ if RUN_PROGRAM then
 		for i = 1, #STACK do
 			if STACK[i] == NULL then print('null') else print(std.debug_str(STACK[i])) end
 		end
-		print_header('END STACK')
+		print_header('END STACK / BEG VARS')
+		for key, value in pairs(VARS) do
+			print(key..' = '.. std.debug_str(value))
+		end
+		print_header('END VARS')
+
 
 		io.flush()
+
+		if STEP_PROGRAM then io.read() end
 	end
 end

@@ -326,6 +326,19 @@ FUNC_OPERATIONS = {
 			return std.strfind(a, std.str(b), n)
 		end
 	end,
+
+	flatten = function(array)
+		local result = std.array()
+		for i = 1, #array do
+			if type(array[i]) == 'table' then
+				local flat = FUNC_OPERATIONS.flatten(array[i])
+				for k = 1, #flat do table.insert(result, flat[k]) end
+			else
+				table.insert(result, array[i])
+			end
+		end
+		return result
+	end,
 }
 
 local function number_op(v1, v2, operator)

@@ -71,6 +71,7 @@ BUILTIN_FUNCS = {
 	is_superset = 2,
 	count = 2,
 	find = 3,
+	flatten = 1,
 }
 
 local type_signatures = {
@@ -353,6 +354,10 @@ local type_signatures = {
 	find = {
 		valid = {{'array','any','number'},{'string','string','number'}},
 		out = 'number',
+	},
+	flatten = {
+		valid = {{'array'}},
+		out = 'array',
 	},
 
 	[TOK.add] = {
