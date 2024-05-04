@@ -9,7 +9,46 @@ SUPPRESS_AST_ERRORS = false
 
 local ENDED = false
 
-local dir = debug.getinfo(1, "S").source:sub(2):match('(.*[/\\])')
+--Override default "error" behavior; just print the error, not a stack trace.
+local old_error = error
+function error(text)
+	print(text)
+	old_error()
+end
+
+local function script_real_path()
+	local path = arg[0]
+	local windows = package.config:sub(1,1) == '\\'
+
+	if windows then
+		local ffi = require("ffi")
+        ffi.cdef[[
+            typedef unsigned long DWORD;
+            typedef char CHAR;
+            typedef DWORD ( __stdcall *GetFullPathNameA_t )(const CHAR*, DWORD, CHAR*, CHAR**);
+        ]]
+        local kernel32 = ffi.load("kernel32")
+        local MAX_PATH = 260
+        local buf = ffi.new("char[?]", MAX_PATH)
+        local getFullPathName = ffi.cast("GetFullPathNameA_t", kernel32.GetFullPathNameA)
+        local length = getFullPathName(path, MAX_PATH, buf, nil)
+        if length == 0 then
+            return '' -- Failed to get path
+        else
+            return ffi.string(buf, length)
+        end
+	else
+		-- If on Linux, resolve symbolic links
+        local resolvedPath = io.popen("readlink -f " .. path):read("*a")
+        if resolvedPath then
+            return resolvedPath:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
+        else
+            return '' -- Failed to get path
+        end
+	end
+end
+
+local dir = script_real_path():match('(.*[/\\])')
 if dir == nil then dir = '' end
 
 for i, v in ipairs(arg) do
