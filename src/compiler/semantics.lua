@@ -969,8 +969,20 @@ function SemanticAnalyzer(tokens, file)
 					for k = 1, #exp_types[i] do
 						local t1, t2 = exp_types[i][k], got_types[k]
 						if t1 ~= 'any' and t2 ~= 'any' and t1 ~= t2 then
-							if t1 ~= 'array' or t2:sub(1,5) ~= 'array' then
+							if t1:sub(1,5) ~= 'array' or t2:sub(1,5) ~= 'array' then
 								found_correct_types = false
+								break
+							else
+								--Compare subtype of arrays
+								--If types are not "array[any]" or "array"
+								if #t1 > 5 and #t2 > 5 and t1 ~= t2 and t1 ~= 'array[any]' and t2 ~= 'array[any]' then
+									found_correct_types = false
+								end
+								--ELSE:
+								--One of the array types are just "array" or "array[any]" (same thing),
+								--so we can't tell if they're incompatible at run-time.
+								--For all we know they're perfectly compatible.
+
 								break
 							end
 						end
