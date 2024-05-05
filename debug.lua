@@ -148,6 +148,6 @@ if RUN_PROGRAM then
 
 		io.flush()
 
-		if STEP_PROGRAM then io.read() end
+		if STEP_PROGRAM then local _ = io.read() end
 	end
 end
