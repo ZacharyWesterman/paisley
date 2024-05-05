@@ -919,8 +919,8 @@ function SemanticAnalyzer(tokens, file)
 
 				if t1 == 'string' then
 					token.type = t1
-				elseif t2 == 'array' then
-					token.type = t2
+				elseif t2:sub(1,5) == 'array' then
+					if t1:sub(1,5) == 'array' then token.type = t1 else token.type = 'array' end
 				else
 					if t1:sub(6,6) == '[' then
 						token.type = t1:sub(7, #t1 - 1)
