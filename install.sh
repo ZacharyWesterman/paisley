@@ -1,3 +1,8 @@
 #!/usr/bin/env bash
-ln -s "$HOME/.local/bin/paisley" "$(dirname "${BASH_SOURCE[0]}")/paisley"
-sudo luarocks install socket luafilesystem
+rm -f "$HOME/.local/bin/paisley"
+ln -s "$(dirname "${BASH_SOURCE[0]}")/paisley" "$HOME/.local/bin/paisley"
+
+for i in luasocket luafilesystem
+do
+	sudo luarocks install $i
+done
