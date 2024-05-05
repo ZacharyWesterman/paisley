@@ -96,7 +96,7 @@ if RUN_PROGRAM then
 		elseif port == 6 then
 			if value == 2 then
 				--get system date (day, month, year)
-				date = os.date('*t', os.time())
+				local date = os.date('*t', os.time())
 				V5 = {date.day, date.month, date.year} --command return value
 			elseif value == 1 then
 				--get system time (seconds since midnight)
