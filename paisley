@@ -6,6 +6,8 @@ local PRINT_BYTECODE = false
 local PRETTY_PRINT = false
 LANGUAGE_SERVER = false
 SUPPRESS_AST_ERRORS = false
+PRINT_AST = false
+AST_AFTER_SEMANTIC = false
 
 local ENDED = false
 
@@ -71,6 +73,11 @@ for i, v in ipairs(arg) do
 			LANGUAGE_SERVER = true
 		elseif v == '--no-ast-errors' then
 			SUPPRESS_AST_ERRORS = true
+		elseif v == '--ast' then
+			PRINT_AST = true
+		elseif v == '--ast-sem' then
+			PRINT_AST = true
+			AST_AFTER_SEMANTIC = true
 		else
 			error('Unknown flag `'..v..'`. Try running with `--help` to see all options.')
 		end
@@ -104,6 +111,8 @@ if not ENDED then
 	function output() end
 
 	require "src.compiler"
+
+	if PRINT_AST then ENDED = true end
 
 	if PRINT_BYTECODE then
 		if PRETTY_PRINT then

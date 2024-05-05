@@ -7,6 +7,9 @@ FLAGS:
     -b, --bytecode         Output bytecode instead of running the script
     -p, --pretty           Pretty-print bytecode output
         --language-server  Output detailed info in an easy-to-parse format
+        --no-ast-errors    Don't report errors in the syntax tree
+        --ast              Print the abstract syntax tree and then exit
+        --ast-sem          Print the AST after semantic analysis and then exit
     -c[CMD]                Define an existing command on the target device
 
 ARGS:
