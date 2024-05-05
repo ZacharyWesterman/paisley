@@ -49,6 +49,7 @@ local function script_real_path()
 end
 
 local dir = script_real_path():match('(.*[/\\])')
+local lfs_installed, lfs = pcall(require, 'lfs')
 if dir == nil then dir = '' end
 
 for i, v in ipairs(arg) do
@@ -76,6 +77,10 @@ for i, v in ipairs(arg) do
 	else
 		V2 = v --filename
 	end
+end
+
+if lfs_installed and dir ~= nil then
+	lfs.chdir(dir)
 end
 
 if not ENDED then
