@@ -195,6 +195,7 @@ local rules = {
 		id = TOK.array_slice,
 		keep = {1, 3},
 		text = 2,
+		not_before = {TOK.index_open},
 	},
 	{ --non-terminated array slicing
 		match = {{TOK.add, TOK.array_slice, TOK.comparison}, {TOK.op_slice}, {TOK.op_slice}},
