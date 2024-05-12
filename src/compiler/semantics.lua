@@ -1219,8 +1219,9 @@ function SemanticAnalyzer(tokens, file)
 					end
 				end
 			else
-				if var.type then
-					INFO.hint(var.span, 'type: '..var.type)
+				while var do
+					if var.type then INFO.hint(var.span, 'type: '..var.type) end
+					if var.children then var = var.children[1] else var = nil end
 				end
 			end
 		end)
