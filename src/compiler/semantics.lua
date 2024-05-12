@@ -1221,6 +1221,8 @@ function SemanticAnalyzer(tokens, file)
 			else
 				while var do
 					if var.type then INFO.hint(var.span, 'type: '..var.type) end
+
+					---@diagnostic disable-next-line: cast-local-type
 					if var.children then var = var.children[1] else var = nil end
 				end
 			end
