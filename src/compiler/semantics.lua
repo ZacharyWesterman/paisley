@@ -43,7 +43,7 @@ BUILTIN_FUNCS = {
 	rpad = 3,
 	hex = 1,
 	filter = 2,
-	match = 2,
+	matches = 2,
 	clocktime = 1,
 	reverse = 1,
 	sort = 1,
@@ -240,9 +240,9 @@ local type_signatures = {
 		valid = {{'string', 'string'}},
 		out = 'string',
 	},
-	match = {
+	matches = {
 		valid = {{'string', 'string'}},
-		out = 'string',
+		out = 'array[string]',
 	},
 	clocktime = {
 		valid = {{'number'}},

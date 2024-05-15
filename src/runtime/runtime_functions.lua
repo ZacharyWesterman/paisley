@@ -579,11 +579,14 @@ local functions = {
 		PUSH(std.filter(std.str(v[1]), std.str(v[2])))
 	end,
 
-	--GET NEXT PATTERN MATCH
+	--GET ALL PATTERN MATCHES
 	function()
 		local v = POP()
-		local m = std.str(v[1]):match(std.str(v[2]))
-		if m then PUSH(m) else PUSH('') end
+		local array = std.array()
+		for i in std.str(v[1]):gmatch(std.str(v[2])) do
+			table.insert(array, i)
+		end
+		PUSH(array)
 	end,
 
 	--SPLIT A NUMBER INTO CLOCK TIME

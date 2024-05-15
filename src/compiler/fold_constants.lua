@@ -195,9 +195,12 @@ FUNC_OPERATIONS = {
 	filter = function(text, pattern)
 		return std.filter(text, pattern)
 	end,
-	match = function(text, pattern)
-		local m = text:match(pattern)
-		if m then return m else return '' end
+	matches = function(text, pattern)
+		local array = std.array()
+		for i in text:gmatch(pattern) do
+			table.insert(array, i)
+		end
+		return array
 	end,
 	clocktime = function(value)
 		return {
