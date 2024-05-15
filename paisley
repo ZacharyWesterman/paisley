@@ -14,7 +14,7 @@ local ENDED = false
 --Override default "error" behavior; just print the error, not a stack trace.
 local old_error = error
 function error(text)
-	print(text)
+	if text then print(text) end
 	old_error()
 end
 

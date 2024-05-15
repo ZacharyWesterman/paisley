@@ -199,7 +199,9 @@ INFO = {
 --[[/minify-delete]]
 
 function terminate()
+	--[[minify-delete]] if _G['LANGUAGE_SERVER'] then error() else --[[/minify-delete]]
 	error('ERROR in user-supplied Paisley script.')
+	--[[minify-delete]] end --[[/minify-delete]]
 end
 
 function token_text(token_id)
