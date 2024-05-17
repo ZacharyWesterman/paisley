@@ -833,9 +833,8 @@ function SemanticAnalyzer(tokens, file)
 			--subroutine eval is different
 			if ch.id == TOK.gosub_stmt then
 				if not token.type then
-					-- print(ch.children[1].text)
-					token.type = labels[ch.children[1].text].return_type
-				-- print_tokens_recursive(token)
+					local lbl = ch.children[1]
+					if labels[lbl.text] then token.type = labels[lbl.text].return_type end
 				end
 
 				return
