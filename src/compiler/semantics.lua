@@ -22,8 +22,9 @@ BUILTIN_FUNCS = {
 	join = 2,
 	type = 1,
 	bool = 1,
-	num = 1,
 	str = 1,
+	num = 1,
+	int = 1,
 	floor = 1,
 	ceil = 1,
 	round = 1,
@@ -181,11 +182,14 @@ local type_signatures = {
 	bool = {
 		out = 'boolean',
 	},
+	str = {
+		out = 'string',
+	},
 	num = {
 		out = 'number',
 	},
-	str = {
-		out = 'string',
+	int = {
+		out = 'number',
 	},
 	index = {
 		valid = {{'array', 'array[number]'}, {'array', 'number'}, {'string', 'array[number]'}, {'string', 'number'}},
@@ -701,7 +705,7 @@ function SemanticAnalyzer(tokens, file)
 		elseif token.text == 'clamp' then
 			--Convert "clamp" into max(min(upper_bound, x), lower_bound)
 			---@type Token
-			local mintok = {
+			local node = {
 				id = token.id,
 				span = token.span,
 				text = 'min',
@@ -711,7 +715,18 @@ function SemanticAnalyzer(tokens, file)
 				},
 			}
 			token.text = 'max'
-			token.children = {mintok, token.children[2]}
+			token.children = {node, token.children[2]}
+		elseif token.text == 'int' then
+			--Convert "int" into floor(num(x))
+			---@type Token
+			local node = {
+				id = token.id,
+				span = token.span,
+				text = 'num',
+				children = token.children,
+			}
+			token.text = 'floor'
+			token.children = {node}
 		end
 	end)
 
