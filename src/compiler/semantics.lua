@@ -911,7 +911,7 @@ function SemanticAnalyzer(tokens, file)
 
 			local t1, t2 = token.children[1].type, token.children[2].type
 			if t1 and t2 then
-				if t1 ~= 'string' and t1:sub(1,5) ~= 'array' and t1 ~= 'object' then
+				if t1 ~= 'string' and t1:sub(1,5) ~= 'array' and t1 ~= 'object' and t1 ~= 'any' then
 					parse_error(token.children[1].span, 'Cannot index a value of type `'..t1..'`. Type must be `string`,  `array`, or `object`', file)
 					return
 				end
