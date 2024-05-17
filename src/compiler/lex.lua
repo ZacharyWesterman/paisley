@@ -503,7 +503,7 @@ function Lexer(text, file)
 				if not tok_ignore then
 					---@type Token
 					return {
-						span = Span:new(line, col - #match - 1, line, col - 2),
+						span = Span:new(line, col - #match - 1, line, col - 1),
 						text = match,
 						id = tok_type,
 						value = real_value,
