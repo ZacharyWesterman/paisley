@@ -62,7 +62,7 @@ while parser.fold() do end --Iterate on the syntax tree. Follows iterator-like b
 --[[minify-delete]]
 HIDE_ERRORS = false
 
-if PRINT_AST and not AST_AFTER_SEMANTIC then
+if _G['PRINT_AST'] and not _G['AST_AFTER_SEMANTIC'] then
 	print_tokens_recursive(parser.get()[1])
 end
 --[[/minify-delete]]
@@ -80,7 +80,7 @@ else
 	--Analyze the AST and check for any errors
 	local root = SemanticAnalyzer(parser.get(), file)
 	--[[minify-delete]]
-	if AST_AFTER_SEMANTIC then
+	if _G['AST_AFTER_SEMANTIC'] then
 		print_tokens_recursive(root)
 	end
 
