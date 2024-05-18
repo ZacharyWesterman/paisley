@@ -182,13 +182,22 @@ if not ENDED then
 
 		local text = ''
 		if PRETTY_PRINT then
-			text = text .. '['
+			text = text .. '[\n'
 			for i = 1, #bytecode do
 				local comma = ''
-				if i < #bytecode then comma = ',' end
-				text = text .. '  ' .. json.stringify(bytecode[i]) .. comma
+				if i < #bytecode then comma = ',\n' end
+				text = text .. '  '
+				if i < #bytecode then text = text .. json.stringify(bytecode[i]) .. ',\n'
+				else
+					text = text .. '[\n'
+					for k = 1, #bytecode[i] do
+						text = text .. '    ' .. json.stringify(bytecode[i][k])
+						if k == #bytecode[i] then text = text .. '\n' else text = text .. ',\n' end
+					end
+					text = text .. '  ]'
+				end
 			end
-			text = text .. ']'
+			text = text .. '\n]'
 		else
 			text = json.stringify(bytecode)
 		end
