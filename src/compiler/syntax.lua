@@ -30,7 +30,8 @@ local rules = {
 			elseif c3.id == TOK.func_call then
 				table.insert(c3.children, 1, c1)
 				token.children = c3.children
-				token.span = Span:merge(c1.span, c3.span)
+				token.span = c3.span
+				-- token.span = Span:merge(c1.span, c3.span)
 			else
 				parse_error(token.children[2].span, 'Expected function name or object key after dot operator', file)
 			end
