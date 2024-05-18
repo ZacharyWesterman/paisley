@@ -90,11 +90,15 @@ for i, v in ipairs(arg) do
 			ENDED = true
 		elseif v == '--bytecode' or v == '-b' then
 			PRINT_BYTECODE = true
+			PRETTY_PRINT = false
+			ZLIB_COMPRESS = false
 		elseif v == '--pretty' or v == '-p' then
 			PRINT_BYTECODE = true
 			PRETTY_PRINT = true
+			ZLIB_COMPRESS = false
 		elseif v == '--compress' or v == '-z' then
 			PRINT_BYTECODE = true
+			PRETTY_PRINT = false
 			ZLIB_COMPRESS = true
 		elseif v == '--language-server' then
 			LANGUAGE_SERVER = true
