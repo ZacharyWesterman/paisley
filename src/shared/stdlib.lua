@@ -87,6 +87,24 @@ std = {
 		if val == nil then return 0 else return val end
 	end,
 
+	---Cast data to a value that can be compared with >, <, >=, <=.
+	---Anything that's not a number or a string will be converted to a string.
+	---@param data1 any
+	---@param data2 any
+	---@param operation fun(param1: number|string, param2: number|string): boolean
+	---@return boolean
+	compare = function(data1, data2, operation)
+		local tp1, tp2 = type(data1), type(data2)
+		if tp1 == 'table' then data1 = std.str(data1) elseif tp1 ~= 'string' then data1 = std.num(data1) end
+		if tp2 == 'table' then data2 = std.str(data2) elseif tp1 ~= 'string' then data2 = std.num(data2) end
+
+		if type(data1) ~= type(data2) then
+			data1 = std.str(data1)
+			data2 = std.str(data2)
+		end
+		return operation(data1, data2)
+	end,
+
 	---Join an array of items into a string.
 	---@param items any[]
 	---@param delimiter string

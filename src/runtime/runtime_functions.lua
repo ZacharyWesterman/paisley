@@ -292,16 +292,16 @@ local functions = {
 	function() PUSH(POP() ~= POP()) end,
 
 	--GREATER THAN
-	function() PUSH(POP() < POP()) end,
+	function() PUSH( std.compare(POP(), POP(), function(p1, p2) return p1 < p2 end) ) end,
 
 	--GREATER THAN OR EQUAL
-	function() PUSH(POP() <= POP()) end,
+	function() PUSH( std.compare(POP(), POP(), function(p1, p2) return p1 <= p2 end) ) end,
 
 	--LESS THAN
-	function() PUSH(POP() > POP()) end,
+	function() PUSH( std.compare(POP(), POP(), function(p1, p2) return p1 > p2 end) ) end,
 
 	--LESS THAN OR EQUAL
-	function() PUSH(POP() >= POP()) end,
+	function() PUSH( std.compare(POP(), POP(), function(p1, p2) return p1 >= p2 end) ) end,
 
 	--BOOLEAN NOT
 	function() PUSH(not std.bool(POP())) end,

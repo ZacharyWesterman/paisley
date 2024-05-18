@@ -451,10 +451,10 @@ function FOLD_CONSTANTS(token, file)
 			for i = 2, #c1.value do
 				local v = c1.value[i]
 				if operator == '==' then result = result == v
-				elseif operator == '<' then result = result < v
-				elseif operator == '<=' then result = result <= v
-				elseif operator == '>' then result = result > v
-				elseif operator == '>=' then result = result >= v
+				elseif operator == '<' then result = std.compare(result, v, function(p1, p2) return p1 < p2 end)
+				elseif operator == '<=' then result = std.compare(result, v, function(p1, p2) return p1 <= p2 end)
+				elseif operator == '>' then result = std.compare(result, v, function(p1, p2) return p1 > p2 end)
+				elseif operator == '>=' then result = std.compare(result, v, function(p1, p2) return p1 >= p2 end)
 				elseif operator == '!=' then result = result ~= v
 				elseif operator == '+' then result = std.num(result) + std.num(v)
 				elseif operator == '-' then result = std.num(result) - std.num(v)
@@ -539,10 +539,10 @@ function FOLD_CONSTANTS(token, file)
 	elseif token.id == TOK.comparison then
 		local result
 		if operator == '==' then result = c1.value == c2.value
-		elseif operator == '<' then result = c1.value < c2.value
-		elseif operator == '<=' then result = c1.value <= c2.value
-		elseif operator == '>' then result = c1.value > c2.value
-		elseif operator == '>=' then result = c1.value >= c2.value
+		elseif operator == '<' then result = std.compare(c1.value, c2.value, function(p1, p2) return p1 < p2 end)
+		elseif operator == '<=' then result = std.compare(c1.value, c2.value, function(p1, p2) return p1 <= p2 end)
+		elseif operator == '>' then result = std.compare(c1.value, c2.value, function(p1, p2) return p1 > p2 end)
+		elseif operator == '>=' then result = std.compare(c1.value, c2.value, function(p1, p2) return p1 >= p2 end)
 		elseif operator == '!=' then result = c1.value ~= c2.value
 		else
 			parse_error(token.span, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
