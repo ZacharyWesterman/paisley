@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 rm -f "$HOME/.local/bin/paisley"
-ln -s "$DIR/paisley" "$HOME/.local/bin/paisley"
 
-install_dependency()
+uninstall_dependency()
 {
-	sudo luarocks install "$1" &>/dev/null
+	sudo luarocks remove "$1" &>/dev/null
 }
 
 wait_on_process()
@@ -20,7 +19,7 @@ wait_on_process()
 	while kill -0 $pid 2>/dev/null
 	do
 		i=$(((i+1)%4))
-		printf "\r[%d/%d] Installing dependency \`%s\`... %s" $item $total "$dep" "${spin:$i:1}"
+		printf "\r[%d/%d] Removing dependency \`%s\`... %s" $item $total "$dep" "${spin:$i:1}"
 		sleep .1
 	done
 	printf '\r\e[K'
@@ -33,12 +32,12 @@ do
 	item=$((item + 1))
 
 	#Check if rock is already installed. If not, install it.
-	if [ "$(lua <<< "x, _ = pcall(require, '$name') print(x)")" != true ]
+	if [ "$(lua <<< "x, _ = pcall(require, '$name') print(x)")" == true ]
 	then
 		sudo echo -n #prompt once for password
-		( install_dependency "$rock" ) &
+		( uninstall_dependency "$rock" ) &
 		wait_on_process $! "$rock" $item $total
 	fi
 done < requires.txt
 
-echo 'Paisley is now installed.'
+echo 'Paisley has been removed from your system.'

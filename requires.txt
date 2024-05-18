@@ -1,0 +1,3 @@
+luasocket socket
+luafilesystem lfs
+lua-zlib zlib
