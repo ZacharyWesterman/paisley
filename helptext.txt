@@ -7,6 +7,7 @@ FLAGS:
     -b, --bytecode         Output bytecode instead of running the script
     -p, --pretty           Pretty-print bytecode output. Implies `-b`
     -z, --compress         Compress bytecode output with zlib compression. Implies `-b`
+        --dry-run          Validate the program, but don't run it.
         --language-server  Output detailed info in an easy-to-parse format
         --no-ast-errors    Don't report errors in the syntax tree
         --ast              Print the abstract syntax tree and then exit
