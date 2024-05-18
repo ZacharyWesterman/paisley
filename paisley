@@ -4,12 +4,15 @@ V3 = {} --non-builtin commands
 
 local PRINT_BYTECODE = false
 local PRETTY_PRINT = false
+local ZLIB_COMPRESS = false
 LANGUAGE_SERVER = false
 SUPPRESS_AST_ERRORS = false
 PRINT_AST = false
 AST_AFTER_SEMANTIC = false
 
 local ENDED = false
+
+local OUTPUT_FILE = nil
 
 --Override default "error" behavior; just print the error, not a stack trace.
 local old_error = error
@@ -53,9 +56,26 @@ local function script_real_path()
 	end
 end
 
+---@param text string
+local function is_zlib_compressed(text)
+	local header = text:sub(1,2)
+
+	if #header < 2 then return false end
+
+    -- Convert the two bytes to integer values
+    local byte1, byte2 = header:byte(1, 2)
+
+    -- Check the zlib header
+    -- The first byte (CMF - Compression Method and Flags)
+    -- The second byte (FLG - Additional Flags)
+    return (byte1 == 0x78) and (byte2 == 0x01 or byte2 == 0x9C or byte2 == 0xDA)
+end
+
 local dir = script_real_path():match('(.*[/\\])')
-local lfs_installed, lfs = pcall(require, 'lfs')
 if dir == nil then dir = '' end
+
+local lfs_installed, lfs = pcall(require, 'lfs')
+local zlib_installed, zlib = pcall(require, 'zlib')
 
 for i, v in ipairs(arg) do
 	if v:sub(1,1) == '-' and v ~= '-' then
@@ -71,7 +91,11 @@ for i, v in ipairs(arg) do
 		elseif v == '--bytecode' or v == '-b' then
 			PRINT_BYTECODE = true
 		elseif v == '--pretty' or v == '-p' then
+			PRINT_BYTECODE = true
 			PRETTY_PRINT = true
+		elseif v == '--compress' or v == '-z' then
+			PRINT_BYTECODE = true
+			ZLIB_COMPRESS = true
 		elseif v == '--language-server' then
 			LANGUAGE_SERVER = true
 		elseif v == '--no-ast-errors' then
@@ -84,13 +108,18 @@ for i, v in ipairs(arg) do
 		else
 			error('Unknown flag `'..v..'`. Try running with `--help` to see all options.')
 		end
+	elseif V2 then
+		OUTPUT_FILE = v
+		PRINT_BYTECODE = true
+		ZLIB_COMPRESS = true
 	else
-		V2 = v --filename
+		V2 = v --input filename
 	end
 end
 
-if lfs_installed and dir ~= nil then
-	lfs.chdir(dir)
+
+if ZLIB_COMPRESS and not zlib_installed then
+	error('Error: zlib dependency is not installed. Cannot output compressed bytecode.')
 end
 
 if not ENDED then
@@ -103,7 +132,8 @@ if not ENDED then
 		V1 = io.read('*all') --program text
 	else
 		--Read from file
-		local file = io.open(V2)
+		local file = io.open(V2, 'rb')
+
 		if file then
 			V1 = file:read('*all')
 		else
@@ -113,21 +143,69 @@ if not ENDED then
 
 	function output() end
 
-	require "src.compiler"
+	local old_working_dir = nil
+	if lfs_installed and dir ~= nil then
+		old_working_dir = lfs.currentdir()
+		lfs.chdir(dir)
+	end
+
+	--Check if we were given compressed bytecode
+	if is_zlib_compressed(V1) then
+		if not zlib_installed then
+			error('Error: Cannot read compressed bytecode, zlib dependency is not installed.')
+		end
+
+		local inflated, err = zlib.inflate()(V1)
+		if inflated then
+			V1 = ''
+			require "src.compiler" --include important stuff, but don't actually compile anything.
+
+			--We'll instead be running raw bytecode.
+			bytecode = json.parse(inflated)
+		else
+			error('Error during decompression: '..err)
+		end
+	else
+		require "src.compiler"
+	end
 
 	if PRINT_AST then ENDED = true end
 
 	if PRINT_BYTECODE then
+		if old_working_dir then
+			lfs.chdir(old_working_dir)
+		end
+
+		local text = ''
 		if PRETTY_PRINT then
-			print('[')
+			text = text .. '['
 			for i = 1, #bytecode do
 				local comma = ''
 				if i < #bytecode then comma = ',' end
-				print('  ' .. json.stringify(bytecode[i]) .. comma)
+				text = text .. '  ' .. json.stringify(bytecode[i]) .. comma
 			end
-			print(']')
+			text = text .. ']'
 		else
-			print(json.stringify(bytecode))
+			text = json.stringify(bytecode)
+		end
+
+		if ZLIB_COMPRESS then
+			local deflated, err = zlib.deflate()(text, 'finish')
+			if deflated then text = deflated else
+				error('Error during compression: '..err)
+			end
+		end
+
+		if OUTPUT_FILE then
+			local fp = io.open(OUTPUT_FILE, 'wb')
+			if not fp then
+				error('Failed to write to file: '..OUTPUT_FILE)
+			end
+
+			fp:write(text)
+			fp:close()
+		else
+			print(text)
 		end
 
 		ENDED = true

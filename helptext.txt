@@ -1,11 +1,12 @@
 USAGE:
-    paisley [FLAGS] <input>
+    paisley [FLAGS] <input> [<output>]
 
 FLAGS:
     -h, --help             Prints help information
     -V, --version          Prints version information
     -b, --bytecode         Output bytecode instead of running the script
-    -p, --pretty           Pretty-print bytecode output
+    -p, --pretty           Pretty-print bytecode output. Implies `-b`
+    -z, --compress         Compress bytecode output with zlib compression. Implies `-b`
         --language-server  Output detailed info in an easy-to-parse format
         --no-ast-errors    Don't report errors in the syntax tree
         --ast              Print the abstract syntax tree and then exit
@@ -14,6 +15,7 @@ FLAGS:
 
 ARGS:
     <input>    The input file. Replace with `-` to read from stdin.
+    <output>   The output file. Using this option implies the `-z` flag.
 
 CMD Example:
     To define a command `status` which returns a value of type boolean:
