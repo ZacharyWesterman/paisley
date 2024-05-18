@@ -44,8 +44,9 @@ function INIT()
 
 	CURRENT_INSTRUCTION = 0
 	LAST_CMD_RESULT = nil
-	RANDOM_SEED = std.num(std.str(V4):reverse())
+	RANDOM_SEED = V4
 	math.randomseed(RANDOM_SEED)
+	math.random() --First random number after seeding is often not truly random, so clear it out
 	STACK = {}
 	VARS = {}
 	INSTR_STACK = {}
