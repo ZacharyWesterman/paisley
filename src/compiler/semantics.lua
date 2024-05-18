@@ -727,6 +727,13 @@ function SemanticAnalyzer(tokens, file)
 			}
 			token.text = 'floor'
 			token.children = {node}
+		elseif token.children then
+			for i = 1, #token.children do
+				local child = token.children[i]
+				if child.id >= TOK.op_plus and child.id <= TOK.op_arrow then
+					parse_error(child.span, 'Function "'..token.text..'('..funcsig(token.text)..')" cannot take an operator as a parameter (found "'..child.text..'")', file)
+				end
+			end
 		end
 	end)
 
