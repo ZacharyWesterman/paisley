@@ -700,7 +700,7 @@ function SemanticAnalyzer(tokens, file)
 				end
 			end
 			if not correct then
-				parse_error(token.children[2].span, 'The second parameter of "reduce(a,b)" must be a binary operator', file)
+				parse_error(token.children[2].span, 'The second parameter of "reduce(a,b)" must be a binary operator (e.g. + or *)', file)
 			end
 		elseif token.text == 'clamp' then
 			--Convert "clamp" into max(min(upper_bound, x), lower_bound)

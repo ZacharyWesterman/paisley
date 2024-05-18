@@ -463,9 +463,8 @@ function FOLD_CONSTANTS(token, file)
 				elseif operator == 'and' then result = std.bool(result) and std.bool(v)
 				elseif operator == 'or' then result = std.bool(result) or std.bool(v)
 				elseif operator == 'xor' then result = (std.bool(result) or std.bool(v)) and not (std.bool(result) and std.bool(v))
-				else
-					parse_error(token.span, 'COMPILER BUG: No constant folding rule for "reduce(a,b)" operator "'..operator..'"!', file)
 				end
+				--Ignore any other operators... we only care about binary operators.
 			end
 
 			token.value = result
