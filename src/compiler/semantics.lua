@@ -35,7 +35,7 @@ BUILTIN_FUNCS = {
 	upper = 1,
 	camel = 1,
 	replace = 3,
-	json_encode = 1,
+	json_encode = -2, --value of -N means that the function must have at least 1, and up to N, params.
 	json_decode = 1,
 	json_valid = 1,
 	b64_encode = 1,
@@ -212,6 +212,7 @@ local type_signatures = {
 		out = 'string',
 	},
 	json_encode = {
+		valid = {{'any', 'boolean'}},
 		out = 'string',
 	},
 	json_decode = {
@@ -680,10 +681,10 @@ function SemanticAnalyzer(tokens, file)
 			if param_ct ~= 1 then verb = 'were' end
 
 			if func < 0 then
-				if param_ct < -func then
+				if param_ct > -func or param_ct < 1 then
 					local plural = ''
 					if func < -1 then plural = 's' end
-					parse_error(token.span, 'Function "'..token.text..'('..funcsig(token.text)..')" expects at least '..(-func)..' parameter'..plural..', but '..param_ct..' '..verb..' given', file)
+					parse_error(token.span, 'Function "'..token.text..'('..funcsig(token.text)..')" expects 1 to '..(-func)..' parameter'..plural..', but '..param_ct..' '..verb..' given', file)
 				end
 			else
 				parse_error(token.span, 'Function "'..token.text..'('..funcsig(token.text)..')" expects '..func..' parameter'..plural..', but '..param_ct..' '..verb..' given', file)

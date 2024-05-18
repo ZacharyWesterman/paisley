@@ -505,7 +505,10 @@ local functions = {
 	--JSON_ENCODE
 	function(line)
 		local v = POP()
-		local res, err = json.stringify(v[1], nil, true)
+		local indent = nil
+		if std.bool(v[2]) then indent = 2 end
+
+		local res, err = json.stringify(v[1], indent, true)
 		if err ~= nil then
 			runtime_error(line, err)
 		end

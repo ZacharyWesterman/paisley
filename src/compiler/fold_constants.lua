@@ -152,7 +152,10 @@ FUNC_OPERATIONS = {
 	end,
 
 	json_encode = function(data, token, file)
-		local result, err = json.stringify(data, nil, true)
+		local indent = nil
+		if data[2] then indent = 2 end
+
+		local result, err = json.stringify(data[1], indent, true)
 
 		if err ~= nil then
 			parse_error(token.span, err, file)
