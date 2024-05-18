@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import re
 from pathlib import Path
 
@@ -14,12 +16,19 @@ VERSION = open('version.txt', 'r').readline().strip()
 
 for i in ['compiler.lua', 'runtime.lua']:
 	with open('src/'+i, 'r') as fp:
+		found_files = ['src/'+i]
+
 		text = fp.read()
 
 		while m := require.search(text):
 			fname = m[1].replace('.', '/') + '.lua'
-			with open(fname, 'r') as fp2:
-				text = text[0:m.start(0)] + fp2.read() + text[m.end(0)::]
+			#Substitute includes if they haven't already been substituted
+			if fname not in found_files:
+				with open(fname, 'r') as fp2:
+					text = text[0:m.start(0)] + fp2.read() + text[m.end(0)::]
+					found_files += [fname]
+			else:
+				text = text[0:m.start(0)] + text[m.end(0)::]
 
 		#Remove all blocks that are marked with debug sections
 		text = debug.sub('', text)
