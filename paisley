@@ -6,6 +6,7 @@ local PRINT_BYTECODE = false
 local PRETTY_PRINT = false
 local ZLIB_COMPRESS = false
 local DRY_RUN = false
+local REPL = false
 LANGUAGE_SERVER = false
 SUPPRESS_AST_ERRORS = false
 PRINT_AST = false
@@ -112,6 +113,8 @@ for i, v in ipairs(arg) do
 		elseif v == '--ast-sem' then
 			PRINT_AST = true
 			AST_AFTER_SEMANTIC = true
+		elseif v == '--repl' or v == '-r' then
+			REPL = true
 		else
 			error('Unknown flag `'..v..'`. Try running with `--help` to see all options.')
 		end
@@ -127,6 +130,14 @@ end
 
 if ZLIB_COMPRESS and not zlib_installed then
 	error('Error: zlib dependency is not installed. Cannot output compressed bytecode.')
+end
+
+if not ENDED and REPL then
+	print('Paisley ' .. io.open( dir .. 'version.txt'):read() .. ' interactive REPL.')
+	print('Type `stop` or press Ctrl-D to quit.')
+
+	require "src.repl"
+	ENDED = true
 end
 
 if not ENDED then
