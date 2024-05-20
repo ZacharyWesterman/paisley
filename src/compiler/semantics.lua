@@ -1302,9 +1302,36 @@ function SemanticAnalyzer(tokens, file)
 		end
 
 		if label == nil then
+			local kid = token.children[1]
+
+			--Check if the dynamic gosub could never possibly hit certain subroutines
+			---@type table|nil
+			local begins, ends, contains = nil, nil, {}
+			if kid and kid.children and kid.children[1] then
+				begins = kid.children[1]
+				ends = kid.children[#kid.children]
+				for i = 2, #kid.children - 1 do
+					if kid.children[i].value ~= nil then
+						table.insert(contains, std.str(kid.children[i].value))
+					end
+				end
+			end
+
+			if begins and (begins.value ~= nil or begins.id == TOK.lit_null) then begins = {value = begins.value} end
+			if ends and (ends.value ~= nil or ends.id == TOK.lit_null) then ends = {value = ends.value} end
+
 			--If we have a dynamic gosub then we can't remove any subroutines, as we don't really know what subroutine is referenced.
 			for k, i in pairs(labels) do
-				i.is_referenced = true
+				local begins_with = not (begins and k:sub(1, #std.str(begins.value)) ~= begins.value)
+				local ends_with = not (ends and k:sub(#k - #std.str(ends.value) + 1, #k) ~= ends.value)
+				local does_contain = #contains == 0 --If there are no const parts, then we can't know.
+				for j = 1, #contains do
+					if std.contains(k, contains[j]) then does_contain = true end
+				end
+
+				if begins_with or ends_with or does_contain then
+					i.is_referenced = true
+				end
 			end
 			return
 		end
