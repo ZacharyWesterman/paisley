@@ -1,3 +1,8 @@
+function error(text)
+	if text then print(text) end
+	ERRORED = true
+end
+
 require "src.shared.stdlib"
 require "src.shared.json"
 require "src.shared.closest_word"
@@ -12,13 +17,6 @@ ALLOWED_COMMANDS = V3
 require "src.shared.builtin_commands"
 
 --[[SETUP FOR RUNTIME]]
--- local old_error = error
-function error(text)
-	if text then print(text) end
-	-- old_error()
-	ERRORED = true
-end
-
 local socket_installed, socket = pcall(require, 'socket')
 ENDED = false
 
@@ -88,7 +86,7 @@ INTERRUPT = true
 USER_SIGINT = false
 local signal = require("posix.signal")
 signal.signal(signal.SIGINT, function(signum)
-	io.write('\r')
+	io.write('\n')
 	if INTERRUPT then os.exit(128 + signum) end
 	USER_SIGINT = true
 end)
@@ -117,6 +115,7 @@ local lexer, append_text = Lexer('')
 
 for input_line in function() return io.read('*l') end do
 	ERRORED = false
+	SHOW_MULTIPLE_ERRORS = true
 
 	append_text(input_line)
 	for token in lexer do

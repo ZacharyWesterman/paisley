@@ -1213,10 +1213,10 @@ function SemanticAnalyzer(tokens, file)
 		recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.inline_command, TOK.command, TOK.return_stmt, TOK.subroutine}, nil, type_checking)
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
-		recurse(root, {TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary, TOK.list_comp, TOK.object, TOK.key_value_pair}, nil, FOLD_CONSTANTS)
+		if not ERRORED then recurse(root, {TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary, TOK.list_comp, TOK.object, TOK.key_value_pair}, nil, FOLD_CONSTANTS) end
 
 		--Set any variables we can
-		recurse(root, {TOK.for_stmt, TOK.let_stmt, TOK.variable}, variable_assignment, variable_unassignment)
+		if not ERRORED then recurse(root, {TOK.for_stmt, TOK.let_stmt, TOK.variable}, variable_assignment, variable_unassignment) end
 
 		if ERRORED then break end
 	end
