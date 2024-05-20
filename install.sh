@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+if ! which lua &>/dev/null
+then
+	>&2 echo 'ERROR: Lua is not installed! Please install Lua and try again.'
+	exit 1
+fi
+
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 rm -f "$HOME/.local/bin/paisley"
 ln -s "$DIR/paisley" "$HOME/.local/bin/paisley"
