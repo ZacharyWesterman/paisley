@@ -83,6 +83,7 @@ Iterator generates tokens of the form:
 ---@param text string
 ---@param file string?
 ---@return function iterator An iterator that fetches the next token when run.
+---@return function append_text A function for appending text to the input dynamically.
 function Lexer(text, file)
 	local line = 1
 	local col = 1
@@ -177,6 +178,19 @@ function Lexer(text, file)
 						table.remove(scopes)
 					end
 				end
+
+				--[[minify-delete]]
+				if _G['IGNORE_MISSING_BRACE'] then
+					--expression end.
+					if not match then
+						match = text:match('^}')
+						if match then
+							tok_type = TOK.expr_close
+							table.remove(scopes)
+						end
+					end
+				end
+				--[[/minify-delete]]
 
 				--keywords
 				if not match then
@@ -523,11 +537,19 @@ function Lexer(text, file)
 		elseif remaining_scope == '[' then
 			parse_error(Span:new(line, col, line, col), 'Missing bracket, expected "]"', file)
 		elseif remaining_scope == '{' then
+			--[[minify-delete]] if not _G['IGNORE_MISSING_BRACE'] then --[[/minify-delete]]
 			parse_error(Span:new(line, col, line, col), 'Missing brace after expression, expected "}"', file)
+			--[[minify-delete]] end --[[/minify-delete]]
 		elseif remaining_scope == '$' then
 			parse_error(Span:new(line, col, line, col), 'Missing brace after command eval, expected "}"', file)
 		end
 	end
 
-	return token_iterator
+	--[[minify-delete]]
+	local function append_text(new_text)
+		text = text .. new_text
+	end
+	--[[/minify-delete]]
+
+	return token_iterator --[[minify-delete]], append_text --[[/minify-delete]]
 end

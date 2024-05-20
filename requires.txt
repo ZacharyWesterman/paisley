@@ -1,3 +1,4 @@
 luasocket socket
 luafilesystem lfs
 lua-zlib zlib
+luaposix posix.signal
