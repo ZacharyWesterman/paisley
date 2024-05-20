@@ -1067,13 +1067,6 @@ function SemanticAnalyzer(tokens, file)
 		}
 	end
 
-	local function pop_var(var)
-		if variables[var] then
-			table.remove(variables[var])
-			if #variables[var] == 0 then variables[var] = nil end
-		end
-	end
-
 	local function variable_assignment(token)
 		if token.id == TOK.for_stmt then
 			local var = token.children[1]
