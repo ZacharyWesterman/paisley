@@ -117,7 +117,8 @@ for input_line in function() return io.read('*l') end do
 	ERRORED = false
 	SHOW_MULTIPLE_ERRORS = true
 
-	append_text(input_line)
+	if append_text then append_text(input_line) end
+
 	for token in lexer do
 		if indent_tokens[token.id] then
 			indent = indent + 1

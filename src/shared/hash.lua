@@ -9,7 +9,7 @@
 ---@return integer
 local function ror(val_in, count)
 	for i=1, count do
-		rollover = (val_in % 2) * 0x80000000
+		local rollover = (val_in % 2) * 0x80000000
 		val_in = math.floor(val_in / 2) + rollover
 	end
 	return val_in
