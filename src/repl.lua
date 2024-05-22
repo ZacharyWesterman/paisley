@@ -198,6 +198,7 @@ for input_line in function() return io.read('*l') end do
 					text = k[j].text,
 					id = k[j].id,
 					span = k[j].span,
+					value = k[j].value,
 				})
 			end
 		end
