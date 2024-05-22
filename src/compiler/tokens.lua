@@ -128,6 +128,8 @@ TOK = {
 	lit_object = k(),
 	object = k(),
 
+	subroutine_label = k(),--This is only a temporary token to make subroutine construction unambiguous. It does not show up in a finalized AST.
+
 	no_value = k(),
 }
 

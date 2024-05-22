@@ -576,22 +576,31 @@ local rules = {
 
 	--SUBROUTINE statement
 	{
-		match = {{TOK.kwd_subroutine}, {TOK.text}, {TOK.command, TOK.program, TOK.statement}, {TOK.kwd_end}},
-		id = TOK.subroutine,
-		keep = {3},
+		match = {{TOK.kwd_subroutine}, {TOK.text}},
+		id = TOK.subroutine_label,
 		text = 2,
+		onmatch = function(token, file)
+			token.children[2].id = token.id
+			return token.children[2]
+		end,
 	},
 	{
-		match = {{TOK.kwd_subroutine}, {TOK.text}, {TOK.kwd_end}},
+		match = {{TOK.subroutine_label}, {TOK.command, TOK.program, TOK.statement}, {TOK.kwd_end}},
 		id = TOK.subroutine,
-		keep = {},
-		text = 2,
+		keep = {2},
+		text = 1,
 	},
 	{
-		match = {{TOK.kwd_subroutine}, {TOK.text}, {TOK.line_ending}, {TOK.kwd_end}},
+		match = {{TOK.subroutine_label}, {TOK.kwd_end}},
 		id = TOK.subroutine,
 		keep = {},
-		text = 2,
+		text = 1,
+	},
+	{
+		match = {{TOK.subroutine_label}, {TOK.line_ending}, {TOK.kwd_end}},
+		id = TOK.subroutine,
+		keep = {},
+		text = 1,
 	},
 
 	--Invalid subroutine
@@ -603,7 +612,7 @@ local rules = {
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
-			parse_error(token.span, 'Incomplete subroutine declaration (expected "subroutine LABEL: ... end")', file)
+			parse_error(token.span, 'Incomplete subroutine declaration (expected "subroutine LABEL ... end")', file)
 		end,
 	},
 

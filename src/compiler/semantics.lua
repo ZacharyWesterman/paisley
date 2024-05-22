@@ -1336,9 +1336,9 @@ function SemanticAnalyzer(tokens, file)
 				msg = msg .. ' (did you mean "'.. guess ..'"?)'
 			end
 			parse_error(token.children[1].span, msg, file)
+		else
+			token.ignore = labels[label].ignore
 		end
-
-		token.ignore = labels[label].ignore
 	end)
 
 	--Warn if subroutines are not used.
