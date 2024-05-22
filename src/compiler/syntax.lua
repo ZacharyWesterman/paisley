@@ -1,10 +1,10 @@
 local rules = {
 	--Function call, dot-notation
 	{
-		match = {{TOK.value, TOK.func_call}, {TOK.op_dot}, {TOK.value, TOK.func_call, TOK.comparison}},
+		match = {{TOK.value, TOK.comparison, TOK.func_call}, {TOK.op_dot}, {TOK.value, TOK.func_call, TOK.comparison}},
 		id = TOK.func_call,
 		text = 3,
-		not_after = {TOK.op_dot},
+		not_after = {TOK.op_dot, TOK.op_slice},
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -155,7 +155,6 @@ local rules = {
 		match = {{TOK.value}},
 		id = TOK.multiply,
 		meta = true,
-		not_before = {TOK.op_dot},
 	},
 
 	--Multiplication
