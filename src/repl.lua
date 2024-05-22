@@ -231,8 +231,10 @@ for input_line in function() return io.read('*l') end do
 			V1 = json.stringify(bytecode)
 			V4 = os.time()
 			V5 = nil
+			local tmp2 = VARS
 			INIT()
 			ALLOWED_COMMANDS = tmp
+			if tmp2 then VARS = tmp2 end
 
 			INTERRUPT = false
 			while not ENDED and not USER_SIGINT do
