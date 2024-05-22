@@ -84,12 +84,14 @@ ALLOWED_COMMANDS = tmp
 
 INTERRUPT = true
 USER_SIGINT = false
-local signal = require("posix.signal")
-signal.signal(signal.SIGINT, function(signum)
-	io.write('\n')
-	if INTERRUPT then os.exit(128 + signum) end
-	USER_SIGINT = true
-end)
+local signal_installed, signal = pcall(require, 'posix.signal')
+if signal_installed then
+	signal.signal(signal.SIGINT, function(signum)
+		io.write('\n')
+		if INTERRUPT then os.exit(128 + signum) end
+		USER_SIGINT = true
+	end)
+end
 
 IGNORE_MISSING_BRACE = true
 SHOW_MULTIPLE_ERRORS = true
