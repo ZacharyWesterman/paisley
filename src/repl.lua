@@ -142,7 +142,7 @@ for input_line in function() return io.read('*l') end do
 		table.insert(token_cache, nl)
 		io.write('... ')
 		io.flush()
-	else
+	elseif not ERRORED then
 
 		--Make sure braces match up (since we disabled their context in the lexer)
 		local braces = {}

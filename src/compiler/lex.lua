@@ -525,6 +525,9 @@ function Lexer(text, file)
 				end
 			else
 				parse_error(Span:new(line, col, line, col), 'Unexpected character "'..text:sub(1,1)..'"', file)
+				col = col + 1
+				text = text:sub(2,#text)
+				break
 			end
 		end
 
