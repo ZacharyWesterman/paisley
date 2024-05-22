@@ -112,6 +112,7 @@ local dedent_tokens = {
 }
 
 io.write('>>> ')
+io.flush()
 local token_cache = {}
 local subroutine_cache = {} --Keep cache of all subroutines the user creates
 local lexer, append_text = Lexer('')
@@ -140,6 +141,7 @@ for input_line in function() return io.read('*l') end do
 		}
 		table.insert(token_cache, nl)
 		io.write('... ')
+		io.flush()
 	else
 
 		--Make sure braces match up (since we disabled their context in the lexer)
@@ -250,6 +252,7 @@ for input_line in function() return io.read('*l') end do
 		--Done running, wait ont next line
 		token_cache = {}
 		io.write('>>> ')
+		io.flush()
 	end
 end
 print()
