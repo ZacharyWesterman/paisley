@@ -16,6 +16,8 @@ local ENDED = false
 
 local OUTPUT_FILE = nil
 
+require "src.shared.json"
+
 --Override default "error" behavior; just print the error, not a stack trace.
 local old_error = error
 function error(text)
@@ -73,6 +75,12 @@ local function is_zlib_compressed(text)
     return (byte1 == 0x78) and (byte2 == 0x01 or byte2 == 0x9C or byte2 == 0xDA)
 end
 
+--@param text string
+local function is_paisley_bytecode(text)
+	if text:sub(1,2) ~= '[[' or text:sub(#text-1,#text) ~= ']]' then return false end
+	return json.verify(text)
+end
+
 local dir = script_real_path():match('(.*[/\\])')
 if dir == nil then dir = '' end
 
@@ -121,7 +129,11 @@ for i, v in ipairs(arg) do
 	elseif V2 then
 		OUTPUT_FILE = v
 		PRINT_BYTECODE = true
-		ZLIB_COMPRESS = true
+		if zlib_installed then
+			ZLIB_COMPRESS = true
+		else
+			print('Warning: zlib dependency is not installed, so bytecode output will not be compressed.')
+		end
 	else
 		V2 = v --input filename
 	end
@@ -129,7 +141,7 @@ end
 
 
 if ZLIB_COMPRESS and not zlib_installed then
-	error('Error: zlib dependency is not installed. Cannot output compressed bytecode.')
+	error('ERROR: zlib dependency is not installed. Cannot output compressed bytecode.')
 end
 
 if not ENDED and REPL then
@@ -183,6 +195,11 @@ if not ENDED then
 		else
 			error('Error during decompression: '..err)
 		end
+	elseif is_paisley_bytecode(V1) then
+		local bc = V1
+		V1 = ''
+		require "src.compiler"
+		bytecode = json.parse(bc)
 	else
 		require "src.compiler"
 	end
