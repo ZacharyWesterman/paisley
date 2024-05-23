@@ -239,6 +239,13 @@ function print_token(token, indent)
 		end
 	end
 
+	if token.ignored ~= nil or token.is_referenced ~= nil then
+		meta = meta .. ' ['
+		if token.ignored then meta = meta..'#' else meta = meta..'-' end
+		if token.is_referenced then meta = meta..'#' else meta = meta..'-' end
+		meta = meta .. ']'
+	end
+
 	print((indent..'%2d:%2d: %13s = %s%s'):format(token.span.from.line, token.span.from.col, id, token.text:gsub('\n', '<nl>'):gsub('\x09','<nl>'), meta))
 end
 

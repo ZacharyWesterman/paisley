@@ -1203,17 +1203,19 @@ function SemanticAnalyzer(tokens, file)
 	local assigned_vars = {}
 	local this_var = nil
 	recurse(root, {TOK.var_assign, TOK.inline_command}, function(token)
+		local ix = token.span.from
 		if token.id == TOK.var_assign then
-			token.ignore = true --If this variable is not used anywhere, we can optimize it away.
-			assigned_vars[token.text] = token
 			this_var = token.text
+			token.ignore = true --If this variable is not used anywhere, we can optimize it away.
+			if not assigned_vars[this_var] then assigned_vars[this_var] = {} end
+			assigned_vars[this_var][ix.line..'|'..ix.col] = token
 		elseif this_var then
 			local cmd = nil
 			if token.children[1].id == TOK.command then cmd = token.children[1].children[1].text end
 			--If the command has no side-effects, we CAN still optimize them away.
 			if cmd ~= 'time' and cmd ~= 'systime' and cmd ~= 'sysdate' then
 				--We CAN'T fully optimize this variable away because it has a command eval in it.
-				assigned_vars[this_var].ignore = false
+				for _, var_decl in pairs(assigned_vars[this_var]) do var_decl.ignore = false end
 			end
 		end
 	end, function(token)
@@ -1221,7 +1223,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 	recurse(root, {TOK.variable}, function(token)
 		if assigned_vars[token.text] then
-			assigned_vars[token.text].is_referenced = true
+			for _, var_decl in pairs(assigned_vars[token.text]) do var_decl.is_referenced = true end
 		else
 			--[[minify-delete]]
 			if _G['LANGUAGE_SERVER'] then
@@ -1234,9 +1236,11 @@ function SemanticAnalyzer(tokens, file)
 	end)
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then
-		for text, token in pairs(assigned_vars) do
-			if not token.is_referenced and token.text:sub(1,1) ~= '_' then
-				INFO.warning(token.span, 'Variable is never used. To indicate that this is intentional, prefix with an underscore')
+		for _, decls in pairs(assigned_vars) do
+			for _, var_decl in pairs(decls) do
+				if not var_decl.is_referenced and var_decl.text:sub(1,1) ~= '_' then
+					INFO.warning(var_decl.span, 'Variable is never used. To indicate that this is intentional, prefix with an underscore')
+				end
 			end
 		end
 	end
