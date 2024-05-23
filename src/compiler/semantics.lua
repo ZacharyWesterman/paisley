@@ -1235,8 +1235,8 @@ function SemanticAnalyzer(tokens, file)
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then
 		for text, token in pairs(assigned_vars) do
-			if not token.is_referenced then
-				INFO.warning(token.span, 'Variable is never used')
+			if not token.is_referenced and token.text:sub(1,1) ~= '_' then
+				INFO.warning(token.span, 'Variable is never used. To indicate that this is intentional, prefix with an underscore')
 			end
 		end
 	end
