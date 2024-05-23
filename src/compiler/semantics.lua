@@ -1199,6 +1199,50 @@ function SemanticAnalyzer(tokens, file)
 		end
 	end
 
+	--Check what variables are never assigned or never referenced
+	local assigned_vars = {}
+	local this_var = nil
+	recurse(root, {TOK.let_stmt, TOK.inline_command}, function(token)
+		if token.id == TOK.let_stmt then
+			token.ignore = true --If this variable is not used anywhere, we can optimize it away.
+			assigned_vars[token.text] = token
+			this_var = token.text
+		elseif this_var then
+			local cmd = nil
+			if token.children[1].id == TOK.command then cmd = token.children[1].children[1].text end
+			--If the command has no side-effects, we CAN still optimize them away.
+			if cmd ~= 'time' and cmd ~= 'systime' and cmd ~= 'sysdate' then
+				--We CAN'T fully optimize this variable away because it has a command eval in it.
+				assigned_vars[this_var].ignore = false
+			end
+		end
+	end, function(token)
+		if token.id == TOK.let_stmt then this_var = nil end
+	end)
+	recurse(root, {TOK.variable}, function(token)
+		if assigned_vars[token.text] then
+			assigned_vars[token.text].is_referenced = true
+		else
+			--[[minify-delete]]
+			if _G['LANGUAGE_SERVER'] then
+				INFO.warning(token.span, 'Variable is never declared')
+			end
+			--[[/minify-delete]]
+			--Using a variable that is never declared.
+			token.ignore = true
+		end
+	end)
+	--[[minify-delete]]
+	if _G['LANGUAGE_SERVER'] then
+		for text, token in pairs(assigned_vars) do
+			if not token.is_referenced then
+				INFO.warning(token.span, 'Variable is never used')
+			end
+		end
+	end
+	--[[/minify-delete]]
+
+
 	--[[
 		CONSTANT FOLDING AND TYPE DEDUCTIONS
 	]]

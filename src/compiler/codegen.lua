@@ -299,6 +299,12 @@ function generate_bytecode(root, file)
 		[TOK.let_stmt] = function(token, file)
 			local label1, label2
 
+			--If this variable
+			--1. Is not assigned to results of an inline command eval
+			--2. Is not used anywhere
+			--Then don't generate the (dead) code for it.
+			if token.ignore and not token.is_referenced then return end
+
 			if token.text == 'initial' then
 				label1, label2 = label_id(), label_id()
 				emit(bc.push, token.children[1].text)
