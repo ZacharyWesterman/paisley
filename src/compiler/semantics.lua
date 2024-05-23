@@ -852,6 +852,10 @@ function SemanticAnalyzer(tokens, file)
 	local deduced_variable_types
 	local current_sub = nil
 
+	local function type_precheck(token, file)
+		if token.id == TOK.subroutine then current_sub = token.text end
+	end
+
 	local function type_checking(token, file)
 		local signature
 
@@ -901,31 +905,31 @@ function SemanticAnalyzer(tokens, file)
 		if token.id == TOK.return_stmt then
 			local sub = labels[current_sub]
 			if sub then
-				if #token.children == 0 then
-					if sub.type and sub.type ~= 'null' then
-						sub.type = 'any'
-					else
-						sub.type = 'null'
-					end
+				local exp_type = nil
+
+				if not token.children or #token.children == 0 then
+					exp_type = 'null'
 				elseif token.children[1].type then
-					if sub.type then
-						if sub.type ~= token.children[1].type then
-							if sub.type:sub(1,5) == 'array' and token.children[1].type:sub(1,5) == 'array' then
-								sub.type = 'array'
-							else
-								sub.type = 'any'
-							end
-						end
+					exp_type = token.children[1].type
+				end
+
+				if sub.type and exp_type and exp_type ~= sub.type then
+					print(current_sub..'>>'..sub.type..'|'..exp_type)
+
+					if sub.type:sub(1,5) == exp_type:sub(1,5) then
+						sub.type = 'array'
 					else
-						sub.type = token.children[1].type
+						sub.type = 'any'
 					end
+				else
+					sub.type = exp_type
 				end
 			end
 			return
 		end
 
 		if token.id == TOK.subroutine then
-			current_sub = token.text
+			current_sub = nil
 			return
 		end
 
@@ -1203,7 +1207,7 @@ function SemanticAnalyzer(tokens, file)
 		deduced_variable_types = false
 
 		--First pass at deducing all types
-		recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.inline_command, TOK.command, TOK.return_stmt, TOK.subroutine}, nil, type_checking)
+		recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.inline_command, TOK.command, TOK.return_stmt, TOK.subroutine}, type_precheck, type_checking)
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
 		if not ERRORED then recurse(root, {TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary, TOK.list_comp, TOK.object, TOK.key_value_pair}, nil, FOLD_CONSTANTS) end
@@ -1214,19 +1218,28 @@ function SemanticAnalyzer(tokens, file)
 		if ERRORED then break end
 	end
 
+	if not ERRORED then
+		--One last pass at deducing all types (after any constant folding)
+		recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.variable, TOK.inline_command, TOK.command, TOK.return_stmt, TOK.subroutine}, nil, type_checking)
+	end
+
 	--If running as language server, print type info for any variable declarations or command calls.
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then
-		recurse(root, {TOK.let_stmt, TOK.for_stmt, TOK.inline_command}, function(token)
+		recurse(root, {TOK.let_stmt, TOK.for_stmt, TOK.inline_command, TOK.subroutine}, function(token)
 			local var = token.children[1]
 			if token.id == TOK.inline_command then
 				local cmd = var.children[1]
 				if cmd.value then
 					if var.id == TOK.gosub_stmt then
 						if labels[cmd.text] then
-							INFO.hint(cmd.span, 'Defined on line '..labels[cmd.text].span.from.line..', col '..labels[cmd.text].span.from.col)
+							INFO.hint(cmd.span, 'Subroutine `'..cmd.text..'` defined on line '..labels[cmd.text].span.from.line..', col '..labels[cmd.text].span.from.col)
 							local tp = labels[cmd.text].type
-							if tp then INFO.hint(cmd.span, 'returns: '..tp) end
+							if tp == 'null' then
+								INFO.info(cmd.span, 'Subroutine `'..cmd.text..'` always returns null, so using an inline command eval here is not helpful')
+							elseif tp then
+								INFO.hint(cmd.span, 'returns: '..tp)
+							end
 						end
 					else
 						local tp
@@ -1236,9 +1249,15 @@ function SemanticAnalyzer(tokens, file)
 							tp = BUILTIN_COMMANDS[cmd.value]
 						end
 
-						if tp then INFO.hint(cmd.span, 'returns: '..tp) end
+						if tp == 'null' then
+							INFO.info(cmd.span, 'Command `'..cmd.text..'` always returns null, so using an inline command eval here is not helpful')
+						elseif tp then
+							INFO.hint(cmd.span, 'returns: '..tp)
+						end
 					end
 				end
+			elseif token.id == TOK.subroutine then
+				if token.type then INFO.hint(token.span, 'returns: '..token.type) end
 			else
 				while var do
 					if var.type then INFO.hint(var.span, 'type: '..var.type) end
@@ -1259,12 +1278,6 @@ function SemanticAnalyzer(tokens, file)
 			sub.is_referenced = true
 		end
 	end)
-
-	if not ERRORED then
-		--One last pass at deducing all types (after any constant folding)
-		recurse(root, {TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.variable, TOK.inline_command, TOK.command, TOK.return_stmt, TOK.subroutine}, nil, type_checking)
-	end
-
 
 	--BREAK and CONTINUE statements are only allowed to have up to a single CONSTANT INTEGER operand
 	recurse(root, {TOK.break_stmt, TOK.continue_stmt}, function(token)
@@ -1330,7 +1343,7 @@ function SemanticAnalyzer(tokens, file)
 		end
 
 		if labels[label] == nil then
-			local msg = 'Subroutine "'..label..'" not declared anywhere'
+			local msg = 'Subroutine `'..label..'` not declared anywhere'
 			local guess = closest_word(label, labels, 4)
 			if guess ~= nil and guess ~= '' then
 				msg = msg .. ' (did you mean "'.. guess ..'"?)'
@@ -1349,7 +1362,7 @@ function SemanticAnalyzer(tokens, file)
 				INFO.warning({
 					from = token.span.from,
 					to = token.span.from,
-				}, 'Subroutine "'..token.text..'" is never used.')
+				}, 'Subroutine `'..token.text..'` is never used.')
 			end
 		end)
 	end

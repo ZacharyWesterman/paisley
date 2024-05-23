@@ -189,14 +189,15 @@ function parse_error(span, msg, file)
 end
 
 --[[minify-delete]]
-INFO = {
-	hint = function(span, msg)
-		print('H,'..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
-	end,
+local function lsp_msg(span, msg, loglevel)
+	print(loglevel..','..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
+end
 
-	warning = function(span, msg)
-		print('W,'..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
-	end,
+INFO = {
+	hint = function(span, msg) lsp_msg(span, msg, 'H') end,
+	warning = function(span, msg) lsp_msg(span, msg, 'W') end,
+	info = function(span, msg) lsp_msg(span, msg, 'I') end,
+	error = function(span, msg) lsp_msg(span, msg, 'E') end,
 }
 --[[/minify-delete]]
 
