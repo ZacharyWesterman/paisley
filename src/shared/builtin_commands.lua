@@ -1,8 +1,8 @@
 BUILTIN_COMMANDS = {
 	"time:number",
 	"sleep:null",
-	"print:string",
-	"error:string",
+	"print:null",
+	"error:null",
 	"systime:number",
 	"sysdate:array[number]",
 }
