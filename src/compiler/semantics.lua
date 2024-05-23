@@ -1202,8 +1202,8 @@ function SemanticAnalyzer(tokens, file)
 	--Check what variables are never assigned or never referenced
 	local assigned_vars = {}
 	local this_var = nil
-	recurse(root, {TOK.let_stmt, TOK.inline_command}, function(token)
-		if token.id == TOK.let_stmt then
+	recurse(root, {TOK.var_assign, TOK.inline_command}, function(token)
+		if token.id == TOK.var_assign then
 			token.ignore = true --If this variable is not used anywhere, we can optimize it away.
 			assigned_vars[token.text] = token
 			this_var = token.text
@@ -1217,7 +1217,7 @@ function SemanticAnalyzer(tokens, file)
 			end
 		end
 	end, function(token)
-		if token.id == TOK.let_stmt then this_var = nil end
+		if token.id == TOK.var_assign then this_var = nil end
 	end)
 	recurse(root, {TOK.variable}, function(token)
 		if assigned_vars[token.text] then
