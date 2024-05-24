@@ -455,5 +455,5 @@ std = {
 		return #list1 >= #list2
 	end,
 
-	MAX_ARRAY_LEN = 65535, --Any larger than this and performance tanks
+	MAX_ARRAY_LEN = 32768, --Any larger than this and performance tanks
 }

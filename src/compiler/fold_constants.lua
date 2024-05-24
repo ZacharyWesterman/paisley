@@ -712,10 +712,20 @@ function FOLD_CONSTANTS(token, file)
 			end
 			token.children = nil
 			token.reduce_array_concat = true --If a slice operator is nested in an array_concat operation, merge the arrays
-		--[[minify-delete]]
-		elseif _G['LANGUAGE_SERVER'] and stop - start > std.MAX_ARRAY_LEN then
-			INFO.warning(token.span, 'Attempt to create an array of '..(stop - start)..' elements (max is '..std.MAX_ARRAY_LEN..'). Array will be truncated at run-time.')
-		--[[/minify-delete]]
+		elseif stop - start >= std.MAX_ARRAY_LEN then
+			local msg = 'Attempt to create an array of '..(stop - start + 1)..' elements (max is '..std.MAX_ARRAY_LEN..'). Array truncated.'
+			--[[minify-delete]]
+			if _G['LANGUAGE_SERVER'] then
+				INFO.warning(token.span, msg)
+			else
+			--[[/minify-delete]]
+				print('WARNING: '..token.span.from.line..', '..token.span.from.col..': '..msg)
+			--[[minify-delete]]
+			end
+			--[[/minify-delete]]
+
+			--We KNOW the array will be to large, so truncate it.
+			token.children[2].value = std.MAX_ARRAY_LEN + start - 1
 		end
 
 	elseif token.id == TOK.negate then
