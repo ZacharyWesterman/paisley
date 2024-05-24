@@ -5,6 +5,7 @@ from pathlib import Path
 
 require = re.compile(r'require *[\'"]([^\'"]+)[\'"]')
 debug   = re.compile(r'--\[\[minify-delete\]\].*?--\[\[/minify-delete\]\]', re.DOTALL)
+debug2  = re.compile(r'(--\[\[build-replace=([^\]]+)\]\].*?--\[\[/build-replace\]\])', re.DOTALL)
 comment = re.compile(r'(?<![\'"-])--(\[\[([^\]]|\](?!\]))*\]\]|[^\n]*)')
 endline = re.compile(r'\n\n+')
 spaces  = re.compile(r'[ \t]+\n')
@@ -14,9 +15,9 @@ Path('build/').mkdir(exist_ok=True)
 
 VERSION = open('version.txt', 'r').readline().strip()
 
-for i in ['compiler.lua', 'runtime.lua']:
-	with open('src/'+i, 'r') as fp:
-		found_files = ['src/'+i]
+def generate_full_source(filename: str, remove_debug: bool) -> str:
+	with open(filename, 'r') as fp:
+		found_files = [filename]
 
 		text = fp.read()
 
@@ -30,8 +31,14 @@ for i in ['compiler.lua', 'runtime.lua']:
 			else:
 				text = text[0:m.start(0)] + text[m.end(0)::]
 
-		#Remove all blocks that are marked with debug sections
-		text = debug.sub('', text)
+		if remove_debug:
+			#Remove all blocks that are marked with debug sections
+			text = debug.sub('', text)
+
+		#Replace certain blocks with the contents of a file
+		for i in debug2.findall(text):
+			with open(i[1], 'r') as subfile:
+				text = text.replace(i[0], '"' + subfile.read().strip().replace('\n', '\\n').replace('"', '\\"') + '"')
 
 		#Remove all lua comments from generated source (minimize file size)
 		text = comment.sub('', text)
@@ -40,9 +47,18 @@ for i in ['compiler.lua', 'runtime.lua']:
 		text = endline.sub('\n', text)
 		text = indents.sub('\n', text)
 
-		module = i.split('.')[0]
+		return text
 
-		prefix = f'--[[Paisley {module} v{VERSION}, written by SenorCluckens]]\n--[[This build has been minified to reduce file size]]'
+#Build the Plasma version of the Paisley engine
+for i in ['compiler.lua', 'runtime.lua']:
+	text = generate_full_source(f'src/{i}', True)
+	module = i.split('.')[0]
+	prefix = f'--[[Paisley {module} v{VERSION}, written by SenorCluckens]]\n--[[This build has been minified to reduce file size]]'
 
-		with open('build/'+i, 'w') as out:
-			out.write(prefix + text)
+	with open('build/'+i, 'w') as out:
+		out.write(prefix + text)
+
+#Build the desktop version of the Paisley engine
+text = generate_full_source('paisley', False)
+with open('build/paisley_standalone.lua', 'w') as out:
+	out.write(text)

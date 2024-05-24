@@ -87,16 +87,19 @@ if dir == nil then dir = '' end
 local lfs_installed, lfs = pcall(require, 'lfs')
 local zlib_installed, zlib = pcall(require, 'zlib')
 
+local VERSION = --[[build-replace=version.txt]] io.open(dir..'version.txt'):read() --[[/build-replace]]
+local HELPTEXT = --[[build-replace=helptext.txt]] io.open(dir..'helptext.txt'):read('*all'):gsub('[\r\n]+$', ''):gsub('^[\r\n]+', '') --[[/build-replace]]
+
 for i, v in ipairs(arg) do
 	if v:sub(1,1) == '-' and v ~= '-' then
 		if v:sub(1,2) == '-c' then
 			table.insert(V3, v:sub(3,#v))
 		elseif v == '--help' or v == '-h' then
-			print('Paisley ' .. io.open( dir .. 'version.txt'):read() )
-			print('\n' .. io.open( dir .. 'helptext.txt'):read('*all'):gsub('[\r\n]+$', ''):gsub('^[\r\n]+', '') )
+			print('Paisley ' .. VERSION )
+			print('\n' .. HELPTEXT )
 			ENDED = true
 		elseif v == '--version' or v == '-V' then
-			print('Paisley ' .. io.open( dir .. 'version.txt'):read() )
+			print('Paisley ' .. VERSION )
 			ENDED = true
 		elseif v == '--bytecode' or v == '-b' then
 			PRINT_BYTECODE = true
@@ -145,7 +148,7 @@ if ZLIB_COMPRESS and not zlib_installed then
 end
 
 if not ENDED and REPL then
-	print('Paisley ' .. io.open( dir .. 'version.txt'):read() .. ' interactive REPL.')
+	print('Paisley ' .. VERSION .. ' interactive REPL.')
 	print('Type `stop` or press Ctrl-D to quit.')
 
 	require "src.repl"
