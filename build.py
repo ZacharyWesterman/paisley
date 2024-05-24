@@ -38,7 +38,11 @@ def generate_full_source(filename: str, remove_debug: bool) -> str:
 		#Replace certain blocks with the contents of a file
 		for i in debug2.findall(text):
 			with open(i[1], 'r') as subfile:
-				text = text.replace(i[0], '"' + subfile.read().strip().replace('\n', '\\n').replace('"', '\\"') + '"')
+				subtext = subfile.read().strip().replace('\r', '').replace('\n', '\\n').replace('"', '\\"').replace('--', '@@@')
+				text = text.replace(i[0], '"' + subtext + '"')
+
+		#Make sure that non-comment dashes don't get removed
+		text = text.replace('`--', '`@@@').replace("'--", "'@@@").replace('----', '@@@@@@')
 
 		#Remove all lua comments from generated source (minimize file size)
 		text = comment.sub('', text)
@@ -46,6 +50,9 @@ def generate_full_source(filename: str, remove_debug: bool) -> str:
 		text = spaces.sub('\n', text)
 		text = endline.sub('\n', text)
 		text = indents.sub('\n', text)
+
+		#Put back non-comment dashes
+		text = text.replace('@@@', '--')
 
 		return text
 
