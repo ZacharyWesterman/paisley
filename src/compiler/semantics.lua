@@ -914,8 +914,6 @@ function SemanticAnalyzer(tokens, file)
 				end
 
 				if sub.type and exp_type and exp_type ~= sub.type then
-					print(current_sub..'>>'..sub.type..'|'..exp_type)
-
 					if sub.type:sub(1,5) == exp_type:sub(1,5) then
 						sub.type = 'array'
 					else
