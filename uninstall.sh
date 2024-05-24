@@ -25,6 +25,8 @@ wait_on_process()
 	printf '\r\e[K'
 }
 
+echo 'Requesting permission to uninstall dependencies...'
+
 total="$(<requires.txt wc -l)"
 item=0
 while read rock name
@@ -34,7 +36,13 @@ do
 	#Check if rock is already installed. If not, install it.
 	if [ "$(lua <<< "x, _ = pcall(require, '$name') print(x)")" == true ]
 	then
-		sudo echo -n #prompt once for password
+		#Prompt once for password
+		if ! sudo echo -n
+		then
+			>&2 echo 'WARNING: Failed to uninstall dependencies: user permission denied.'
+			>&2 echo '         The relevant Lua rocks are still installed on your system.'
+			break
+		fi
 		( uninstall_dependency "$rock" ) &
 		wait_on_process $! "$rock" $item $total
 	fi

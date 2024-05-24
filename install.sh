@@ -1,13 +1,42 @@
 #!/usr/bin/env bash
+FAILED=0
+
 if ! which lua &>/dev/null
 then
-	>&2 echo 'ERROR: Lua is not installed! Please install Lua and try again.'
-	exit 1
+	>&2 echo 'ERROR: Lua is not installed! Please install it and try again.'
+	FAILED=1
+elif ! which luac &>/dev/null
+then
+	>&2 echo 'ERROR: Lua is installed, but `luac` is not! Please install it and try again.'
+	FAILED=1
 fi
 
+if ! which python3 &>/dev/null
+then
+	>&2 echo 'ERROR: Python 3 is not installed! Please install it and try again.'
+	FAILED=1
+fi
+
+if ! which luarocks &>/dev/null
+then
+	>&2 echo 'WARNING: `luarocks` is not installed, so dependencies cannot be installed either. Some features may be missing from this build.'
+fi
+
+[ $FAILED == 1 ] && exit 1
+
+#Make sure we're in the same dir as this script.
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+#Package the program into Lua bytecode.
+python3 build.py || exit 1
+luac -o build/paisley.luac build/paisley_standalone.lua || exit 1
+echo '#!/usr/bin/env lua' > build/shebang || exit 1
+cat build/shebang build/paisley.luac > build/paisley || exit 1
+chmod +x build/paisley || exit 1
+
 rm -f "$HOME/.local/bin/paisley"
-ln -s "$DIR/paisley" "$HOME/.local/bin/paisley"
+mv build/paisley "$HOME/.local/bin/paisley"
+rm build -rf
 
 install_dependency()
 {
@@ -32,6 +61,8 @@ wait_on_process()
 	printf '\r\e[K'
 }
 
+echo 'Requesting permission to install dependencies...'
+
 total="$(<requires.txt wc -l)"
 item=0
 while read rock name
@@ -41,7 +72,14 @@ do
 	#Check if rock is already installed. If not, install it.
 	if [ "$(lua <<< "x, _ = pcall(require, '$name') print(x)")" != true ]
 	then
-		sudo echo -n #prompt once for password
+		#Prompt once for password
+		if ! sudo echo -n
+		then
+			>&2 echo 'WARNING: Failed to install dependencies: user permission denied.'
+			>&2 echo '         It will still work, but some features may be missing.'
+			break
+		fi
+
 		( install_dependency "$rock" ) &
 		wait_on_process $! "$rock" $item $total
 	fi
