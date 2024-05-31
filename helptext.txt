@@ -6,19 +6,19 @@ FLAGS:
     -V, --version          Prints version information
     -r, --repl             Start the Paisley runtime as an interactive REPL
     -b, --bytecode         Output bytecode instead of running the script
-    -p, --pretty           Pretty-print bytecode output. Implies `-b`
-    -z, --compress         Compress bytecode output with zlib compression. Implies `-b`
+    -p, --pretty           Pretty-print bytecode output.
+    -z, --compress         Compress bytecode output with zlib compression.
         --dry-run          Validate the program, but don't run it
         --language-server  Output detailed info in an easy-to-parse format
         --no-ast-errors    Don't report errors in the syntax tree
         --ast              Print the abstract syntax tree and then exit
         --ast-sem          Print the AST after semantic analysis and then exit
-        --introspect       Print introspective data about the Paisley language itself
+        --introspect       Print introspective data about the Paisley language
         --functions        If introspecting, list all functions
         --commands         If introspecting, list all commands
     -c[CMD]                Define an existing command on the target device
-    -if[FUNC_NAME]         If introspecting, output details about the given function
-    -ic[CMD_NAME]          If introspecting, output details about the given command
+    -if[FUNC_NAME]         If introspecting, output details about the function
+    -ic[CMD_NAME]          If introspecting, output details about the command
 
 ARGS:
     <input>    The input file. Replace with `-` to read from stdin.
@@ -29,10 +29,11 @@ CMD Example:
         paisley -cstatus:boolean [FLAGS] <input>
 
     Return type must be one of `null`, `boolean`, `number`, `string`,
-    `array` or `any`. If no return type is specified, `any` is assumed.
+    `array` (or `array[string]`, `array[number]`, etc.) or `any`.
+    If no return type is specified, `any` is assumed.
 
 FUNC_NAME:
-    Must be a valid function name or ALL. Can add as many versions of this flag as desired.
+    Must be a valid function name or ALL.
 
 CMD_NAME:
-    Must be a valid command name or ALL. Can add as many versions of this flag as desired.
+    Must be a valid command name or ALL.
