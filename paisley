@@ -19,10 +19,9 @@ local OUTPUT_FILE = nil
 require "src.shared.json"
 
 --Override default "error" behavior; just print the error, not a stack trace.
-local old_error = error
 function error(text)
 	if text then print(text) end
-	old_error()
+	os.exit(1)
 end
 
 local function script_real_path()
