@@ -13,7 +13,12 @@ FLAGS:
         --no-ast-errors    Don't report errors in the syntax tree
         --ast              Print the abstract syntax tree and then exit
         --ast-sem          Print the AST after semantic analysis and then exit
+        --introspect       Print introspective data about the Paisley language itself
+        --functions        If introspecting, list all functions
+        --commands         If introspecting, list all commands
     -c[CMD]                Define an existing command on the target device
+    -if[FUNC_NAME]         If introspecting, output details about the given function
+    -ic[CMD_NAME]          If introspecting, output details about the given command
 
 ARGS:
     <input>    The input file. Replace with `-` to read from stdin.
@@ -25,3 +30,9 @@ CMD Example:
 
     Return type must be one of `null`, `boolean`, `number`, `string`,
     `array` or `any`. If no return type is specified, `any` is assumed.
+
+FUNC_NAME:
+    Must be a valid function name or ALL. Can add as many versions of this flag as desired.
+
+CMD_NAME:
+    Must be a valid command name or ALL. Can add as many versions of this flag as desired.

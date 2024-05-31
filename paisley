@@ -6,6 +6,11 @@ local PRINT_BYTECODE = false
 local PRETTY_PRINT = false
 local ZLIB_COMPRESS = false
 local DRY_RUN = false
+local INTROSPECTION = false
+local INTROSPECT_CMDS = {}
+local INTROSPECT_FUNCS = {}
+local INTROSPECT_FUNCLIST = false
+local INTROSPECT_CMDLIST = false
 REPL = false
 LANGUAGE_SERVER = false
 SUPPRESS_AST_ERRORS = false
@@ -16,7 +21,8 @@ local ENDED = false
 
 local OUTPUT_FILE = nil
 
-require "src.shared.json"
+require 'src.shared.json'
+require 'src.shared.stdlib'
 
 --Override default "error" behavior; just print the error, not a stack trace.
 function error(text)
@@ -123,6 +129,16 @@ for i, v in ipairs(arg) do
 		elseif v == '--ast-sem' then
 			PRINT_AST = true
 			AST_AFTER_SEMANTIC = true
+		elseif v == '--introspect' then
+			INTROSPECTION = true
+		elseif v == '--functions' then
+			INTROSPECT_FUNCLIST = true
+		elseif v == '--commands' then
+			INTROSPECT_CMDLIST = true
+		elseif v:sub(1,3) == '-if' then
+			table.insert(INTROSPECT_FUNCS, v:sub(4,#v))
+		elseif v:sub(1,3) == '-ic' then
+			table.insert(INTROSPECT_CMDS, v:sub(4,#v))
 		elseif v == '--repl' or v == '-r' then
 			REPL = true
 		else
@@ -139,6 +155,160 @@ for i, v in ipairs(arg) do
 	else
 		V2 = v --input filename
 	end
+end
+
+--If we're printing introspection data, ignore any other flags or inputs, and just print info about the Paisley language itself.
+if INTROSPECTION then
+	local function text_table(data)
+		local widths, text = {}, ''
+
+		--Calculate the width of each column
+		for i, row in ipairs(data) do
+			for k, cell in ipairs(row) do
+				if widths[k] == nil then widths[k] = 0 end
+				widths[k] = math.max(widths[k], #std.str(cell))
+			end
+		end
+
+		local function delim()
+			local text = '+'
+			for i = 1, #widths do
+				text = text .. ('-'):rep(widths[i] + 2) .. '+'
+			end
+
+			return text
+		end
+
+		--Generate text
+		for i = 1, #data do
+			if i > 2 then text = text .. '|' else text = text .. delim() .. '\n|' end
+			for k = 1, #data[i] do
+				text = text .. ' ' .. std.str(data[i][k]) .. (' '):rep(widths[k] - #std.str(data[i][k])) .. ' |'
+			end
+			text = text .. '\n'
+		end
+		text = text .. delim()
+
+		return text
+	end
+
+
+	ALLOWED_COMMANDS = V3
+	require 'src.shared.builtin_commands'
+
+	if INTROSPECT_CMDLIST then
+		--Just list the commands
+		for key, val in pairs(BUILTIN_COMMANDS) do
+			print(key)
+		end
+		for key, val in pairs(ALLOWED_COMMANDS) do
+			print(key)
+		end
+	elseif #INTROSPECT_CMDS > 0 then
+		for i = 1, #INTROSPECT_CMDS do
+			local key = INTROSPECT_CMDS[i]
+			if key == 'ALL' then
+				INTROSPECT_CMDS = {}
+				for k, v in pairs(BUILTIN_COMMANDS) do table.insert(INTROSPECT_CMDS, k) end
+				for k, v in pairs(ALLOWED_COMMANDS) do table.insert(INTROSPECT_CMDS, k) end
+				break
+			end
+			if not BUILTIN_COMMANDS[key] and not ALLOWED_COMMANDS[key] then
+				error('ERROR: `'..key..'` is not a built-in or user-defined command.')
+			end
+		end
+
+		for i = 1, #INTROSPECT_CMDS do
+			local key = INTROSPECT_CMDS[i]
+			print(key)
+			if BUILTIN_COMMANDS[key] then print('  Returns: ' .. BUILTIN_COMMANDS[key]) else print('  Returns: ' .. ALLOWED_COMMANDS[key]) end
+			if BUILTIN_COMMANDS[key] then print('  Desc: ' .. CMD_DESCRIPTION[key]) else print('  Desc: User-defined command.') end
+		end
+	elseif not INTROSPECT_FUNCLIST and #INTROSPECT_FUNCS == 0 then
+		--Generate table of commands
+		local t = {}
+		table.insert(t, {'COMMAND','RETURN TYPE'})
+		for key, val in pairs(BUILTIN_COMMANDS) do
+			table.insert(t, {key, val})
+		end
+		for key, val in pairs(ALLOWED_COMMANDS) do
+			table.insert(t, {key, val})
+		end
+
+		print('COMMAND LIST:')
+		print(text_table(t))
+	end
+
+	require 'src.compiler.tokens'
+	require 'src.compiler.semantics'
+	local funcs = {}
+	for key, _ in pairs(BUILTIN_FUNCS) do table.insert(funcs, key) end
+	table.sort(funcs)
+
+	if INTROSPECT_FUNCLIST then
+		--Just list the functions
+		for i = 1, #funcs do
+			print(funcs[i])
+		end
+	elseif #INTROSPECT_FUNCS > 0 then
+		for i = 1, #INTROSPECT_FUNCS do
+			local key = INTROSPECT_FUNCS[i]
+			if key == 'ALL' then
+				INTROSPECT_FUNCS = funcs
+				break
+			end
+
+			if not BUILTIN_FUNCS[key] then
+				error('ERROR: `'..key..'` is not a built-in function.')
+			end
+		end
+
+		for i = 1, #INTROSPECT_FUNCS do
+			local key = INTROSPECT_FUNCS[i]
+			local funcsig = '???'
+			if key == 'reduce' then
+				funcsig = key .. '(' .. FUNCSIG(key) .. ') -> bool|number'
+			elseif TYPESIG[key].out == 1 then
+				--Return type is the same as 1st param
+				local types = {}
+				for i, k in ipairs(TYPESIG[key].valid) do
+					table.insert(types, k[1])
+				end
+				funcsig = key .. '(' .. FUNCSIG(key) .. ') -> ' .. std.join(types, '|')
+			else
+				funcsig = key .. '(' .. FUNCSIG(key) .. ') -> ' .. TYPESIG[key].out
+			end
+			print(key)
+			print('  Signature: ' .. funcsig)
+			print('  Desc: ' .. TYPESIG[key].description)
+		end
+	elseif not INTROSPECT_CMDLIST and #INTROSPECT_CMDS == 0 then
+		--Generate table of functions
+		local t = {}
+		table.insert(t, {'FUNCTION SIGNATURE'})
+		for i = 1, #funcs do
+			local key = funcs[i]
+			if key == 'reduce' then
+				table.insert(t, {key .. '(' .. FUNCSIG(key) .. ') -> bool|number'})
+			elseif TYPESIG[key].out == 1 then
+				--Return type is the same as 1st param
+				local types = {}
+				for i, k in ipairs(TYPESIG[key].valid) do
+					table.insert(types, k[1])
+				end
+				table.insert(t, {key .. '(' .. FUNCSIG(key) .. ') -> ' .. std.join(types, '|')})
+			else
+				table.insert(t, {key .. '(' .. FUNCSIG(key) .. ') -> ' .. TYPESIG[key].out})
+			end
+		end
+
+		print('\nFUNCTION LIST:')
+		print(text_table(t))
+	end
+
+	os.exit(0)
+elseif INTROSPECT_CMDLIST or #INTROSPECT_CMDS > 0 or INTROSPECT_FUNCLIST or #INTROSPECT_FUNCS > 0 then
+	error('ERROR: Introspection flags can only be used with `--introspect`.')
 end
 
 

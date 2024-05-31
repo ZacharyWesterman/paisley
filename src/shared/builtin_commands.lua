@@ -7,6 +7,17 @@ BUILTIN_COMMANDS = {
 	"sysdate:array[number]",
 }
 
+--[[minify-delete]]
+CMD_DESCRIPTION = {
+	time = 'Returns a number representing the in-game time.',
+	systime = 'Returns a number representing the system time (seconds since midnight).',
+	sysdate = 'Returns a numeric array containing the system day, month, and year.',
+	print = 'Send all arguments to the "print" output.',
+	error = 'Send all arguments to the "error" output.',
+	sleep = 'Pause script execution for the given amount of seconds.',
+}
+--[[/minify-delete]]
+
 local function _explode(cmdlist)
 	if not cmdlist then return {} end
 

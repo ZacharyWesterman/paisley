@@ -299,7 +299,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Random integer: `random_int(min_value, max_value) -> number`
 - Random real number: `random_float(min_value, max_value) -> number`
 - Select a random element from a list: `random_element(array) -> any`
-- Difference between two strings: `word_diff(str1, str2) -> number` (levenschtein distance)
+- Difference between two strings: `word_diff(str1, str2) -> number` (levenshtein distance)
 - Euclidean distance (numbers or vectors of N dimension): `dist(point1, point2) -> number`
 - Trig functions: `sin(x), cos(x), tan(x), asin(x), acos(x), atan(x), atan2(x, y) -> number`
 - Square root: `sqrt(x) -> number`
@@ -319,6 +319,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Get data type: `type(value) -> string`. Output will be one of "null", "boolean", "number", "string", or "array"
 - Convert to boolean: `bool(value)`
 - Convert to number: `num(value)`
+- Convert to integer: `int(value)`
 - Convert to string: `str(value)`
 - Round down: `floor(value) -> number`
 - Round up: `ceil(value) -> number`
@@ -331,13 +332,14 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Replace all occurrences of a substring: `replace(text, search, replace) -> string`
 - Serialize data to a JSON string: `json_encode(data) -> string`
 - Deserialize data from a JSON string: `json_decode(text) -> any`
+- Check if a JSON string is formatted correctly: `json_valid(text) -> boolean`
 - Convert a string to base64: `b64_encode(text) -> string`
 - Convert base64 text to a string: `b64_decode(text) -> string`
 - Left-pad a string with a given character: `lpad(string, character, to_width) -> string`
 - Right-pad a string with a given character: `rpad(string, character, to_width) -> string`
 - Convert a number to a hexadecimal string: `hex(value) -> string`
 - Remove all characters that do not match the given pattern: `filter(text, pattern) -> string`
-- Get the first match of a pattern in the given text: `match(text, pattern) -> string`. If no match is found, a null string is returned.
+- Get all substrings that match the given pattern: `matches(text, pattern) -> array[string]`
 - Convert a “seconds since midnight” timestamp into (hour, min, sec, milli): `clocktime(value) -> array`
 - Reduce an array to a single element: `reduce(array, operator) -> any`, e.g. `reduce(1:9, +)` sums the numbers from 1 to 9, resulting in 45
 - Reverse an array or a string: `reverse(array) -> array` or `reverse(string) -> string`
