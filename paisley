@@ -21,8 +21,6 @@ local ENDED = false
 
 local OUTPUT_FILE = nil
 
-require 'src.shared.json'
-require 'src.shared.stdlib'
 
 --Override default "error" behavior; just print the error, not a stack trace.
 function error(text)
@@ -94,6 +92,15 @@ local zlib_installed, zlib = pcall(require, 'zlib')
 
 local VERSION = --[[build-replace=version.txt]] io.open(dir..'version.txt'):read() --[[/build-replace]]
 local HELPTEXT = --[[build-replace=helptext.txt]] io.open(dir..'helptext.txt'):read('*all'):gsub('[\r\n]+$', ''):gsub('^[\r\n]+', '') --[[/build-replace]]
+
+local old_working_dir = nil
+if lfs_installed and dir ~= nil then
+	old_working_dir = lfs.currentdir()
+	lfs.chdir(dir)
+end
+
+require 'src.shared.json'
+require 'src.shared.stdlib'
 
 for i, v in ipairs(arg) do
 	if v:sub(1,1) == '-' and v ~= '-' then
@@ -329,6 +336,8 @@ if not ENDED then
 		error('Error: No input file given. Use `-` to read from stdin, or re-run with `--help` to see all options.')
 	end
 
+	if lfs_installed and dir ~= nil then lfs.chdir(old_working_dir) end
+
 	if V2 == '-' then
 		V2 = nil
 		V1 = io.read('*all') --program text
@@ -345,11 +354,7 @@ if not ENDED then
 
 	function output() end
 
-	local old_working_dir = nil
-	if lfs_installed and dir ~= nil then
-		old_working_dir = lfs.currentdir()
-		lfs.chdir(dir)
-	end
+	if lfs_installed and dir ~= nil then lfs.chdir(dir) end
 
 	--Check if we were given compressed bytecode
 	if is_zlib_compressed(V1) then
@@ -420,6 +425,8 @@ if not ENDED then
 
 			fp:write(text)
 			fp:close()
+		elseif ZLIB_COMPRESS then
+			io.write(text)
 		else
 			print(text)
 		end
