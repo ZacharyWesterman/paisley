@@ -110,11 +110,21 @@ if RUN_PROGRAM then
 				V5 = sec_since_midnight --command return value
 			end
 		elseif port == 7 then
-			--Print text or error
-			table.remove(value, 1)
-			print(std.str(value))
-			io.flush()
 			V5 = nil
+			--Print text or error
+			local cmd = value[1]
+			table.remove(value, 1)
+			local args = std.str(value)
+			if cmd == 'stdout' then
+				io.write(args)
+			elseif cmd == 'stderr' then
+				io.write(io.stderr, args)
+			elseif cmd == 'stdin' then
+				V5 = io.read('*l')
+			else
+				print(args)
+			end
+			io.flush()
 		elseif port == 8 then
 			--value is current line number
 		else

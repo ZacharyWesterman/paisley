@@ -1513,7 +1513,10 @@ function SemanticAnalyzer(tokens, file)
 	end
 
 	--Check what variables are never assigned or never referenced
-	local assigned_vars = {}
+	local assigned_vars = {
+		['$'] = {},
+		['@'] = {},
+	}
 	local this_var = nil
 	recurse(root, {TOK.var_assign, TOK.inline_command}, function(token)
 		local ix = token.span.from

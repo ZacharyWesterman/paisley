@@ -5,6 +5,12 @@ BUILTIN_COMMANDS = {
 	"error:null",
 	"systime:number",
 	"sysdate:array[number]",
+	--[[minify-delete]]
+	--The following commands are only available in the CLI version of Paisley
+	"stdin:string",
+	"stdout:null",
+	"stderr:null",
+	--[[/minify-delete]]
 }
 
 --[[minify-delete]]
@@ -15,6 +21,10 @@ CMD_DESCRIPTION = {
 	print = 'Send all arguments to the "print" output.',
 	error = 'Send all arguments to the "error" output.',
 	sleep = 'Pause script execution for the given amount of seconds.',
+	--The following commands are only available in the CLI version of Paisley
+	stdin = 'Read a line of text from stdin.',
+	stdout = 'Write text to stdout, with no line ending.',
+	stderr = 'Write text to stderr, with no line ending.',
 }
 --[[/minify-delete]]
 
@@ -32,3 +42,11 @@ end
 
 BUILTIN_COMMANDS = _explode(BUILTIN_COMMANDS)
 ALLOWED_COMMANDS = _explode(ALLOWED_COMMANDS)
+
+--[[minify-delete]]
+if _G['RESTRICT_TO_PLASMA_BUILD'] then
+	BUILTIN_COMMANDS['stdin'] = nil
+	BUILTIN_COMMANDS['stdout'] = nil
+	BUILTIN_COMMANDS['stderr'] = nil
+end
+--[[/minify-delete]]
