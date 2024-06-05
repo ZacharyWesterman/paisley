@@ -1534,7 +1534,15 @@ function SemanticAnalyzer(tokens, file)
 	end, function(token)
 		if token.id == TOK.var_assign then this_var = nil end
 	end)
-	recurse(root, {TOK.variable}, function(token)
+	recurse(root, {TOK.variable, TOK.list_comp}, function(token)
+		if token.id == TOK.list_comp then
+			local child = token.children[2]
+			local ix = child.span.from
+			if not assigned_vars[child.text] then assigned_vars[child.text] = {} end
+			assigned_vars[child.text][ix.line..'|'..ix.col] = child
+			return
+		end
+
 		if assigned_vars[token.text] then
 			for _, var_decl in pairs(assigned_vars[token.text]) do var_decl.is_referenced = true end
 		else
@@ -1545,6 +1553,14 @@ function SemanticAnalyzer(tokens, file)
 			--[[/minify-delete]]
 			--Using a variable that is never declared.
 			token.ignore = true
+		end
+	end, function(token)
+		if token.id == TOK.list_comp then
+			local child = token.children[2]
+			local ix = child.span.from
+
+			assigned_vars[child.text][ix.line..'|'..ix.col] = nil
+			if next(assigned_vars[child.text]) == nil then assigned_vars[child.text] = nil end
 		end
 	end)
 	--[[minify-delete]]
