@@ -1651,13 +1651,44 @@ function SemanticAnalyzer(tokens, file)
 	--[[/minify-delete]]
 
 	--Check if subroutines are even used
-	recurse(root, {TOK.gosub_stmt}, function(token)
-		local sub = labels[token.children[1].text]
+	--We also keep track of what subroutines each subroutine references.
+	--This lets us remove recursive subroutines, or subs that reference each other
+	local sub_refs = {}
+	local top_level_subs = {}
+	local current_sub = nil
+	recurse(root, {TOK.gosub_stmt, TOK.subroutine}, function(token)
+		if token.id == TOK.gosub_stmt then
+			local text = token.children[1].text
 
-		if sub then
-			sub.is_referenced = true
+			if current_sub then
+				if not sub_refs[current_sub] then sub_refs[current_sub] = {} end
+				table.insert(sub_refs[current_sub], text)
+			else
+				local sub = labels[text]
+				if sub then sub.is_referenced = true end
+				top_level_subs[text] = true
+			end
+		else
+			current_sub = token.text
 		end
+	end, function(token)
+		if token.id == TOK.subroutine then current_sub = nil end
 	end)
+
+	--Scan through subroutines and check if we can trace gosubs from the top level down to each subroutine.
+	--If we can, then we CANNOT optimize the subroutine away.
+	local function trace_subs(parent, children, top_parent)
+		for _, child in ipairs(children) do
+			if child ~= parent and child ~= top_parent then
+				local sub = labels[child]
+				if sub then sub.is_referenced = true end
+				if sub_refs[child] then trace_subs(child, sub_refs[child], top_parent) end
+			end
+		end
+	end
+	for label, _ in pairs(top_level_subs) do
+		if sub_refs[label] then trace_subs(label, sub_refs[label], label) end
+	end
 
 	--BREAK and CONTINUE statements are only allowed to have up to a single CONSTANT INTEGER operand
 	recurse(root, {TOK.break_stmt, TOK.continue_stmt}, function(token)
