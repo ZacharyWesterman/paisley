@@ -1650,6 +1650,37 @@ function SemanticAnalyzer(tokens, file)
 	end
 	--[[/minify-delete]]
 
+	--Remove the body of conditionals that will never get executed
+	recurse(root, {TOK.if_stmt, TOK.elif_stmt}, function(token)
+		local cond = token.children[1]
+		if cond.value ~= nil or cond.id == TOK.lit_null then
+			--Decide whether to remove "then" or "else" branch
+			local ix, id, text = 2, TOK.kwd_then, 'then'
+			if std.bool(cond.value) then
+				ix, id, text = 3, TOK.kwd_end, 'end'
+			end
+			token.children[ix] = {
+				id = id,
+				span = token.children[ix].span,
+				text = text,
+			}
+		end
+	end)
+
+	--Remove the body of loops that will never get executed
+	recurse(root, {TOK.while_stmt}, function(token)
+		local cond = token.children[1]
+		if (cond.value ~= nil or cond.id == TOK.lit_null) and not std.bool(cond.value) then
+			token.children = { cond }
+		end
+	end)
+	recurse(root, {TOK.for_stmt}, function(token)
+		local iter = token.children[2]
+		if type(iter.value) == 'table' and next(iter.value) == nil then
+			token.children[3] = nil
+		end
+	end)
+
 	--Check if subroutines are even used
 	--We also keep track of what subroutines each subroutine references.
 	--This lets us remove recursive subroutines, or subs that reference each other
