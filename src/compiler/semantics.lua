@@ -772,6 +772,21 @@ function SemanticAnalyzer(tokens, file)
 
 	local root = tokens[1] --At this point, there should only be one token, the root "program" token.
 
+	--Flatten "program" nodes so all statements are on the same level.
+	recurse(root, {TOK.program}, nil, function(token)
+		local kids = {}
+		for i = 1, #token.children do
+			local child = token.children[i]
+			if child.id == TOK.program then
+				for k = 1, #child.children do table.insert(kids, child.children[k]) end
+			else
+				table.insert(kids, child)
+			end
+		end
+
+		token.children = kids
+	end)
+
 	--Make sure subroutines are top-level statements
 	local tok_level = 0
 	recurse(root, {TOK.subroutine, TOK.if_stmt, TOK.for_stmt, TOK.while_stmt}, function(token)
@@ -1793,6 +1808,35 @@ function SemanticAnalyzer(tokens, file)
 			parse_error(token.children[1].span, msg, file)
 		else
 			token.ignore = labels[label].ignore
+		end
+	end)
+
+	--Remove dead code after stop, return, continue, or break statements
+	recurse(root, {TOK.program}, function(token)
+		local dead_code_span = nil
+
+		for i = 1, #token.children do
+			if dead_code_span then
+				token.children[i] = nil
+			else
+				local node = token.children[i]
+				if node.id == TOK.kwd_stop or node.id == TOK.return_stmt or node.id == TOK.continue_stmt or node.id == TOK.break_stmt then
+					--if this is not the last statement in the list,
+					--then mark all future statements as dead code.
+					if i < #token.children then
+						dead_code_span = {
+							from = token.children[i+1].span.from,
+							to = token.children[#token.children].span.to,
+						}
+					end
+				end
+			end
+		end
+
+		--[[minify-delete]]
+		if _G['LANGUAGE_SERVER'] then
+			--Warn about dead code
+			INFO.dead_code(dead_code_span, 'Dead code')
 		end
 	end)
 

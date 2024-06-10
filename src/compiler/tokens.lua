@@ -198,6 +198,7 @@ INFO = {
 	warning = function(span, msg) lsp_msg(span, msg, 'W') end,
 	info = function(span, msg) lsp_msg(span, msg, 'I') end,
 	error = function(span, msg) lsp_msg(span, msg, 'E') end,
+	dead_code = function(span, msg) lsp_msg(span, msg, 'D') end,
 }
 --[[/minify-delete]]
 
