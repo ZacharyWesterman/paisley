@@ -1811,6 +1811,20 @@ function SemanticAnalyzer(tokens, file)
 		end
 	end)
 
+	--Warn if subroutines are not used.
+	--[[minify-delete]]
+	if _G['LANGUAGE_SERVER'] then
+		recurse(root, {TOK.subroutine}, function(token)
+			if not token.is_referenced then
+				INFO.warning({
+					from = token.span.from,
+					to = token.span.from,
+				}, 'Subroutine `'..token.text..'` is never used.')
+			end
+		end)
+	end
+	--[[/minify-delete]]
+
 	--Remove dead code after stop, return, continue, or break statements
 	recurse(root, {TOK.program}, function(token)
 		local dead_code_span = nil
@@ -1839,20 +1853,6 @@ function SemanticAnalyzer(tokens, file)
 			INFO.dead_code(dead_code_span, 'Dead code')
 		end
 	end)
-
-	--Warn if subroutines are not used.
-	--[[minify-delete]]
-	if _G['LANGUAGE_SERVER'] then
-		recurse(root, {TOK.subroutine}, function(token)
-			if not token.is_referenced then
-				INFO.warning({
-					from = token.span.from,
-					to = token.span.from,
-				}, 'Subroutine `'..token.text..'` is never used.')
-			end
-		end)
-	end
-	--[[/minify-delete]]
 
 	if ERRORED then terminate() end
 
