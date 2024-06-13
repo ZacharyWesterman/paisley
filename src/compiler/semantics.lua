@@ -1585,8 +1585,11 @@ function SemanticAnalyzer(tokens, file)
 	if _G['LANGUAGE_SERVER'] then
 		for _, decls in pairs(assigned_vars) do
 			for _, var_decl in pairs(decls) do
-				if not var_decl.is_referenced and var_decl.text:sub(1,1) ~= '_' then
-					INFO.warning(var_decl.span, 'Variable is never used. To indicate that this is intentional, prefix with an underscore')
+				if not var_decl.is_referenced then
+					if var_decl.text:sub(1,1) ~= '_' then
+						INFO.warning(var_decl.span, 'Variable is never used. To indicate that this is intentional, prefix with an underscore')
+					end
+					INFO.dead_code(var_decl.span, '')
 				end
 			end
 		end
@@ -1816,10 +1819,15 @@ function SemanticAnalyzer(tokens, file)
 	if _G['LANGUAGE_SERVER'] then
 		recurse(root, {TOK.subroutine}, function(token)
 			if not token.is_referenced then
-				INFO.warning({
+				local span = {
 					from = token.span.from,
-					to = token.span.from,
-				}, 'Subroutine `'..token.text..'` is never used.')
+					to = {
+						line = token.span.to.line,
+						col = token.span.to.col - 4,
+					}
+				}
+
+				INFO.dead_code(span, 'Subroutine `'..token.text..'` is never used.')
 			end
 		end)
 	end
