@@ -17,19 +17,13 @@ VERSION = open('version.txt', 'r').readline().strip()
 
 def generate_full_source(filename: str, remove_debug: bool) -> str:
 	with open(filename, 'r') as fp:
-		found_files = [filename]
 
 		text = fp.read()
 
 		while m := require.search(text):
 			fname = m[1].replace('.', '/') + '.lua'
-			#Substitute includes if they haven't already been substituted
-			if fname not in found_files:
-				with open(fname, 'r') as fp2:
-					text = text[0:m.start(0)] + fp2.read() + text[m.end(0)::]
-					found_files += [fname]
-			else:
-				text = text[0:m.start(0)] + text[m.end(0)::]
+			with open(fname, 'r') as fp2:
+				text = text[0:m.start(0)] + fp2.read() + text[m.end(0)::]
 
 		if remove_debug:
 			#Remove all blocks that are marked with debug sections
@@ -38,21 +32,24 @@ def generate_full_source(filename: str, remove_debug: bool) -> str:
 		#Replace certain blocks with the contents of a file
 		for i in debug2.findall(text):
 			with open(i[1], 'r') as subfile:
-				subtext = subfile.read().strip().replace('\r', '').replace('\n', '\\n').replace('"', '\\"').replace('--', '@@@')
+				subtext = subfile.read().strip().replace('\r', '').replace('\n', '\\n').replace('"', '\\"')
+				if remove_debug:
+					subtext = subtext.replace('--', '@@@')
 				text = text.replace(i[0], '"' + subtext + '"')
 
-		#Make sure that non-comment dashes don't get removed
-		text = text.replace('`--', '`@@@').replace("'--", "'@@@").replace('----', '@@@@@@')
+		if remove_debug:
+			#Make sure that non-comment dashes don't get removed
+			text = text.replace('`--', '`@@@').replace("'--", "'@@@").replace('----', '@@@@@@')
 
-		#Remove all lua comments from generated source (minimize file size)
-		text = comment.sub('', text)
-		#Minimize extra white space
-		text = spaces.sub('\n', text)
-		text = endline.sub('\n', text)
-		text = indents.sub('\n', text)
+			#Remove all lua comments from generated source (minimize file size)
+			text = comment.sub('', text)
+			#Minimize extra white space
+			text = spaces.sub('\n', text)
+			text = endline.sub('\n', text)
+			text = indents.sub('\n', text)
 
-		#Put back non-comment dashes
-		text = text.replace('@@@', '--')
+			#Put back non-comment dashes
+			text = text.replace('@@@', '--')
 
 		return text
 
