@@ -303,21 +303,28 @@ function generate_bytecode(root, file)
 			--1. Is not assigned to results of an inline command eval
 			--2. Is not used anywhere
 			--3. Is not part of a multi-var assignment where 1 or more vars are in use
+			--4. AND we are not running as a REPL
 			--Then don't generate the (dead) code for it.
-			local v1 = token.children[1]
-			if v1.ignore and not v1.is_referenced then
-				local not_used, multivars = true, v1.children
-				if multivars then
-					for i = 1, #multivars do
-						if multivars[i].is_referenced then
-							not_used = false
-							break
+			--[[minify-delete]]
+			if not _G['REPL'] then
+			--[[/minify-delete]]
+				local v1 = token.children[1]
+				if v1.ignore and not v1.is_referenced then
+					local not_used, multivars = true, v1.children
+					if multivars then
+						for i = 1, #multivars do
+							if multivars[i].is_referenced then
+								not_used = false
+								break
+							end
 						end
 					end
-				end
 
-				if not_used then return end
+					if not_used then return end
+				end
+			--[[minify-delete]]
 			end
+			--[[/minify-delete]]
 
 			if token.text == 'initial' then
 				label1, label2 = label_id(), label_id()
