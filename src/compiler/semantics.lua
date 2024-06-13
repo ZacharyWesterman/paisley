@@ -1677,6 +1677,14 @@ function SemanticAnalyzer(tokens, file)
 			if std.bool(cond.value) then
 				ix, id, text = 3, TOK.kwd_end, 'end'
 			end
+
+			--[[minify-delete]]
+			if _G['LANGUAGE_SERVER'] then
+				if token.children[ix].id == TOK.kwd_end then return end
+				INFO.dead_code(token.children[ix].span, '')
+			end
+			--[[/minify-delete]]
+
 			token.children[ix] = {
 				id = id,
 				span = token.children[ix].span,
@@ -1689,12 +1697,24 @@ function SemanticAnalyzer(tokens, file)
 	recurse(root, {TOK.while_stmt}, function(token)
 		local cond = token.children[1]
 		if (cond.value ~= nil or cond.id == TOK.lit_null) and not std.bool(cond.value) then
+			--[[minify-delete]]
+			if _G['LANGUAGE_SERVER'] then
+				INFO.dead_code(token.span, '')
+			end
+			--[[/minify-delete]]
+
 			token.children = { cond }
 		end
 	end)
 	recurse(root, {TOK.for_stmt}, function(token)
 		local iter = token.children[2]
 		if type(iter.value) == 'table' and next(iter.value) == nil then
+			--[[minify-delete]]
+			if _G['LANGUAGE_SERVER'] then
+				INFO.dead_code(token.span, '')
+			end
+			--[[/minify-delete]]
+
 			token.children[3] = nil
 		end
 	end)
