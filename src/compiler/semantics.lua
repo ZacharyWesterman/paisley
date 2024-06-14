@@ -1876,7 +1876,7 @@ function SemanticAnalyzer(tokens, file)
 		end
 
 		--[[minify-delete]]
-		if _G['LANGUAGE_SERVER'] then
+		if _G['LANGUAGE_SERVER'] and dead_code_span then
 			--Warn about dead code
 			INFO.dead_code(dead_code_span, 'Dead code')
 		end
