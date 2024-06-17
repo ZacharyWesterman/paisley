@@ -739,6 +739,8 @@ function FUNCSIG(func_name)
 	return params
 end
 
+local file_cache = {}
+
 function SemanticAnalyzer(tokens, file)
 	--[[minify-delete]] SHOW_MULTIPLE_ERRORS = true --[[/minify-delete]]
 
@@ -789,10 +791,16 @@ function SemanticAnalyzer(tokens, file)
 
 	--Make sure subroutines are top-level statements
 	local tok_level = 0
-	recurse(root, {TOK.subroutine, TOK.if_stmt, TOK.for_stmt, TOK.while_stmt}, function(token)
+	recurse(root, {TOK.subroutine, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.if_stmt, TOK.for_stmt, TOK.while_stmt}, function(token)
 		--Enter scope
-		if token.id == TOK.subroutine and tok_level > 0 then
-			parse_error(token.span, 'Subroutines cannot be defined inside other structures', file)
+		if tok_level > 0 then
+			if token.id == TOK.subroutine then
+				parse_error(token.span, 'Subroutines cannot be defined inside other structures', file)
+			--[[minify-delete]]
+			elseif token.id == TOK.import_stmt then
+				parse_error(token.span, 'Statement `'..token.text..'` cannot be inside other structures', file)
+			--[[/minify-delete]]
+			end
 		end
 
 		if token.text:sub(1,1) == '?' then

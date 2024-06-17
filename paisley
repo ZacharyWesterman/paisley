@@ -17,6 +17,7 @@ RESTRICT_TO_PLASMA_BUILD = false
 SUPPRESS_AST_ERRORS = false
 PRINT_AST = false
 AST_AFTER_SEMANTIC = false
+WORKING_DIR = ''
 
 local ENDED = false
 
@@ -97,6 +98,7 @@ local HELPTEXT = --[[build-replace=helptext.txt]] io.open(dir..'helptext.txt'):r
 local old_working_dir = nil
 if lfs_installed and dir ~= nil then
 	old_working_dir = lfs.currentdir()
+	WORKING_DIR = old_working_dir
 	lfs.chdir(dir)
 end
 

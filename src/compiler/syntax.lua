@@ -847,6 +847,51 @@ local rules = {
 		id = TOK.ternary,
 		not_after = {TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod},
 	},
+
+	--File import statement
+	--[[minify-delete]]
+	{
+		match = {{TOK.kwd_import_file}, {TOK.command}},
+		id = TOK.import_stmt,
+		keep = {2},
+		text = 1,
+		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison},
+		onmatch = function(token, file)
+			local kids = token.children[1].children
+			token.value = {}
+			for i = 1, #kids do
+				if kids[i].id ~= TOK.text and (kids[i].id ~= TOK.string_open or not kids[i].children or #kids[i].children > 1 or #kids[i].children[1].id ~= TOK.text) then
+					parse_error(kids[i].span, 'All parameters to `'..token.text..'` statement must be non-empty string literals', file)
+				else
+					local filename = kids[i].text
+					if kids[i].id == TOK.string_open then filename = kids[i].children[1].text end
+
+					local current_script_dir = file:match('(.-)([^\\/]-%.?([^%.\\/]*))$')
+					filename = current_script_dir .. filename:gsub('%.','/') .. '.paisley'
+
+					local fp = io.open(filename, 'r')
+
+					if fp == nil then
+						parse_error(kids[i].span, 'Cannot load "'..filename..'": file does not exist or is unreadable', file)
+					else
+						--Directly import the file as an AST (before semantics).
+					end
+				end
+			end
+			token.children = kids
+		end,
+	},
+	{
+		match = {{TOK.kwd_import_file}},
+		id = TOK.import_stmt,
+		keep = {},
+		text = 1,
+		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison, TOK.command},
+		onmatch = function(token, file)
+			parse_error(token.span, 'At least one file must be given to `'..token.text..'` statement', file)
+		end,
+	},
+	--[[/minify-delete]]
 }
 
 --Build a table for quick rule lookup. This is a performance optimization

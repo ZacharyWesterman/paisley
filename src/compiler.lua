@@ -34,6 +34,15 @@ local file = V2
 ALLOWED_COMMANDS = V3
 require "src.shared.builtin_commands"
 
+--[[minify-delete]]
+local lfs_installed, lfs = pcall(require, 'lfs')
+local old_working_dir = nil
+if lfs_installed then
+	old_working_dir = lfs.currentdir()
+	lfs.chdir(_G['WORKING_DIR'])
+end
+--[[/minify-delete]]
+
 local lexer = Lexer(expression, file)
 local t
 local tokens = {}
@@ -101,3 +110,9 @@ else
 
 	output(json.stringify(bytecode), 1)
 end
+
+--[[minify-delete]]
+if lfs_installed then
+	lfs.chdir(old_working_dir)
+end
+--[[/minify-delete]]

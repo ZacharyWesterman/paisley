@@ -29,6 +29,7 @@ TOK = {
 	kwd_if_expr = k(),
 	kwd_else_expr = k(),
 	kwd_for_expr = k(),
+	--[[minify-delete]] kwd_import_file = k(), --[[/minify-delete]]
 
 	expr_open = k(),
 	expr_close = k(),
@@ -129,6 +130,7 @@ TOK = {
 	object = k(),
 
 	subroutine_label = k(),--This is only a temporary token to make subroutine construction unambiguous. It does not show up in a finalized AST.
+	--[[minify-delete]] import_stmt = k(), --[[/minify-delete]]
 
 	no_value = k(),
 }
@@ -147,6 +149,7 @@ require "src.compiler.span"
 ---@field ignore boolean? If true, optimize this token away. Only defined on subroutine and variable definitions.
 ---@field unterminated boolean? Whether this slice token is unterminated (e.g. var[1::]). Only defined on slices.
 ---@field is_referenced boolean? Whether this subroutine token is referenced. Only defined on subroutine and variable definitions.
+---@field filename string? The filename this token came from. Only defined on file import tokens.
 Token = {}
 
 --[[minify-delete]]
