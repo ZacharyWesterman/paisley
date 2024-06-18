@@ -817,30 +817,64 @@ function SemanticAnalyzer(tokens, file)
 	--Enforce top level stmts and import files.
 	--Have to repeatedly do this until all dependencies are accounted for
 	--[[minify-delete]]
+	local imported_files = {} --Keep track of imported files, make sure there are no circular dependencies
 	local function import_file(node)
-		print_tokens_recursive(node)
+		local new_asts = {}
+		for i = 1, #node.value do
+			local filename = node.value[i]
+			local fp = io.open(filename, 'r')
+			local text = nil
+			if fp then text = fp:read('*all') end
+			if text == nil then
+				parse_error(node.span, 'COMPILER BUG: Imported file "'..filename..'" exists but also doesn\'t exist?', file)
+				break
+			end
 
-		node.id = TOK.text
+			if imported_files[filename] then
+				parse_error(node.children[i].span, 'File is already imported in '..imported_files[filename], file)
+				break
+			else
+				imported_files[filename] = file
+
+				local lexer, tokens = Lexer(text, filename), {}
+				for t in lexer do table.insert(tokens, t) end --Iterate to get tokens.
+
+				--Parse into AST and add to the list.
+				local parser = SyntaxParser(tokens, filename)
+				while parser.fold() do end
+
+				if not ERRORED and #parser.get() > 0 then
+					local ast = parser.get()[1]
+					table.insert(new_asts, ast)
+				end
+
+				if ERRORED then
+					parse_error(node.children[i].span, 'Error in included file', file)
+				end
+			end
+		end
+
+		if ERRORED then return node end
+
+		node.id = TOK.program
+		node.children = new_asts
 		return node
 	end
 
 	while found_import and not ERRORED do
-		--Remove imports
 		if root.id == TOK.import_stmt then
 			root = import_file(root)
-			break
-		end
-
-		for i = #root.children, 1, -1 do
-			local token = root.children[i]
-			if token.id == TOK.import_stmt then
-				root.children[i] = import_file(token)
+		else
+			for i = #root.children, 1, -1 do
+				local token = root.children[i]
+				if token.id == TOK.import_stmt then
+					root.children[i] = import_file(token)
+				end
 			end
 		end
 
 		check_top_level_stmts()
 	end
-	ERRORED = true
 	--[[/minify-delete]]
 
 	--Flatten "program" nodes so all statements are on the same level.
