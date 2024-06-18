@@ -48,6 +48,14 @@ function output(data, _)
 	TRANSFER = data
 end
 
+local old_working_dir = nil
+WORKING_DIR = ''
+if lfs_installed and dir ~= nil then
+	old_working_dir = lfs.currentdir()
+	WORKING_DIR = old_working_dir
+	lfs.chdir(dir)
+end
+
 require "src.compiler"
 
 print_header('Raw Bytecode')

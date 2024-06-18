@@ -781,7 +781,7 @@ local rules = {
 
 	--Statements
 	{
-		match = {{TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt}},
+		match = {{TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, TOK.import_stmt}},
 		id = TOK.statement,
 		meta = true,
 	},
