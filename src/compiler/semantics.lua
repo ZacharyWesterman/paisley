@@ -774,6 +774,75 @@ function SemanticAnalyzer(tokens, file)
 
 	local root = tokens[1] --At this point, there should only be one token, the root "program" token.
 
+	--Make sure subroutines and file imports are top-level statements
+	--[[minify-delete]]
+	local found_import = false
+	local function check_top_level_stmts()
+		found_import = false
+		--[[/minify-delete]]
+		
+		local tok_level = 0
+		recurse(root, {TOK.subroutine, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.if_stmt, TOK.for_stmt, TOK.while_stmt}, function(token)
+			--[[minify-delete]]
+			if token.id == TOK.import_stmt then
+				found_import = true
+			end
+			--[[/minify-delete]]
+
+			--Enter scope
+			if tok_level > 0 then
+				if token.id == TOK.subroutine then
+					parse_error(token.span, 'Subroutines cannot be defined inside other structures', file)
+				--[[minify-delete]]
+				elseif token.id == TOK.import_stmt then
+					parse_error(token.span, 'Statement `'..token.text..'` cannot be inside other structures', file)
+				--[[/minify-delete]]
+				end
+			end
+
+			if token.text:sub(1,1) == '?' then
+				parse_error(token.span, 'Subroutine name cannot begin with `?`', file)
+			end
+
+			tok_level = tok_level + 1
+		end, function(token)
+			--Exit scope
+			tok_level = tok_level - 1
+		end)
+	--[[minify-delete]]
+	end
+	check_top_level_stmts()
+	--[[/minify-delete]]
+
+	--Enforce top level stmts and import files.
+	--Have to repeatedly do this until all dependencies are accounted for
+	--[[minify-delete]]
+	local function import_file(node)
+		print_tokens_recursive(node)
+
+		node.id = TOK.text
+		return node
+	end
+
+	while found_import and not ERRORED do
+		--Remove imports
+		if root.id == TOK.import_stmt then
+			root = import_file(root)
+			break
+		end
+
+		for i = #root.children, 1, -1 do
+			local token = root.children[i]
+			if token.id == TOK.import_stmt then
+				root.children[i] = import_file(token)
+			end
+		end
+
+		check_top_level_stmts()
+	end
+	ERRORED = true
+	--[[/minify-delete]]
+
 	--Flatten "program" nodes so all statements are on the same level.
 	recurse(root, {TOK.program}, nil, function(token)
 		local kids = {}
@@ -787,30 +856,6 @@ function SemanticAnalyzer(tokens, file)
 		end
 
 		token.children = kids
-	end)
-
-	--Make sure subroutines are top-level statements
-	local tok_level = 0
-	recurse(root, {TOK.subroutine, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.if_stmt, TOK.for_stmt, TOK.while_stmt}, function(token)
-		--Enter scope
-		if tok_level > 0 then
-			if token.id == TOK.subroutine then
-				parse_error(token.span, 'Subroutines cannot be defined inside other structures', file)
-			--[[minify-delete]]
-			elseif token.id == TOK.import_stmt then
-				parse_error(token.span, 'Statement `'..token.text..'` cannot be inside other structures', file)
-			--[[/minify-delete]]
-			end
-		end
-
-		if token.text:sub(1,1) == '?' then
-			parse_error(token.span, 'Subroutine name cannot begin with `?`', file)
-		end
-
-		tok_level = tok_level + 1
-	end, function(token)
-		--Exit scope
-		tok_level = tok_level - 1
 	end)
 
 	--Make sure "delete" statements only have text params. deleting expressions that resolve to variable names is a recipe for disaster.

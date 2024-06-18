@@ -858,6 +858,7 @@ local rules = {
 		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison},
 		onmatch = function(token, file)
 			local kids = token.children[1].children
+			local current_script_dir = file:match('(.-)([^\\/]-%.?([^%.\\/]*))$')
 			token.value = {}
 			for i = 1, #kids do
 				if kids[i].id ~= TOK.text and (kids[i].id ~= TOK.string_open or not kids[i].children or #kids[i].children > 1 or #kids[i].children[1].id ~= TOK.text) then
@@ -866,15 +867,13 @@ local rules = {
 					local filename = kids[i].text
 					if kids[i].id == TOK.string_open then filename = kids[i].children[1].text end
 
-					local current_script_dir = file:match('(.-)([^\\/]-%.?([^%.\\/]*))$')
-					filename = current_script_dir .. filename:gsub('%.','/') .. '.paisley'
-
+					--Make sure import points to a valid file
+					local filename = current_script_dir .. filename:gsub('%.','/') .. '.paisley'
 					local fp = io.open(filename, 'r')
-
 					if fp == nil then
 						parse_error(kids[i].span, 'Cannot load "'..filename..'": file does not exist or is unreadable', file)
 					else
-						--Directly import the file as an AST (before semantics).
+						table.insert(token.value, filename)
 					end
 				end
 			end
