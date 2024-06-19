@@ -780,7 +780,7 @@ function SemanticAnalyzer(tokens, file)
 	local function check_top_level_stmts()
 		found_import = false
 		--[[/minify-delete]]
-		
+
 		local tok_level = 0
 		recurse(root, {TOK.subroutine, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.if_stmt, TOK.for_stmt, TOK.while_stmt}, function(token)
 			--[[minify-delete]]

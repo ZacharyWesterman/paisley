@@ -18,6 +18,7 @@ SUPPRESS_AST_ERRORS = false
 PRINT_AST = false
 AST_AFTER_SEMANTIC = false
 WORKING_DIR = ''
+LSP_FILENAME = ''
 
 local ENDED = false
 
@@ -153,6 +154,8 @@ for i, v in ipairs(arg) do
 			table.insert(INTROSPECT_CMDS, v:sub(4,#v))
 		elseif v == '--repl' or v == '-r' then
 			REPL = true
+		elseif v:sub(1,8) == '--stdin=' then
+			LSP_FILENAME = v:sub(9, #v)
 		else
 			error('Unknown flag `'..v..'`. Try running with `--help` to see all options.')
 		end
