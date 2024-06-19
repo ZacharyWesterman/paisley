@@ -283,6 +283,7 @@ local rules = {
 		keep = {1, 3},
 		text = 2,
 		not_after = {TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod},
+		not_before = {TOK.index_open},
 	},
 	{
 		match = {{TOK.array_concat, TOK.boolean, TOK.comparison}, {TOK.op_in}, {TOK.array_concat, TOK.boolean, TOK.comparison}},
@@ -781,7 +782,7 @@ local rules = {
 
 	--Statements
 	{
-		match = {{TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt}},
+		match = {{TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, TOK.import_stmt}},
 		id = TOK.statement,
 		meta = true,
 	},
@@ -809,7 +810,7 @@ local rules = {
 		id = TOK.program,
 		onmatch = function(token)
 			--Catch possible dead ends where line endings come before any commands.
-			for _, i in ipairs({'text', 'span', 'id', 'meta_id', 'value'}) do
+			for _, i in ipairs({'text', 'span', 'id', 'meta_id', 'value', 'filename'}) do
 				token[i] = token.children[2][i]
 			end
 			token.children = token.children[2].children
@@ -847,6 +848,65 @@ local rules = {
 		id = TOK.ternary,
 		not_after = {TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod},
 	},
+
+	--File import statement
+	--[[minify-delete]]
+	{
+		match = {{TOK.kwd_import_file}, {TOK.command}},
+		id = TOK.import_stmt,
+		keep = {2},
+		text = 1,
+		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison},
+		onmatch = function(token, file)
+			local kids = token.children[1].children
+
+			if file == nil then
+				file = _G['LSP_FILENAME']
+			end
+
+			local current_script_dir = file:match('(.-)([^\\/]-%.?([^%.\\/]*))$')
+
+			token.value = {}
+			for i = 1, #kids do
+				if kids[i].id ~= TOK.text and (kids[i].id ~= TOK.string_open or not kids[i].children or #kids[i].children > 1 or #kids[i].children[1].id ~= TOK.text) then
+					parse_error(kids[i].span, 'All parameters to `'..token.text..'` statement must be non-empty string literals', file)
+				else
+					local orig_filename = kids[i].text
+					if kids[i].id == TOK.string_open then orig_filename = kids[i].children[1].text end
+
+					--Make sure import points to a valid file
+					local filename = current_script_dir .. orig_filename:gsub('%.','/') .. '.paisley'
+					local fp = io.open(filename, 'r')
+
+					--If the file doesn't exist locally, try the stdlib
+					if fp == nil then
+						local fname
+						fp, fname = _G['STDLIB'](orig_filename)
+						if fp then filename = fname end
+					end
+
+					if fp == nil then
+						parse_error(kids[i].span, 'Cannot load "'..filename..'": file does not exist or is unreadable', file)
+					else
+						table.insert(token.value, filename)
+					end
+				end
+			end
+			token.children = kids
+		end,
+	},
+	--Invalid import statement
+	{
+		match = {{TOK.kwd_import_file}},
+		id = TOK.import_stmt,
+		keep = {},
+		text = 1,
+		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison, TOK.command},
+		onmatch = function(token, file)
+			parse_error(token.span, 'At least one file must be given to `'..token.text..'` statement', file)
+		end,
+	},
+	--[[/minify-delete]]
 }
 
 --Build a table for quick rule lookup. This is a performance optimization
@@ -993,6 +1053,7 @@ function SyntaxParser(tokens, file)
 							text = text,
 							id = rule.id,
 							children = {},
+							filename = file,
 						}
 
 						if rule.keep then

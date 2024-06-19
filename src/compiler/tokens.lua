@@ -29,6 +29,7 @@ TOK = {
 	kwd_if_expr = k(),
 	kwd_else_expr = k(),
 	kwd_for_expr = k(),
+	--[[minify-delete]] kwd_import_file = k(), --[[/minify-delete]]
 
 	expr_open = k(),
 	expr_close = k(),
@@ -129,6 +130,7 @@ TOK = {
 	object = k(),
 
 	subroutine_label = k(),--This is only a temporary token to make subroutine construction unambiguous. It does not show up in a finalized AST.
+	--[[minify-delete]] import_stmt = k(), --[[/minify-delete]]
 
 	no_value = k(),
 }
@@ -147,6 +149,7 @@ require "src.compiler.span"
 ---@field ignore boolean? If true, optimize this token away. Only defined on subroutine and variable definitions.
 ---@field unterminated boolean? Whether this slice token is unterminated (e.g. var[1::]). Only defined on slices.
 ---@field is_referenced boolean? Whether this subroutine token is referenced. Only defined on subroutine and variable definitions.
+---@field filename string? The name of the file that this token came from.
 Token = {}
 
 --[[minify-delete]]
@@ -170,7 +173,7 @@ function parse_error(span, msg, file)
 	--[[minify-delete]]
 	if not HIDE_ERRORS then
 		if _G['LANGUAGE_SERVER'] then
-			print('E,'..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
+			INFO.error(span, msg, file)
 		else --[[/minify-delete]]
 			if file ~= nil and file ~= '' then
 				print(file..': '..span.from.line..', '..span.from.col..': '..msg)
@@ -189,16 +192,20 @@ function parse_error(span, msg, file)
 end
 
 --[[minify-delete]]
-local function lsp_msg(span, msg, loglevel)
-	print(loglevel..','..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
+local function lsp_msg(span, msg, loglevel, file)
+	if file == INFO.root_file or not _G['LANGUAGE_SERVER'] or not INFO.root_file then
+		-- print(INFO.root_file)
+		print(loglevel..','..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
+	end
 end
 
 INFO = {
-	hint = function(span, msg) lsp_msg(span, msg, 'H') end,
-	warning = function(span, msg) lsp_msg(span, msg, 'W') end,
-	info = function(span, msg) lsp_msg(span, msg, 'I') end,
-	error = function(span, msg) lsp_msg(span, msg, 'E') end,
-	dead_code = function(span, msg) lsp_msg(span, msg, 'D') end,
+	hint      = function(span, msg, file) lsp_msg(span, msg, 'H', file) end,
+	warning   = function(span, msg, file) lsp_msg(span, msg, 'W', file) end,
+	info      = function(span, msg, file) lsp_msg(span, msg, 'I', file) end,
+	error     = function(span, msg, file) lsp_msg(span, msg, 'E', file) end,
+	dead_code = function(span, msg, file) lsp_msg(span, msg, 'D', file) end,
+	root_file = nil,
 }
 --[[/minify-delete]]
 

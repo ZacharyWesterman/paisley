@@ -16,6 +16,12 @@ require "src.compiler.codegen"
 local expression = V1:gsub('\x0b', '\n')
 local file = V2
 
+--[[minify-delete]]
+if file == nil and _G['LANGUAGE_SERVER'] then
+	file = _G['LSP_FILENAME']
+end
+--[[/minify-delete]]
+
 --[[
 	Command format is a string array, each element formatted as follows:
 	"COMMAND_NAME:RETURN_TYPE"
@@ -33,6 +39,15 @@ local file = V2
 ]]
 ALLOWED_COMMANDS = V3
 require "src.shared.builtin_commands"
+
+--[[minify-delete]]
+local lfs_installed, lfs = pcall(require, 'lfs')
+local old_working_dir = nil
+if lfs_installed then
+	old_working_dir = lfs.currentdir()
+	lfs.chdir(_G['WORKING_DIR'])
+end
+--[[/minify-delete]]
 
 local lexer = Lexer(expression, file)
 local t
@@ -101,3 +116,9 @@ else
 
 	output(json.stringify(bytecode), 1)
 end
+
+--[[minify-delete]]
+if lfs_installed then
+	lfs.chdir(old_working_dir)
+end
+--[[/minify-delete]]

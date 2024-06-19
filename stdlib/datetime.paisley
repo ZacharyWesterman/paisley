@@ -1,0 +1,26 @@
+subroutine datetime.now
+	return {
+		'date' => ${sysdate},
+		'time' => {${systime}.clocktime()},
+	}
+end
+
+subroutine datetime.isoformat
+	return "{
+		(i.lpad('0',2) for i in @[1].date.reverse()).join('-')
+	}T{
+		(i.lpad('0',2) for i in @[1].time[1:3]).join(':')
+	}"
+end
+
+subroutine datetime.fromiso
+	let _dt = {@[1].split('T')}
+	return {
+		'date' => int(i) for i in _dt[1].split('-').reverse(),
+		'time' => int(i) for i in _dt[2].split(':'),
+	}
+end
+
+subroutine datetime.isiso
+	return {@[1] like '%d%d%d%d%-%d%d%-%d%dT%d%d:%d%d:%d%d'}
+end

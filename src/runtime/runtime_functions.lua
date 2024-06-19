@@ -280,7 +280,7 @@ local functions = {
 
 	--STRING LIKE PATTERN
 	function()
-		local str, pattn = std.str(POP()), std.str(POP())
+		local pattn, str = std.str(POP()), std.str(POP())
 		PUSH(str:match(pattn) ~= nil)
 	end,
 

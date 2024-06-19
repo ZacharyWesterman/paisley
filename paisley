@@ -17,6 +17,8 @@ RESTRICT_TO_PLASMA_BUILD = false
 SUPPRESS_AST_ERRORS = false
 PRINT_AST = false
 AST_AFTER_SEMANTIC = false
+WORKING_DIR = ''
+LSP_FILENAME = ''
 
 local ENDED = false
 
@@ -88,6 +90,13 @@ end
 local dir = script_real_path():match('(.*[/\\])')
 if dir == nil then dir = '' end
 
+function STDLIB(filename)
+	if dir == nil then return nil, filename end
+
+	local fname = dir .. 'stdlib/' .. filename:gsub('%.','/') .. '.paisley'
+	return io.open(fname), fname
+end
+
 local lfs_installed, lfs = pcall(require, 'lfs')
 local zlib_installed, zlib = pcall(require, 'zlib')
 
@@ -97,6 +106,7 @@ local HELPTEXT = --[[build-replace=helptext.txt]] io.open(dir..'helptext.txt'):r
 local old_working_dir = nil
 if lfs_installed and dir ~= nil then
 	old_working_dir = lfs.currentdir()
+	WORKING_DIR = old_working_dir
 	lfs.chdir(dir)
 end
 
@@ -151,6 +161,8 @@ for i, v in ipairs(arg) do
 			table.insert(INTROSPECT_CMDS, v:sub(4,#v))
 		elseif v == '--repl' or v == '-r' then
 			REPL = true
+		elseif v:sub(1,8) == '--stdin=' then
+			LSP_FILENAME = v:sub(9, #v)
 		else
 			error('Unknown flag `'..v..'`. Try running with `--help` to see all options.')
 		end
