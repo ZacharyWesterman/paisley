@@ -865,9 +865,9 @@ function SemanticAnalyzer(tokens, root_file)
 	end
 
 	INFO.root_file = root_file
-	if root_file == nil then
-		INFO.root_file = _G['LSP_FILENAME']
-	end
+	-- if root_file == nil then
+	-- 	INFO.root_file = _G['LSP_FILENAME']
+	-- end
 
 	while found_import and not ERRORED do
 		if root.id == TOK.import_stmt then

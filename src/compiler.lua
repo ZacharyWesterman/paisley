@@ -16,6 +16,12 @@ require "src.compiler.codegen"
 local expression = V1:gsub('\x0b', '\n')
 local file = V2
 
+--[[minify-delete]]
+if file == nil and _G['LANGUAGE_SERVER'] then
+	file = _G['LSP_FILENAME']
+end
+--[[/minify-delete]]
+
 --[[
 	Command format is a string array, each element formatted as follows:
 	"COMMAND_NAME:RETURN_TYPE"

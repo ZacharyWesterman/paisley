@@ -93,7 +93,8 @@ if dir == nil then dir = '' end
 function STDLIB(filename)
 	if dir == nil then return nil, filename end
 
-	local fname = dir .. 'stdlib/' .. filename
+	local fname = dir .. 'stdlib/' .. filename:gsub('%.','/') .. '.paisley'
+	print(fname)
 	return io.open(fname), fname
 end
 

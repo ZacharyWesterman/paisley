@@ -870,17 +870,17 @@ local rules = {
 				if kids[i].id ~= TOK.text and (kids[i].id ~= TOK.string_open or not kids[i].children or #kids[i].children > 1 or #kids[i].children[1].id ~= TOK.text) then
 					parse_error(kids[i].span, 'All parameters to `'..token.text..'` statement must be non-empty string literals', file)
 				else
-					local filename = kids[i].text
-					if kids[i].id == TOK.string_open then filename = kids[i].children[1].text end
+					local orig_filename = kids[i].text
+					if kids[i].id == TOK.string_open then orig_filename = kids[i].children[1].text end
 
 					--Make sure import points to a valid file
-					local filename = current_script_dir .. filename:gsub('%.','/') .. '.paisley'
+					local filename = current_script_dir .. orig_filename:gsub('%.','/') .. '.paisley'
 					local fp = io.open(filename, 'r')
 
 					--If the file doesn't exist locally, try the stdlib
 					if fp == nil then
 						local fname
-						fp, fname = STDLIB(filename)
+						fp, fname = STDLIB(orig_filename)
 						if fp then filename = fname end
 					end
 
