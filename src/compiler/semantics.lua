@@ -857,29 +857,18 @@ function SemanticAnalyzer(tokens, root_file)
 			end
 		end
 
-		if ERRORED then return node end
+		if ERRORED then return end
 
 		node.id = TOK.program
 		node.children = new_asts
-		return node
 	end
 
 	INFO.root_file = root_file
-	-- if root_file == nil then
-	-- 	INFO.root_file = _G['LSP_FILENAME']
-	-- end
 
 	while found_import and not ERRORED do
-		if root.id == TOK.import_stmt then
-			root = import_file(root)
-		else
-			for i = #root.children, 1, -1 do
-				local token = root.children[i]
-				if token.id == TOK.import_stmt then
-					root.children[i] = import_file(token)
-				end
-			end
-		end
+		recurse(root, {TOK.import_stmt}, function(token, file)
+			import_file(token)
+		end)
 
 		check_top_level_stmts()
 	end
