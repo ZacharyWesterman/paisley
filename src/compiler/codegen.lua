@@ -742,7 +742,7 @@ function generate_bytecode(root, file)
 			if #loop_term_labels < token.children[1].value then
 				local word = 'loop'
 				if #loop_term_labels ~= 1 then word = 'loops' end
-				parse_error(token.span, 'Unable to break out of '..token.children[1].value..' loops, only '..#loop_term_labels..' '..word..' found')
+				parse_error(token.span, 'Unable to break out of '..token.children[1].value..' loops, only '..#loop_term_labels..' '..word..' found', file)
 			end
 
 			emit(bc.call, 'jump', loop_term_labels[#loop_term_labels - token.children[1].value + 1])
@@ -757,7 +757,7 @@ function generate_bytecode(root, file)
 			if #loop_begn_labels < token.children[1].value then
 				local word = 'loop'
 				if #loop_begn_labels ~= 1 then word = 'loops' end
-				parse_error(token.span, 'Unable to skip iteration of '..token.children[1].value..' loops, only '..#loop_begn_labels..' '..word..' found')
+				parse_error(token.span, 'Unable to skip iteration of '..token.children[1].value..' loops, only '..#loop_begn_labels..' '..word..' found', file)
 			end
 
 			emit(bc.call, 'jump', loop_begn_labels[#loop_begn_labels - token.children[1].value + 1])

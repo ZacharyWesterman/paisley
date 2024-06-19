@@ -741,14 +741,17 @@ end
 
 local file_cache = {}
 
-function SemanticAnalyzer(tokens, file)
+function SemanticAnalyzer(tokens, root_file)
 	--[[minify-delete]] SHOW_MULTIPLE_ERRORS = true --[[/minify-delete]]
 
 	---@param root Token
 	---@param token_ids TOK[]
 	---@param operation fun(token: Token, file: string?)?
 	---@param on_exit fun(token: Token, file: string?)?
-	local function recurse(root, token_ids, operation, on_exit)
+	local function recurse(root, token_ids, operation, on_exit, file)
+		if file == nil then file = root_file end
+		if root.filename then file = root.filename end
+
 		local correct_token = false
 		for _, id in ipairs(token_ids) do
 			if root.id == id then
@@ -763,7 +766,7 @@ function SemanticAnalyzer(tokens, file)
 
 		if root.children then
 			for _, token in ipairs(root.children) do
-				recurse(token, token_ids, operation, on_exit)
+				recurse(token, token_ids, operation, on_exit, file)
 			end
 		end
 
@@ -782,7 +785,7 @@ function SemanticAnalyzer(tokens, file)
 		--[[/minify-delete]]
 
 		local tok_level = 0
-		recurse(root, {TOK.subroutine, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.if_stmt, TOK.for_stmt, TOK.while_stmt}, function(token)
+		recurse(root, {TOK.subroutine, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.if_stmt, TOK.for_stmt, TOK.while_stmt}, function(token, file)
 			--[[minify-delete]]
 			if token.id == TOK.import_stmt then
 				found_import = true
@@ -805,7 +808,7 @@ function SemanticAnalyzer(tokens, file)
 			end
 
 			tok_level = tok_level + 1
-		end, function(token)
+		end, function(token, file)
 			--Exit scope
 			tok_level = tok_level - 1
 		end)
@@ -826,22 +829,22 @@ function SemanticAnalyzer(tokens, file)
 			local text = nil
 			if fp then text = fp:read('*all') end
 			if text == nil then
-				parse_error(node.span, 'COMPILER BUG: Imported file "'..filename..'" exists but also doesn\'t exist?', file)
+				parse_error(node.span, 'COMPILER BUG: Imported file "'..filename..'" exists but also doesn\'t exist?', root_file)
 				break
 			end
 
 			if imported_files[filename] then
-				parse_error(node.children[i].span, 'File is already imported in '..imported_files[filename], file)
+				parse_error(node.children[i].span, 'File is already imported in '..imported_files[filename], root_file)
 				break
 			else
-				imported_files[filename] = file
+				imported_files[filename] = root_file
 
 				local lexer, tokens = Lexer(text, filename), {}
 				for t in lexer do table.insert(tokens, t) end --Iterate to get tokens.
 
 				--Parse into AST and add to the list.
 				local parser = SyntaxParser(tokens, filename)
-				while parser.fold() do end
+				while parser.fold() and not ERRORED do end
 
 				if not ERRORED and #parser.get() > 0 then
 					local ast = parser.get()[1]
@@ -849,7 +852,7 @@ function SemanticAnalyzer(tokens, file)
 				end
 
 				if ERRORED then
-					parse_error(node.children[i].span, 'Error in included file', file)
+					parse_error(node.children[i].span, 'Error in included file', root_file)
 				end
 			end
 		end
@@ -860,6 +863,8 @@ function SemanticAnalyzer(tokens, file)
 		node.children = new_asts
 		return node
 	end
+
+	INFO.root_file = root_file
 
 	while found_import and not ERRORED do
 		if root.id == TOK.import_stmt then
@@ -878,7 +883,7 @@ function SemanticAnalyzer(tokens, file)
 	--[[/minify-delete]]
 
 	--Flatten "program" nodes so all statements are on the same level.
-	recurse(root, {TOK.program}, nil, function(token)
+	recurse(root, {TOK.program}, nil, function(token, file)
 		local kids = {}
 		for i = 1, #token.children do
 			local child = token.children[i]
@@ -893,7 +898,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Make sure "delete" statements only have text params. deleting expressions that resolve to variable names is a recipe for disaster.
-	recurse(root, {TOK.delete_stmt}, function(token)
+	recurse(root, {TOK.delete_stmt}, function(token, file)
 		---@type Token[]
 		local kids = token.children[1].children
 		for i = 1, #kids do
@@ -906,7 +911,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Fold nested array_concat tokens into a single array
-	recurse(root, {TOK.array_concat}, nil, function(token)
+	recurse(root, {TOK.array_concat}, nil, function(token, file)
 		local kids = {}
 		for _, child in ipairs(token.children) do
 			if child.id == TOK.array_concat or child.id == TOK.object then
@@ -926,13 +931,13 @@ function SemanticAnalyzer(tokens, file)
 					is_object = true
 					child.inside_object = true
 					if #child.children == 0 and #kids > 1 then
-						parse_error(child.span, 'Missing key and value for object construct')
+						parse_error(child.span, 'Missing key and value for object construct', file)
 						child.errored = true
 					end
 				else is_array = true end
 
 				if is_object and is_array then
-					parse_error(child.span, 'Ambiguous mixture of object and array constructs. Objects require key-value pairs for every element (e.g. `"key" => value`)')
+					parse_error(child.span, 'Ambiguous mixture of object and array constructs. Objects require key-value pairs for every element (e.g. `"key" => value`)', file)
 					child.errored = true
 					break
 				end
@@ -947,13 +952,14 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Extract key-value pairs into objects
-	recurse(root, {TOK.key_value_pair}, nil, function(token)
+	recurse(root, {TOK.key_value_pair}, nil, function(token, file)
 		if not token.inside_object then
 			local new_token = {
 				id = token.id,
 				span = token.span,
 				text = token.text,
 				children = token.children,
+				filename = token.filename,
 			}
 			token.id = TOK.object
 			token.text = '{}'
@@ -965,7 +971,7 @@ function SemanticAnalyzer(tokens, file)
 	--Make a list of all subroutines, and check that return statements are only in subroutines
 	local labels = {}
 	local inside_sub = 0
-	recurse(root, {TOK.subroutine, TOK.return_stmt}, function(token)
+	recurse(root, {TOK.subroutine, TOK.return_stmt}, function(token, file)
 		if token.id == TOK.subroutine then
 			inside_sub = inside_sub + 1
 
@@ -986,21 +992,21 @@ function SemanticAnalyzer(tokens, file)
 				parse_error(token.span, 'Return statements can only be inside subroutines', file)
 			end
 		end
-	end, function(token)
+	end, function(token, file)
 		if token.id == TOK.subroutine then
 			inside_sub = inside_sub - 1
 		end
 	end)
 
 	--Check subroutine references.
-	recurse(root, {TOK.gosub_stmt}, function(token)
+	recurse(root, {TOK.gosub_stmt}, function(token, file)
 		token.children = token.children[1].children
 	end)
 
 	--Resolve all lambda references
 	local lambdas = {}
 	local tok_level = 0
-	local pop_scope = function(token)
+	local pop_scope = function(token, file)
 		if token.id == TOK.lambda then
 			if not lambdas[token.text] then lambdas[token.text] = {} end
 			table.insert(lambdas[token.text], {
@@ -1033,7 +1039,7 @@ function SemanticAnalyzer(tokens, file)
 			end
 		end
 	end
-	recurse(root, {TOK.lambda, TOK.lambda_ref, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.subroutine, TOK.else_stmt, TOK.elif_stmt}, function(token)
+	recurse(root, {TOK.lambda, TOK.lambda_ref, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.subroutine, TOK.else_stmt, TOK.elif_stmt}, function(token, file)
 		if token.id ~= TOK.lambda and token.id ~= TOK.lambda_ref then
 			if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
 				pop_scope(token)
@@ -1044,7 +1050,7 @@ function SemanticAnalyzer(tokens, file)
 	end, pop_scope)
 
 	--Replace lambda definitions with the appropriate node.
-	recurse(root, {TOK.lambda}, nil, function(token)
+	recurse(root, {TOK.lambda}, nil, function(token, file)
 		local lambda_node = token.children[1]
 		for _, i in ipairs({'text', 'span', 'id', 'value', 'type'}) do
 			token[i] = lambda_node[i]
@@ -1053,7 +1059,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Check function calls
-	recurse(root, {TOK.func_call}, function(token)
+	recurse(root, {TOK.func_call}, function(token, file)
 		--Move all params to be direct children
 		if not token.children then
 			token.children = {}
@@ -1137,6 +1143,7 @@ function SemanticAnalyzer(tokens, file)
 					token.children[1],
 					token.children[3],
 				},
+				filename = token.filename,
 			}
 			token.text = 'max'
 			token.children = {node, token.children[2]}
@@ -1148,6 +1155,7 @@ function SemanticAnalyzer(tokens, file)
 				span = token.span,
 				text = 'num',
 				children = token.children,
+				filename = token.filename,
 			}
 			token.text = 'floor'
 			token.children = {node}
@@ -1162,7 +1170,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Prep plain (non-interpolated) strings to allow constant folding
-	recurse(root, {TOK.string_open}, function(token)
+	recurse(root, {TOK.string_open}, function(token, file)
 		if token.children then
 			if token.children[1].id == TOK.text and #token.children == 1 then
 				token.value = token.children[1].text
@@ -1174,7 +1182,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Check for variable existence by var name, not value
-	recurse(root, {TOK.boolean}, function(token)
+	recurse(root, {TOK.boolean}, function(token, file)
 		local ch = token.children[1]
 		if token.text == 'exists' and ch.id == TOK.variable then
 			ch.id = TOK.string_open
@@ -1184,7 +1192,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Get rid of parentheses and expression pseudo-tokens
-	recurse(root, {TOK.parentheses, TOK.expression}, nil, function(token)
+	recurse(root, {TOK.parentheses, TOK.expression}, nil, function(token, file)
 		if not token.children or #token.children ~= 1 then return end
 
 		local child = token.children[1]
@@ -1195,7 +1203,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Prep text to allow constant folding
-	recurse(root, {TOK.text}, function(token)
+	recurse(root, {TOK.text}, function(token, file)
 		local val = tonumber(token.text)
 		if val then
 			token.value = val
@@ -1232,7 +1240,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Tidy up WHILE loops and IF/ELIF statements (replace command with cmd contents)
-	recurse(root, {TOK.while_stmt, TOK.if_stmt, TOK.elif_stmt}, function(token)
+	recurse(root, {TOK.while_stmt, TOK.if_stmt, TOK.elif_stmt}, function(token, file)
 		if token.children[1].id ~= TOK.gosub_stmt then
 			if #token.children[1].children > 1 then
 				parse_error(token.span, 'Too many parameters passed to "'..token.text..'" statement', file)
@@ -1242,7 +1250,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Tidy up FOR loops (replace command with cmd contents)
-	recurse(root, {TOK.for_stmt}, function(token)
+	recurse(root, {TOK.for_stmt}, function(token, file)
 		if token.children[2].id == TOK.command then
 			if #token.children[2].children > 1 then
 				token.children[2].id = TOK.array_concat
@@ -1620,7 +1628,7 @@ function SemanticAnalyzer(tokens, file)
 		['@'] = {},
 	}
 	local this_var = nil
-	recurse(root, {TOK.var_assign, TOK.inline_command}, function(token)
+	recurse(root, {TOK.var_assign, TOK.inline_command}, function(token, file)
 		local ix = token.span.from
 		if token.id == TOK.var_assign then
 			this_var = token.text
@@ -1636,10 +1644,10 @@ function SemanticAnalyzer(tokens, file)
 				for _, var_decl in pairs(assigned_vars[this_var]) do var_decl.ignore = false end
 			end
 		end
-	end, function(token)
+	end, function(token, file)
 		if token.id == TOK.var_assign then this_var = nil end
 	end)
-	recurse(root, {TOK.variable, TOK.list_comp}, function(token)
+	recurse(root, {TOK.variable, TOK.list_comp}, function(token, file)
 		if token.id == TOK.list_comp then
 			local child = token.children[2]
 			local ix = child.span.from
@@ -1653,13 +1661,13 @@ function SemanticAnalyzer(tokens, file)
 		else
 			--[[minify-delete]]
 			if _G['LANGUAGE_SERVER'] then
-				INFO.warning(token.span, 'Variable is never declared')
+				INFO.warning(token.span, 'Variable is never declared', file)
 			end
 			--[[/minify-delete]]
 			--Using a variable that is never declared.
 			token.ignore = true
 		end
-	end, function(token)
+	end, function(token, file)
 		if token.id == TOK.list_comp then
 			local child = token.children[2]
 			local ix = child.span.from
@@ -1669,14 +1677,17 @@ function SemanticAnalyzer(tokens, file)
 		end
 	end)
 	--[[minify-delete]]
+	--TODO: MAKE SURE CORRECT FILE!!!
 	if _G['LANGUAGE_SERVER'] then
 		for _, decls in pairs(assigned_vars) do
 			for _, var_decl in pairs(decls) do
 				if not var_decl.is_referenced then
+					local filename = root_file
+					if var_decl.filename then filename = var_decl.filename end
 					if var_decl.text:sub(1,1) ~= '_' then
-						INFO.warning(var_decl.span, 'Variable is never used. To indicate that this is intentional, prefix with an underscore')
+						INFO.warning(var_decl.span, 'Variable is never used. To indicate that this is intentional, prefix with an underscore', filename)
 					end
-					INFO.dead_code(var_decl.span, '')
+					INFO.dead_code(var_decl.span, '', filename)
 				end
 			end
 		end
@@ -1711,19 +1722,19 @@ function SemanticAnalyzer(tokens, file)
 	--If running as language server, print type info for any variable declarations or command calls.
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then
-		recurse(root, {TOK.let_stmt, TOK.for_stmt, TOK.inline_command, TOK.subroutine}, function(token)
+		recurse(root, {TOK.let_stmt, TOK.for_stmt, TOK.inline_command, TOK.subroutine}, function(token, file)
 			local var = token.children[1]
 			if token.id == TOK.inline_command then
 				local cmd = var.children[1]
 				if cmd.value then
 					if var.id == TOK.gosub_stmt then
 						if labels[cmd.text] then
-							INFO.hint(cmd.span, 'Subroutine `'..cmd.text..'` defined on line '..labels[cmd.text].span.from.line..', col '..labels[cmd.text].span.from.col)
+							INFO.hint(cmd.span, 'Subroutine `'..cmd.text..'` defined on line '..labels[cmd.text].span.from.line..', col '..labels[cmd.text].span.from.col, file)
 							local tp = labels[cmd.text].type
 							if tp == 'null' then
-								INFO.info(cmd.span, 'Subroutine `'..cmd.text..'` always returns null, so using an inline command eval here is not helpful')
+								INFO.info(cmd.span, 'Subroutine `'..cmd.text..'` always returns null, so using an inline command eval here is not helpful', file)
 							elseif tp then
-								INFO.hint(cmd.span, 'returns: '..tp)
+								INFO.hint(cmd.span, 'returns: '..tp, file)
 							end
 						end
 					else
@@ -1735,17 +1746,17 @@ function SemanticAnalyzer(tokens, file)
 						end
 
 						if tp == 'null' then
-							INFO.info(cmd.span, 'Command `'..cmd.text..'` always returns null, so using an inline command eval here is not helpful')
+							INFO.info(cmd.span, 'Command `'..cmd.text..'` always returns null, so using an inline command eval here is not helpful', file)
 						elseif tp then
-							INFO.hint(cmd.span, 'returns: '..tp)
+							INFO.hint(cmd.span, 'returns: '..tp, file)
 						end
 					end
 				end
 			elseif token.id == TOK.subroutine then
-				if token.type then INFO.hint(token.span, 'returns: '..token.type) end
+				if token.type then INFO.hint(token.span, 'returns: '..token.type, file) end
 			else
 				while var do
-					if var.type then INFO.hint(var.span, 'type: '..var.type) end
+					if var.type then INFO.hint(var.span, 'type: '..var.type, file) end
 
 					---@diagnostic disable-next-line: cast-local-type
 					if var.children then var = var.children[1] else var = nil end
@@ -1756,7 +1767,7 @@ function SemanticAnalyzer(tokens, file)
 	--[[/minify-delete]]
 
 	--Remove the body of conditionals that will never get executed
-	recurse(root, {TOK.if_stmt, TOK.elif_stmt}, function(token)
+	recurse(root, {TOK.if_stmt, TOK.elif_stmt}, function(token, file)
 		local cond = token.children[1]
 		if cond.value ~= nil or cond.id == TOK.lit_null then
 			--Decide whether to remove "then" or "else" branch
@@ -1768,7 +1779,7 @@ function SemanticAnalyzer(tokens, file)
 			--[[minify-delete]]
 			if _G['LANGUAGE_SERVER'] then
 				if token.children[ix].id == TOK.kwd_end then return end
-				INFO.dead_code(token.children[ix].span, '')
+				INFO.dead_code(token.children[ix].span, '', file)
 			end
 			--[[/minify-delete]]
 
@@ -1781,24 +1792,24 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Remove the body of loops that will never get executed
-	recurse(root, {TOK.while_stmt}, function(token)
+	recurse(root, {TOK.while_stmt}, function(token, file)
 		local cond = token.children[1]
 		if (cond.value ~= nil or cond.id == TOK.lit_null) and not std.bool(cond.value) then
 			--[[minify-delete]]
 			if _G['LANGUAGE_SERVER'] then
-				INFO.dead_code(token.span, '')
+				INFO.dead_code(token.span, '', file)
 			end
 			--[[/minify-delete]]
 
 			token.children = { cond }
 		end
 	end)
-	recurse(root, {TOK.for_stmt}, function(token)
+	recurse(root, {TOK.for_stmt}, function(token, file)
 		local iter = token.children[2]
 		if type(iter.value) == 'table' and next(iter.value) == nil then
 			--[[minify-delete]]
 			if _G['LANGUAGE_SERVER'] then
-				INFO.dead_code(token.span, '')
+				INFO.dead_code(token.span, '', file)
 			end
 			--[[/minify-delete]]
 
@@ -1812,7 +1823,7 @@ function SemanticAnalyzer(tokens, file)
 	local sub_refs = {}
 	local top_level_subs = {}
 	local current_sub = nil
-	recurse(root, {TOK.gosub_stmt, TOK.subroutine}, function(token)
+	recurse(root, {TOK.gosub_stmt, TOK.subroutine}, function(token, file)
 		if token.id == TOK.gosub_stmt then
 			local text = token.children[1].text
 
@@ -1827,7 +1838,7 @@ function SemanticAnalyzer(tokens, file)
 		else
 			current_sub = token.text
 		end
-	end, function(token)
+	end, function(token, file)
 		if token.id == TOK.subroutine then current_sub = nil end
 	end)
 
@@ -1847,7 +1858,7 @@ function SemanticAnalyzer(tokens, file)
 	end
 
 	--BREAK and CONTINUE statements are only allowed to have up to a single CONSTANT INTEGER operand
-	recurse(root, {TOK.break_stmt, TOK.continue_stmt}, function(token)
+	recurse(root, {TOK.break_stmt, TOK.continue_stmt}, function(token, file)
 		if not token.children or #token.children == 0 then
 			token.children = {{
 				id = TOK.lit_number,
@@ -1866,7 +1877,7 @@ function SemanticAnalyzer(tokens, file)
 	end)
 
 	--Check gosub uses. Gosub IS allowed to have a single, constant value as its parameter.
-	recurse(root, {TOK.gosub_stmt}, function(token)
+	recurse(root, {TOK.gosub_stmt}, function(token, file)
 		local label
 		if token.children[1].value ~= nil or token.children[1].id == TOK.lit_null then
 			label = std.str(token.children[1].value)
@@ -1924,7 +1935,7 @@ function SemanticAnalyzer(tokens, file)
 	--Warn if subroutines are not used.
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then
-		recurse(root, {TOK.subroutine}, function(token)
+		recurse(root, {TOK.subroutine}, function(token, file)
 			if not token.is_referenced then
 				local span = {
 					from = token.span.from,
@@ -1934,14 +1945,14 @@ function SemanticAnalyzer(tokens, file)
 					}
 				}
 
-				INFO.dead_code(span, 'Subroutine `'..token.text..'` is never used.')
+				INFO.dead_code(span, 'Subroutine `'..token.text..'` is never used.', file)
 			end
 		end)
 	end
 	--[[/minify-delete]]
 
 	--Remove dead code after stop, return, continue, or break statements
-	recurse(root, {TOK.program}, function(token)
+	recurse(root, {TOK.program}, function(token, file)
 		local dead_code_span = nil
 
 		for i = 1, #token.children do
@@ -1965,7 +1976,7 @@ function SemanticAnalyzer(tokens, file)
 		--[[minify-delete]]
 		if _G['LANGUAGE_SERVER'] and dead_code_span then
 			--Warn about dead code
-			INFO.dead_code(dead_code_span, 'Dead code')
+			INFO.dead_code(dead_code_span, 'Dead code', file)
 		end
 	end)
 

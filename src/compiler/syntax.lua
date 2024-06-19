@@ -809,7 +809,7 @@ local rules = {
 		id = TOK.program,
 		onmatch = function(token)
 			--Catch possible dead ends where line endings come before any commands.
-			for _, i in ipairs({'text', 'span', 'id', 'meta_id', 'value'}) do
+			for _, i in ipairs({'text', 'span', 'id', 'meta_id', 'value', 'filename'}) do
 				token[i] = token.children[2][i]
 			end
 			token.children = token.children[2].children
@@ -886,6 +886,7 @@ local rules = {
 			token.children = kids
 		end,
 	},
+	--Invalid import statement
 	{
 		match = {{TOK.kwd_import_file}},
 		id = TOK.import_stmt,
@@ -1043,6 +1044,7 @@ function SyntaxParser(tokens, file)
 							text = text,
 							id = rule.id,
 							children = {},
+							filename = file,
 						}
 
 						if rule.keep then

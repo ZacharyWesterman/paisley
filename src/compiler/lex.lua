@@ -522,6 +522,7 @@ function Lexer(text, file)
 						text = match,
 						id = tok_type,
 						value = real_value,
+						filename = file,
 					}
 				end
 			else

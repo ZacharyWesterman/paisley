@@ -716,10 +716,12 @@ function FOLD_CONSTANTS(token, file)
 			local msg = 'Attempt to create an array of '..(stop - start + 1)..' elements (max is '..std.MAX_ARRAY_LEN..'). Array truncated.'
 			--[[minify-delete]]
 			if _G['LANGUAGE_SERVER'] then
-				INFO.warning(token.span, msg)
+				INFO.warning(token.span, msg, file)
 			else
 			--[[/minify-delete]]
-				print('WARNING: '..token.span.from.line..', '..token.span.from.col..': '..msg)
+				msg = token.span.from.line..', '..token.span.from.col..': '..msg
+				if file then msg = file .. ': ' .. msg end
+				print('WARNING: ' .. msg)
 			--[[minify-delete]]
 			end
 			--[[/minify-delete]]
