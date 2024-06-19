@@ -881,7 +881,7 @@ local rules = {
 					--If the file doesn't exist locally, try the stdlib
 					if fp == nil then
 						local fname
-						fp, fname = STDLIB(orig_filename)
+						fp, fname = _G['STDLIB'](orig_filename)
 						if fp then filename = fname end
 					end
 
