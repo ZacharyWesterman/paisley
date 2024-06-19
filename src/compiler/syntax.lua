@@ -876,6 +876,14 @@ local rules = {
 					--Make sure import points to a valid file
 					local filename = current_script_dir .. filename:gsub('%.','/') .. '.paisley'
 					local fp = io.open(filename, 'r')
+
+					--If the file doesn't exist locally, try the stdlib
+					if fp == nil then
+						local fname
+						fp, fname = STDLIB(filename)
+						if fp then filename = fname end
+					end
+
 					if fp == nil then
 						parse_error(kids[i].span, 'Cannot load "'..filename..'": file does not exist or is unreadable', file)
 					else

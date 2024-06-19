@@ -90,6 +90,13 @@ end
 local dir = script_real_path():match('(.*[/\\])')
 if dir == nil then dir = '' end
 
+function STDLIB(filename)
+	if dir == nil then return nil, filename end
+
+	local fname = dir .. 'stdlib/' .. filename
+	return io.open(fname), fname
+end
+
 local lfs_installed, lfs = pcall(require, 'lfs')
 local zlib_installed, zlib = pcall(require, 'zlib')
 
