@@ -1360,7 +1360,7 @@ function SemanticAnalyzer(tokens, root_file)
 			local t1, t2 = token.children[1].type, token.children[2].type
 			if t1 and t2 then
 				if t1 ~= 'string' and t1:sub(1,5) ~= 'array' and t1 ~= 'object' and t1 ~= 'any' then
-					parse_error(token.children[1].span, 'Cannot index a value of type `'..t1..'`. Type must be `string`,  `array`, or `object`', file)
+					parse_error(token.children[1].span, 'Cannot index a value of type `'..t1..'`. Type must be `string`, `array`, or `object`', file)
 					return
 				end
 
@@ -1970,6 +1970,7 @@ function SemanticAnalyzer(tokens, root_file)
 			--Warn about dead code
 			INFO.dead_code(dead_code_span, 'Dead code', file)
 		end
+		--[[/minify-delete]]
 	end)
 
 	if ERRORED then terminate() end

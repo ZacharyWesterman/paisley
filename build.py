@@ -3,7 +3,7 @@
 import re
 from pathlib import Path
 
-require = re.compile(r'require *[\'"]([^\'"]+)[\'"]')
+require = re.compile(r'require +[\'"]([^\'"]+)[\'"]')
 debug   = re.compile(r'--\[\[minify-delete\]\].*?--\[\[/minify-delete\]\]', re.DOTALL)
 debug2  = re.compile(r'(--\[\[build-replace=([^\]]+)\]\].*?--\[\[/build-replace\]\])', re.DOTALL)
 comment = re.compile(r'(?<![\'"-])--(\[\[([^\]]|\](?!\]))*\]\]|[^\n]*)')
