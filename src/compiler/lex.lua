@@ -196,7 +196,7 @@ function Lexer(text, file)
 				--keywords
 				if not match then
 					for key, value in pairs(kwds) do
-						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
+						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^[%w_][%w_]') then
 							match = key
 							tok_type = value
 
@@ -344,7 +344,7 @@ function Lexer(text, file)
 				--Operators
 				if not match then
 					for key, value in pairs(opers) do
-						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
+						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^[%w_][%w_]') then
 							--Look ahead to avoid ambiguity with operators
 							if not oper_block[key] or text:sub(#key + 1, #key + 1) ~= oper_block[key] then
 								match = key
@@ -357,7 +357,7 @@ function Lexer(text, file)
 
 				--Lambda operators
 				if not match then
-					match = text:match('^!+%w*')
+					match = text:match('^!+[%w_]*')
 					if match then
 						tok_type = TOK.op_exclamation
 					end
@@ -366,7 +366,7 @@ function Lexer(text, file)
 				--Named constants
 				if not match then
 					for key, value in pairs(literals) do
-						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^%w%w') then
+						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^[%w_][%w_]') then
 							match = key
 							tok_type = value
 							if match == 'true' then real_value = true
