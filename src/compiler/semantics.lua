@@ -1675,7 +1675,7 @@ function SemanticAnalyzer(tokens, root_file)
 	if _G['LANGUAGE_SERVER'] then
 		for _, decls in pairs(assigned_vars) do
 			for _, var_decl in pairs(decls) do
-				if not var_decl.is_referenced then
+				if not var_decl.is_referenced and not _G['EXPORT_LINES'][var_decl.span.from.line] then
 					local filename = root_file
 					if var_decl.filename then filename = var_decl.filename end
 					if var_decl.text:sub(1,1) ~= '_' then
@@ -1930,7 +1930,7 @@ function SemanticAnalyzer(tokens, root_file)
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then
 		recurse(root, {TOK.subroutine}, function(token, file)
-			if not token.is_referenced then
+			if not token.is_referenced and not _G['EXPORT_LINES'][token.span.from.line] then
 				local span = {
 					from = token.span.from,
 					to = {

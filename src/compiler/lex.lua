@@ -69,6 +69,11 @@ local literals = {
 	['null'] = TOK.lit_null,
 }
 
+--[[minify-delete]]
+EXPORT_LINES = {}
+EXPORT_NEXT_TOKEN = false
+--[[/minify-delete]]
+
 --[[
 Takes text and (optional)file name, and returns an iterator for getting the next token.
 Throws an error if any token error was found in the input text.
@@ -153,6 +158,10 @@ function Lexer(text, file)
 								if cmd[2] == '' or not cmd[2] then cmd[2] = 'any' end
 								ALLOWED_COMMANDS[cmd[1]] = cmd[2]
 							end
+						end
+					elseif _G['LANGUAGE_SERVER'] then
+						for i in text:upper():gmatch('@[%w_]+') do
+							if i == '@EXPORT' then EXPORT_NEXT_TOKEN = true end
 						end
 					end
 					--[[/minify-delete]]
@@ -530,6 +539,13 @@ function Lexer(text, file)
 				col = col + #match
 				text = text:sub(#match+1, #text)
 				if not tok_ignore then
+					--[[minify-delete]]
+					if EXPORT_NEXT_TOKEN then
+						EXPORT_LINES[line] = true
+						EXPORT_NEXT_TOKEN = false
+					end
+					--[[/minify-delete]]
+
 					---@type Token
 					return {
 						span = Span:new(line, col - #match - 1, line, col - 1),
