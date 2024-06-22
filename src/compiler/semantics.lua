@@ -998,7 +998,7 @@ function SemanticAnalyzer(tokens, root_file)
 	--Resolve all lambda references
 	local lambdas = {}
 	local tok_level = 0
-	local pop_scope = function(token, file)
+	local pop_scope = function(token, file, no_decrement)
 		if token.id == TOK.lambda then
 			if not lambdas[token.text] then lambdas[token.text] = {} end
 			table.insert(lambdas[token.text], {
@@ -1030,16 +1030,16 @@ function SemanticAnalyzer(tokens, root_file)
 				end
 			end
 
-			tok_level = tok_level - 1
+			if not no_decrement then tok_level = tok_level - 1 end
 		end
 	end
 	recurse(root, {TOK.lambda, TOK.lambda_ref, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.subroutine, TOK.else_stmt, TOK.elif_stmt}, function(token, file)
 		if token.id ~= TOK.lambda and token.id ~= TOK.lambda_ref then
-			tok_level = tok_level + 1
 			if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
-				pop_scope(token)
+				pop_scope(token, file, true)
 			end
 			--Make sure lambdas are only referenced in the appropriate scope, never outside the scope they're defined.
+			tok_level = tok_level + 1
 		end
 	end, pop_scope)
 
