@@ -142,6 +142,20 @@ function Lexer(text, file)
 				if not match then
 					match = text:match('^#[^\n]*')
 					if match then tok_ignore = true end
+
+					--[[minify-delete]]
+					--Some comments can give hints about what commands exist, and suppress "unknown command" errors
+					if text:upper():match('^#+[ \t]*@COMMANDS[^%w_]') then
+						local msg = text:match('^#+[ \t]*@COMMANDS[^%w_]([^\n]*)')
+						for i in msg:gmatch('[%w_:]+') do
+							local cmd = std.split(i, ':')
+							if cmd[1] ~= '' then
+								if cmd[2] == '' or not cmd[2] then cmd[2] = 'any' end
+								ALLOWED_COMMANDS[cmd[1]] = cmd[2]
+							end
+						end
+					end
+					--[[/minify-delete]]
 				end
 
 				--string start
