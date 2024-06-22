@@ -1008,18 +1008,18 @@ function SemanticAnalyzer(tokens, root_file)
 		elseif token.id == TOK.lambda_ref then
 			if not lambdas[token.text] then
 				parse_error(token.span, 'Lambda "'..token.text..'" is not defined in the current scope', file)
+				-- print_tokens_recursive(root)
+				error()
+			else
+				--Lambda is defined, so replace it with the appropriate node
+				local lambda_node = lambdas[token.text][#lambdas[token.text]].node
+				for _, i in ipairs({'text', 'span', 'id', 'value', 'type'}) do
+					token[i] = lambda_node[i]
+				end
+				token.children = lambda_node.children
 			end
-
-			--Lambda is defined, so replace it with the appropriate node
-			local lambda_node = lambdas[token.text][#lambdas[token.text]].node
-			for _, i in ipairs({'text', 'span', 'id', 'value', 'type'}) do
-				token[i] = lambda_node[i]
-			end
-			token.children = lambda_node.children
 		else
-			tok_level = tok_level - 1
 			--Make sure lambdas are only referenced in the appropriate scope, never outside the scope they're defined.
-			local i
 			for i in pairs(lambdas) do
 				while lambdas[i][#lambdas[i]].level > tok_level do
 					table.remove(lambdas[i])
@@ -1029,15 +1029,17 @@ function SemanticAnalyzer(tokens, root_file)
 					end
 				end
 			end
+
+			tok_level = tok_level - 1
 		end
 	end
 	recurse(root, {TOK.lambda, TOK.lambda_ref, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.subroutine, TOK.else_stmt, TOK.elif_stmt}, function(token, file)
 		if token.id ~= TOK.lambda and token.id ~= TOK.lambda_ref then
+			tok_level = tok_level + 1
 			if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
 				pop_scope(token)
 			end
 			--Make sure lambdas are only referenced in the appropriate scope, never outside the scope they're defined.
-			tok_level = tok_level + 1
 		end
 	end, pop_scope)
 
