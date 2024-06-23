@@ -97,6 +97,12 @@ FUNC_OPERATIONS = {
 		return target
 	end,
 	clamp = function(value, min, max) return math.min(max, math.max(min, value)) end,
+	smoothstep = function(value, min, max)
+		local range = max - min
+		value = (math.min(math.max(min, value), max) - min) / range
+		value = value * value * (3.0 - 2.0 * value)
+		return value * range + min
+	end,
 	lerp = function(x, a, b) return a + x * (b - a) end,
 	-- pow = function(a, b) return a ^ b end,
 	bool = function(data) return std.bool(data) end,

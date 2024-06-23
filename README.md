@@ -310,6 +310,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Minimum of N values: `min(a,b,c,...) or min(array) -> number`
 - Maximum of N values: `max(a,b,c,...) or max(array) -> number`
 - Keep value inside range: `clamp(number, min_value, max_value) -> number`
+- Smoothly transition from 0 to 1 in a given range: `smoothstep(number, min_value, max_value) -> number`
 - Linear interpolation of two numbers: `lerp(ratio, start, stop) -> number`
 - Split string into array: `split(value, delimiter) -> array`. Note that unlike in Lua, the delimiter is just a string, not a pattern.
 - Merge array into string: `join(values, delimiter) -> string`

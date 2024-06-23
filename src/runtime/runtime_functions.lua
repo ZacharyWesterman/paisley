@@ -947,6 +947,17 @@ local functions = {
 
 		PUSH(flatten(POP()))
 	end,
+
+	--SMOOTHSTEP
+	function()
+		local v = POP()
+		local value, min, max = std.num(v[1]), std.num(v[2]), std.num(v[3])
+
+		local range = max - min
+		value = (math.min(math.max(min, value), max) - min) / range
+		value = value * value * (3.0 - 2.0 * value)
+		PUSH(value * range + min)
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT

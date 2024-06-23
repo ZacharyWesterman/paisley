@@ -17,6 +17,7 @@ BUILTIN_FUNCS = {
 	min = -1,
 	max = -1,
 	clamp = 3, --clamp(a, b, x) = min(b, max(a, x))
+	smoothstep = 3,
 	lerp = 3, --lerp(a, b, x) = a + x*(b - a) : 0 <= x <= 1
 	split = 2,
 	join = 2,
@@ -230,6 +231,14 @@ TYPESIG = {
 		--[[minify-delete]]
 		params = {'value', 'min', 'max'},
 		description = 'Keep a value inside the given range',
+		--[[/minify-delete]]
+	},
+	smoothstep = {
+		valid = {{'number'}},
+		out = 'number',
+		--[[minify-delete]]
+		params = {'value', 'min', 'max'},
+		description = 'Smoothly transition from 0 to 1 in a given range',
 		--[[/minify-delete]]
 	},
 	lerp = {
