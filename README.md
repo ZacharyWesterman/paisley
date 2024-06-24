@@ -65,12 +65,19 @@ while {expression is true-ish} do
 	...
 end
 
-for variable in {expression} do
+for value in {expression} do
+	...
+end
+
+for key value in {pairs(object or array)} do
 	...
 end
 ```
-Note that these are the only loop structures possible.
+These are the only loop structures possible.
+Note that the middle loop type will iterate over all *values* in an array, and all *keys* in an object!
+
 If you want syntax similar to Lua's integer for loops (`for i = 1, 10 do ... end`), you can use something like `for i in {1:10} do ... end`.
+If you want an infinite loop, just use something like `while 1 do ... end` or `while {true} do ... end`.
 
 ## Variable Assignment:
 Variable assignment always starts with `let`, e.g.

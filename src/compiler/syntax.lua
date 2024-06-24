@@ -540,6 +540,26 @@ local rules = {
 		keep = {2, 4},
 		text = 1,
 	},
+	--Key/Value for loop
+	{
+		match = {{TOK.kwd_for}, {TOK.text}, {TOK.text}, {TOK.kwd_in}, {TOK.command, TOK.comparison}, {TOK.kwd_do}, {TOK.command, TOK.program, TOK.statement}, {TOK.kwd_end}},
+		id = TOK.kv_for_stmt,
+		keep = {2, 3, 5, 7},
+		text = 1,
+	},
+	{
+		match = {{TOK.kwd_for}, {TOK.text}, {TOK.text}, {TOK.kwd_in}, {TOK.command, TOK.comparison}, {TOK.kwd_do}, {TOK.kwd_end}},
+		id = TOK.kv_for_stmt,
+		keep = {2, 3, 5},
+		text = 1,
+	},
+	{
+		match = {{TOK.kwd_for}, {TOK.text}, {TOK.text}, {TOK.kwd_in}, {TOK.command, TOK.comparison}, {TOK.kwd_do}, {TOK.line_ending}, {TOK.kwd_end}},
+		id = TOK.kv_for_stmt,
+		keep = {2, 3, 5},
+		text = 1,
+	},
+
 	--Invalid for loops
 	{
 		match = {{TOK.kwd_for}, {TOK.text}, {TOK.kwd_in}, {TOK.command, TOK.comparison}},
@@ -782,7 +802,7 @@ local rules = {
 
 	--Statements
 	{
-		match = {{TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, TOK.import_stmt}},
+		match = {{TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, TOK.import_stmt}},
 		id = TOK.statement,
 		meta = true,
 	},

@@ -631,6 +631,43 @@ function generate_bytecode(root, file)
 			table.remove(loop_begn_labels)
 		end,
 
+		--KEY-VALUE FOR LOOPS
+		[TOK.kv_for_stmt] = function(token, file)
+			local loop_beg_label = label_id()
+			local loop_end_label = label_id()
+
+			--Loop setup
+			emit(bc.push, nil)
+			codegen_rules.recur_push(token.children[3])
+
+			--SMALL OPTIMIZATION:
+			--If previously emitted token was an "implode" and then we're "exploding"
+			--Just remove the previous token!
+			if instructions[#instructions][4] == call_codes.implode then
+				table.remove(instructions)
+			else
+				emit(bc.call, 'explode')
+			end
+			emit(bc.label, loop_beg_label)
+			emit(bc.call, 'explode')
+			table.insert(loop_term_labels, loop_end_label)
+			table.insert(loop_begn_labels, loop_beg_label)
+
+			--Run loop
+			emit(bc.call, 'jumpifnil', loop_end_label)
+			emit(bc.set, token.children[1].text)
+			emit(bc.set, token.children[2].text)
+
+			if token.children[4] then enter(token.children[4]) end
+
+			--End of loop
+			emit(bc.call, 'jump', loop_beg_label)
+			emit(bc.label, loop_end_label)
+			emit(bc.pop)
+			table.remove(loop_term_labels)
+			table.remove(loop_begn_labels)
+		end,
+
 		--WHILE LOOPS
 		[TOK.while_stmt] = function(token, file)
 			local loop_beg_label = label_id()

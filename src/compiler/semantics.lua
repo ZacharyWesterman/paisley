@@ -794,7 +794,7 @@ function SemanticAnalyzer(tokens, root_file)
 		--[[/minify-delete]]
 
 		local tok_level = 0
-		recurse(root, {TOK.subroutine, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.if_stmt, TOK.for_stmt, TOK.while_stmt}, function(token, file)
+		recurse(root, {TOK.subroutine, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.if_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.while_stmt}, function(token, file)
 			--[[minify-delete]]
 			if token.id == TOK.import_stmt then
 				found_import = true
@@ -1042,7 +1042,7 @@ function SemanticAnalyzer(tokens, root_file)
 			if not no_decrement then tok_level = tok_level - 1 end
 		end
 	end
-	recurse(root, {TOK.lambda, TOK.lambda_ref, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.subroutine, TOK.else_stmt, TOK.elif_stmt}, function(token, file)
+	recurse(root, {TOK.lambda, TOK.lambda_ref, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.subroutine, TOK.else_stmt, TOK.elif_stmt}, function(token, file)
 		if token.id ~= TOK.lambda and token.id ~= TOK.lambda_ref then
 			if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
 				pop_scope(token, file, true)
@@ -1273,6 +1273,54 @@ function SemanticAnalyzer(tokens, root_file)
 		end
 	end)
 
+	--Make sure key-value for loops always have some mutation of `pairs()` in the expression.
+	recurse(root, {TOK.kv_for_stmt}, function(token, file)
+		local node = token.children[3]
+
+		if not node.children or #node.children ~= 1 then
+			parse_error(node.span, 'Key-value for loop must be a single `pairs()` expression', file)
+		else
+			if node.id == TOK.command then
+				node = node.children[1]
+				token.children[3] = node
+			end
+
+			local expr_error = false
+			local n = node
+			while true do
+				if n.id ~= TOK.func_call then
+					expr_error = true
+					break
+				end
+
+				if n.text == 'pairs' then break end
+
+				if n.text ~= 'sort' and n.text ~= 'reverse' then
+					expr_error = true
+					break
+				end
+
+				--This would mean an incorrect amount of params, which will be caught later
+				if not n.children or #n.children == 0 then break end
+
+				n = n.children[1]
+			end
+
+			if expr_error then
+				parse_error(node.span, 'Expression in key-value for loop must contain `pairs()`', file)
+			end
+		end
+
+		--Don't automatically set var type to "string", let it deduce.
+		for i = 1, 2 do
+			if token.children[i].id == TOK.text then
+				token.children[i].id = TOK.var_assign
+				token.children[i].value = nil
+				token.children[i].type = nil
+			end
+		end
+	end)
+
 	--[[
 		TYPE ANNOTATIONS
 	]]
@@ -1498,38 +1546,44 @@ function SemanticAnalyzer(tokens, root_file)
 	end
 
 	local function variable_assignment(token)
-		if token.id == TOK.for_stmt then
-			local var = token.children[1]
-			local ch = token.children[2]
+		if token.id == TOK.for_stmt or token.id == TOK.kv_for_stmt then
+			local vars = 1
+			if token.id == TOK.kv_for_stmt then vars = 2 end
 
-			if var.type then return end
+			for i = 1, vars do
+				local var = token.children[i]
+				local ch = token.children[vars + 1]
 
-			--Expression to iterate over is constant
-			if ch.value ~= nil or ch.id == TOK.lit_null then
-				local tp
+				if not var.type then
+					--Expression to iterate over is constant
+					if ch.value ~= nil or ch.id == TOK.lit_null then
+						local tp
 
-				if type(ch.value) == 'table' then
-					for _, val in pairs(ch.value) do
-						local _tp = std.deep_type(val)
-						if tp == nil then tp = _tp
-						elseif tp ~= _tp then
-							--Type will change, so it can't be reduced to a constant state.
-							--Maybe change this later?
-							tp = nil
-							break
+						if type(ch.value) == 'table' then
+							for _, val in pairs(ch.value) do
+								local _tp = std.deep_type(val)
+								if tp == nil then tp = _tp
+								elseif tp ~= _tp then
+									--Type will change, so it can't be reduced to a constant state.
+									--Maybe change this later?
+									tp = nil
+									break
+								end
+							end
+						else
+							tp = std.deep_type(ch.value)
+						end
+
+						--If loop variable has a consistent type, then we know for sure what it will be.
+						if tp ~= nil then
+							push_var(var, tp)
+							var.type = tp
+							deduced_variable_types = true
 						end
 					end
-				else
-					tp = std.deep_type(ch.value)
-				end
-
-				--If loop variable has a consistent type, then we know for sure what it will be.
-				if tp ~= nil then
-					push_var(var, tp)
-					var.type = tp
-					deduced_variable_types = true
 				end
 			end
+
 		end
 	end
 

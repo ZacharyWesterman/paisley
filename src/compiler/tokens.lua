@@ -116,6 +116,7 @@ TOK = {
 	elif_stmt = k(),
 	while_stmt = k(),
 	for_stmt = k(),
+	kv_for_stmt = k(),
 	delete_stmt = k(),
 	subroutine = k(),
 	gosub_stmt = k(),
