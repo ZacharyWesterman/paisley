@@ -1546,44 +1546,38 @@ function SemanticAnalyzer(tokens, root_file)
 	end
 
 	local function variable_assignment(token)
-		if token.id == TOK.for_stmt or token.id == TOK.kv_for_stmt then
-			local vars = 1
-			if token.id == TOK.kv_for_stmt then vars = 2 end
+		if token.id == TOK.for_stmt then
+			local var = token.children[1]
+			local ch = token.children[2]
 
-			for i = 1, vars do
-				local var = token.children[i]
-				local ch = token.children[vars + 1]
+			if not var.type then
+				--Expression to iterate over is constant
+				if ch.value ~= nil or ch.id == TOK.lit_null then
+					local tp
 
-				if not var.type then
-					--Expression to iterate over is constant
-					if ch.value ~= nil or ch.id == TOK.lit_null then
-						local tp
-
-						if type(ch.value) == 'table' then
-							for _, val in pairs(ch.value) do
-								local _tp = std.deep_type(val)
-								if tp == nil then tp = _tp
-								elseif tp ~= _tp then
-									--Type will change, so it can't be reduced to a constant state.
-									--Maybe change this later?
-									tp = nil
-									break
-								end
+					if type(ch.value) == 'table' then
+						for _, val in pairs(ch.value) do
+							local _tp = std.deep_type(val)
+							if tp == nil then tp = _tp
+							elseif tp ~= _tp then
+								--Type will change, so it can't be reduced to a constant state.
+								--Maybe change this later?
+								tp = nil
+								break
 							end
-						else
-							tp = std.deep_type(ch.value)
 						end
+					else
+						tp = std.deep_type(ch.value)
+					end
 
-						--If loop variable has a consistent type, then we know for sure what it will be.
-						if tp ~= nil then
-							push_var(var, tp)
-							var.type = tp
-							deduced_variable_types = true
-						end
+					--If loop variable has a consistent type, then we know for sure what it will be.
+					if tp ~= nil then
+						push_var(var, tp)
+						var.type = tp
+						deduced_variable_types = true
 					end
 				end
 			end
-
 		end
 	end
 
@@ -1602,6 +1596,47 @@ function SemanticAnalyzer(tokens, root_file)
 			if ch.type and ch.type:sub(1,5) == 'array' and ch.type:sub(6,6) == '[' then
 				token.children[1].type = ch.type:sub(7, #ch.type - 1)
 			end
+		elseif token.id == TOK.kv_for_stmt then
+			local key, value, expr = token.children[1], token.children[2], token.children[3]
+
+			for _, i in ipairs({key.text, value.text}) do
+				if variables[i] then
+					if #variables[i] == 1 then
+						variables[i] = nil
+					else
+						table.remove(variables)
+					end
+				end
+			end
+
+			if not key.type then
+				local found_pairs = false
+				while expr do
+					if found_pairs then
+						if expr.type then
+							value.type = 'any'
+							if expr.type == 'object' then
+								key.type = 'string'
+							elseif expr.type:sub(1,5) == 'array' then
+								key.type = 'number'
+								if expr.type:sub(6,6) == '[' then
+									value.type = expr.type:sub(7, #expr.type - 1)
+								end
+							end
+						end
+						break
+					end
+
+					if expr.id ~= TOK.func_call or (expr.text ~= 'pairs' and expr.text ~= 'reverse' and expr.text ~= 'sort') then
+						break
+					end
+
+					if expr.text == 'pairs' then found_pairs = true end
+
+					expr = expr.children[1]
+				end
+			end
+
 		elseif token.id == TOK.let_stmt then
 			local var = token.children[1]
 			local ch = token.children[2]
@@ -1766,7 +1801,7 @@ function SemanticAnalyzer(tokens, root_file)
 		if not ERRORED then recurse(root, {TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary, TOK.list_comp, TOK.object, TOK.key_value_pair}, nil, FOLD_CONSTANTS) end
 
 		--Set any variables we can
-		if not ERRORED then recurse(root, {TOK.for_stmt, TOK.let_stmt, TOK.variable}, variable_assignment, variable_unassignment) end
+		if not ERRORED then recurse(root, {TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.variable}, variable_assignment, variable_unassignment) end
 
 		if ERRORED then break end
 	end
@@ -1779,7 +1814,7 @@ function SemanticAnalyzer(tokens, root_file)
 	--If running as language server, print type info for any variable declarations or command calls.
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then
-		recurse(root, {TOK.let_stmt, TOK.for_stmt, TOK.inline_command, TOK.subroutine}, function(token, file)
+		recurse(root, {TOK.let_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.inline_command, TOK.subroutine}, function(token, file)
 			local var = token.children[1]
 			if token.id == TOK.inline_command then
 				local cmd = var.children[1]
@@ -1811,6 +1846,10 @@ function SemanticAnalyzer(tokens, root_file)
 				end
 			elseif token.id == TOK.subroutine then
 				if token.type then INFO.hint(token.span, 'returns: '..token.type, file) end
+			elseif token.id == TOK.kv_for_stmt then
+				if var.type then INFO.hint(var.span, 'type: '..var.type, file) end
+				var = token.children[2]
+				if var.type then INFO.hint(var.span, 'type: '..var.type, file) end
 			else
 				while var do
 					if var.type then INFO.hint(var.span, 'type: '..var.type, file) end
