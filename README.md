@@ -324,7 +324,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Count the number of occurrences a value in an array or string: `count(array/string, value) -> number`
 - Find the index of the nth occurrence of a value in an array or string: `find(array/string, value, n) -> number`. Returns 0 if not found.
 - Find the index of the first occurrence of a value in an array or string: `index(array/string, value) -> number`. Returns 0 if not found.
-- Get data type: `type(value) -> string`. Output will be one of "null", "boolean", "number", "string", or "array"
+- Get data type: `type(value) -> string`. Output will be one of "null", "boolean", "number", "string", "array", or "object"
 - Convert to boolean: `bool(value)`
 - Convert to number: `num(value)`
 - Convert to integer: `int(value)`
