@@ -308,7 +308,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Select a random element from a list: `random_element(array) -> any`
 - Difference between two strings: `word_diff(str1, str2) -> number` (levenshtein distance)
 - Euclidean distance (numbers or vectors of N dimension): `dist(point1, point2) -> number`
-- Trig functions: `sin(x), cos(x), tan(x), asin(x), acos(x), atan(x), atan2(x, y) -> number`
+- Trig functions: `sin(x), cos(x), tan(x), asin(x), acos(x), atan(x), atan2(x, y), sinh(x), cosh(x), tanh(x) -> number`
 - Square root: `sqrt(x) -> number`
 - Split a number into bytes: `bytes(number, count) -> array`
 - Convert a list of bytes into a number: `frombytes(array) -> number`

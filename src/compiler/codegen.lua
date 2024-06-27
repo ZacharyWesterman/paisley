@@ -117,6 +117,9 @@ local call_codes = {
 	find = 98,
 	flatten = 99,
 	smoothstep = 100,
+	sinh = 101,
+	cosh = 102,
+	tanh = 103,
 }
 
 local function bc_get_key(code, lookup)

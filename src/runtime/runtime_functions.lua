@@ -958,6 +958,11 @@ local functions = {
 		value = value * value * (3.0 - 2.0 * value)
 		PUSH(value * range + min)
 	end,
+
+	--HYPERBOLIC TRIG FUNCTIONS
+	mathfunc('sinh'),
+	mathfunc('cosh'),
+	mathfunc('tanh'),
 }
 
 --[[ INSTRUCTION LAYOUT
