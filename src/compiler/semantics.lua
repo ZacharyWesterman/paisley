@@ -77,6 +77,7 @@ BUILTIN_FUNCS = {
 	sinh = 1,
 	cosh = 1,
 	tanh = 1,
+	sign = 1,
 }
 
 TYPESIG = {
@@ -691,6 +692,14 @@ TYPESIG = {
 		--[[minify-delete]]
 		params = {'x'},
 		description = 'Hyperbolic tangent',
+		--[[/minify-delete]]
+	},
+	sign = {
+		valid = {{'number'}},
+		out = 'number',
+		--[[minify-delete]]
+		params = {'x'},
+		description = 'Sign of a number: -1 if negative, 0 if zero, 1 if positive',
 		--[[/minify-delete]]
 	},
 

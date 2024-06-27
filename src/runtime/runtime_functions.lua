@@ -963,6 +963,9 @@ local functions = {
 	mathfunc('sinh'),
 	mathfunc('cosh'),
 	mathfunc('tanh'),
+
+	--SIGN OF A NUMBER
+	function() PUSH(std.sign(std.num(POP()[1]))) end,
 }
 
 --[[ INSTRUCTION LAYOUT

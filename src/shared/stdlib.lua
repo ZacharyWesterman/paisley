@@ -455,5 +455,12 @@ std = {
 		return #list1 >= #list2
 	end,
 
+	---Get the sign of a number. Returns -1 if a number is negative, 0 if zero, or 1 if positive.
+	---@param number number
+	---@return number
+	sign = function(number)
+		return number / math.abs(number)
+	end,
+
 	MAX_ARRAY_LEN = 32768, --Any larger than this and performance tanks
 }
