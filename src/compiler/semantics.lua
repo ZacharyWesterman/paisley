@@ -946,8 +946,6 @@ function SemanticAnalyzer(tokens, root_file)
 			return
 		end
 
-		print_tokens_recursive(token)
-
 		token.children = token.children[1].children
 		local val = tonumber(token.children[1].text, 10)
 		if #token.children > 1 or val == nil or val < 1 then
@@ -1074,8 +1072,6 @@ function SemanticAnalyzer(tokens, root_file)
 		elseif token.id == TOK.lambda_ref then
 			if not lambdas[token.text] then
 				parse_error(token.span, 'Lambda "'..token.text..'" is not defined in the current scope', file)
-				-- print_tokens_recursive(root)
-				error()
 			else
 				--Lambda is defined, so replace it with the appropriate node
 				local lambda_node = lambdas[token.text][#lambdas[token.text]].node
