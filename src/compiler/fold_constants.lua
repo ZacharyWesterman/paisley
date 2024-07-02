@@ -351,6 +351,8 @@ FUNC_OPERATIONS = {
 		end
 		return result
 	end,
+
+	sign = std.sign,
 }
 
 local function number_op(v1, v2, operator)

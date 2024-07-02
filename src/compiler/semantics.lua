@@ -74,6 +74,10 @@ BUILTIN_FUNCS = {
 	count = 2,
 	find = 3,
 	flatten = 1,
+	sinh = 1,
+	cosh = 1,
+	tanh = 1,
+	sign = 1,
 }
 
 TYPESIG = {
@@ -664,6 +668,38 @@ TYPESIG = {
 		--[[minify-delete]]
 		params = {'list'},
 		description = 'Flatten an array of any dimension into a 1D array',
+		--[[/minify-delete]]
+	},
+	sinh = {
+		valid = {{'number'}},
+		out = 'number',
+		--[[minify-delete]]
+		params = {'x'},
+		description = 'Hyperbolic sine',
+		--[[/minify-delete]]
+	},
+	cosh = {
+		valid = {{'number'}},
+		out = 'number',
+		--[[minify-delete]]
+		params = {'x'},
+		description = 'Hyperbolic cosine',
+		--[[/minify-delete]]
+	},
+	tanh = {
+		valid = {{'number'}},
+		out = 'number',
+		--[[minify-delete]]
+		params = {'x'},
+		description = 'Hyperbolic tangent',
+		--[[/minify-delete]]
+	},
+	sign = {
+		valid = {{'number'}},
+		out = 'number',
+		--[[minify-delete]]
+		params = {'x'},
+		description = 'Sign of a number: -1 if negative, 0 if zero, 1 if positive',
 		--[[/minify-delete]]
 	},
 
