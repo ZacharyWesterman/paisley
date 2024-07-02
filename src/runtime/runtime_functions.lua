@@ -248,10 +248,16 @@ local functions = {
 	end,
 
 	--BOOLEAN AND
-	function() PUSH(std.bool(POP()) and std.bool(POP())) end,
+	function()
+		local a, b = std.bool(POP()), std.bool(POP())
+		PUSH(a and b)
+	end,
 
 	--BOOLEAN OR
-	function() PUSH(std.bool(POP()) or std.bool(POP())) end,
+	function()
+		local a, b = std.bool(POP()), std.bool(POP())
+		PUSH(a or b)
+	end,
 
 	--BOOLEAN XOR
 	function()

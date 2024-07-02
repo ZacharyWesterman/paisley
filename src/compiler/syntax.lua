@@ -282,8 +282,8 @@ local rules = {
 		id = TOK.boolean,
 		keep = {1, 3},
 		text = 2,
-		not_after = {TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod},
-		not_before = {TOK.index_open},
+		not_after = {TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le},
+		not_before = {TOK.index_open, TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le},
 	},
 	{
 		match = {{TOK.array_concat, TOK.boolean, TOK.comparison}, {TOK.op_in}, {TOK.array_concat, TOK.boolean, TOK.comparison}},
