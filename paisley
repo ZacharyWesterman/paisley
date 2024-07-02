@@ -477,7 +477,9 @@ if not ENDED and not LANGUAGE_SERVER and bytecode ~= nil then
 			ENDED = true --program successfully completed
 		elseif port == 4 then
 			--delay execution for an amount of time
-			os.execute('sleep ' .. value)
+			local exit_code = os.execute('sleep ' .. value)
+			if exit_code ~= 0 then ENDED = true end
+
 			V5 = nil
 		elseif port == 5 then
 			--get current time (seconds since midnight)
