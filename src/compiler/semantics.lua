@@ -934,6 +934,27 @@ function SemanticAnalyzer(tokens, root_file)
 		token.children = kids
 	end)
 
+	--BREAK and CONTINUE statements are only allowed to have up to a single CONSTANT INTEGER operand
+	recurse(root, {TOK.break_stmt, TOK.continue_stmt}, function(token, file)
+		if not token.children or #token.children == 0 then
+			token.children = {{
+				id = TOK.lit_number,
+				text = '1',
+				value = 1,
+				span = token.span,
+			}}
+			return
+		end
+
+		print_tokens_recursive(token)
+
+		token.children = token.children[1].children
+		local val = tonumber(token.children[1].text, 10)
+		if #token.children > 1 or val == nil or val < 1 then
+			parse_error(token.span, 'Only a constant positive integer is allowed as a parameter for "'..token.text..'"', file)
+		end
+	end)
+
 	--Make sure "delete" statements only have text params. deleting expressions that resolve to variable names is a recipe for disaster.
 	recurse(root, {TOK.delete_stmt}, function(token, file)
 		---@type Token[]
@@ -1949,6 +1970,25 @@ function SemanticAnalyzer(tokens, root_file)
 		end
 	end)
 
+	--Make sure BREAK and CONTINUE statements can actually break out of the number of specified loops
+	local loop_depth = 0
+	recurse(root, {TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.break_stmt, TOK.continue_stmt}, function(token, file)
+		if token.id == TOK.break_stmt or token.id == TOK.continue_stmt then
+			local loop_out = token.children[1].value
+			if loop_out > loop_depth then
+				local phrase, plural, amt = 'break out', '', 'only '..loop_depth
+				if token.id == TOK.continue_stmt then phrase = 'skip iteration' end
+				if loop_out ~= 1 then plural = 's' end
+				if loop_depth == 0 then amt = 'none' end
+				parse_error(token.span, 'Unable to '..phrase..' of '..loop_out..' loop'..plural..', '..amt..' found at this scope', file)
+			end
+		end
+
+		loop_depth = loop_depth + 1
+	end, function(token, file)
+		loop_depth = loop_depth - 1
+	end)
+
 	--Check if subroutines are even used
 	--We also keep track of what subroutines each subroutine references.
 	--This lets us remove recursive subroutines, or subs that reference each other
@@ -1988,25 +2028,6 @@ function SemanticAnalyzer(tokens, root_file)
 	for label, _ in pairs(top_level_subs) do
 		if sub_refs[label] then trace_subs(label, sub_refs[label], label) end
 	end
-
-	--BREAK and CONTINUE statements are only allowed to have up to a single CONSTANT INTEGER operand
-	recurse(root, {TOK.break_stmt, TOK.continue_stmt}, function(token, file)
-		if not token.children or #token.children == 0 then
-			token.children = {{
-				id = TOK.lit_number,
-				text = '1',
-				value = 1,
-				span = token.span,
-			}}
-			return
-		end
-
-		token.children = token.children[1].children
-		local val = token.children[1].value
-		if #token.children > 1 or math.type(val) ~= 'integer' or val < 1 then
-			parse_error(token.span, 'Only a constant positive integer is allowed as a parameter for "'..token.text..'"', file)
-		end
-	end)
 
 	--Check gosub uses. Gosub IS allowed to have a single, constant value as its parameter.
 	recurse(root, {TOK.gosub_stmt}, function(token, file)

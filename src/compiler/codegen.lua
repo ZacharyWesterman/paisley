@@ -687,11 +687,14 @@ function generate_bytecode(root, file)
 			emit(bc.label, loop_beg_label)
 			table.insert(loop_term_labels, loop_end_label)
 			table.insert(loop_begn_labels, loop_beg_label)
-			codegen_rules.recur_push(token.children[1])
 
-			--Run loop
-			emit(bc.call, 'jumpiffalse', loop_end_label)
-			emit(bc.pop)
+			--If loop conditional is known to be truey, don't even compare it at run-time.
+			if not const or not val then
+				--Loop conditional
+				codegen_rules.recur_push(token.children[1])
+				emit(bc.call, 'jumpiffalse', loop_end_label)
+				emit(bc.pop)
+			end
 
 			if #token.children >= 2 then
 				enter(token.children[2])
@@ -701,6 +704,8 @@ function generate_bytecode(root, file)
 			emit(bc.call, 'jump', loop_beg_label)
 			emit(bc.label, loop_end_label)
 			emit(bc.pop)
+			table.remove(loop_term_labels)
+			table.remove(loop_begn_labels)
 		end,
 
 		--LIST COMPREHENSION
@@ -777,31 +782,11 @@ function generate_bytecode(root, file)
 
 		--BREAK STATEMENT
 		[TOK.break_stmt] = function(token, file)
-			if #loop_term_labels == 0 then
-				parse_error(token.span, 'Break statements are meaningless outside of a loop', file)
-			end
-
-			if #loop_term_labels < token.children[1].value then
-				local word = 'loop'
-				if #loop_term_labels ~= 1 then word = 'loops' end
-				parse_error(token.span, 'Unable to break out of '..token.children[1].value..' loops, only '..#loop_term_labels..' '..word..' found', file)
-			end
-
 			emit(bc.call, 'jump', loop_term_labels[#loop_term_labels - token.children[1].value + 1])
 		end,
 
 		--CONTINUE STATEMENT
 		[TOK.continue_stmt] = function(token, file)
-			if #loop_begn_labels == 0 then
-				parse_error(token.span, 'Continue statements are meaningless outside of a loop', file)
-			end
-
-			if #loop_begn_labels < token.children[1].value then
-				local word = 'loop'
-				if #loop_begn_labels ~= 1 then word = 'loops' end
-				parse_error(token.span, 'Unable to skip iteration of '..token.children[1].value..' loops, only '..#loop_begn_labels..' '..word..' found', file)
-			end
-
 			emit(bc.call, 'jump', loop_begn_labels[#loop_begn_labels - token.children[1].value + 1])
 		end,
 
