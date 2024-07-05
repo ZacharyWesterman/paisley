@@ -690,28 +690,61 @@ local functions = {
 	--UPDATE ELEMENT IN ARRAY
 	function()
 		local v = POP()
-		if type(v[1]) ~= 'table' then v[1] = {v[1]} end
-
-		local meta = getmetatable(v[1])
-		if meta and not meta.is_array then
-			local n = std.str(v[2])
-			v[1][n] = v[3]
-		else
-			local n = std.num(v[2])
-
-			--If index is negative, update starting at the end
-			if n < 0 then n = #v[1] + n + 1 end
-
-			if n > 0 then
-				--Update the value if non-negative (this can also increase array lengths)
-				v[1][n] = v[3]
-			else
-				--Insert at beginning if index is less than 1
-				table.insert(v[1], 1, v[3])
-			end
+		local object, indices, value, is_string = v[1], v[2], v[3], false
+	
+		--Only valid for arrays, objects, or strings
+		if type(object) == 'string' then
+			is_string = true
+			object = std.split(object, '')
+		elseif type(object) ~= 'table' then
+			PUSH(object)
+			return
 		end
 
-		PUSH(v[1])
+		if type(indices) ~= 'table' then indices = {indices} end
+		if #indices == 0 then
+			PUSH(object)
+			return
+		end
+
+		--Narrow down to sub-object
+		local sub_object = object
+		for i = 1, #indices - 1 do
+			local ix, tp = indices[i], std.type(sub_object)
+			if tp == 'object' then ix = std.str(ix)
+			elseif tp ~= 'array' then
+				PUSH(object)
+				return
+			else
+				ix = std.num(ix)
+				if ix < 0 then ix = #sub_object + ix + 1 end
+			end
+
+			if sub_object[ix] == nil then
+				--We can only set the bottom-level object
+				PUSH(object)
+				return
+			end
+
+			sub_object = sub_object[ix]
+		end
+
+
+		local ix, tp = indices[#indices], std.type(sub_object)
+		if tp == 'object' then
+			ix = std.str(ix)
+			sub_object[ix] = value
+		elseif tp == 'array' then
+			ix = std.num(ix)
+			if ix < 0 then ix = #sub_object + ix + 1 end
+			if ix > 0 then
+				sub_object[ix] = value
+			else
+				table.insert(sub_object, 1, value)
+			end
+		end
+		
+		PUSH(object)
 	end,
 
 	--INSERT ELEMENT IN ARRAY
