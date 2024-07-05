@@ -53,9 +53,11 @@ json = {
 					if indent ~= nil then return result .. (' '):rep(__indent) .. ']' else return result .. ']' end
 				else
 					if indent ~= nil then result = '{\n' else result = '{' end
+					local colon = ':'
+					if indent ~= nil then colon = ': ' end
 					local ct = 0
 					for key, value in pairs(data) do
-						local str = __stringify(tostring(key), indent, next_indent) .. ':' .. __stringify(value, indent, next_indent)
+						local str = __stringify(tostring(key), indent, next_indent) .. colon .. __stringify(value, indent, next_indent)
 						if indent ~= nil then
 							if ct > 0 then result = result .. ',\n' end
 							result = result .. (' '):rep(next_indent) .. str
@@ -65,7 +67,7 @@ json = {
 						end
 						ct = ct + 1
 					end
-					if indent ~= nil then return result .. (' '):rep(__indent) .. '\n}' else return result .. '}' end
+					if indent ~= nil then return result .. '\n' .. (' '):rep(__indent) .. '}' else return result .. '}' end
 				end
 
 			elseif tp == 'string' then
