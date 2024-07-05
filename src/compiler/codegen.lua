@@ -13,6 +13,7 @@ local bc = {
 	copy = 10,
 	delete = 11,
 	swap = 12,
+	pop_until_null = 13,
 }
 
 local call_codes = {
@@ -151,7 +152,7 @@ function print_bytecode(instructions, file)
 		end
 
 		local line = ''
-		if call_text == nil and instr[1] ~= bc.run_command and instr[1] ~= bc.push_cmd_result and instr[1] ~= bc.pop and instr[1] ~= bc.push_index and instr[1] ~= bc.pop_goto_index then
+		if call_text == nil and instr[1] ~= bc.run_command and instr[1] ~= bc.push_cmd_result and instr[1] ~= bc.pop and instr[1] ~= bc.push_index and instr[1] ~= bc.pop_goto_index and instr[1] ~= bc.pop_until_null then
 			call_text = 'null'
 		elseif call_text == nil then
 			call_text = ''
@@ -630,7 +631,7 @@ function generate_bytecode(root, file)
 			--End of loop
 			emit(bc.call, 'jump', loop_beg_label)
 			emit(bc.label, loop_end_label)
-			emit(bc.pop)
+			emit(bc.pop_until_null)
 			table.remove(loop_term_labels)
 			table.remove(loop_begn_labels)
 		end,
@@ -667,7 +668,7 @@ function generate_bytecode(root, file)
 			--End of loop
 			emit(bc.call, 'jump', loop_beg_label)
 			emit(bc.label, loop_end_label)
-			emit(bc.pop)
+			emit(bc.pop_until_null)
 			table.remove(loop_term_labels)
 			table.remove(loop_begn_labels)
 		end,
@@ -703,7 +704,7 @@ function generate_bytecode(root, file)
 			--End of loop
 			emit(bc.call, 'jump', loop_beg_label)
 			emit(bc.label, loop_end_label)
-			emit(bc.pop)
+			emit(bc.pop_until_null)
 			table.remove(loop_term_labels)
 			table.remove(loop_begn_labels)
 		end,

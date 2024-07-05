@@ -1137,4 +1137,9 @@ COMMANDS = {
 		STACK[#STACK-1] = v1
 		STACK[#STACK] = v2
 	end,
+
+	--POP STACK UNTIL AND INCLUDING NULL
+	[13] = function(line, p1, p2)
+		while POP() ~= nil do end
+	end,
 }
