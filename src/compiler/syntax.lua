@@ -17,9 +17,6 @@ local function _match_stmt_onmatch(token, file)
 	end
 
 	if token.children[2].id ~= TOK.kwd_match then check_nodes(token.children[2]) end
-	if if_ct == 0 then
-		parse_error(token.span, 'There must be at least one condition for `match` to compare against', file)
-	end
 end
 
 local rules = {
@@ -895,7 +892,7 @@ local rules = {
 	--Match structure
 	{
 		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_end}},
-		keep = {2, 4},
+		keep = {2, 4, 5},
 		text = 'match',
 		id = TOK.match_stmt,
 		not_before = {TOK.kwd_else},
@@ -909,25 +906,20 @@ local rules = {
 		onmatch = _match_stmt_onmatch,
 	},
 	{
-		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.else_stmt}},
-		keep = {2, 1, 4},
-		text = 'match',
-		id = TOK.match_stmt,
-		onmatch = _match_stmt_onmatch,
-	},
-	{
-		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.kwd_end}},
-		keep = {2, 1},
-		text = 'match',
-		id = TOK.match_stmt,
-		onmatch = _match_stmt_onmatch,
-	},
-	{
 		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_else}, {TOK.kwd_end}},
-		keep = {2, 4},
+		keep = {2, 4, 6},
 		text = 'match',
 		id = TOK.match_stmt,
 		onmatch = _match_stmt_onmatch,
+	},
+	--Invalid match struct (no comparison branches)
+	{
+		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.else_stmt, TOK.kwd_end, TOK.kwd_else}},
+		text = 'match',
+		id = TOK.match_stmt,
+		onmatch = function(token, file)
+			parse_error(token.span, 'There must be at least one condition for `match` to compare against', file)
+		end,
 	},
 
 	--File import statement
