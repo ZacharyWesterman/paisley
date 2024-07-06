@@ -907,6 +907,12 @@ local rules = {
 		id = TOK.match_stmt,
 	},
 	{
+		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.kwd_end}},
+		keep = {2, 1},
+		text = 'match',
+		id = TOK.match_stmt,
+	},
+	{
 		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_else}, {TOK.kwd_end}},
 		keep = {2, 4},
 		text = 'match',
