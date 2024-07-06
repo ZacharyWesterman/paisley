@@ -891,7 +891,7 @@ local rules = {
 
 	--Match structure
 	{
-		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_end}},
+		match = {{TOK.kwd_match}, {TOK.comparison, TOK.text}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_end}},
 		keep = {2, 4, 5},
 		text = 'match',
 		id = TOK.match_stmt,
@@ -899,14 +899,14 @@ local rules = {
 		onmatch = _match_stmt_onmatch,
 	},
 	{
-		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.else_stmt}},
+		match = {{TOK.kwd_match}, {TOK.comparison, TOK.text}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.else_stmt}},
 		keep = {2, 4, 5},
 		text = 'match',
 		id = TOK.match_stmt,
 		onmatch = _match_stmt_onmatch,
 	},
 	{
-		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_else}, {TOK.kwd_end}},
+		match = {{TOK.kwd_match}, {TOK.comparison, TOK.text}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_else}, {TOK.kwd_end}},
 		keep = {2, 4, 6},
 		text = 'match',
 		id = TOK.match_stmt,
@@ -914,7 +914,7 @@ local rules = {
 	},
 	--Invalid match struct (no comparison branches)
 	{
-		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.else_stmt, TOK.kwd_end, TOK.kwd_else}},
+		match = {{TOK.kwd_match}, {TOK.comparison, TOK.text}, {TOK.kwd_do}, {TOK.else_stmt, TOK.kwd_end, TOK.kwd_else}},
 		text = 'match',
 		id = TOK.match_stmt,
 		onmatch = function(token, file)

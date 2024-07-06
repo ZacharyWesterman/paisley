@@ -270,3 +270,10 @@ function print_tokens_recursive(root, indent)
 	end
 end
 --[[/minify-delete]]
+
+--Generate unique label ids (ones that can't clash with subroutine names)
+local _label_counter = 0
+function LABEL_ID()
+	_label_counter = _label_counter + 1
+	return '?' .. _label_counter
+end

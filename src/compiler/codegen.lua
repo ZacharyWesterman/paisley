@@ -228,18 +228,11 @@ function generate_bytecode(root, file)
 
 	local function is_const(token) return token.value ~= nil or token.id == TOK.lit_null end
 
-	--Generate unique label ids (ones that can't clash with subroutine names)
-	local label_counter = 0
-	local function label_id()
-		label_counter = label_counter + 1
-		return '?'..label_counter
-	end
-
 	local loop_term_labels = {}
 	local loop_begn_labels = {}
 
 	--Create a termination label which will be appended to the end
-	local EOF_LABEL = label_id()
+	local EOF_LABEL = LABEL_ID()
 
 	local LIST_COMP_VAR = {}
 
@@ -333,7 +326,7 @@ function generate_bytecode(root, file)
 			--[[/minify-delete]]
 
 			if token.text == 'initial' then
-				label1, label2 = label_id(), label_id()
+				label1, label2 = LABEL_ID(), LABEL_ID()
 				emit(bc.push, token.children[1].text)
 				emit(bc.call, 'varexists')
 				emit(bc.call, 'jumpiffalse', label1)
@@ -549,8 +542,8 @@ function generate_bytecode(root, file)
 
 		--FOR LOOPS
 		[TOK.for_stmt] = function(token, file)
-			local loop_beg_label = label_id()
-			local loop_end_label = label_id()
+			local loop_beg_label = LABEL_ID()
+			local loop_end_label = LABEL_ID()
 
 			--Try to optimize away for loops with no body and with a knowable stop point
 			if token.children[3] == nil then
@@ -638,8 +631,8 @@ function generate_bytecode(root, file)
 
 		--KEY-VALUE FOR LOOPS
 		[TOK.kv_for_stmt] = function(token, file)
-			local loop_beg_label = label_id()
-			local loop_end_label = label_id()
+			local loop_beg_label = LABEL_ID()
+			local loop_end_label = LABEL_ID()
 
 			--Loop setup
 			emit(bc.push, nil)
@@ -675,8 +668,8 @@ function generate_bytecode(root, file)
 
 		--WHILE LOOPS
 		[TOK.while_stmt] = function(token, file)
-			local loop_beg_label = label_id()
-			local loop_end_label = label_id()
+			local loop_beg_label = LABEL_ID()
+			local loop_end_label = LABEL_ID()
 
 			local const = is_const(token.children[1])
 			local val = std.bool(token.children[1].value)
@@ -711,12 +704,12 @@ function generate_bytecode(root, file)
 
 		--LIST COMPREHENSION
 		[TOK.list_comp] = function(token, file)
-			local loop_beg_label = label_id()
-			local loop_end_label = label_id()
-			local loop_var = label_id()
+			local loop_beg_label = LABEL_ID()
+			local loop_end_label = LABEL_ID()
+			local loop_var = LABEL_ID()
 
 			local orig_v = token.children[2].text
-			LIST_COMP_VAR[orig_v] = label_id()
+			LIST_COMP_VAR[orig_v] = LABEL_ID()
 
 			--Loop setup
 			emit(bc.push, nil)
@@ -745,8 +738,8 @@ function generate_bytecode(root, file)
 			if token.children[4] then
 				--Only add the value to the list if the condition is met.
 				codegen_rules.recur_push(token.children[4])
-				local true_label = label_id()
-				local false_label = label_id()
+				local true_label = LABEL_ID()
+				local false_label = LABEL_ID()
 				emit(bc.call, 'jumpiffalse', false_label)
 				emit(bc.pop)
 				emit(bc.call, 'jump', true_label)
@@ -811,8 +804,8 @@ function generate_bytecode(root, file)
 
 				--Don't generate a label if the "if" part will always execute
 				if not const then
-					else_label = label_id()
-					endif_label = label_id()
+					else_label = LABEL_ID()
+					endif_label = LABEL_ID()
 					if token.children[1].id == TOK.gosub_stmt then token.children[1].dynamic = true end
 					enter(token.children[1])
 					emit(bc.call, 'jumpiffalse', else_label)
@@ -869,7 +862,7 @@ function generate_bytecode(root, file)
 
 			if token.dynamic then
 				local i
-				local end_label, label_var = label_id(), label_id()
+				local end_label, label_var = LABEL_ID(), LABEL_ID()
 				codegen_rules.recur_push(token.children[1])
 				emit(bc.push_index)
 				emit(bc.call, 'jump', '?dynamic-gosub')
@@ -892,7 +885,7 @@ function generate_bytecode(root, file)
 					emit(bc.call, 'index')
 
 					--If the label doesn't exist in the program, leave zero on the stack, and go back to the caller.
-					local fail_label = label_id()
+					local fail_label = LABEL_ID()
 					emit(bc.call, 'jumpiffalse', fail_label)
 
 					--If the label DOES exist, jump to the appropriate index
@@ -924,7 +917,7 @@ function generate_bytecode(root, file)
 			--If it contains nothing then references to it have already been removed.
 			-- print_tokens_recursive(token)
 			if not token.ignore and token.is_referenced then
-				local skipsub = label_id()
+				local skipsub = LABEL_ID()
 				emit(bc.call, 'jump', skipsub)
 				emit(bc.label, token.text)
 				enter(token.children[1])
@@ -971,9 +964,9 @@ function generate_bytecode(root, file)
 					token.children[2] = nil
 				else
 					--If there are no built-in functions for this type of reduce, emulate it.
-					local loop_beg_label = label_id()
-					local loop_end_label = label_id()
-					local loop_skip_label = label_id()
+					local loop_beg_label = LABEL_ID()
+					local loop_end_label = LABEL_ID()
+					local loop_skip_label = LABEL_ID()
 
 					emit(bc.push, nil)
 					codegen_rules.recur_push(token.children[1])
@@ -1035,8 +1028,8 @@ function generate_bytecode(root, file)
 
 		--TERNARY (X if Y else Z) operator
 		[TOK.ternary] = function(token, file)
-			local else_label = label_id()
-			local endif_label = label_id()
+			local else_label = LABEL_ID()
+			local endif_label = LABEL_ID()
 
 			codegen_rules.recur_push(token.children[1])
 			emit(bc.call, 'jumpiffalse', else_label)
