@@ -1,4 +1,6 @@
 local function _match_stmt_onmatch(token, file)
+	local if_ct = 0
+
 	local function check_nodes(node)
 		if node.id == TOK.program then
 			for i = 1, #node.children do
@@ -6,12 +8,18 @@ local function _match_stmt_onmatch(token, file)
 			end
 		elseif node.id ~= TOK.if_stmt then
 			parse_error(node.span, 'Top level of `match` statement can only contain `if` statements', file)
-		elseif node.children[3].id ~= TOK.kwd_end then
-			parse_error(node.children[3].span, 'Extra conditional branch does not make sense inside a `match` statement', file)
+		else
+			if_ct = if_ct + 1
+			if node.children[3].id ~= TOK.kwd_end then
+				parse_error(node.children[3].span, 'Extra conditional branch does not make sense inside a `match` statement', file)
+			end
 		end
 	end
 
-	check_nodes(token.children[2])
+	if token.children[2].id ~= TOK.kwd_match then check_nodes(token.children[2]) end
+	if if_ct == 0 then
+		parse_error(token.span, 'There must be at least one condition for `match` to compare against', file)
+	end
 end
 
 local rules = {
@@ -905,12 +913,14 @@ local rules = {
 		keep = {2, 1, 4},
 		text = 'match',
 		id = TOK.match_stmt,
+		onmatch = _match_stmt_onmatch,
 	},
 	{
 		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.kwd_end}},
 		keep = {2, 1},
 		text = 'match',
 		id = TOK.match_stmt,
+		onmatch = _match_stmt_onmatch,
 	},
 	{
 		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_else}, {TOK.kwd_end}},
