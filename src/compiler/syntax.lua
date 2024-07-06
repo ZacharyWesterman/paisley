@@ -416,7 +416,7 @@ local rules = {
 		match = {{TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.comparison}},
 		id = TOK.command,
 		not_after_range = {TOK.expr_open, TOK.command}, --Command cannot come after anything in this range
-		not_after = {TOK.kwd_for, TOK.kwd_subroutine, TOK.kwd_if_expr, TOK.kwd_else_expr, TOK.var_assign},
+		not_after = {TOK.kwd_for, TOK.kwd_subroutine, TOK.kwd_if_expr, TOK.kwd_else_expr, TOK.var_assign, TOK.kwd_match},
 		text = 'cmd',
 	},
 	{
@@ -802,7 +802,7 @@ local rules = {
 
 	--Statements
 	{
-		match = {{TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, TOK.import_stmt}},
+		match = {{TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, TOK.import_stmt, TOK.match_stmt}},
 		id = TOK.statement,
 		meta = true,
 	},
@@ -867,6 +867,33 @@ local rules = {
 		text = 'ternary',
 		id = TOK.ternary,
 		not_after = {TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod},
+	},
+
+	--Match structure
+	{
+		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_end}},
+		keep = {2, 4},
+		text = 'match',
+		id = TOK.match_stmt,
+		not_before = {TOK.kwd_else},
+	},
+	{
+		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.else_stmt}},
+		keep = {2, 4, 5},
+		text = 'match',
+		id = TOK.match_stmt,
+	},
+	{
+		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.kwd_else}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_end}},
+		keep = {2, 1, 5},
+		text = 'match',
+		id = TOK.match_stmt,
+	},
+	{
+		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_else}, {TOK.kwd_end}},
+		keep = {2, 4},
+		text = 'match',
+		id = TOK.match_stmt,
 	},
 
 	--File import statement
