@@ -1,3 +1,19 @@
+local function _match_stmt_onmatch(token, file)
+	local function check_nodes(node)
+		if node.id == TOK.program then
+			for i = 1, #node.children do
+				check_nodes(node.children[i])
+			end
+		elseif node.id ~= TOK.if_stmt then
+			parse_error(node.span, 'Top level of `match` statement can only contain `if` statements', file)
+		elseif node.children[3].id ~= TOK.kwd_end then
+			parse_error(node.children[3].span, 'Extra conditional branch does not make sense inside a `match` statement', file)
+		end
+	end
+
+	check_nodes(token.children[2])
+end
+
 local rules = {
 	--Function call, dot-notation
 	{
@@ -31,7 +47,6 @@ local rules = {
 				table.insert(c3.children, 1, c1)
 				token.children = c3.children
 				token.span = c3.span
-				-- token.span = Span:merge(c1.span, c3.span)
 			else
 				parse_error(token.children[2].span, 'Expected function name or object key after dot operator', file)
 			end
@@ -876,16 +891,18 @@ local rules = {
 		text = 'match',
 		id = TOK.match_stmt,
 		not_before = {TOK.kwd_else},
+		onmatch = _match_stmt_onmatch,
 	},
 	{
 		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.else_stmt}},
 		keep = {2, 4, 5},
 		text = 'match',
 		id = TOK.match_stmt,
+		onmatch = _match_stmt_onmatch,
 	},
 	{
-		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.kwd_else}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_end}},
-		keep = {2, 1, 5},
+		match = {{TOK.kwd_match}, {TOK.comparison}, {TOK.kwd_do}, {TOK.else_stmt}},
+		keep = {2, 1, 4},
 		text = 'match',
 		id = TOK.match_stmt,
 	},
@@ -894,6 +911,7 @@ local rules = {
 		keep = {2, 4},
 		text = 'match',
 		id = TOK.match_stmt,
+		onmatch = _match_stmt_onmatch,
 	},
 
 	--File import statement
