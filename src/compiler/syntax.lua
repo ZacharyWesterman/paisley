@@ -1,3 +1,24 @@
+local function _match_stmt_onmatch(token, file)
+	local if_ct = 0
+
+	local function check_nodes(node)
+		if node.id == TOK.program then
+			for i = 1, #node.children do
+				check_nodes(node.children[i])
+			end
+		elseif node.id ~= TOK.if_stmt then
+			parse_error(node.span, 'Top level of `match` statement can only contain `if` statements', file)
+		else
+			if_ct = if_ct + 1
+			if node.children[3].id ~= TOK.kwd_end then
+				parse_error(node.children[3].span, 'Extra conditional branch does not make sense inside a `match` statement', file)
+			end
+		end
+	end
+
+	if token.children[2].id ~= TOK.kwd_match then check_nodes(token.children[2]) end
+end
+
 local rules = {
 	--Function call, dot-notation
 	{
@@ -31,7 +52,6 @@ local rules = {
 				table.insert(c3.children, 1, c1)
 				token.children = c3.children
 				token.span = c3.span
-				-- token.span = Span:merge(c1.span, c3.span)
 			else
 				parse_error(token.children[2].span, 'Expected function name or object key after dot operator', file)
 			end
@@ -416,7 +436,7 @@ local rules = {
 		match = {{TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.comparison}},
 		id = TOK.command,
 		not_after_range = {TOK.expr_open, TOK.command}, --Command cannot come after anything in this range
-		not_after = {TOK.kwd_for, TOK.kwd_subroutine, TOK.kwd_if_expr, TOK.kwd_else_expr, TOK.var_assign},
+		not_after = {TOK.kwd_for, TOK.kwd_subroutine, TOK.kwd_if_expr, TOK.kwd_else_expr, TOK.var_assign, TOK.kwd_match},
 		text = 'cmd',
 	},
 	{
@@ -802,7 +822,7 @@ local rules = {
 
 	--Statements
 	{
-		match = {{TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, TOK.import_stmt}},
+		match = {{TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, TOK.import_stmt, TOK.match_stmt}},
 		id = TOK.statement,
 		meta = true,
 	},
@@ -867,6 +887,39 @@ local rules = {
 		text = 'ternary',
 		id = TOK.ternary,
 		not_after = {TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod},
+	},
+
+	--Match structure
+	{
+		match = {{TOK.kwd_match}, {TOK.comparison, TOK.text}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_end}},
+		keep = {2, 4, 5},
+		text = 'match',
+		id = TOK.match_stmt,
+		not_before = {TOK.kwd_else},
+		onmatch = _match_stmt_onmatch,
+	},
+	{
+		match = {{TOK.kwd_match}, {TOK.comparison, TOK.text}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.else_stmt}},
+		keep = {2, 4, 5},
+		text = 'match',
+		id = TOK.match_stmt,
+		onmatch = _match_stmt_onmatch,
+	},
+	{
+		match = {{TOK.kwd_match}, {TOK.comparison, TOK.text}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_else}, {TOK.kwd_end}},
+		keep = {2, 4, 6},
+		text = 'match',
+		id = TOK.match_stmt,
+		onmatch = _match_stmt_onmatch,
+	},
+	--Invalid match struct (no comparison branches)
+	{
+		match = {{TOK.kwd_match}, {TOK.comparison, TOK.text}, {TOK.kwd_do}, {TOK.else_stmt, TOK.kwd_end, TOK.kwd_else}},
+		text = 'match',
+		id = TOK.match_stmt,
+		onmatch = function(token, file)
+			parse_error(token.span, 'There must be at least one condition for `match` to compare against', file)
+		end,
 	},
 
 	--File import statement

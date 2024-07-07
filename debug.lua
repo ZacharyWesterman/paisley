@@ -90,7 +90,7 @@ if RUN_PROGRAM then
 		elseif port == 4 then
 			--delay execution for an amount of time
 			local exit_code = os.execute('sleep ' .. value)
-			if exit_code ~= 0 then ENDED = true end
+			if exit_code ~= 0 and exit_code ~= true then ENDED = true end
 
 			V5 = nil
 		elseif port == 5 then

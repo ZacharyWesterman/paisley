@@ -1839,7 +1839,6 @@ function SemanticAnalyzer(tokens, root_file)
 	end
 	--[[/minify-delete]]
 
-
 	--[[
 		CONSTANT FOLDING AND TYPE DEDUCTIONS
 	]]
@@ -1914,6 +1913,73 @@ function SemanticAnalyzer(tokens, root_file)
 		end)
 	end
 	--[[/minify-delete]]
+
+	--Restructure match statements into an equivalent if/elif/else block.
+	recurse(root, {TOK.match_stmt}, function(token, file)
+		local iter = {token.children[2]}
+		if iter[1].id == TOK.program then iter = iter[1].children end
+
+		if iter == nil then
+			parse_error(token.span, 'COMPILER BUG: Match statement has no comparison branches!', file)
+			return
+		end
+
+		local constant = token.children[1].value ~= nil or token.children[1].id == TOK.lit_null
+
+		token.id = TOK.program
+		local var = LABEL_ID()
+
+		---@type Token
+		local condition = {
+			id = TOK.let_stmt,
+			text = 'let',
+			span = token.span,
+			children = {
+				{
+					id = TOK.var_assign,
+					text = var,
+					span = token.span,
+				},
+				token.children[1],
+			}
+		}
+
+		local else_branch = token.children[3]
+		for i = #iter, 1, -1 do
+			iter[i].children[3] = else_branch
+			else_branch = iter[i]
+
+			--Optimization: allow branch pruning if the
+			local compare_node = token.children[1]
+			if not constant then
+				compare_node = {
+					id = TOK.variable,
+					text = var,
+					span = else_branch.children[1].span,
+				}
+			end
+
+			else_branch.children[1] = {
+				id = TOK.comparison,
+				text = '==',
+				span = else_branch.children[1].span,
+				children = {
+					compare_node,
+					else_branch.children[1],
+				},
+			}
+		end
+
+		if constant then
+			token.children = {else_branch}
+
+			--If branch condition is constant, try to fold constants one more time.
+			--This improves performance at runtime, and can allow branches to be pruned at compile time.
+			if not ERRORED then recurse(root, {TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary, TOK.list_comp, TOK.object, TOK.key_value_pair}, nil, FOLD_CONSTANTS) end
+		else
+			token.children = {condition, else_branch}
+		end
+	end)
 
 	--Remove the body of conditionals that will never get executed
 	recurse(root, {TOK.if_stmt, TOK.elif_stmt}, function(token, file)

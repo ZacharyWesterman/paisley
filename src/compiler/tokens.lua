@@ -29,6 +29,7 @@ TOK = {
 	kwd_if_expr = k(),
 	kwd_else_expr = k(),
 	kwd_for_expr = k(),
+	kwd_match = k(),
 	--[[minify-delete]] kwd_import_file = k(), --[[/minify-delete]]
 
 	expr_open = k(),
@@ -124,6 +125,7 @@ TOK = {
 	break_stmt = k(),
 	continue_stmt = k(),
 	return_stmt = k(),
+	match_stmt = k(),
 	statement = k(),
 
 	lit_array = k(), --This only gets created during constant folding
@@ -268,3 +270,10 @@ function print_tokens_recursive(root, indent)
 	end
 end
 --[[/minify-delete]]
+
+--Generate unique label ids (ones that can't clash with subroutine names)
+local _label_counter = 0
+function LABEL_ID()
+	_label_counter = _label_counter + 1
+	return '?' .. _label_counter
+end

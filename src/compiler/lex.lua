@@ -20,6 +20,7 @@ local kwds = {
 	['let'] = TOK.kwd_let,
 	['initial'] = TOK.kwd_initial,
 	['stop'] = TOK.kwd_stop,
+	['match'] = TOK.kwd_match,
 	--[[minify-delete]] ['require'] = TOK.kwd_import_file, --[[/minify-delete]]
 }
 
