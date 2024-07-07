@@ -697,7 +697,7 @@ function generate_bytecode(root, file)
 			--End of loop
 			emit(bc.call, 'jump', loop_beg_label)
 			emit(bc.label, loop_end_label)
-			emit(bc.pop_until_null)
+			emit(bc.pop)
 			table.remove(loop_term_labels)
 			table.remove(loop_begn_labels)
 		end,
