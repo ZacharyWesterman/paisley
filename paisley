@@ -15,6 +15,7 @@ REPL = false
 LANGUAGE_SERVER = false
 RESTRICT_TO_PLASMA_BUILD = false
 SUPPRESS_AST_ERRORS = false
+PRINT_TOKENS = false
 PRINT_AST = false
 AST_AFTER_SEMANTIC = false
 WORKING_DIR = ''
@@ -144,6 +145,8 @@ for i, v in ipairs(arg) do
 			RESTRICT_TO_PLASMA_BUILD = true
 		elseif v == '--no-ast-errors' then
 			SUPPRESS_AST_ERRORS = true
+		elseif v == '--tokens' then
+			PRINT_TOKENS = true
 		elseif v == '--ast' then
 			PRINT_AST = true
 		elseif v == '--ast-sem' then
@@ -396,7 +399,7 @@ if not ENDED then
 		require "src.compiler"
 	end
 
-	if PRINT_AST then ENDED = true end
+	if PRINT_AST or PRINT_TOKENS then ENDED = true end
 
 	if PRINT_BYTECODE then
 		if old_working_dir then

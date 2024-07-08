@@ -55,13 +55,13 @@ local tokens = {}
 for t in lexer do table.insert(tokens, t) end --Iterate to get tokens.
 
 --[[minify-delete]]
-if COMPILER_DEBUG then
+if COMPILER_DEBUG or _G['PRINT_TOKENS'] then
 	function print_header(title)
 		print('--------------------------')
 		print(title)
 		print('--------------------------')
 	end
-	print_header('Tokens')
+	if COMPILER_DEBUG then print_header('Tokens') end
 	local i
 	for i = 1, #tokens do
 		print_token(tokens[i])
