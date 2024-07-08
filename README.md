@@ -40,9 +40,9 @@ See how in the above, expressions are contained inside curly braces, `{}`. More 
 ## Conditionals:
 "If" statements have the following structure:
 ```
-if {expression is true-ish} then
+if {expression is truey} then
 	...
-elif {expression is true-ish} then
+elif {expression is truey} then
 	...
 else
 	...
@@ -51,12 +51,12 @@ end
 
 You can also leave out the “then” clause if all that’s needed is the “else” clause, e.g.:
 ```
-if {expression is true-ish} else
-	... do this if expression is false-ish ...
+if {expression is truey} else
+	... do this if expression is falsey ...
 end
 ```
 
-Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression’s trueness: false, null, zero, and empty strings, arrays and objects are false-ish, everything else is true-ish.
+Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression’s trueness: false, null, zero, and empty strings, arrays and objects are falsey, everything else is truey.
 
 There is also the `match` structure, which is similar to c-like languages' `switch/case` structure (or Rust's `match`). This structure is included to allow for more readable logic with less repeated code.
 ```
@@ -82,7 +82,7 @@ Of course, like `if` statements, the `else` branch is optional and can be exclud
 ## Loops:
 While and For loops have a similar syntax to Lua:
 ```
-while {expression is true-ish} do
+while {expression is truey} do
 	...
 end
 
