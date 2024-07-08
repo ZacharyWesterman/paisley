@@ -222,13 +222,17 @@ local functions = {
 		else
 			result = {}
 			for i = 1, #index do
-				local ix = std.num(index[i])
-				if ix < 0 then
-					ix = #data + ix + 1
-				elseif ix == 0 then
-					print('WARNING: line '..line..': Indexes begin at 1, not 0')
+				if is_array then
+					local ix = std.num(index[i])
+					if ix < 0 then
+						ix = #data + ix + 1
+					elseif ix == 0 then
+						print('WARNING: line '..line..': Indexes begin at 1, not 0')
+					end
+					table.insert(result, data[ix])
+				else
+					table.insert(result, data[std.str(index[i])])
 				end
-				table.insert(result, data[ix])
 			end
 			if is_string then result = std.join(result, '') end
 		end

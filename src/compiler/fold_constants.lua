@@ -784,13 +784,15 @@ function FOLD_CONSTANTS(token, file)
 			result = {}
 			for i = 1, #c2.value do
 				local ix = c2.value[i]
-				if type(ix) ~= 'number' then
+				if type(ix) ~= 'number' and std.type(val) ~= 'object' then
 					parse_error(token.span, 'Cannot use a non-number value as an array index', file)
 				end
 
-				if ix < 0 then
-				elseif ix == 0 then
-					parse_error(token.span, 'Indexes start at 1, not 0', file)
+				if std.type(val) ~= 'object' then
+					if ix < 0 then
+					elseif ix == 0 then
+						parse_error(token.span, 'Indexes start at 1, not 0', file)
+					end
 				end
 				table.insert(result, val[ix])
 			end
