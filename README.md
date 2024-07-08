@@ -16,7 +16,7 @@ This language is meant to make complex device logic very easy to implement, whil
 **Q:** Why???<br>
 **A:** haha
 
-**Q:** Isn’t writing an entire compiler in Plasma a bit overkill?<br>
+**Q:** Isn't writing an entire compiler in Plasma a bit overkill?<br>
 **A:** Your face is overkill. Compilers are fun, fight me.
 
 ---
@@ -49,14 +49,14 @@ else
 end
 ```
 
-You can also leave out the “then” clause if all that’s needed is the “else” clause, e.g.:
+You can also leave out the "then" clause if all that's needed is the "else" clause, e.g.:
 ```
 if {expression is truey} else
 	... do this if expression is falsey ...
 end
 ```
 
-Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression’s trueness: false, null, zero, and empty strings, arrays and objects are falsey, everything else is truey.
+Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression's trueness: false, null, zero, and empty strings, arrays and objects are falsey, everything else is truey.
 
 There is also the `match` structure, which is similar to c-like languages' `switch/case` structure (or Rust's `match`). This structure is included to allow for more readable logic with less repeated code.
 ```
@@ -144,7 +144,7 @@ let a b c
 let foo = {null}
 ```
 
-**REMEMBER:** All variables are global, so any “re-definition” of a variable just sets it to the new value.
+**REMEMBER:** All variables are global, so any "re-definition" of a variable just sets it to the new value.
 
 ### Variable Initialization:
 
@@ -303,7 +303,8 @@ Expressions also give access to a full suite of operators and functions, listed 
 - pattern matching, `like`, checks whether a string matches a given pattern (e.g. `"123" like "%d+"` gives `true`).
 - array searching `in` (e.g. `3 in (1,2,4,5,6)` gives `false`)
 - string concatenation: There is no string concatenation operator. Seriously, two values next to each other, without an operator between them, results in string concatenation.
-- ternary operator, `val1 if expression else val2`. Like Python’s ternary syntax, this will result in `val1` if `expression` evaluates to true, otherwise it will result in `val2`.
+- ternary operator, `val1 if expression else val2`. Like Python's ternary syntax, this will result in `val1` if `expression` evaluates to true, otherwise it will result in `val2`.
+- Indexing, `[]`. Like most languages, this lets you get an element from a string, array, or object (e.g. `"string"[2]` gives "t", `('a','b','c')[3]` gives "c", and `('a'=>'v1', 'b'=>'v2')['a']` gives "v1"), however Paisley also lets you select multiple items at once in a single index expression. E.g. "abcde"[2,5,5] gives "bee", "abcde"[1:3] gives "abc", `(6,7,8,9,0)[3,1,5]` gives `(8,6,0)`.
 
 An extra note on slices: when slicing an array or a string, it's possible to replace the second number with a colon, to indicate that the slice should go from the start index all the way to the end of the string or array.
 So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` would result in `(4,3,2,1)`, etc.
@@ -370,7 +371,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Convert a number to a hexadecimal string: `hex(value) -> string`
 - Remove all characters that do not match the given pattern: `filter(text, pattern) -> string`
 - Get all substrings that match the given pattern: `matches(text, pattern) -> array[string]`
-- Convert a “seconds since midnight” timestamp into (hour, min, sec, milli): `clocktime(value) -> array`
+- Convert a "seconds since midnight" timestamp into (hour, min, sec, milli): `clocktime(value) -> array`
 - Reduce an array to a single element: `reduce(array, operator) -> any`, e.g. `reduce(1:9, +)` sums the numbers from 1 to 9, resulting in 45
 - Reverse an array or a string: `reverse(array) -> array` or `reverse(string) -> string`
 - Sort an array in ascending order: `sort(array) -> array`
