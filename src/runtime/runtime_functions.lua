@@ -196,7 +196,7 @@ local functions = {
 	end,
 
 	--ARRAY INDEX
-	function()
+	function(line)
 		local index, data = POP(), POP()
 		local is_string = false
 		if type(data) ~= 'table' then
@@ -209,11 +209,26 @@ local functions = {
 
 		local result
 		if type(index) ~= 'table' then
-			if is_array then result = data[std.num(index)] else result = data[std.str(index)] end
+			if is_array then
+				index = std.num(index)
+				if index < 0 then
+					index = #data + index + 1
+				elseif index == 0 then
+					print('WARNING: line '..line..': Indexes begin at 1, not 0')
+				end
+
+				result = data[index]
+			else result = data[std.str(index)] end
 		else
 			result = {}
 			for i = 1, #index do
-				table.insert(result, data[std.num(index[i])])
+				local ix = std.num(index[i])
+				if ix < 0 then
+					ix = #data + ix + 1
+				elseif ix == 0 then
+					print('WARNING: line '..line..': Indexes begin at 1, not 0')
+				end
+				table.insert(result, data[ix])
 			end
 			if is_string then result = std.join(result, '') end
 		end
@@ -691,7 +706,7 @@ local functions = {
 	function()
 		local v = POP()
 		local object, indices, value, is_string = v[1], v[2], v[3], false
-	
+
 		--Only valid for arrays, objects, or strings
 		if type(object) == 'string' then
 			is_string = true
@@ -743,7 +758,7 @@ local functions = {
 				table.insert(sub_object, 1, value)
 			end
 		end
-		
+
 		PUSH(object)
 	end,
 

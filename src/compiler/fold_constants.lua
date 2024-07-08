@@ -788,8 +788,9 @@ function FOLD_CONSTANTS(token, file)
 					parse_error(token.span, 'Cannot use a non-number value as an array index', file)
 				end
 
-				if ix < 1 then
-					parse_error(token.span, 'Indexes start at 1, but an index of '..ix..' was found', file)
+				if ix < 0 then
+				elseif ix == 0 then
+					parse_error(token.span, 'Indexes start at 1, not 0', file)
 				end
 				table.insert(result, val[ix])
 			end
@@ -806,8 +807,13 @@ function FOLD_CONSTANTS(token, file)
 			parse_error(token.span, 'Cannot use a non-number value as an array index', file)
 		else
 			local ix = c2.value
-			if type(ix) == 'number' and ix < 1 then
-				parse_error(token.span, 'Indexes start at 1, but an index of '..ix..' was found', file)
+			if type(ix) == 'number' then
+				if ix < 0 and std.type(val) ~= 'object' then
+					---@diagnostic disable-next-line
+					ix = #val + ix + 1
+				elseif ix == 0 then
+					parse_error(token.span, 'Indexes start at 1, not 0', file)
+				end
 			end
 			if std.type(val) == 'object' then result = val[std.str(ix)] else result = val[ix] end
 			token.text = std.debug_str(result)
