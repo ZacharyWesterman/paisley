@@ -2123,10 +2123,15 @@ function SemanticAnalyzer(tokens, root_file)
 			for k, i in pairs(labels) do
 				local begins_with = not (begins and k:sub(1, #std.str(begins.value)) ~= begins.value)
 				local ends_with = not (ends and k:sub(#k - #std.str(ends.value) + 1, #k) ~= ends.value)
-				local does_contain = #contains == 0 --If there are no const parts, then we can't know.
+				local does_contain = #contains == 0 and (not begins or not begins.value) and (not ends or not ends.value) --If there are no const parts, then we can't know.
+
 				for j = 1, #contains do
 					if std.contains(k, contains[j]) then does_contain = true end
 				end
+
+				print(begins_with)
+				print(ends_with)
+				print(does_contain)
 
 				if begins_with or ends_with or does_contain then
 					i.is_referenced = true
