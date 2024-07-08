@@ -2116,13 +2116,13 @@ function SemanticAnalyzer(tokens, root_file)
 				end
 			end
 
-			if begins and (begins.value ~= nil or begins.id == TOK.lit_null) then begins = {value = begins.value} end
-			if ends and (ends.value ~= nil or ends.id == TOK.lit_null) then ends = {value = ends.value} end
+			if begins and (begins.value ~= nil or begins.id == TOK.lit_null) then begins = {value = begins.text} end
+			if ends and (ends.value ~= nil or ends.id == TOK.lit_null) then ends = {value = ends.text} end
 
 			--If we have a dynamic gosub then we can't remove any subroutines, as we don't really know what subroutine is referenced.
 			for k, i in pairs(labels) do
-				local begins_with = not (begins and k:sub(1, #std.str(begins.value)) ~= begins.value)
-				local ends_with = not (ends and k:sub(#k - #std.str(ends.value) + 1, #k) ~= ends.value)
+				local begins_with = begins and k:sub(1, #std.str(begins.value)) == begins.value
+				local ends_with = ends and k:sub(#k - #std.str(ends.value) + 1, #k) == ends.value
 				local does_contain = #contains == 0 and (not begins or not begins.value) and (not ends or not ends.value) --If there are no const parts, then we can't know.
 
 				for j = 1, #contains do
