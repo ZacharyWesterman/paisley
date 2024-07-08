@@ -2129,10 +2129,6 @@ function SemanticAnalyzer(tokens, root_file)
 					if std.contains(k, contains[j]) then does_contain = true end
 				end
 
-				print(begins_with)
-				print(ends_with)
-				print(does_contain)
-
 				if begins_with or ends_with or does_contain then
 					i.is_referenced = true
 				end
