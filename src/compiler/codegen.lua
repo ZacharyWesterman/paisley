@@ -1078,7 +1078,7 @@ function generate_bytecode(root, file)
 	end
 
 	emit(bc.label, EOF_LABEL)
-	for i = old_instr_ct, #instructions do
+	for i = old_instr_ct+1, #instructions do
 		local instr = instructions[i]
 		if instr and instr[1] == bc.label then
 			labels[instr[3]] = ct
