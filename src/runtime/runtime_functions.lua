@@ -1163,12 +1163,14 @@ COMMANDS = {
 		local new_stack_size = table.remove(INSTR_STACK)
 		CURRENT_INSTRUCTION = table.remove(INSTR_STACK)
 
-		--Put any subroutine return value in the "command return value" slot
-		V5 = table.remove(STACK)
+		if not p1 then
+			--Put any subroutine return value in the "command return value" slot
+			V5 = table.remove(STACK)
 
-		--Shrink stack back down to how big it should be
-		while new_stack_size < #STACK do
-			table.remove(STACK)
+			--Shrink stack back down to how big it should be
+			while new_stack_size < #STACK do
+				table.remove(STACK)
+			end
 		end
 	end,
 

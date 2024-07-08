@@ -900,7 +900,7 @@ function generate_bytecode(root, file)
 					emit(bc.push, true)
 
 					emit(bc.label, fail_label)
-					emit(bc.pop_goto_index)
+					emit(bc.pop_goto_index, true) --Unlike regular subroutines, don't clean up the stack here.
 				end
 
 			elseif is_const(token.children[1]) then
