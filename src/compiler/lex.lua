@@ -58,10 +58,10 @@ local opers = {
 }
 
 local oper_block = {
-	['/'] = '/',
-	['>'] = '=',
-	['<'] = '=',
-	['='] = '=',
+	['/'] = {'/'},
+	['>'] = {'='},
+	['<'] = {'='},
+	['='] = {'=', '>'},
 }
 
 local literals = {
@@ -372,7 +372,7 @@ function Lexer(text, file)
 					for key, value in pairs(opers) do
 						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^[%w_][%w_]') then
 							--Look ahead to avoid ambiguity with operators
-							if not oper_block[key] or text:sub(#key + 1, #key + 1) ~= oper_block[key] then
+							if not oper_block[key] or std.arrfind(oper_block[key], text:sub(#key + 1, #key + 1), 1) ~= 0 then
 								match = key
 								tok_type = value
 								break
