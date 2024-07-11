@@ -356,6 +356,8 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Round up: `ceil(value) -> number`
 - Round to nearest integer: `round(value) -> number`
 - Absolute value: `abs(value) -> number`
+- Convert a character to its ASCII value: `ascii(string) -> number`. Only the first character is considered, all others are ignored.
+- Convert an ASCII number to a character: `char(number) -> string`. If outside of the range 0-255, an empty string is returned. Non-integers are rounded down.
 - Append value to an array: `append(array, value) -> array`
 - Convert string to lowercase: `lower(text) -> string`
 - Convert string to uppercase: `upper(text) -> string`

@@ -78,6 +78,8 @@ BUILTIN_FUNCS = {
 	cosh = 1,
 	tanh = 1,
 	sign = 1,
+	ascii = 1,
+	char = 1,
 }
 
 TYPESIG = {
@@ -700,6 +702,22 @@ TYPESIG = {
 		--[[minify-delete]]
 		params = {'x'},
 		description = 'Sign of a number: -1 if negative, 0 if zero, 1 if positive',
+		--[[/minify-delete]]
+	},
+	ascii = {
+		valid = {{'string'}},
+		out = 'number',
+		--[[minify-delete]]
+		params = {'character'},
+		description = 'Convert a character to its ASCII value. Only the first character is considered, all others are ignored.',
+		--[[/minify-delete]]
+	},
+	char = {
+		valid = {{'number'}},
+		out = 'string',
+		--[[minify-delete]]
+		params = {'ascii_code'},
+		description = 'Convert an ASCII number to a character. If outside of the range 0-255, an empty string is returned. Non-integers are rounded down.',
 		--[[/minify-delete]]
 	},
 

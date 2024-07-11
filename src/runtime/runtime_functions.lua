@@ -1024,6 +1024,12 @@ local functions = {
 
 	--SIGN OF A NUMBER
 	function() PUSH(std.sign(std.num(POP()[1]))) end,
+
+	--CHAR TO ASCII
+	function() PUSH(string.byte(std.str(POP()[1]))) end,
+
+	--ASCII TO CHAR
+	function() PUSH(string.char(std.num(POP()[1]))) end,
 }
 
 --[[ INSTRUCTION LAYOUT

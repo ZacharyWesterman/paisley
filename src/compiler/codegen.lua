@@ -122,6 +122,8 @@ local call_codes = {
 	cosh = 102,
 	tanh = 103,
 	sign = 104,
+	ascii = 105,
+	char = 106,
 }
 
 local function bc_get_key(code, lookup)
