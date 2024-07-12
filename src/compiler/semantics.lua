@@ -80,6 +80,8 @@ BUILTIN_FUNCS = {
 	sign = 1,
 	ascii = 1,
 	char = 1,
+	begins_with = 2,
+	ends_with = 2,
 }
 
 TYPESIG = {
@@ -718,6 +720,22 @@ TYPESIG = {
 		--[[minify-delete]]
 		params = {'ascii_code'},
 		description = 'Convert an ASCII number to a character. If outside of the range 0-255, an empty string is returned. Non-integers are rounded down.',
+		--[[/minify-delete]]
+	},
+	begins_with = {
+		valid = {{'string'}},
+		out = 'boolean',
+		--[[minify-delete]]
+		params = {'search', 'substring'},
+		description = 'Check if the search string begins with the given substring.',
+		--[[/minify-delete]]
+	},
+	ends_with = {
+		valid = {{'string'}},
+		out = 'boolean',
+		--[[minify-delete]]
+		params = {'search', 'substring'},
+		description = 'Check if the search string ends with the given substring.',
 		--[[/minify-delete]]
 	},
 

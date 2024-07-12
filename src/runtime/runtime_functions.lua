@@ -1030,6 +1030,20 @@ local functions = {
 
 	--ASCII TO CHAR
 	function() PUSH(string.char(std.num(POP()[1]))) end,
+
+	--STRING BEGINS WITH
+	function()
+		local v = POP()
+		local search, substring = std.str(v[1]), std.str(v[2])
+		PUSH(search:sub(1, #substring) == substring)
+	end,
+	
+	--STRING ENDS WITH
+	function()
+		local v = POP()
+		local search, substring = std.str(v[1]), std.str(v[2])
+		PUSH(search:sub(#search - #substring + 1, #search) == substring)
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT

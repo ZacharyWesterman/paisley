@@ -355,6 +355,13 @@ FUNC_OPERATIONS = {
 	sign = std.sign,
 	ascii = function(char) return char:byte(1) end,
 	char = function(ascii) return string.char(ascii) end,
+
+	begins_with = function(search, substring)
+		return search:sub(1, #substring) == substring
+	end,
+	ends_with = function(search, substring)
+		return search:sub(#search - #substring + 1, #search) == substring
+	end,
 }
 
 local function number_op(v1, v2, operator)
