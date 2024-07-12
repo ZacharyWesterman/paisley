@@ -1,3 +1,4 @@
+#@export
 subroutine datetime.now
 	return {
 		'date' => ${sysdate},
@@ -5,6 +6,7 @@ subroutine datetime.now
 	}
 end
 
+#@export
 subroutine datetime.isoformat
 	return "{
 		(i.lpad('0',2) for i in @[1].date.reverse()).join('-')
@@ -13,6 +15,7 @@ subroutine datetime.isoformat
 	}"
 end
 
+#@export
 subroutine datetime.fromiso
 	let _dt = {@[1].split('T')}
 	return {
@@ -21,6 +24,7 @@ subroutine datetime.fromiso
 	}
 end
 
+#@export
 subroutine datetime.isiso
 	return {@[1] like '%d%d%d%d%-%d%d%-%d%dT%d%d:%d%d:%d%d'}
 end

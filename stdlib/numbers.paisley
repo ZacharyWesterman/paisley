@@ -1,3 +1,4 @@
+#@export
 subroutine numeral
 	let n_ = {abs(@[1])}
 
@@ -42,20 +43,29 @@ subroutine numeral
 	return {('negative ' if @[1] < 0 else '') result_}
 end
 
+#@export
 subroutine ordinal
 	let r_ = ${gosub numeral {@[1]}}
 
-	if {r_[(&r_-4)::] = 'three'} then
-		let r_ = {r_[1:(&r_-5)] 'third'}
-	elif {r_[(&r_-2)::] = 'two'} then
-		let r_ = {r_[1:(&r_-3)] 'second'}
-	elif {r_[(&r_-2)::] = 'one'} then
-		let r_ = {r_[1:(&r_-3)] 'first'}
-	elif {r_[&r_] = 'y'} then
-		let r_ = {r_[1:(&r_-1)] 'ieth'}
-	else
-		let r_ = {r_ 'th'}
+	let _repl = {
+		'twelve' => 'twelfth',
+		'nine' => 'ninth',
+		'eight' => 'eighth',
+		'five' => 'fifth',
+		'three' => 'third',
+		'two' => 'second',
+		'one' => 'first',
+	}
+
+	for k v in {pairs(_repl)} do
+		if {r_[(&r_ - &k + 1)::] = v} then
+			return {r_[1:(&r_ - &k)] v}
+		end
 	end
 
-	return {r_}
+	if {r_[&r_] = 'y'} then
+		return {r_[1:(&r_-1)] 'ieth'}
+	end
+
+	return {r_ 'th'}
 end
