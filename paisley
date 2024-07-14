@@ -11,6 +11,7 @@ local INTROSPECT_CMDS = {}
 local INTROSPECT_FUNCS = {}
 local INTROSPECT_FUNCLIST = false
 local INTROSPECT_CMDLIST = false
+local REFORMAT = false
 REPL = false
 LANGUAGE_SERVER = false
 RESTRICT_TO_PLASMA_BUILD = false
@@ -164,6 +165,8 @@ for i, v in ipairs(arg) do
 			table.insert(INTROSPECT_CMDS, v:sub(4,#v))
 		elseif v == '--repl' or v == '-r' then
 			REPL = true
+		elseif v == '--format' then
+			REFORMAT = true
 		elseif v:sub(1,8) == '--stdin=' then
 			LSP_FILENAME = v:sub(9, #v)
 		else
@@ -346,6 +349,34 @@ if not ENDED and REPL then
 	print('Type `stop` or press Ctrl-D to quit.')
 
 	require "src.repl"
+	ENDED = true
+end
+
+if REFORMAT and not ENDED then
+	if V2 == nil then
+		error('Error: No input file given. Use `-` to read from stdin, or re-run with `--help` to see all options.')
+	end
+
+	if lfs_installed and dir ~= nil then lfs.chdir(old_working_dir) end
+
+	if V2 == '-' then
+		V2 = nil
+		V1 = io.read('*all') --program text
+	else
+		--Read from file
+		local file = io.open(V2, 'rb')
+
+		if file then
+			V1 = file:read('*all')
+		else
+			error('Error: Cannot open file `'..V2..'`.')
+		end
+	end
+
+	if lfs_installed and dir ~= nil then lfs.chdir(dir) end
+
+	require 'src.reformat'
+
 	ENDED = true
 end
 
