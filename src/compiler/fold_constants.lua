@@ -356,10 +356,10 @@ FUNC_OPERATIONS = {
 	ascii = function(char) return char:byte(1) end,
 	char = function(ascii) return string.char(ascii) end,
 
-	begins_with = function(search, substring)
+	beginswith = function(search, substring)
 		return search:sub(1, #substring) == substring
 	end,
-	ends_with = function(search, substring)
+	endswith = function(search, substring)
 		return search:sub(#search - #substring + 1, #search) == substring
 	end,
 }

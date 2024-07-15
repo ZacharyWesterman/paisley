@@ -124,8 +124,8 @@ local call_codes = {
 	sign = 104,
 	ascii = 105,
 	char = 106,
-	begins_with = 107,
-	ends_with = 108,
+	beginswith = 107,
+	endswith = 108,
 }
 
 local function bc_get_key(code, lookup)
