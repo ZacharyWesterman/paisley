@@ -376,7 +376,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Remove all characters that do not match the given pattern: `filter(text, pattern) -> string`
 - Get all substrings that match the given pattern: `matches(text, pattern) -> array[string]`
 - Convert a "seconds since midnight" timestamp into (hour, min, sec, milli): `clocktime(value) -> array`
-- Reduce an array to a single element: `reduce(array, operator) -> any`, e.g. `reduce(1:9, +)` sums the numbers from 1 to 9, resulting in 45
+- Reduce an array to a single element: `reduce(array, operator) -> any`, e.g. `reduce(1:9, +)` sums the numbers from 1 to 9, resulting in 45. *This works for any boolean or arithmetic operator!*
 - Reverse an array or a string: `reverse(array) -> array` or `reverse(string) -> string`
 - Sort an array in ascending order: `sort(array) -> array`
 - Join two arrays together: `merge(array, array) -> array`
