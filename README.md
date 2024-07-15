@@ -464,6 +464,7 @@ print {object.name}
 Like with arrays, object values can be added or changed with the following syntax,
 ```
 let object{'name'} = 'Jekyll'
+let object{'friend', 'name'} = 'Hyde'
 ```
 However, you cannot use the append syntax on an object, as it does not make sense in that context. So the following will not work:
 ```
