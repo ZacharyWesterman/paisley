@@ -292,7 +292,7 @@ Expressions also give access to a full suite of operators and functions, listed 
 - *integer* division, `//` (divide then round down)
 - remainder/modulo, `%`
 - exponentiation, `^`, e.g. `a^3` raises `a` to the 3rd power.
-- boolean operators, `and`, `or`, `xor`, `not`
+- boolean operators, `and`, `or`, `xor`, `not`. Note that these operators do NOT short-cut, i.e. given an expression `a and b`, `b` is evaluated even if `a` is false.
 - comparison, `>`, `>=`, `<`, `<=`
 - comparison (equality), `=` or `==` (both are the same)
 - comparison (not equal), `!=` or `~=` (both are the same)
