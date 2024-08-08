@@ -2034,11 +2034,13 @@ function SemanticAnalyzer(tokens, root_file)
 			end
 			--[[/minify-delete]]
 
+			--[[minify-delete]] if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
 			token.children[ix] = {
 				id = id,
 				span = token.children[ix].span,
 				text = text,
 			}
+			--[[minify-delete]] end --[[/minify-delete]]
 		end
 	end)
 
@@ -2052,7 +2054,9 @@ function SemanticAnalyzer(tokens, root_file)
 			end
 			--[[/minify-delete]]
 
+			--[[minify-delete]] if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
 			token.children = { cond }
+			--[[minify-delete]] end --[[/minify-delete]]
 		end
 	end)
 	recurse(root, {TOK.for_stmt}, function(token, file)
@@ -2064,7 +2068,9 @@ function SemanticAnalyzer(tokens, root_file)
 			end
 			--[[/minify-delete]]
 
+			--[[minify-delete]] if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
 			token.children[3] = nil
+			--[[minify-delete]] end --[[/minify-delete]]
 		end
 	end)
 
@@ -2209,7 +2215,9 @@ function SemanticAnalyzer(tokens, root_file)
 
 		for i = 1, #token.children do
 			if dead_code_span then
+				--[[minify-delete]] if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
 				token.children[i] = nil
+				--[[minify-delete]] end --[[/minify-delete]]
 			else
 				local node = token.children[i]
 				if node.id == TOK.kwd_stop or node.id == TOK.return_stmt or node.id == TOK.continue_stmt or node.id == TOK.break_stmt then

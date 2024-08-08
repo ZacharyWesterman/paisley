@@ -20,6 +20,7 @@ PRINT_AST = false
 AST_AFTER_SEMANTIC = false
 WORKING_DIR = ''
 LSP_FILENAME = ''
+KEEP_DEAD_CODE = false
 
 local ENDED = false
 
@@ -166,6 +167,8 @@ for i, v in ipairs(arg) do
 			REPL = true
 		elseif v:sub(1,8) == '--stdin=' then
 			LSP_FILENAME = v:sub(9, #v)
+		elseif v == '--no-prune-dead-code' then
+			KEEP_DEAD_CODE = true
 		else
 			error('Unknown flag `'..v..'`. Try running with `--help` to see all options.')
 		end
