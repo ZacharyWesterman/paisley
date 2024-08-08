@@ -1215,7 +1215,7 @@ function SyntaxParser(tokens, file)
 				return false
 			end
 
-			if (id ~= TOK.command and id ~= TOK.kwd_stop and id < TOK.program) or id == TOK.else_stmt or id == TOK.elif_stmt then
+			if (id and id ~= TOK.command and id ~= TOK.kwd_stop and id < TOK.program) or id == TOK.else_stmt or id == TOK.elif_stmt then
 				parse_error(Span:new(1, 1, 1, 1), 'Unexpected token "'..new_tokens[1].text..'"', file)
 			end
 
