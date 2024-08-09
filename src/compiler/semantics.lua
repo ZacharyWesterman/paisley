@@ -1443,7 +1443,7 @@ function SemanticAnalyzer(tokens, root_file)
 			--ignore "define" pseudo-command
 			if ch.value == 'define' then return end
 
-			if ch.value ~= nil and ch.id ~= TOK.lit_null then
+			if ch.value ~= nil and ch.id ~= TOK.lit_null and token.id == TOK.command then
 				if not ALLOWED_COMMANDS[ch.value] and not BUILTIN_COMMANDS[ch.value] then
 					--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
 					local msg = 'Unknown command "'..std.str(ch.value)..'"'
