@@ -1902,10 +1902,12 @@ function SemanticAnalyzer(tokens, root_file)
 	--If running as language server, print type info for any variable declarations or command calls.
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then
-		recurse(root, {TOK.let_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.inline_command, TOK.subroutine}, function(token, file)
+		recurse(root, {TOK.let_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.inline_command, TOK.command, TOK.subroutine}, function(token, file)
 			local var = token.children[1]
-			if token.id == TOK.inline_command then
-				local cmd = var.children[1]
+			if token.id == TOK.inline_command or token.id == TOK.command then
+				local cmd = var
+				if token.id == TOK.inline_command then cmd = cmd.children[1] end
+
 				if cmd.value then
 					if var.id == TOK.gosub_stmt then
 						if labels[cmd.text] then
@@ -1925,10 +1927,13 @@ function SemanticAnalyzer(tokens, root_file)
 							tp = BUILTIN_COMMANDS[cmd.value]
 						end
 
-						if tp == 'null' then
-							INFO.info(cmd.span, 'Command `'..cmd.text..'` always returns null, so using an inline command eval here is not helpful', file)
-						elseif tp then
+						if token.id == TOK.command and tp then
+							INFO.hint(cmd.span, _G['CMD_DESCRIPTION'][cmd.text], file)
 							INFO.hint(cmd.span, 'returns: '..tp, file)
+						end
+
+						if token.id == TOK.inline_command and tp == 'null' then
+							INFO.info(cmd.span, 'Command `'..cmd.text..'` always returns null, so using an inline command eval here is not helpful', file)
 						end
 					end
 				end

@@ -21,6 +21,11 @@ local socket_installed, socket = pcall(require, 'socket')
 ENDED = false
 
 local line_no = 0
+local CMD_LAST_RESULT = {
+	['!'] = '', --stdout of command
+	['?'] = nil, --result of execution
+}
+
 function output(value, port)
 	if port == 1 then
 		--continue program
@@ -67,6 +72,33 @@ function output(value, port)
 		V5 = nil
 	elseif port == 8 then
 		--value is current line number
+	elseif port == 9 then
+		--Get the output of the last run unix command
+		if value[2] == '' then
+			V5 = CMD_LAST_RESULT[value[1]]
+			return
+		end
+
+		--Run new unix command
+		CMD_LAST_RESULT = {
+			['!'] = '', --stdout of command
+			['?'] = nil, --result of execution
+		}
+
+		local program = io.popen(value[2] .. ' 2>&1', 'r')
+		if program then
+			local line = program:read('*L')
+			while line do
+				if value[1] ~= '!' then print(line) end
+				CMD_LAST_RESULT['!'] = CMD_LAST_RESULT['!'] .. line
+
+				line = program:read('*l')
+			end
+
+			CMD_LAST_RESULT['?'] = program:close()
+		end
+
+		V5 = CMD_LAST_RESULT[value[1]]
 	else
 		print(port, json.stringify(value))
 	end

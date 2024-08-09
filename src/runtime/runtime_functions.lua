@@ -1037,7 +1037,7 @@ local functions = {
 		local search, substring = std.str(v[1]), std.str(v[2])
 		PUSH(search:sub(1, #substring) == substring)
 	end,
-	
+
 	--STRING ENDS WITH
 	function()
 		local v = POP()
@@ -1156,6 +1156,12 @@ COMMANDS = {
 				---@diagnostic disable-next-line
 				if file then msg = file..': '..msg end
 				output_array({"error", msg}, 7)
+
+				--[[minify-delete]]
+			elseif cmd_name == '!' or cmd_name == '?' then
+				table.remove(command_array, 1)
+				output_array({cmd_name, std.join(cmd_array, ' ')}, 9)
+				--[[/minify-delete]]
 			else
 				runtime_error(line, 'RUNTIME BUG: No logic implemented for built-in command "'..command_array[1]..'"')
 			end

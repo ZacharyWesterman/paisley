@@ -10,6 +10,8 @@ BUILTIN_COMMANDS = {
 	"stdin:string",
 	"stdout:null",
 	"stderr:null",
+	"!:string",
+	"?:boolean",
 	--[[/minify-delete]]
 }
 
@@ -25,6 +27,8 @@ CMD_DESCRIPTION = {
 	stdin = 'Read a line of text from stdin.',
 	stdout = 'Write text to stdout, with no line ending.',
 	stderr = 'Write text to stderr, with no line ending.',
+	['!'] = 'Execute a unix command, capturing the output. Run with no params to output the result of the last command.',
+	['?'] = 'Execute a unix command, capturing the return value. Run with no params to output the result of the last command.',
 }
 --[[/minify-delete]]
 
@@ -48,5 +52,7 @@ if _G['RESTRICT_TO_PLASMA_BUILD'] then
 	BUILTIN_COMMANDS['stdin'] = nil
 	BUILTIN_COMMANDS['stdout'] = nil
 	BUILTIN_COMMANDS['stderr'] = nil
+	BUILTIN_COMMANDS['!'] = nil
+	BUILTIN_COMMANDS['?'] = nil
 end
 --[[/minify-delete]]
