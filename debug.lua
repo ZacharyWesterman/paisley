@@ -157,7 +157,7 @@ if RUN_PROGRAM then
 
 			local program = io.popen(value[2] .. ' 2>&1', 'r')
 			if program then
-				local line = program:read('*L')
+				local line = program:read('*l')
 				while line do
 					if value[1] ~= '!' then print(line) end
 					CMD_LAST_RESULT['!'] = CMD_LAST_RESULT['!'] .. line
