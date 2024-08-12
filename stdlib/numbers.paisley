@@ -58,7 +58,7 @@ subroutine ordinal
 	}
 
 	for k v in {pairs(_repl)} do
-		if {r_[(&r_ - &k + 1)::] = v} then
+		if {r_.endswith(k)} then
 			return {r_[1:(&r_ - &k)] v}
 		end
 	end
