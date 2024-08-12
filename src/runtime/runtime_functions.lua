@@ -66,7 +66,13 @@ local function mathfunc(funcname)
 		---@diagnostic disable-next-line
 		if not u then u = unpack end
 
-		PUSH(math[funcname](u(v)))
+		--If null was passed to the function, in a way that could not be determined at compile time, coerce it to be zero.
+		if #p == 0 then
+			print('WARNING: line '..line..': Null passed to math function, coerced to 0')
+			p = {0}
+		end
+
+		PUSH(math[funcname](u(p)))
 	end
 end
 

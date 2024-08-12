@@ -1069,7 +1069,7 @@ function SemanticAnalyzer(tokens, root_file)
 
 			local label = token.text
 			local prev = labels[label]
-			if prev ~= nil then
+			if prev ~= nil --[[minify-delete]] and not _G['ALLOW_SUBROUTINE_ELISION'] --[[/minify-delete]] then
 				-- Don't allow tokens to be redeclared
 				parse_error(token.span, 'Redeclaration of subroutine "'..label..'" (previously declared on line '..prev.span.from.line..', col '..prev.span.from.col..')', file)
 			end
@@ -1092,7 +1092,9 @@ function SemanticAnalyzer(tokens, root_file)
 
 	--Check subroutine references.
 	recurse(root, {TOK.gosub_stmt}, function(token, file)
-		token.children = token.children[1].children
+		--[[minify-delete]] if token.children[1].id == TOK.command then --[[/minify-delete]]
+			token.children = token.children[1].children
+		--[[minify-delete]] end --[[/minify-delete]]
 	end)
 
 	--Resolve all lambda references
@@ -1268,7 +1270,7 @@ function SemanticAnalyzer(tokens, root_file)
 				token.value = token.children[1].text
 				token.children = nil
 			end
-		else
+		elseif not token.value then
 			token.value = ''
 		end
 	end)
@@ -1333,7 +1335,7 @@ function SemanticAnalyzer(tokens, root_file)
 
 	--Tidy up WHILE loops and IF/ELIF statements (replace command with cmd contents)
 	recurse(root, {TOK.while_stmt, TOK.if_stmt, TOK.elif_stmt}, function(token, file)
-		if token.children[1].id ~= TOK.gosub_stmt then
+		if token.children[1].id == TOK.command then
 			if #token.children[1].children > 1 then
 				parse_error(token.span, 'Too many parameters passed to "'..token.text..'" statement', file)
 			end

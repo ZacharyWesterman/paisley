@@ -3,6 +3,9 @@ function error(text)
 	ERRORED = true
 end
 
+KEEP_DEAD_CODE = true
+ALLOW_SUBROUTINE_ELISION = true --Allow any redeclaration of a subroutine to elide any existing definition, rather than error.
+
 require "src.shared.stdlib"
 require "src.shared.json"
 require "src.shared.closest_word"
@@ -197,46 +200,6 @@ for input_line in function() return io.read('*l') end do
 			token_cache = {}
 		end
 
-		--If this group contained a subroutine, cache it.
-		local sub = {}
-		local nonsub = {}
-		local sub_indent = 0
-		local sub_label = nil
-		for i = 1, #token_cache do
-			if sub_indent == 0 and token_cache[i].id == TOK.kwd_subroutine and i < #token_cache and token_cache[i+1].id == TOK.text then
-				sub_indent = sub_indent + 1
-				sub_label = token_cache[i+1].text
-				sub[sub_label] = {}
-			end
-
-			if sub_indent > 0 then
-				if indent_tokens[token_cache[i].id] then sub_indent = sub_indent + 1
-				elseif dedent_tokens[token_cache[i].id] then sub_indent = sub_indent - 1 end
-
-
-				table.insert(sub[sub_label], token_cache[i])
-			else
-				table.insert(nonsub, token_cache[i])
-			end
-		end
-		--Pull in the rest of the cache
-		for i, k in pairs(subroutine_cache) do
-			if sub[i] == nil then sub[i] = k end
-		end
-
-		--Reappend cache into program.
-		token_cache = nonsub
-		for i, k in pairs(sub) do
-			for j = 1, #k do
-				table.insert(token_cache, {
-					text = k[j].text,
-					id = k[j].id,
-					span = k[j].span,
-					value = k[j].value,
-				})
-			end
-		end
-
 		--Parse the tokens into an AST
 		local parser = SyntaxParser(token_cache)
 		while parser.fold() do if ERRORED then break end end
@@ -244,18 +207,40 @@ for input_line in function() return io.read('*l') end do
 		--Run semantic analysis
 		local root = nil
 		if not ERRORED and #parser.get() > 0 then
+			root = parser.get()
+
+			--Reappend subroutine cache into program.
+			for _, subroutine_ast in pairs(subroutine_cache) do
+				root[1] = {
+					id = TOK.program,
+					span = root[1].span,
+					text = 'stmt_list',
+					children = { subroutine_ast, root[1], },
+				}
+			end
+
 			root = SemanticAnalyzer(parser.get())
 		end
 
 		--If we didn't hit any compile errors, then add any subroutines to the cache.
-		if not ERRORED then
-			for i, k in pairs(sub) do
-				subroutine_cache[i] = k
+		if not ERRORED and root then
+			--Fun simplification available here:
+			--Since Paisley requires all subroutines to be defined at the top level
+			--(and program nodes get flattened), we don't have to do a full recursive search.
+			--Just check if the root node IS or CONTAINS subroutines.
+			if root.id == TOK.subroutine then
+				subroutine_cache[root.text] = root
+			elseif root.id == TOK.program then
+				for i = 1, #root.children do
+					if root.children[i].id == TOK.subroutine then
+						subroutine_cache[root.children[i].text] = root.children[i]
+					end
+				end
 			end
 		end
 
 		--Generate bytecode
-		bytecode = nil
+		local bytecode = nil
 		if not ERRORED and root then
 			bytecode = generate_bytecode(root)
 		end
