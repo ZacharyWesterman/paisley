@@ -316,11 +316,12 @@ local rules = {
 
 	--Special "{value not in array}" syntax
 	{
-		match = {{TOK.array_concat, TOK.boolean, TOK.comparison}, {TOK.op_not}, {TOK.op_in}, {TOK.array_concat, TOK.boolean, TOK.comparison}},
+		match = {{TOK.array_concat, TOK.boolean, TOK.comparison}, {TOK.op_not}, {TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_in, TOK.op_like}, {TOK.array_concat, TOK.boolean, TOK.comparison}},
 		id = TOK.boolean,
 		keep = {1, 4},
 		text = 3,
-		not_after = {TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod},
+		not_after = {TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le},
+		not_before = {TOK.index_open, TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le},
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
