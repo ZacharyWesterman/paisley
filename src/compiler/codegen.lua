@@ -16,117 +16,7 @@ local bc = {
 	pop_until_null = 13,
 }
 
-local call_codes = {
-	jump = 0,
-	jumpifnil = 1,
-	jumpiffalse = 2,
-	explode = 3,
-	implode = 4,
-	superimplode = 5,
-	add = 6,
-	sub = 7,
-	mul = 8,
-	div = 9,
-	rem = 10,
-	length = 11,
-	arrayindex = 12,
-	arrayslice = 13,
-	concat = 14,
-	booland = 15,
-	boolor = 16,
-	boolxor = 17,
-	inarray = 18,
-	strlike = 19,
-	equal = 20,
-	notequal = 21,
-	greater = 22,
-	greaterequal = 23,
-	less = 24,
-	lessequal = 25,
-	boolnot = 26,
-	varexists = 27,
-	random_int = 28,
-	random_float = 29,
-	word_diff = 30,
-	dist = 31,
-	sin = 32,
-	cos = 33,
-	tan = 34,
-	asin = 35,
-	acos = 36,
-	atan = 37,
-	atan2 = 38,
-	sqrt = 39,
-	sum = 40,
-	mult = 41,
-	pow = 42,
-	min = 43,
-	max = 44,
-	split = 45,
-	join = 46,
-	type = 47,
-	bool = 48,
-	num = 49,
-	str = 50,
-	floor = 51,
-	ceil = 52,
-	round = 53,
-	abs = 54,
-	append = 55,
-	index = 56,
-	lower = 57,
-	upper = 58,
-	camel = 59,
-	replace = 60,
-	json_encode = 61,
-	json_decode = 62,
-	json_valid = 63,
-	b64_encode = 64,
-	b64_decode = 65,
-	lpad = 66,
-	rpad = 67,
-	hex = 68,
-	filter = 69,
-	matches = 70,
-	clocktime = 71,
-	reverse = 72,
-	sort = 73,
-	bytes = 74,
-	frombytes = 75,
-	merge = 76,
-	update = 77,
-	insert = 78,
-	delete = 79,
-	lerp = 80,
-	random_element = 81,
-	hash = 82,
-	object = 83,
-	array = 84,
-	keys = 85,
-	values = 86,
-	pairs = 87,
-	interleave = 88,
-	unique = 89,
-	union = 90,
-	intersection = 91,
-	difference = 92,
-	symmetric_difference = 93,
-	is_disjoint = 94,
-	is_subset = 95,
-	is_superset = 96,
-	count = 97,
-	find = 98,
-	flatten = 99,
-	smoothstep = 100,
-	sinh = 101,
-	cosh = 102,
-	tanh = 103,
-	sign = 104,
-	ascii = 105,
-	char = 106,
-	beginswith = 107,
-	endswith = 108,
-}
+require "src.compiler.functions.codes"
 
 local function bc_get_key(code, lookup)
 	for k, i in pairs(lookup) do
@@ -148,7 +38,7 @@ function print_bytecode(instructions, file)
 		end
 
 		if instr[1] == bc.call then
-			call_text = bc_get_key(call_text, call_codes)
+			call_text = bc_get_key(call_text, CALL_CODES)
 		end
 
 		if not instr_text then
@@ -192,17 +82,17 @@ function generate_bytecode(root, file)
 
 	local function emit(instruction_id, param1, param2)
 		if instruction_id == bc.call then
-			if not call_codes[param1] then
+			if not CALL_CODES[param1] then
 				parse_error(Span:new(current_line, 0, current_line, 0), 'COMPILER BUG: No call code for function "'..std.str(param1)..'"!', file)
 			end
-			param1 = call_codes[param1]
+			param1 = CALL_CODES[param1]
 		end
 
 		table.insert(instructions, {instruction_id, current_line, param1, param2})
 
 		local instr_text = bc_get_key(instruction_id, bc)
 		local call_text = param1
-		if instruction_id == bc.call then call_text = bc_get_key(param1, call_codes) end
+		if instruction_id == bc.call then call_text = bc_get_key(param1, CALL_CODES) end
 
 		if not instr_text then
 			parse_error(Span:new(current_line, 0, current_line, 0), 'COMPILER BUG: Unknown bytecode instruction with id '..instruction_id..'!', file)
@@ -619,7 +509,7 @@ function generate_bytecode(root, file)
 			--SMALL OPTIMIZATION:
 			--If previously emitted token was an "implode" and then we're "exploding"
 			--Just remove the previous token!
-			if instructions[#instructions][3] == call_codes.implode then
+			if instructions[#instructions][3] == CALL_CODES.implode then
 				table.remove(instructions)
 			else
 				emit(bc.call, 'explode')
@@ -654,7 +544,7 @@ function generate_bytecode(root, file)
 			--SMALL OPTIMIZATION:
 			--If previously emitted token was an "implode" and then we're "exploding"
 			--Just remove the previous token!
-			if instructions[#instructions][4] == call_codes.implode then
+			if instructions[#instructions][4] == CALL_CODES.implode then
 				table.remove(instructions)
 			else
 				emit(bc.call, 'explode')
@@ -737,7 +627,7 @@ function generate_bytecode(root, file)
 			--SMALL OPTIMIZATION:
 			--If previously emitted token was an "implode" and then we're "exploding"
 			--Just remove the previous token!
-			if instructions[#instructions][3] == call_codes.implode then
+			if instructions[#instructions][3] == CALL_CODES.implode then
 				table.remove(instructions)
 			else
 				emit(bc.call, 'explode')
@@ -1121,7 +1011,7 @@ function generate_bytecode(root, file)
 	for i = 1, #result2 do
 		local instr = result2[i]
 		--CLEAN OUT LABEL REFERENCES
-		if instr[1] == bc.call and (instr[3] == call_codes.jump or instr[3] == call_codes.jumpifnil or instr[3] == call_codes.jumpiffalse) then
+		if instr[1] == bc.call and (instr[3] == CALL_CODES.jump or instr[3] == CALL_CODES.jumpifnil or instr[3] == CALL_CODES.jumpiffalse) then
 			if instr[4] ~= nil then
 				if labels[instr[4]] == nil then
 					parse_error(Span:new(instr[2], 0, instr[2], 0), 'COMPILER BUG: Attempt to reference unknown label of ID "'..std.str(instr[4])..'"!', file)
