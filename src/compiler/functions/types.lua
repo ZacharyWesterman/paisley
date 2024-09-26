@@ -654,6 +654,14 @@ TYPESIG = {
 		description = 'Check if the search string ends with the given substring.',
 		--[[/minify-delete]]
 	},
+	numeric_string = {
+		valid = {{'number'}},
+		out = 'string',
+		--[[minify-delete]]
+		params = {'number', 'base', 'pad_width'},
+		description = 'Convert a number to a numeric string of any base from 2 to 36.',
+		--[[/minify-delete]]
+	},
 
 	[TOK.add] = {
 		valid = {{'number'}, {'array[number]'}},

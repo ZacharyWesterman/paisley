@@ -83,4 +83,5 @@ BUILTIN_FUNCS = {
 	char = 1,
 	beginswith = 2,
 	endswith = 2,
+	numeric_string = 3,
 }

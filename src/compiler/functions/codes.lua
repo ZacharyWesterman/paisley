@@ -110,4 +110,5 @@ CALL_CODES = {
 	char = 106,
 	beginswith = 107,
 	endswith = 108,
+	numeric_string = 109,
 }

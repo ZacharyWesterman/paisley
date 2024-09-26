@@ -462,5 +462,52 @@ std = {
 		return number / math.abs(number)
 	end,
 
+	---Convert a number to a numeric string of any base (in the range 2-36).
+	---Values both before and after the decimal point are included in the output.
+	---@param number number The number to convert to a numeric string.
+	---@param base number The base of the number, clamped to [2,36] and rounded down.
+	---@param pad_width number The minimum width of the output string.
+	---@return string
+	numeric_string = function(number, base, pad_width)
+		local FRACT_DIGITS = 6
+		local FRACT_MIN = 0.000001
+
+		base = math.min(36, math.max(2, math.floor(base)))
+		pad_width = math.max(0, math.floor(pad_width))
+
+		local result = ''
+		local integral = math.floor(number)
+		local fractional = number - integral
+
+		local function to_base(digit)
+			if digit > 9 then
+				return string.char(87 + digit) -- 'a'
+			end
+			return string.char(48 + digit) -- '0'
+		end
+		
+		--Generate integer part
+		while integral > 0 do
+			result = to_base(integral % base) .. result
+			integral = math.floor(integral / base)
+		end
+
+		--Generate fractional part
+		if fractional > FRACT_MIN then
+			result = result .. '.'
+			for i = 1, FRACT_DIGITS do
+				fractional = fractional * base
+				result = result .. to_base(math.floor(fractional))
+				if fractional < FRACT_MIN then break end --Exit early if remaining fractional part is very small
+			end
+		end
+
+		--Pad to the specified width
+		if #result < pad_width then
+			result = string.rep('0', pad_width - #result) .. result
+		end
+		return result
+	end,
+
 	MAX_ARRAY_LEN = 32768, --Any larger than this and performance tanks
 }

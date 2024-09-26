@@ -362,4 +362,5 @@ FUNC_OPERATIONS = {
 	endswith = function(search, substring)
 		return search:sub(#search - #substring + 1, #search) == substring
 	end,
+	numeric_string = std.numeric_string,
 }

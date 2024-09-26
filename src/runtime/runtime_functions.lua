@@ -1050,6 +1050,13 @@ local functions = {
 		local search, substring = std.str(v[1]), std.str(v[2])
 		PUSH(search:sub(#search - #substring + 1, #search) == substring)
 	end,
+
+	--CONVERT NUMBER TO NUMERIC STRING
+	function()
+		local v = POP()
+		local number, base, pad_width = std.num(v[1]), std.num(v[2]), std.num(v[3])
+		PUSH(std.numeric_string(number, base, pad_width))
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT
