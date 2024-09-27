@@ -348,11 +348,11 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Find the index of the nth occurrence of a value in an array or string: `find(array/string, value, n) -> number`. Returns 0 if not found.
 - Find the index of the first occurrence of a value in an array or string: `index(array/string, value) -> number`. Returns 0 if not found.
 - Get data type: `type(value) -> string`. Output will be one of "null", "boolean", "number", "string", "array", or "object"
-- Convert to boolean: `bool(value)`
-- Convert to number: `num(value)`
-- Convert to integer: `int(value)`
-- Convert to string: `str(value)`
-- Convert a number to a numeric string of any base: `numeric_string(value, base, pad_width)`
+- Convert to boolean: `bool(value) -> boolean`
+- Convert to number: `num(value) -> number`
+- Convert to integer: `int(value) -> number`. This is functionally equivalent to `floor(num(value))`
+- Convert to string: `str(value) -> string`
+- Convert a number of any base to a string: `numeric_string(value, base, pad_width) -> string`
 - Round down: `floor(value) -> number`
 - Round up: `ceil(value) -> number`
 - Round to nearest integer: `round(value) -> number`
