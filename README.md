@@ -352,6 +352,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Convert to number: `num(value)`
 - Convert to integer: `int(value)`
 - Convert to string: `str(value)`
+- Convert a number to a numeric string of any base: `numeric_string(value, base, pad_width)`
 - Round down: `floor(value) -> number`
 - Round up: `ceil(value) -> number`
 - Round to nearest integer: `round(value) -> number`
