@@ -1,0 +1,24 @@
+subroutine option_1
+    print "This is the first subroutine!"
+end
+
+subroutine option_2
+    print "Here is the second!"
+end
+
+subroutine option_3
+    print "And I am the third one!"
+end
+
+subroutine ignored
+    print "This subroutine will NEVER get called"
+end
+
+#Choose a random subroutine to jump to
+#Note how dynamic `gosub` MUST be in an if statement; the jump might fail if `number` is some other value.
+let number = {random_int(1, 3)}
+if gosub "option_{number}" then
+    print "Success"
+else
+    print "Subroutine does not exist"
+end
