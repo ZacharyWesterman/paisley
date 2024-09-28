@@ -994,8 +994,10 @@ function SemanticAnalyzer(tokens, root_file)
 						local child = var
 						if i > 1 then child = var.children[i-1] end
 						set_var(child, tp)
-						child.type = tp
-						deduced_variable_types = true
+						if not child.type then
+							child.type = tp
+							deduced_variable_types = true
+						end
 					end
 				end
 			elseif tp ~= nil then
@@ -1165,11 +1167,12 @@ function SemanticAnalyzer(tokens, root_file)
 				var = token.children[2]
 				if var.type then INFO.hint(var.span, 'type: '..var.type, file) end
 			else
-				while var do
-					if var.type then INFO.hint(var.span, 'type: '..var.type, file) end
-
-					---@diagnostic disable-next-line: cast-local-type
-					if var.children then var = var.children[1] else var = nil end
+				--Variable declarations
+				if var.type then INFO.hint(var.span, 'type: '..var.type, file) end
+				if var.children then
+					for _,kid in ipairs(var.children) do
+						if kid.type then INFO.hint(kid.span, 'type: '..kid.type, file) end
+					end
 				end
 			end
 		end)
