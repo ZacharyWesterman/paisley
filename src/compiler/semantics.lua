@@ -685,6 +685,8 @@ function SemanticAnalyzer(tokens, root_file)
 					token.type = BUILTIN_COMMANDS[ch.value]
 				end
 			end
+
+			if token.id == TOK.inline_command then token.type = token.children[1].type end
 			return
 		end
 
@@ -994,10 +996,8 @@ function SemanticAnalyzer(tokens, root_file)
 						local child = var
 						if i > 1 then child = var.children[i-1] end
 						set_var(child, tp)
-						if not child.type then
-							child.type = tp
-							deduced_variable_types = true
-						end
+						child.type = tp
+						deduced_variable_types = true
 					end
 				end
 			elseif tp ~= nil then
