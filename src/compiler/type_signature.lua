@@ -1,6 +1,18 @@
 ---Generate a type signature object allow easy comparison of complex types.
----@warning The Plasma build of this does not check for valid syntax.
----@param signature any
+---The following types are valid:
+---array       object
+---string      number
+---boolean     null
+---any
+---
+---For values that may be any of multiple types, you can separate the types with a bar,
+---e.g. "string|number". Or you may use "any" to indicate that the result could be anything.
+---
+---Arrays and objects may have an optional subtype, e.g. "array[number]". if not specified,
+---this subtype will default to "any".
+--- 
+---@param signature string A type signature string representation.
+---@return table TypeSignature A table representing a type signature. This should not be manipulated directly, instead use the functions in this file.
 function SIGNATURE(signature)
 	local patterns = {'^%w+', '^|', '^%[', '^%]'}
 	local typenames = {any = true, object = true, array = true, string = true, number = true, boolean = true, null = true,}
@@ -23,17 +35,15 @@ function SIGNATURE(signature)
 		for i = 1, #patterns do
 			m = sig:match(patterns[i])
 			if m then
-				if i == 3 then
+				if i == 1 and not typenames[m] then
+					do_error('Invalid type "'..m..'"', #signature - #sig)
+				elseif i == 3 then
 					bracket_ct = bracket_ct + 1
 				elseif i == 4 then
 					bracket_ct = bracket_ct - 1
-					--[[minify-delete]]
 					if bracket_ct < 0 then
 						do_error('Bracket mismatch', #signature - #sig)
 					end
-				elseif i == 1 and not typenames[m] then
-					do_error('Invalid type "'..m..'"', #signature - #sig)
-					--[[/minify-delete]]
 				end 
 
 				table.insert(tokens, {text = m, kind = i})
@@ -42,59 +52,45 @@ function SIGNATURE(signature)
 			end
 		end
 
-		--[[minify-delete]]
 		if not m then
 			do_error('Invalid character', #signature - #sig)
 		end
-		--[[/minify-delete]]
 	end
-	--[[minify-delete]]
 	if bracket_ct > 0 then
 		do_error('Bracket mismatch', #signature - #sig)
 	end
-	--[[/minify-delete]]
 
 	--Parse signature into a valid type tree
-	--[[minify-delete]]
 	local function do_error(message)
 		error(message .. ' in type signature "'..signature..'"')
 	end
-	--[[/minify-delete]]
 	local function ast(index)
 		local opt, i, exp_delim, subtypes, found = {}, index, false, nil, {}
 
 		while i > 0 do
 			local t = tokens[i]
 			if t.kind == 2 then
-				--[[minify-delete]]
 				if not exp_delim then
 					do_error('Unexpected bar')
 				end
-				--[[/minify-delete]]
 				exp_delim = false
 			else
-				--[[minify-delete]]
 				if exp_delim and t.kind ~= 3 then
 					do_error('Missing bar')
 				end
-				--[[/minify-delete]]
 
 				if t.kind == 1 then
 					if t.text == 'object' or t.text == 'array' then
 						if not subtypes then subtypes = {any = {type = 'any'}} end
-					--[[minify-delete]]
 					elseif subtypes then
 						do_error('Type "'..t.text..'" cannot have a subtype')
-					--[[/minify-delete]]
 					end
 
-					--[[minify-delete]]
 					if opt[t.text] then
 						do_error('Redundant use of type "'..t.text..'"')
 					elseif opt.any then
 						do_error('Cannot mix "any" with other types')
 					end
-					--[[/minify-delete]]
 
 					exp_delim = true
 					opt[t.text] = {
@@ -105,11 +101,9 @@ function SIGNATURE(signature)
 				elseif t.kind == 4 then
 					subtypes, i = ast(i - 1)
 				elseif t.kind == 3 then
-					--[[minify-delete]]
 					if found.any and #opt > 1 then
 						do_error('Cannot mix "any" with other types')
 					end
-					--[[/minify-delete]]
 					return opt, i
 				end
 			end
@@ -123,6 +117,11 @@ function SIGNATURE(signature)
 	return ast(#tokens)
 end
 
+---Check if two type signatures can match up.
+---E.g. "any" and "string" are similar enough, "number|string" and "string" are similar enough, etc.
+---@param lhs table The first type signature to compare.
+---@param rhs table The second type signature to compare.
+---@return boolean is_similar True if the have any subtypes that match, false otherwise.
 function SIMILAR_TYPE(lhs, rhs)
 	if lhs.any or rhs.any then return true end
 
@@ -137,6 +136,22 @@ function SIMILAR_TYPE(lhs, rhs)
 	end
 
 	return false
+end
+
+---Convert a type signature back into its string representation.
+---This is useful for error reporting and debug purposes.
+---@param tp table A type signature object.
+---@return string signature A type signature string representation.
+function TYPE_TEXT(tp)
+	local result = ''
+	for key, val in pairs(tp) do
+		if #result > 0 then result = result .. '|' end
+		result = result .. key
+		if val.subtypes then
+			result = result..'['..TYPE_TEXT(val.subtypes)..']'
+		end
+	end
+	return result
 end
 
 --[[minify-delete]]
