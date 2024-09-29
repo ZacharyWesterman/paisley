@@ -33,8 +33,9 @@ CMD Example:
         paisley -cstatus:boolean [FLAGS] <input>
 
     Return type must be one of `null`, `boolean`, `number`, `string`,
-    `array` (or `array[string]`, `array[number]`, etc.) or `any`.
-    If no return type is specified, `any` is assumed.
+    `array` (or `array[string]`, `array[number]`, etc.) or `any`; or
+    some combination, e.g. `array[string|number]`, `string|null`,
+    `string?`, etc. If no return type is specified, `any` is assumed.
 
 FUNC_NAME:
     Must be a valid function name or ALL.
