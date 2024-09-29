@@ -7,6 +7,8 @@
 ---
 ---For values that may be any of multiple types, you can separate the types with a bar,
 ---e.g. "string|number". Or you may use "any" to indicate that the result could be anything.
+---To indicate that a type is optional, you may add a "?" to the type, e.g. "string?".
+---This is equivalent to "string|null".
 ---
 ---Arrays and objects may have an optional subtype, e.g. "array[number]". if not specified,
 ---this subtype will default to "any".
@@ -14,7 +16,7 @@
 ---@param signature string A type signature string representation.
 ---@return table TypeSignature A table representing a type signature. This should not be manipulated directly, instead use the functions in this file.
 function SIGNATURE(signature)
-	local patterns = {'^%w+', '^|', '^%[', '^%]'}
+	local patterns = {'^%w+', '^|', '^%[', '^%]', '?'}
 	local typenames = {any = true, object = true, array = true, string = true, number = true, boolean = true, null = true,}
 	local tokens = {}
 	local sig = signature
@@ -44,10 +46,17 @@ function SIGNATURE(signature)
 					if bracket_ct < 0 then
 						do_error('Bracket mismatch', #signature - #sig)
 					end
-				end 
+				end
+				
+				sig = sig:sub(#m + 1, #sig)
+
+				if i == 5 then
+					--Equate "?" operator to mean "|null".
+					table.insert(tokens, {text = '|', kind = 2}) --Insert bar
+					m, i = 'null', 1 --Change type to "null"
+				end
 
 				table.insert(tokens, {text = m, kind = i})
-				sig = sig:sub(#m + 1, #sig)
 				break
 			end
 		end
