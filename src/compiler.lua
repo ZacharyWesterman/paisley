@@ -79,6 +79,7 @@ HIDE_ERRORS = false
 
 if _G['PRINT_AST'] and not _G['AST_AFTER_SEMANTIC'] then
 	print_tokens_recursive(parser.get()[1])
+	return
 end
 --[[/minify-delete]]
 
