@@ -21,7 +21,8 @@ function FUNCSIG(func_name)
 			local types = {}
 			if TYPESIG[func_name].valid then
 				for j, k in ipairs(TYPESIG[func_name].valid) do
-					local key = k[(i - 1) % #k + 1]
+					---@diagnostic disable-next-line
+					local key = TYPE_TEXT(k[(i - 1) % #k + 1])
 					if key and std.arrfind(types, key, 1) == 0 then table.insert(types, key) end
 				end
 			else
