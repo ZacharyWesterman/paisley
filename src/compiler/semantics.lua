@@ -731,22 +731,24 @@ function SemanticAnalyzer(tokens, root_file)
 
 			local t1, t2 = token.children[1].type, token.children[2].type
 			if t1 and t2 then
-				if t1 ~= 'string' and t1:sub(1,5) ~= 'array' and t1 ~= 'object' and t1 ~= 'any' then
-					parse_error(token.children[1].span, 'Cannot index a value of type `'..t1..'`. Type must be `string`, `array`, or `object`', file)
+				if not SIMILAR_TYPE(t1, _G['TYPE_INDEXABLE']) then
+					parse_error(token.children[1].span, 'Cannot index a value of type `'..TYPE_TEXT(t1)..'`. Type must be `string`, `array`, or `object`', file)
 					return
 				end
 
-				if t1 == 'string' then
-					token.type = t1
-				elseif t2:sub(1,5) == 'array' then
-					if t1:sub(1,5) == 'array' then token.type = t1 else token.type = 'array' end
-				else
-					if t1:sub(6,6) == '[' then
-						token.type = t1:sub(7, #t1 - 1)
-					else
-						--We don't know what type of array this is, so result of non-const array index has to be "any"
-						token.type = 'any'
+				if SIMILAR_TYPE(t1, _G['TYPE_STRING']) then
+					token.type = _G['TYPE_STRING']
+				elseif SIMILAR_TYPE(t2, _G['TYPE_ARRAY']) then
+					if not SIMILAR_TYPE(t2, _G['TYPE_ARRAY_NUMBER']) then
+						parse_error(token.children[1].span, 'Cannot index an array value with a value of type `'..TYPE_TEXT(t2)..'`. Must be `array[number]` or `number`', file)
+						return
 					end
+					token.type = t1
+				elseif HAS_SUBTYPES(t1) then
+					token.type = GET_SUBTYPES(t1)
+				else
+					--We don't know what type of array this is, so result of non-const array index has to be "any"
+					token.type = _G['TYPE_ANY']
 				end
 			end
 			return
@@ -772,7 +774,6 @@ function SemanticAnalyzer(tokens, root_file)
 						if tp then
 							local s = signature.valid[g]
 							local param_sig = s[(i-1) % #s + 1]
-							print(TYPE_TEXT(param_sig))
 							if not SIMILAR_TYPE(tp, s[(i-1) % #s + 1]) then found_match = false end
 						end
 					end
@@ -874,8 +875,8 @@ function SemanticAnalyzer(tokens, root_file)
 				end
 			end
 
-			if ch.type and ch.type.subtypes then
-				token.children[1].type = ch.type.subtypes
+			if ch.type and HAS_SUBTYPES(ch.type) then
+				token.children[1].type = GET_SUBTYPES(ch.type)
 			end
 		elseif token.id == TOK.kv_for_stmt then
 			local key, value, expr = token.children[1], token.children[2], token.children[3]

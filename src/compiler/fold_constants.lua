@@ -151,7 +151,7 @@ function FOLD_CONSTANTS(token, file)
 		token.id = TOK.lit_object
 		token.value = value
 		token.text = '{}'
-		token.type = 'object'
+		token.type = _G['TYPE_OBJECT']
 		token.children = {}
 		return
 	end
@@ -306,7 +306,7 @@ function FOLD_CONSTANTS(token, file)
 				elseif tp:sub(1,5) == 'array' then
 					token.id = TOK.lit_array
 					token.text = '[]'
-				elseif tp == 'object' then
+				elseif tp:sub(1,6) == 'object' then
 					token.id = TOK.lit_object
 					token.text = '{}'
 				else
@@ -344,7 +344,7 @@ function FOLD_CONSTANTS(token, file)
 		token.children = nil
 
 	elseif token.id == TOK.array_slice then
-		token.type = 'array[number]'
+		token.type = _G['TYPE_ARRAY_NUMBER']
 		if #token.children == 1 then
 			if not token.unterminated then
 				parse_error(token.span, 'Unterminated slices can only be used when indexing an array or string, e.g. `value[begin_index:]`, and must be the only expression inside the brackets', file)
@@ -429,7 +429,7 @@ function FOLD_CONSTANTS(token, file)
 			result = {}
 			for i = 1, #c2.value do
 				local ix = c2.value[i]
-				if type(ix) ~= 'number' and std.type(val) ~= 'object' then
+				if type(ix) ~= 'number' and std.type(val):sub(1,6) ~= 'object' then
 					parse_error(token.span, 'Cannot use a non-number value as an array index', file)
 				end
 

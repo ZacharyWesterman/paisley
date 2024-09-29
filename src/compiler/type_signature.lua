@@ -135,6 +135,8 @@ _G['TYPE_BOOLEAN'] = SIGNATURE('boolean')
 _G['TYPE_NULL'] = SIGNATURE('null')
 
 _G['TYPE_ARRAY_STRING'] = SIGNATURE('array[string]')
+_G['TYPE_ARRAY_NUMBER'] = SIGNATURE('array[number]')
+_G['TYPE_INDEXABLE'] = SIGNATURE('array|object|string')
 
 ---Check if two type signatures can match up.
 ---E.g. "any" and "string" are similar enough, "number|string" and "string" are similar enough, etc.
@@ -155,6 +157,20 @@ function SIMILAR_TYPE(lhs, rhs)
 	end
 
 	return false
+end
+
+function HAS_SUBTYPES(tp)
+	for key, val in pairs(tp) do
+		if val.subtypes then return true end
+	end
+	return false
+end
+
+function GET_SUBTYPES(tp)
+	for key, val in pairs(tp) do
+		if val.subtypes then return val.subtypes end
+	end
+	return _G['TYPE_ANY']
 end
 
 ---Convert a type signature back into its string representation.
