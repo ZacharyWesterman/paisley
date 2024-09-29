@@ -257,7 +257,7 @@ function SemanticAnalyzer(tokens, root_file)
 
 		if is_object then
 			token.id = TOK.object
-			token.type = 'object'
+			token.type = _G['TYPE_OBJECT']
 		end
 		token.children = kids
 	end)
@@ -274,7 +274,7 @@ function SemanticAnalyzer(tokens, root_file)
 			}
 			token.id = TOK.object
 			token.text = '{}'
-			token.type = 'object'
+			token.type = _G['TYPE_OBJECT']
 			token.children = {new_token}
 		end
 	end)
@@ -500,7 +500,7 @@ function SemanticAnalyzer(tokens, root_file)
 		if token.text == 'exists' and ch.id == TOK.variable then
 			ch.id = TOK.string_open
 			ch.value = ch.text
-			ch.type = 'string'
+			ch.type = _G['TYPE_STRING']
 		end
 	end)
 
@@ -520,10 +520,10 @@ function SemanticAnalyzer(tokens, root_file)
 		local val = tonumber(token.text)
 		if val then
 			token.value = val
-			token.type = 'number'
+			token.type = _G['TYPE_NUMBER']
 		else
 			token.value = token.text
-			token.type = 'string'
+			token.type = _G['TYPE_STRING']
 		end
 	end)
 
@@ -720,7 +720,7 @@ function SemanticAnalyzer(tokens, root_file)
 		end
 
 		if token.value ~= nil or token.id == TOK.lit_null then
-			token.type = std.deep_type(token.value)
+			token.type = SIGNATURE(std.deep_type(token.value))
 			return
 		elseif token.id == TOK.index then
 			local c2 = token.children[2]
@@ -760,81 +760,49 @@ function SemanticAnalyzer(tokens, root_file)
 		end
 
 		if token.children then
-			local exp_types, got_types = {}, {}
 			local found_correct_types = false
 
 			if signature.valid then
+				--Check that type signature of the params match up with the list of accepted types.
 				for g = 1, #signature.valid do
-					table.insert(exp_types, {})
-				end
-
-				for i = 1, #token.children do
-					local tp = token.children[i].type
-					if tp then
-						for g = 1, #signature.valid do
+					local found_match = true
+					for i = 1, #token.children do
+						local tp = token.children[i].type
+						if tp then
 							local s = signature.valid[g]
-							table.insert(exp_types[g], s[(i-1) % #s + 1])
-						end
-						table.insert(got_types, tp)
-					end
-				end
-
-				local expt2 = {}
-				for i = 1, #exp_types do
-					expt2[i] = std.join(exp_types[i], ',')
-
-					found_correct_types = true
-					for k = 1, #exp_types[i] do
-						local t1, t2 = exp_types[i][k], got_types[k]
-						if t1 ~= 'any' and t2 ~= 'any' and t1 ~= t2 then
-							if t1:sub(1,5) ~= 'array' or t2:sub(1,5) ~= 'array' then
-								found_correct_types = false
-								break
-							else
-								--Compare subtype of arrays
-								--If types are not "array[any]" or "array"
-								if #t1 > 5 and #t2 > 5 and t1 ~= t2 and t1 ~= 'array[any]' and t2 ~= 'array[any]' then
-									found_correct_types = false
-								end
-								--ELSE:
-								--One of the array types are just "array" or "array[any]" (same thing),
-								--so we can't tell if they're incompatible at run-time.
-								--For all we know they're perfectly compatible.
-
-								break
-							end
+							local param_sig = s[(i-1) % #s + 1]
+							print(TYPE_TEXT(param_sig))
+							if not SIMILAR_TYPE(tp, s[(i-1) % #s + 1]) then found_match = false end
 						end
 					end
-					if found_correct_types then break end
+					if found_match then
+						found_correct_types = true
+						break
+					end
 				end
 
 				if not found_correct_types then
+					local options, got_types = {}, {}
+
+					for i = 1, #signature.valid do
+						table.insert(options, std.join(signature.valid[i], ',', TYPE_TEXT))
+					end
+
+					for i = 1, #token.children do
+						table.insert(got_types, TYPE_TEXT(token.children[i].type))
+					end
+
 					local msg
 					if BUILTIN_FUNCS[token.text] then
 						msg = 'Function "'..token.text..'('..FUNCSIG(token.text)..')"'
 					else
 						msg = 'Operator "'..token.text..'"'
 					end
-					parse_error(token.span, msg..' expected ('..std.join(expt2, ' or ')..') but got ('..std.join(got_types, ',')..')', file)
+					parse_error(token.span, msg..' expected ('..std.join(options, ' or ')..') but got ('..std.join(got_types, ',')..')', file)
 				end
 			end
 
-			if signature.out then
-				if type(signature.out) == 'number' then
-					if found_correct_types then token.type = got_types[signature.out] end
-				elseif signature.out == 'array' and #token.children > 0 then
-					local subtype = token.children[1].type
-					for i = 2, #token.children do
-						if token.children[i].type ~= subtype then
-							subtype = nil
-							break
-						end
-					end
-					if subtype then token.type = 'array[' .. subtype .. ']' else token.type = 'array' end
-				else
-					token.type = signature.out
-				end
-			end
+			token.type = signature.out
 		end
 
 	end
@@ -869,7 +837,7 @@ function SemanticAnalyzer(tokens, root_file)
 
 					if type(ch.value) == 'table' then
 						for _, val in pairs(ch.value) do
-							local _tp = std.deep_type(val)
+							local _tp = SIGNATURE(std.deep_type(val))
 							if tp == nil then tp = _tp
 							elseif tp ~= _tp then
 								--Type will change, so it can't be reduced to a constant state.
@@ -879,7 +847,7 @@ function SemanticAnalyzer(tokens, root_file)
 							end
 						end
 					else
-						tp = std.deep_type(ch.value)
+						tp = SIGNATURE(std.deep_type(ch.value))
 					end
 
 					--If loop variable has a consistent type, then we know for sure what it will be.
@@ -905,8 +873,8 @@ function SemanticAnalyzer(tokens, root_file)
 				end
 			end
 
-			if ch.type and ch.type:sub(1,5) == 'array' and ch.type:sub(6,6) == '[' then
-				token.children[1].type = ch.type:sub(7, #ch.type - 1)
+			if ch.type and ch.type.subtypes then
+				token.children[1].type = ch.type.subtypes
 			end
 		elseif token.id == TOK.kv_for_stmt then
 			local key, value, expr = token.children[1], token.children[2], token.children[3]
@@ -926,14 +894,11 @@ function SemanticAnalyzer(tokens, root_file)
 				while expr do
 					if found_pairs then
 						if expr.type then
-							value.type = 'any'
-							if expr.type == 'object' then
-								key.type = 'string'
-							elseif expr.type:sub(1,5) == 'array' then
-								key.type = 'number'
-								if expr.type:sub(6,6) == '[' then
-									value.type = expr.type:sub(7, #expr.type - 1)
-								end
+							value.type = expr.type.subtype
+							if expr.type.type == 'object' then
+								key.type = _G['TYPE_STRING']
+							elseif expr.type.type == 'array' then
+								key.type = _G['TYPE_NUMBER']
 							end
 						end
 						break
@@ -979,17 +944,17 @@ function SemanticAnalyzer(tokens, root_file)
 							end
 						elseif ch.value or ch.id == TOK.lit_null then
 							if ch.id == TOK.lit_array then
-								tp = std.deep_type(ch.value[i])
+								tp = SIGNATURE(std.deep_type(ch.value[i]))
 							elseif i == 1 then
-								tp = std.deep_type(ch.value)
+								tp = SIGNATURE(std.deep_type(ch.value))
 							else
-								tp = 'null'
+								tp = _G['TYPE_NULL']
 							end
 						else
-							tp = 'any'
+							tp = _G['TYPE_ANY']
 						end
 					else
-						tp = 'null'
+						tp = _G['TYPE_NULL']
 					end
 
 					if tp ~= nil then
@@ -1019,9 +984,9 @@ function SemanticAnalyzer(tokens, root_file)
 					token.type = tp[#tp].text
 				end
 			elseif token.text == '$' then
-				token.type = 'array[string]'
+				token.type = _G['TYPE_ARRAY_STRING']
 			elseif token.text == '@' then
-				token.type = 'array'
+				token.type = _G['TYPE_ARRAY']
 			end
 		end
 	end

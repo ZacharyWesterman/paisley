@@ -126,6 +126,16 @@ function SIGNATURE(signature)
 	return ast(#tokens)
 end
 
+_G['TYPE_ANY'] = SIGNATURE('any')
+_G['TYPE_OBJECT'] = SIGNATURE('object')
+_G['TYPE_ARRAY'] = SIGNATURE('array')
+_G['TYPE_STRING'] = SIGNATURE('string')
+_G['TYPE_NUMBER'] = SIGNATURE('number')
+_G['TYPE_BOOLEAN'] = SIGNATURE('boolean')
+_G['TYPE_NULL'] = SIGNATURE('null')
+
+_G['TYPE_ARRAY_STRING'] = SIGNATURE('array[string]')
+
 ---Check if two type signatures can match up.
 ---E.g. "any" and "string" are similar enough, "number|string" and "string" are similar enough, etc.
 ---@param lhs table The first type signature to compare.

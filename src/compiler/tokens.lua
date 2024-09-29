@@ -147,7 +147,7 @@ require "src.compiler.span"
 ---@field text string The text from the input file that this token represents.
 ---@field value any The literal value that was calculated for this token, if any. Used for constant folding.
 ---@field children Token[]? A list of child nodes.
----@field type string? The data type that was deduced for this token, if any.
+---@field type table? The data type that was deduced for this token, if any.
 ---@field inside_object boolean? If defined and true, this token is inside an object declaration.
 ---@field ignore boolean? If true, optimize this token away. Only defined on subroutine and variable definitions.
 ---@field unterminated boolean? Whether this slice token is unterminated (e.g. var[1::]). Only defined on slices.
@@ -242,10 +242,10 @@ function print_token(token, indent)
 		if token.value ~= nil then
 			meta = '    (='..std.debug_str(token.value)..')'
 			if token.type ~= nil then
-				meta = '    ('..token.type..'='..std.debug_str(token.value)..')'
+				meta = '    ('..TYPE_TEXT(token.type)..'='..std.debug_str(token.value)..')'
 			end
 		elseif token.type ~= nil then
-			meta = '    ('..token.type..')'
+			meta = '    ('..TYPE_TEXT(token.type)..')'
 		end
 	end
 

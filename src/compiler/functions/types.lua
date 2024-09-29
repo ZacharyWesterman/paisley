@@ -705,3 +705,21 @@ TYPESIG = {
 		out = 'array',
 	},
 }
+
+--Convert all type signatures in the above from strings to type signature objects.
+for _, item in pairs(TYPESIG) do
+	if not item.valid then item.valid = {{'any'}} end
+
+	for option = 1, #item.valid do
+		for param = 1, #item.valid[option] do
+			---@diagnostic disable-next-line
+			item.valid[option][param] = SIGNATURE(item.valid[option][param])
+		end
+	end
+
+	--A numeric output of N means that the output will be the same type as the Nth parameter.
+	if type(item.out) == 'string' then 
+		---@diagnostic disable-next-line
+		item.out = SIGNATURE(item.out)
+	end
+end

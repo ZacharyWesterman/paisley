@@ -2,6 +2,7 @@
 
 require "src.shared.hash"
 
+---@diagnostic disable-next-line
 std = {
 	---Convert arbitrary data to a string, with "Lua-ness" removed.
 	---@param data any
@@ -106,14 +107,16 @@ std = {
 	end,
 
 	---Join an array of items into a string.
-	---@param items any[]
-	---@param delimiter string
+	---@param items any[] The items to join into a string.
+	---@param delimiter string The delimiter between items.
+	---@param converter? fun(data: any): string A function that converts the given data to a string.
 	---@return string
-	join = function(items, delimiter)
+	join = function(items, delimiter, converter)
+		if not converter then converter = std.str end
 		local result = ''
 		for i = 1, #items do
 			if i > 1 then result = result .. delimiter end
-			result = result .. std.str(items[i])
+			result = result .. converter(items[i])
 		end
 		return result
 	end,
@@ -137,10 +140,7 @@ std = {
 		if tp == 'array' and #data > 0 then
 			local subtype = std.deep_type(data[1])
 			for i = 2, #data do
-				local subtp = std.deep_type(data[i])
-
-				--Array contains multiple types; cannot deduce a single sub-type.
-				if subtp ~= subtype then return 'array' end
+				subtype = subtype..'|'..std.deep_type(data[i])
 			end
 
 			tp = tp .. '[' .. subtype .. ']'
