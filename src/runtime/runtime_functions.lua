@@ -4,7 +4,6 @@
 -- LAST_CMD_RESULT = nil
 -- RANDOM_SEED = 0 --Change this later
 MAX_ITER = 100 --Max number of instructions to run before pausing execution (performance reasons mostly)
-if type(_G['V8']) == 'number' and _G['V8'] >= 1 then MAX_ITER = math.floor(_G['V8']) end
 
 NULL = {}
 -- STACK = {}

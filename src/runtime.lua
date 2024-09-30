@@ -74,6 +74,9 @@ end
 
 --[[RUN THIS WHILE OUTPUT IS COMING FROM (1) OR WHEN COMMAND RETURNS]]
 function RUN()
+	---@diagnostic disable-next-line
+	if type(V8) == 'number' and V8 > 0 then MAX_ITER = math.ceil(V8) end
+
 	for i = 1, MAX_ITER do
 		if not ITER() then return end
 	end
