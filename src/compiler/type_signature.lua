@@ -14,8 +14,9 @@
 ---this subtype will default to "any".
 --- 
 ---@param signature string A type signature string representation.
+---@param ignore_errors boolean? If true, don't error with bad type signatures.
 ---@return table TypeSignature A table representing a type signature. This should not be manipulated directly, instead use the functions in this file.
-function SIGNATURE(signature)
+function SIGNATURE(signature, ignore_errors)
 	local patterns = {'^%w+', '^|', '^%[', '^%]', '?'}
 	local typenames = {any = true, object = true, array = true, string = true, number = true, boolean = true, null = true,}
 	local tokens = {}
@@ -23,7 +24,7 @@ function SIGNATURE(signature)
 	local bracket_ct = 0
 
 	local function do_error(message, char)
-		error(message .. ' in type signature "'..signature..'" at char '..char)
+		if not ignore_errors then error(message .. ' in type signature "'..signature..'" at char '..char) end
 	end
 
 	--Split signature into valid tokens
@@ -126,6 +127,18 @@ function SIGNATURE(signature)
 	return ast(#tokens)
 end
 
+_G['TYPE_ANY'] = SIGNATURE('any')
+_G['TYPE_OBJECT'] = SIGNATURE('object')
+_G['TYPE_ARRAY'] = SIGNATURE('array')
+_G['TYPE_STRING'] = SIGNATURE('string')
+_G['TYPE_NUMBER'] = SIGNATURE('number')
+_G['TYPE_BOOLEAN'] = SIGNATURE('boolean')
+_G['TYPE_NULL'] = SIGNATURE('null')
+
+_G['TYPE_ARRAY_STRING'] = SIGNATURE('array[string]')
+_G['TYPE_ARRAY_NUMBER'] = SIGNATURE('array[number]')
+_G['TYPE_INDEXABLE'] = SIGNATURE('array|object|string')
+
 ---Check if two type signatures can match up.
 ---E.g. "any" and "string" are similar enough, "number|string" and "string" are similar enough, etc.
 ---@param lhs table The first type signature to compare.
@@ -145,6 +158,20 @@ function SIMILAR_TYPE(lhs, rhs)
 	end
 
 	return false
+end
+
+function HAS_SUBTYPES(tp)
+	for key, val in pairs(tp) do
+		if val.subtypes then return true end
+	end
+	return false
+end
+
+function GET_SUBTYPES(tp)
+	for key, val in pairs(tp) do
+		if val.subtypes then return val.subtypes end
+	end
+	return _G['TYPE_ANY']
 end
 
 ---Convert a type signature back into its string representation.

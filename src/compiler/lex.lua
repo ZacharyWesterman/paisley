@@ -158,7 +158,7 @@ function Lexer(text, file)
 								local cmd = std.split(i, ':')
 								if cmd[1] ~= '' then
 									if cmd[2] == '' or not cmd[2] then cmd[2] = 'any' end
-									ALLOWED_COMMANDS[cmd[1]] = cmd[2]
+									ALLOWED_COMMANDS[cmd[1]] = SIGNATURE(cmd[2], true)
 								end
 							end
 						end

@@ -222,6 +222,7 @@ if INTROSPECTION then
 
 
 	ALLOWED_COMMANDS = V3
+	require 'src.compiler.type_signature'
 	require 'src.shared.builtin_commands'
 
 	if INTROSPECT_CMDLIST then
@@ -249,7 +250,7 @@ if INTROSPECTION then
 		for i = 1, #INTROSPECT_CMDS do
 			local key = INTROSPECT_CMDS[i]
 			print(key)
-			if BUILTIN_COMMANDS[key] then print('  Returns: ' .. BUILTIN_COMMANDS[key]) else print('  Returns: ' .. ALLOWED_COMMANDS[key]) end
+			if BUILTIN_COMMANDS[key] then print('  Returns: ' .. TYPE_TEXT(BUILTIN_COMMANDS[key])) else print('  Returns: ' .. TYPE_TEXT(ALLOWED_COMMANDS[key])) end
 			if BUILTIN_COMMANDS[key] then print('  Desc: ' .. CMD_DESCRIPTION[key]) else print('  Desc: User-defined command.') end
 		end
 	elseif not INTROSPECT_FUNCLIST and #INTROSPECT_FUNCS == 0 then
@@ -257,10 +258,11 @@ if INTROSPECTION then
 		local t = {}
 		table.insert(t, {'COMMAND','RETURN TYPE'})
 		for key, val in pairs(BUILTIN_COMMANDS) do
-			table.insert(t, {key, val})
+			---@diagnostic disable-next-line
+			table.insert(t, {key, TYPE_TEXT(val)})
 		end
 		for key, val in pairs(ALLOWED_COMMANDS) do
-			table.insert(t, {key, val})
+			table.insert(t, {key, TYPE_TEXT(val)})
 		end
 
 		print('COMMAND LIST:')
@@ -302,9 +304,9 @@ if INTROSPECTION then
 				for i, k in ipairs(TYPESIG[key].valid) do
 					table.insert(types, k[1])
 				end
-				funcsig = key .. '(' .. FUNCSIG(key) .. ') -> ' .. std.join(types, '|')
+				funcsig = key .. '(' .. FUNCSIG(key) .. ') -> ' .. std.join(types, '|', TYPE_TEXT)
 			else
-				funcsig = key .. '(' .. FUNCSIG(key) .. ') -> ' .. TYPESIG[key].out
+				funcsig = key .. '(' .. FUNCSIG(key) .. ') -> ' .. TYPE_TEXT(TYPESIG[key].out)
 			end
 			print(key)
 			print('  Signature: ' .. funcsig)
@@ -324,9 +326,9 @@ if INTROSPECTION then
 				for i, k in ipairs(TYPESIG[key].valid) do
 					table.insert(types, k[1])
 				end
-				table.insert(t, {key .. '(' .. FUNCSIG(key) .. ') -> ' .. std.join(types, '|')})
+				table.insert(t, {key .. '(' .. FUNCSIG(key) .. ') -> ' .. std.join(types, '|', TYPE_TEXT)})
 			else
-				table.insert(t, {key .. '(' .. FUNCSIG(key) .. ') -> ' .. TYPESIG[key].out})
+				table.insert(t, {key .. '(' .. FUNCSIG(key) .. ') -> ' .. TYPE_TEXT(TYPESIG[key].out)})
 			end
 		end
 

@@ -39,7 +39,7 @@ local function _explode(cmdlist)
 	for i = 1, #cmdlist do
 		local c = std.split(cmdlist[i], ':')
 		if not c[2] then c[2] = 'any' end
-		cmds[c[1]] = c[2]
+		cmds[c[1]] = SIGNATURE(c[2])
 	end
 	return cmds
 end
