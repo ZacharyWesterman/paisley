@@ -127,17 +127,17 @@ function SIGNATURE(signature, ignore_errors)
 	return ast(#tokens)
 end
 
-_G['TYPE_ANY'] = SIGNATURE('any')
-_G['TYPE_OBJECT'] = SIGNATURE('object')
-_G['TYPE_ARRAY'] = SIGNATURE('array')
-_G['TYPE_STRING'] = SIGNATURE('string')
-_G['TYPE_NUMBER'] = SIGNATURE('number')
-_G['TYPE_BOOLEAN'] = SIGNATURE('boolean')
-_G['TYPE_NULL'] = SIGNATURE('null')
+TYPE_ANY = SIGNATURE('any')
+TYPE_OBJECT = SIGNATURE('object')
+TYPE_ARRAY = SIGNATURE('array')
+TYPE_STRING = SIGNATURE('string')
+TYPE_NUMBER = SIGNATURE('number')
+TYPE_BOOLEAN = SIGNATURE('boolean')
+TYPE_NULL = SIGNATURE('null')
 
-_G['TYPE_ARRAY_STRING'] = SIGNATURE('array[string]')
-_G['TYPE_ARRAY_NUMBER'] = SIGNATURE('array[number]')
-_G['TYPE_INDEXABLE'] = SIGNATURE('array|object|string')
+TYPE_ARRAY_STRING = SIGNATURE('array[string]')
+TYPE_ARRAY_NUMBER = SIGNATURE('array[number]')
+TYPE_INDEXABLE = SIGNATURE('array|object|string')
 
 ---Check if two type signatures can match up.
 ---E.g. "any" and "string" are similar enough, "number|string" and "string" are similar enough, etc.
@@ -145,7 +145,7 @@ _G['TYPE_INDEXABLE'] = SIGNATURE('array|object|string')
 ---@param rhs table The second type signature to compare.
 ---@return boolean is_similar True if the have any subtypes that match, false otherwise.
 function SIMILAR_TYPE(lhs, rhs)
-	if lhs.any or rhs.any then return true end
+	if not lhs or not rhs or lhs.any or rhs.any then return true end
 
 	for key, val in pairs(lhs) do
 		if rhs[key] then

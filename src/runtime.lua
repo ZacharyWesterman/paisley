@@ -27,6 +27,7 @@ FILE = V2
 	Note that this IS case-sensitive!
 ]]
 ALLOWED_COMMANDS = V3
+if not SIGNATURE then function SIGNATURE(x) return x end end --Dummy signature definition, just so runtime doesn't give an error.
 require "src.shared.builtin_commands"
 
 --[[RUN THIS TO LOAD CODE]]
