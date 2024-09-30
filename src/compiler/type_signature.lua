@@ -14,8 +14,9 @@
 ---this subtype will default to "any".
 --- 
 ---@param signature string A type signature string representation.
+---@param ignore_errors boolean? If true, don't error with bad type signatures.
 ---@return table TypeSignature A table representing a type signature. This should not be manipulated directly, instead use the functions in this file.
-function SIGNATURE(signature)
+function SIGNATURE(signature, ignore_errors)
 	local patterns = {'^%w+', '^|', '^%[', '^%]', '?'}
 	local typenames = {any = true, object = true, array = true, string = true, number = true, boolean = true, null = true,}
 	local tokens = {}
@@ -23,7 +24,7 @@ function SIGNATURE(signature)
 	local bracket_ct = 0
 
 	local function do_error(message, char)
-		error(message .. ' in type signature "'..signature..'" at char '..char)
+		if not ignore_errors then error(message .. ' in type signature "'..signature..'" at char '..char) end
 	end
 
 	--Split signature into valid tokens

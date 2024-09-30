@@ -139,12 +139,19 @@ std = {
 
 		if tp == 'array' and #data > 0 then
 			local subtype = std.deep_type(data[1])
+			local found = {[subtype] = true}
+
 			for i = 2, #data do
-				subtype = subtype..'|'..std.deep_type(data[i])
+				local s_tp = std.deep_type(data[i])
+				if not found[s_tp] then
+					subtype = subtype..'|'..s_tp
+					found[s_tp] = true
+				end
 			end
 
 			tp = tp .. '[' .. subtype .. ']'
 		end
+
 		return tp
 	end,
 

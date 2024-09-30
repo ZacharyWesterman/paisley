@@ -697,17 +697,13 @@ function SemanticAnalyzer(tokens, root_file)
 				local exp_type = nil
 
 				if not token.children or #token.children == 0 then
-					exp_type = 'null'
+					exp_type = _G['TYPE_NULL']
 				elseif token.children[1].type then
 					exp_type = token.children[1].type
 				end
 
-				if sub.type and exp_type and exp_type ~= sub.type then
-					if sub.type:sub(1,5) == exp_type:sub(1,5) then
-						sub.type = 'array'
-					else
-						sub.type = 'any'
-					end
+				if sub.type and exp_type and not SIMILAR_TYPE(exp_type, sub.type) then
+					sub.type = _G['TYPE_ANY']
 				else
 					sub.type = exp_type
 				end
@@ -773,7 +769,6 @@ function SemanticAnalyzer(tokens, root_file)
 						local tp = token.children[i].type
 						if tp then
 							local s = signature.valid[g]
-							local param_sig = s[(i-1) % #s + 1]
 							if not SIMILAR_TYPE(tp, s[(i-1) % #s + 1]) then found_match = false end
 						end
 					end
@@ -1106,7 +1101,7 @@ function SemanticAnalyzer(tokens, root_file)
 							if tp == 'null' then
 								INFO.info(cmd.span, 'Subroutine `'..cmd.text..'` always returns null, so using an inline command eval here is not helpful', file)
 							elseif tp then
-								INFO.hint(cmd.span, 'returns: '..tp, file)
+								INFO.hint(cmd.span, 'returns: '..TYPE_TEXT(tp), file)
 							end
 						end
 					else
@@ -1119,7 +1114,8 @@ function SemanticAnalyzer(tokens, root_file)
 
 						if token.id == TOK.command and tp then
 							INFO.hint(cmd.span, _G['CMD_DESCRIPTION'][cmd.text], file)
-							INFO.hint(cmd.span, 'returns: '..tp, file)
+							---@diagnostic disable-next-line
+							INFO.hint(cmd.span, 'returns: '..TYPE_TEXT(tp), file)
 						end
 
 						if token.id == TOK.inline_command and tp == 'null' then
@@ -1128,17 +1124,17 @@ function SemanticAnalyzer(tokens, root_file)
 					end
 				end
 			elseif token.id == TOK.subroutine then
-				if token.type then INFO.hint(token.span, 'returns: '..token.type, file) end
+				if token.type then INFO.hint(token.span, 'returns: '..TYPE_TEXT(token.type), file) end
 			elseif token.id == TOK.kv_for_stmt then
-				if var.type then INFO.hint(var.span, 'type: '..var.type, file) end
+				if var.type then INFO.hint(var.span, 'type: '..TYPE_TEXT(var.type), file) end
 				var = token.children[2]
-				if var.type then INFO.hint(var.span, 'type: '..var.type, file) end
+				if var.type then INFO.hint(var.span, 'type: '..TYPE_TEXT(var.type), file) end
 			else
 				--Variable declarations
-				if var.type then INFO.hint(var.span, 'type: '..var.type, file) end
+				if var.type then INFO.hint(var.span, 'type: '..TYPE_TEXT(var.type), file) end
 				if var.children then
 					for _,kid in ipairs(var.children) do
-						if kid.type then INFO.hint(kid.span, 'type: '..kid.type, file) end
+						if kid.type then INFO.hint(kid.span, 'type: '..TYPE_TEXT(kid.type), file) end
 					end
 				end
 			end

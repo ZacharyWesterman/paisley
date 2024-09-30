@@ -52,7 +52,7 @@ function FOLD_CONSTANTS(token, file)
 			if c2.type == c3.type then
 				token.type = c2.type
 			else
-				token.type = 'any'
+				token.type = _G['TYPE_ANY']
 			end
 		end
 
@@ -329,7 +329,7 @@ function FOLD_CONSTANTS(token, file)
 	elseif token.id == TOK.array_concat then
 		token.id = TOK.lit_array
 		token.text = '[]'
-		token.value = {}
+		token.value = std.array()
 		for i = 1, #token.children do
 			--If a slice operator is nested in an array_concat operation, merge the arrays
 			if token.children[i].reduce_array_concat then
@@ -341,6 +341,7 @@ function FOLD_CONSTANTS(token, file)
 				table.insert(token.value --[[@as table]], token.children[i].value)
 			end
 		end
+		token.type = SIGNATURE(std.deep_type(token.value))
 		token.children = nil
 
 	elseif token.id == TOK.array_slice then
