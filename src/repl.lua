@@ -10,6 +10,7 @@ require "src.shared.stdlib"
 require "src.shared.json"
 require "src.shared.closest_word"
 
+require "src.compiler.type_signature"
 require "src.compiler.lex"
 require "src.compiler.syntax"
 require "src.compiler.fold_constants"

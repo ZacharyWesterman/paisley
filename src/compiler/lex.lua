@@ -423,11 +423,25 @@ function Lexer(text, file)
 
 					if this_chr == '' then
 						parse_error(Span:new(line, col + #this_str, line, col + #this_str), 'Unexpected EOF inside string', file)
+						--[[minify-delete]]
+						--Hack to get REPL version to not loop forever
+						if _G['REPL'] then
+							this_chr = curr_scope
+							ERRORED = false
+						end
+						--[[/minify-delete]]
 					end
 
 					--No line breaks are allowed inside strings
 					if this_chr == '\n' then
 						parse_error(Span:new(line, col + #this_str, line, col + #this_str), 'Unexpected line ending inside string', file)
+						--[[minify-delete]]
+						--Hack to get REPL version to not loop forever
+						if _G['REPL'] then
+							this_chr = curr_scope
+							ERRORED = false
+						end
+						--[[/minify-delete]]
 					end
 
 					--Once string ends, add text to token list and exit string.
