@@ -93,6 +93,7 @@ function output(value, port)
 			local line = program:read('*l')
 			while line do
 				if value[1] ~= '!' then print(line) end
+				if #CMD_LAST_RESULT['!'] > 0 then line = '\n' .. line end
 				CMD_LAST_RESULT['!'] = CMD_LAST_RESULT['!'] .. line
 
 				line = program:read('*l')
