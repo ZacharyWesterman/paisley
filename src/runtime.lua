@@ -32,7 +32,11 @@ require "src.shared.builtin_commands"
 
 --[[RUN THIS TO LOAD CODE]]
 function INIT()
-	INSTRUCTIONS = json.parse(V1)
+	if V1 and V1:sub(1,1) == '[' then
+		INSTRUCTIONS = json.parse(V1)
+	else
+		INSTRUCTIONS = {}
+	end
 
 	--re-populate constants from the lookup table
 	local constants = table.remove(INSTRUCTIONS)
@@ -51,7 +55,7 @@ function INIT()
 	STACK = {}
 	VARS = {}
 	INSTR_STACK = {}
-	output(0, 1)
+	output(#INSTRUCTIONS, 1)
 end
 
 function ITER()
@@ -83,7 +87,7 @@ function RUN()
 
 	local I = INSTRUCTIONS[CURRENT_INSTRUCTION]
 	if I then
-		output(1, 1)
+		output(0, 1)
 	end
 end
 
