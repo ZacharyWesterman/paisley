@@ -83,9 +83,9 @@ function FOLD_CONSTANTS(token, file)
 	--Even if not const, we can still tell the output type of list comprehension
 	if token.id == TOK.list_comp then
 		if token.children[1].type then
-			token.type = 'array['..token.children[1].type..']'
+			token.type = SIGNATURE('array['..TYPE_TEXT(token.children[1].type)..']')
 		else
-			token.type = 'array'
+			token.type = _G['TYPE_ARRAY']
 		end
 	end
 
