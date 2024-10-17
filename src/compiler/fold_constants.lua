@@ -306,9 +306,11 @@ function FOLD_CONSTANTS(token, file)
 				elseif tp:sub(1,5) == 'array' then
 					token.id = TOK.lit_array
 					token.text = '[]'
+					token.type = SIGNATURE(tp)
 				elseif tp:sub(1,6) == 'object' then
 					token.id = TOK.lit_object
 					token.text = '{}'
+					token.type = SIGNATURE(tp)
 				else
 					parse_error(token.span, 'COMPILER BUG: Folding of function "'..token.text..'" resulted in data of type "'..tp..'"!', file)
 				end

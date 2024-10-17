@@ -239,13 +239,16 @@ function print_token(token, indent)
 			meta = '    (meta='..token_text(token.meta_id)..')'
 		end
 	else
+		local tp = token.type
+		if type(tp) == 'table' then tp = TYPE_TEXT(tp) else tp = std.debug_str(tp) end
+
 		if token.value ~= nil then
 			meta = '    (='..std.debug_str(token.value)..')'
 			if token.type ~= nil then
-				meta = '    ('..TYPE_TEXT(token.type)..'='..std.debug_str(token.value)..')'
+				meta = '    ('..tp..'='..std.debug_str(token.value)..')'
 			end
 		elseif token.type ~= nil then
-			meta = '    ('..TYPE_TEXT(token.type)..')'
+			meta = '    ('..tp..')'
 		end
 	end
 
