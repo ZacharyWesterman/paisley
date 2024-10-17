@@ -1,3 +1,7 @@
+
+#Constants
+define {!pi[3.141592653589]}
+
 #@export
 subroutine numeral
 	let n_ = {abs(@[1])}
