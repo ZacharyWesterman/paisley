@@ -625,12 +625,14 @@ local functions = {
 	--SPLIT A NUMBER INTO CLOCK TIME
 	function()
 		local v = std.num(POP()[1])
-		PUSH({
+		local result = {
 			math.floor(v / 3600),
 			math.floor(v / 60) % 60,
 			math.floor(v) % 60,
-			math.floor(v * 1000) % 1000,
-		})
+		}
+		local millis = math.floor(v * 1000) % 1000
+		if millis ~= 0 then result[4] = millis end
+		PUSH(result)
 	end,
 
 	--REVERSE ARRAY OR STRING
@@ -1056,6 +1058,43 @@ local functions = {
 		local v = POP()
 		local number, base, pad_width = std.num(v[1]), std.num(v[2]), std.num(v[3])
 		PUSH(std.numeric_string(number, base, pad_width))
+	end,
+
+	--CONVERT TIMESTAMP INTO TIME STRING
+	function()
+		local v = POP()[1]
+		if type(v) ~= 'table' then
+			v = std.num(v)
+			local result = {
+				math.floor(v / 3600),
+				math.floor(v / 60) % 60,
+				math.floor(v) % 60,
+			}
+			local millis = math.floor(v * 1000) % 1000
+			if millis ~= 0 then result[4] = millis end
+			v = result
+		end
+		local result = ''
+		for i = 1, #v do
+			if i > 3 then result = result .. '.'
+			elseif #result > 0 then result = result .. ':' end
+			local val = tostring(std.num(v[i]))
+			result = result .. ('0'):rep(2 - #val) .. val
+		end
+		PUSH(result)
+	end,
+
+	--CONVERT DATE ARRAY INTO DATE STRING
+	function()
+		local v = POP()[1]
+		if type(v) ~= 'table' then v = {v} end
+		local result = ''
+		for i = #v, 1, -1 do
+			if #result > 0 then result = result .. '-' end
+			local val = tostring(std.num(v[i]))
+			result = result .. ('0'):rep(2 - #val) .. val
+		end
+		PUSH(result)
 	end,
 }
 

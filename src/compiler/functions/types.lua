@@ -662,6 +662,22 @@ TYPESIG = {
 		description = 'Convert a number to a numeric string of any base from 2 to 36.',
 		--[[/minify-delete]]
 	},
+	time = {
+		valid = {{'array[number]|number'}},
+		out = 'string',
+		--[[minify-delete]]
+		params = {'timestamp'},
+		description = 'Convert a number or array representation of a time (timestamp OR [hour, min, sec, milli]) into an ISO compliant time string.',
+		--[[/minify-delete]]
+	},
+	date = {
+		valid = {{'array[number]'}},
+		out = 'string',
+		--[[minify-delete]]
+		params = {'date_array'},
+		description = 'Convert an array representation of a date (day, month, year) into an ISO compliant date string.',
+		--[[/minify-delete]]
+	},
 
 	[TOK.add] = {
 		valid = {{'number'}, {'array[number]'}},

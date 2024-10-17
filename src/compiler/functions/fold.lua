@@ -212,12 +212,14 @@ FUNC_OPERATIONS = {
 		return array
 	end,
 	clocktime = function(value)
-		return {
+		local result = {
 			math.floor(value / 3600),
 			math.floor(value / 60) % 60,
 			math.floor(value) % 60,
-			math.floor(value * 1000) % 1000,
 		}
+		local millis = math.floor(value * 1000) % 1000
+		if millis ~= 0 then result[4] = millis end
+		return result
 	end,
 
 	reverse = function(value)
@@ -363,4 +365,26 @@ FUNC_OPERATIONS = {
 		return search:sub(#search - #substring + 1, #search) == substring
 	end,
 	numeric_string = std.numeric_string,
+
+	time = function(timestamp)
+		if type(timestamp) == 'number' then timestamp = FUNC_OPERATIONS.clocktime(timestamp) end
+		local result = ''
+		for i = 1, #timestamp do
+			if i > 3 then result = result .. '.'
+			elseif #result > 0 then result = result .. ':' end
+			local val = tostring(std.num(timestamp[i]))
+			result = result .. ('0'):rep(2 - #val) .. val
+		end
+		return result
+	end,
+
+	date = function(array)
+		local result = ''
+		for i = #array, 1, -1 do
+			if #result > 0 then result = result .. '-' end
+			local val = tostring(std.num(array[i]))
+			result = result .. ('0'):rep(2 - #val) .. val
+		end
+		return result
+	end,
 }

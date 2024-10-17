@@ -84,4 +84,6 @@ BUILTIN_FUNCS = {
 	beginswith = 2,
 	endswith = 2,
 	numeric_string = 3,
+	time = 1,
+	date = 1,
 }

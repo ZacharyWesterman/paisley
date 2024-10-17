@@ -111,4 +111,6 @@ CALL_CODES = {
 	beginswith = 107,
 	endswith = 108,
 	numeric_string = 109,
+	time = 110,
+	date = 111,
 }
