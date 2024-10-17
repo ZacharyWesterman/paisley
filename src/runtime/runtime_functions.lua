@@ -1137,6 +1137,9 @@ COMMANDS = {
 			for k in pairs(ALLOWED_COMMANDS --[[@as table]]) do table.insert(res, k) end
 			table.sort(res)
 			PUSH(res)
+		elseif p1 == '_VARS' then
+			--List-of-vars variable
+			PUSH(VARS)
 		else
 			local v = VARS[p1]
 			if v == NULL then PUSH(nil) else PUSH(v) end

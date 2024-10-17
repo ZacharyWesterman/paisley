@@ -53,7 +53,13 @@ function INIT()
 	math.randomseed(RANDOM_SEED)
 	math.random() --First random number after seeding is often not truly random, so clear it out
 	STACK = {}
-	VARS = {}
+	---@diagnostic disable-next-line
+	VARS = std.object()
+	if V7 then
+		local prev_vars = read_var("variables")
+		if prev_vars ~= '' then VARS = json.parse(prev_vars) end
+		if not VARS then VARS = std.object() end
+	end
 	INSTR_STACK = {}
 	output(#INSTRUCTIONS, 1)
 end
@@ -64,6 +70,13 @@ function ITER()
 	LAST_CMD_RESULT = V5
 
 	if I == nil then
+		if V7 then
+			for key, value in pairs(VARS) do
+				if key:sub(1,1) == '?' then VARS[key] = nil end
+			end
+			write_var(json.stringify(VARS), "variables")
+
+		end
 		output(nil, 3) --Program successfully completed
 	else
 		output(I[2], 8) --Output line number

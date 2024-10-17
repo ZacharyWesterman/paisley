@@ -984,6 +984,8 @@ function SemanticAnalyzer(tokens, root_file)
 				token.type = _G['TYPE_ARRAY_STRING']
 			elseif token.text == '@' then
 				token.type = _G['TYPE_ARRAY']
+			elseif token.text == '_VARS' then
+				token.type = _G['TYPE_OBJECT']
 			end
 		end
 	end
@@ -992,13 +994,24 @@ function SemanticAnalyzer(tokens, root_file)
 	local assigned_vars = {
 		['$'] = {},
 		['@'] = {},
+		['_VARS'] = {},
 	}
 	local this_var = nil
 	recurse(root, {TOK.var_assign, TOK.inline_command}, function(token, file)
 		local ix = token.span.from
 		if token.id == TOK.var_assign then
+			
 			this_var = token.text
 			token.ignore = true --If this variable is not used anywhere, we can optimize it away.
+			
+			--Don't allow assignment to _VARS variable.
+			if this_var == '_VARS' then
+				parse_error(token.span, '_VARS variable cannot be written to, it only contains defined variables', file)
+			end
+
+			--If we're specifically keeping the vars, then don't remove the dead code.
+			if V7 then token.ignore = false end
+
 			if not assigned_vars[this_var] then assigned_vars[this_var] = {} end
 			assigned_vars[this_var][ix.line..'|'..ix.col] = token
 		elseif this_var then
