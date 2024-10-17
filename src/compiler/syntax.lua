@@ -347,7 +347,7 @@ local rules = {
 		id = TOK.list_comp,
 		keep = {1, 3, 5, 7},
 		text = 2,
-		not_before = {TOK.kwd_else_expr, TOK.op_dot},
+		not_before = {TOK.kwd_else_expr, TOK.op_dot, TOK.index_open, TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le},
 	},
 
 	--If no other boolean op was detected, just promote the value to bool status.
