@@ -138,6 +138,7 @@ TYPE_NULL = SIGNATURE('null')
 TYPE_ARRAY_STRING = SIGNATURE('array[string]')
 TYPE_ARRAY_NUMBER = SIGNATURE('array[number]')
 TYPE_INDEXABLE = SIGNATURE('array|object|string')
+TYPE_INDEXER = SIGNATURE('number|array[number]')
 
 ---Check if two type signatures can match up.
 ---E.g. "any" and "string" are similar enough, "number|string" and "string" are similar enough, etc.

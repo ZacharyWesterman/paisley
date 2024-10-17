@@ -732,19 +732,24 @@ function SemanticAnalyzer(tokens, root_file)
 					return
 				end
 
-				if SIMILAR_TYPE(t1, _G['TYPE_STRING']) then
-					token.type = _G['TYPE_STRING']
-				elseif SIMILAR_TYPE(t2, _G['TYPE_ARRAY']) then
-					if not SIMILAR_TYPE(t2, _G['TYPE_ARRAY_NUMBER']) then
-						parse_error(token.children[1].span, 'Cannot index an array value with a value of type `'..TYPE_TEXT(t2)..'`. Must be `array[number]` or `number`', file)
+				if SIMILAR_TYPE(t1, _G['TYPE_OBJECT']) then
+					token.type = _G['TYPE_ANY']
+				else
+					if not SIMILAR_TYPE(t2, _G['TYPE_INDEXER']) then
+						parse_error(token.children[1].span, 'Cannot index with a value of type `'..TYPE_TEXT(t2)..'`. Must be `array[number]` or `number`', file)
 						return
 					end
-					token.type = t1
-				elseif HAS_SUBTYPES(t1) then
-					token.type = GET_SUBTYPES(t1)
-				else
-					--We don't know what type of array this is, so result of non-const array index has to be "any"
-					token.type = _G['TYPE_ANY']
+
+					if SIMILAR_TYPE(t1, _G['TYPE_STRING']) then
+						token.type = _G['TYPE_STRING']
+					elseif SIMILAR_TYPE(t2, _G['TYPE_ARRAY']) then
+						token.type = t1
+					elseif HAS_SUBTYPES(t1) then
+						token.type = GET_SUBTYPES(t1)
+					else
+						--We don't know what type of array this is, so result of non-const array index has to be "any"
+						token.type = _G['TYPE_ANY']
+					end
 				end
 			end
 			return
