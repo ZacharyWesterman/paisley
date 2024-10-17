@@ -320,6 +320,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Variables, `var_name`, `x`, etc.
 - The "parameter list" variable, an array containing any values passed to the current subroutine, `@`
 - The "command list" variable, an array containing the names of all allowed commands, `$`
+- The "variables" variable, an object that contains variable names and values, `_VARS`
 - Inline command evaluation, `${}`
 - Arrays, e.g. `(1,2,3,4,5)`
 - Objects, e.g. `("a" => 1, "b" => 2)`
