@@ -165,9 +165,10 @@ json = {
 					if chr == 't' then chr = '\t' end
 					this_token = this_token .. chr
 					escaped = false
-				elseif chr == '\\' then
+				elseif chr == '\\' and text:sub(i+1,i+1) ~= 'u' then
+					--Don't mangle unicode sequences... we usually can't render those, so just leave them as-is.
+					--All others can be handled properly.
 					escaped = true
-					-- this_token = this_token .. chr
 				elseif chr == '"' then
 					--End string, append token
 					table.insert(tokens, newtoken(this_token, _tok.literal))
