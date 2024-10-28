@@ -1015,6 +1015,7 @@ function SemanticAnalyzer(tokens, root_file)
 			end
 
 			--If we're specifically keeping the vars, then don't remove the dead code.
+			---@diagnostic disable-next-line
 			if V7 then token.ignore = false end
 
 			if not assigned_vars[this_var] then assigned_vars[this_var] = {} end
