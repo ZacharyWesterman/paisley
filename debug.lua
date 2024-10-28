@@ -48,6 +48,54 @@ function output(data, _)
 	TRANSFER = data
 end
 
+local function script_real_path()
+	local path = arg[0]
+	local windows = package.config:sub(1,1) == '\\'
+
+	if windows then
+		local ffi_installed, ffi = pcall(require, 'ffi')
+
+		if not ffi_installed then return '' end
+
+        ffi.cdef[[
+            typedef unsigned long DWORD;
+            typedef char CHAR;
+            typedef DWORD ( __stdcall *GetFullPathNameA_t )(const CHAR*, DWORD, CHAR*, CHAR**);
+        ]]
+        local kernel32 = ffi.load("kernel32")
+        local MAX_PATH = 260
+        local buf = ffi.new("char[?]", MAX_PATH)
+        local getFullPathName = ffi.cast("GetFullPathNameA_t", kernel32.GetFullPathNameA)
+        local length = getFullPathName(path, MAX_PATH, buf, nil)
+        if length == 0 then
+            return '' -- Failed to get path
+        else
+            return ffi.string(buf, length)
+        end
+	else
+		-- If on Linux, resolve symbolic links
+        local resolvedPath = io.popen("readlink -f " .. path):read("*a")
+        if resolvedPath then
+            return resolvedPath:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
+        else
+            return '' -- Failed to get path
+        end
+	end
+end
+
+local dir = script_real_path():match('(.*[/\\])')
+if dir == nil then dir = '' end
+
+function STDLIB(filename)
+	if dir == nil then return nil, filename end
+
+	local fname = dir .. 'stdlib/' .. filename:gsub('%.','/') .. '.paisley'
+	return io.open(fname), fname
+end
+
+local lfs_installed, lfs = pcall(require, 'lfs')
+local zlib_installed, zlib = pcall(require, 'zlib')
+
 local old_working_dir = nil
 WORKING_DIR = ''
 if lfs_installed and dir ~= nil then
