@@ -32,7 +32,7 @@ require "src.shared.builtin_commands"
 
 --[[RUN THIS TO LOAD CODE]]
 function INIT()
-	if V1 and V1:sub(1,1) == '[' then
+	if V1 and V1:sub(1, 1) == '[' then
 		INSTRUCTIONS = json.parse(V1)
 	else
 		INSTRUCTIONS = {}
@@ -74,7 +74,7 @@ function ITER()
 		---@diagnostic disable-next-line
 		if V7 then
 			for key, value in pairs(VARS) do
-				if key:sub(1,1) == '?' then VARS[key] = nil end
+				if key:sub(1, 1) == '?' then VARS[key] = nil end
 			end
 			---@diagnostic disable-next-line
 			write_var(json.stringify(VARS), "variables")

@@ -1,9 +1,9 @@
 --Generate an empty matrix
 local function matrix(row --[[number]], col --[[number]])
 	local m = {}
-	for i = 1,row do
+	for i = 1, row do
 		m[i] = {}
-		for j = 1,col do
+		for j = 1, col do
 			m[i][j] = 0
 		end
 	end
@@ -30,7 +30,7 @@ function lev(a --[[string]], b --[[string]])
 			else
 				cost = 1
 			end
-			M[i][j] = math.min(math.min(M[i-1][j] + 1, M[i][j - 1] + 1), M[i - 1][j - 1] + cost)
+			M[i][j] = math.min(math.min(M[i - 1][j] + 1, M[i][j - 1] + 1), M[i - 1][j - 1] + cost)
 		end
 	end
 

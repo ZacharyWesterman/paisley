@@ -41,7 +41,7 @@ json = {
 				local result = ''
 				if is_array then
 					if indent ~= nil then result = '[\n' else result = '[' end
-					for key=1, #data do
+					for key = 1, #data do
 						local str = __stringify(data[key], indent, next_indent)
 						if key ~= #data then str = str .. ',' end
 						if indent ~= nil then
@@ -57,7 +57,8 @@ json = {
 					if indent ~= nil then colon = ': ' end
 					local ct = 0
 					for key, value in pairs(data) do
-						local str = __stringify(tostring(key), indent, next_indent) .. colon .. __stringify(value, indent, next_indent)
+						local str = __stringify(tostring(key), indent, next_indent) ..
+						colon .. __stringify(value, indent, next_indent)
 						if indent ~= nil then
 							if ct > 0 then result = result .. ',\n' end
 							result = result .. (' '):rep(next_indent) .. str
@@ -69,17 +70,16 @@ json = {
 					end
 					if indent ~= nil then return result .. '\n' .. (' '):rep(__indent) .. '}' else return result .. '}' end
 				end
-
 			elseif tp == 'string' then
 				local repl_chars = {
-					{'\\', '\\\\'},
-					{'\"', '\\"'},
-					{'\n', '\\n'},
-					{'\t', '\\t'},
+					{ '\\', '\\\\' },
+					{ '\"', '\\"' },
+					{ '\n', '\\n' },
+					{ '\t', '\\t' },
 				}
 				local result = data
 				local i
-				for i=1, #repl_chars do
+				for i = 1, #repl_chars do
 					result = result:gsub(repl_chars[i][1], repl_chars[i][2])
 				end
 				return '"' .. result .. '"'
@@ -92,7 +92,7 @@ json = {
 			elseif data == nil then
 				return 'null'
 			else
-				local msg = 'Unable to stringify data "'..tostring(data)..'" of type '..tp..'.'
+				local msg = 'Unable to stringify data "' .. tostring(data) .. '" of type ' .. tp .. '.'
 				if return_error then
 					return '', msg
 				else
@@ -126,20 +126,20 @@ json = {
 
 		local newtoken = function(value, kind)
 			return {
-				value=value,
-				kind=kind,
-				line=line,
-				col=col,
+				value = value,
+				kind = kind,
+				line = line,
+				col = col,
 			}
 		end
 
 		local do_error = function(msg)
-			error('JSON parse error at ['..line..':'..col..']: '..msg)
+			error('JSON parse error at [' .. line .. ':' .. col .. ']: ' .. msg)
 		end
 
 		if return_error then
 			do_error = function(msg)
-				return nil, 'JSON parse error at ['..line..':'..col..']: '..msg
+				return nil, 'JSON parse error at [' .. line .. ':' .. col .. ']: ' .. msg
 			end
 		end
 
@@ -150,7 +150,7 @@ json = {
 		local this_token = ''
 		local paren_stack = {}
 		while i <= #text do
-			local chr = text:sub(i,i)
+			local chr = text:sub(i, i)
 
 			col = col + 1
 			if chr == '\n' then
@@ -165,7 +165,7 @@ json = {
 					if chr == 't' then chr = '\t' end
 					this_token = this_token .. chr
 					escaped = false
-				elseif chr == '\\' and text:sub(i+1,i+1) ~= 'u' then
+				elseif chr == '\\' and text:sub(i + 1, i + 1) ~= 'u' then
 					--Don't mangle unicode sequences... we usually can't render those, so just leave them as-is.
 					--All others can be handled properly.
 					escaped = true
@@ -200,19 +200,19 @@ json = {
 			elseif chr == '"' then
 				--Start a string token
 				in_string = true
-			elseif chr == 't' and text:sub(i, i+3) == 'true' then
+			elseif chr == 't' and text:sub(i, i + 3) == 'true' then
 				table.insert(tokens, newtoken(true, _tok.literal))
 				i = i + 3
-			elseif chr == 'f' and text:sub(i, i+4) == 'false' then
+			elseif chr == 'f' and text:sub(i, i + 4) == 'false' then
 				table.insert(tokens, newtoken(false, _tok.literal))
 				i = i + 4
-			elseif chr == 'n' and text:sub(i, i+3) == 'null' then
+			elseif chr == 'n' and text:sub(i, i + 3) == 'null' then
 				table.insert(tokens, newtoken(nil, _tok.literal))
 				i = i + 3
 			else
 				local num = text:match('^%-?%d+%.?%d*', i)
 				if num == nil then
-					return do_error('Invalid character "'..chr..'".')
+					return do_error('Invalid character "' .. chr .. '".')
 				else
 					table.insert(tokens, newtoken(tonumber(num), _tok.literal))
 					i = i + #num - 1
@@ -253,7 +253,7 @@ json = {
 				return this_token.value, i
 			elseif this_token.kind == _tok.lbracket then
 				--Generate array-like tables
-				this_object = setmetatable({}, {is_array = true})
+				this_object = setmetatable({}, { is_array = true })
 				i = i + 1
 				this_token = tokens[i]
 
@@ -261,11 +261,12 @@ json = {
 					local value
 					value, i = lex(i)
 					table.insert(this_object, value)
-					this_token = tokens[i+1]
+					this_token = tokens[i + 1]
 					if this_token.kind == _tok.comma then
 						i = i + 1
 					elseif this_token.kind ~= _tok.rbracket then
-						return lex_error(this_token, 'Unexpected token "'..this_token.value..'" (expected "," or "]").')
+						return lex_error(this_token, 'Unexpected token "' .. this_token.value ..
+						'" (expected "," or "]").')
 					end
 					i = i + 1
 					this_token = tokens[i]
@@ -273,35 +274,36 @@ json = {
 				return this_object, i
 			elseif this_token.kind == _tok.lbrace then
 				--Generate object-like tables
-				this_object = setmetatable({}, {is_array = false})
+				this_object = setmetatable({}, { is_array = false })
 				i = i + 1
 				this_token = tokens[i]
 
 				while this_token.kind ~= _tok.rbrace do
 					--Only exact keys are allowed‚ no objects as keys
 					if this_token.kind ~= _tok.literal then
-						return lex_error(this_token, 'Unexpected token "'..this_token.value..'" (expected literal).')
+						return lex_error(this_token, 'Unexpected token "' .. this_token.value .. '" (expected literal).')
 					end
 					local key = this_token.value
 
-					this_token = tokens[i+1]
+					this_token = tokens[i + 1]
 					if this_token.kind ~= _tok.colon then
-						return lex_error(this_token, 'Unexpected token "'..this_token.value..'" (expected ":").')
+						return lex_error(this_token, 'Unexpected token "' .. this_token.value .. '" (expected ":").')
 					end
 
-					this_object[key], i = lex(i+2)
-					this_token = tokens[i+1]
+					this_object[key], i = lex(i + 2)
+					this_token = tokens[i + 1]
 					if this_token.kind == _tok.comma then
 						i = i + 1
 					elseif this_token.kind ~= _tok.rbrace then
-						return lex_error(this_token, 'Unexpected token "'..this_token.value..'" (expected "," or "}").')
+						return lex_error(this_token, 'Unexpected token "' .. this_token.value ..
+						'" (expected "," or "}").')
 					end
 					i = i + 1
 					this_token = tokens[i]
 				end
 				return this_object, i
 			else
-				return lex_error(this_token, 'Unexpected token "'..this_token.value..'".')
+				return lex_error(this_token, 'Unexpected token "' .. this_token.value .. '".')
 			end
 		end
 

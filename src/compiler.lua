@@ -62,6 +62,7 @@ if COMPILER_DEBUG or _G['PRINT_TOKENS'] then
 		print(title)
 		print('--------------------------')
 	end
+
 	if COMPILER_DEBUG then print_header('Tokens') end
 	local i
 	for i = 1, #tokens do
@@ -70,7 +71,8 @@ if COMPILER_DEBUG or _G['PRINT_TOKENS'] then
 end
 --[[/minify-delete]]
 
---[[minify-delete]] HIDE_ERRORS = _G['SUPPRESS_AST_ERRORS'] --[[/minify-delete]]
+--[[minify-delete]]
+HIDE_ERRORS = _G['SUPPRESS_AST_ERRORS'] --[[/minify-delete]]
 
 local parser = SyntaxParser(tokens, file)
 while parser.fold() do end --Iterate on the syntax tree. Follows iterator-like behavior.

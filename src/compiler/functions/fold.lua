@@ -114,7 +114,9 @@ FUNC_OPERATIONS = {
 	type = function(a) return std.type(a) end,
 	dist = function(a, b, token, file)
 		if type(a) ~= type(b) then
-			parse_error(token.span, 'Function "dist(a,b)" expected (number, number) or (array, array) but got ('..std.type(a)..', '..std.type(b)..')', file)
+			parse_error(token.span,
+				'Function "dist(a,b)" expected (number, number) or (array, array) but got (' ..
+				std.type(a) .. ', ' .. std.type(b) .. ')', file)
 		end
 
 		if type(a) == 'number' then
@@ -122,13 +124,14 @@ FUNC_OPERATIONS = {
 		end
 
 		if #a ~= #b then
-			parse_error(token.span, 'Function "dist(a,b)" expected arrays of equal length, got lengths '..#a..' and '..#b, file)
+			parse_error(token.span, 'Function "dist(a,b)" expected arrays of equal length, got lengths ' ..
+			#a .. ' and ' .. #b, file)
 		end
 
 		local total = 0
 		for i = 1, #a do
 			local p = a[i] - b[i]
-			total = total + p*p
+			total = total + p * p
 		end
 		return math.sqrt(total)
 	end,
@@ -150,7 +153,7 @@ FUNC_OPERATIONS = {
 		return std.str(a):lower()
 	end,
 	camel = function(a)
-		return a:gsub('(%l)(%w*)', function(x,y) return x:upper()..y end)
+		return a:gsub('(%l)(%w*)', function(x, y) return x:upper() .. y end)
 	end,
 	replace = function(subject, search, replace)
 		--Not really memory efficient, but good enough.
@@ -190,12 +193,12 @@ FUNC_OPERATIONS = {
 	end,
 
 	lpad = function(text, character, width)
-		local c = character:sub(1,1)
-		return c:rep(width-#text) .. text
+		local c = character:sub(1, 1)
+		return c:rep(width - #text) .. text
 	end,
 	rpad = function(text, character, width)
-		local c = character:sub(1,1)
-		return text .. c:rep(width-#text)
+		local c = character:sub(1, 1)
+		return text .. c:rep(width - #text)
 	end,
 	hex = function(value)
 		return string.format('%x', value)
@@ -273,7 +276,7 @@ FUNC_OPERATIONS = {
 	object = function(array)
 		local result = std.object()
 		for i = 1, #array, 2 do
-			result[std.str(array[i])] = array[i+1]
+			result[std.str(array[i])] = array[i + 1]
 		end
 		return result
 	end,
@@ -298,7 +301,7 @@ FUNC_OPERATIONS = {
 	end,
 	pairs = function(object)
 		local result = {}
-		for key, value in pairs(object) do table.insert(result, {key, value}) end
+		for key, value in pairs(object) do table.insert(result, { key, value }) end
 		return result
 	end,
 
@@ -370,8 +373,11 @@ FUNC_OPERATIONS = {
 		if type(timestamp) == 'number' then timestamp = FUNC_OPERATIONS.clocktime(timestamp) end
 		local result = ''
 		for i = 1, #timestamp do
-			if i > 3 then result = result .. '.'
-			elseif #result > 0 then result = result .. ':' end
+			if i > 3 then
+				result = result .. '.'
+			elseif #result > 0 then
+				result = result .. ':'
+			end
 			local val = tostring(std.num(timestamp[i]))
 			result = result .. ('0'):rep(2 - #val) .. val
 		end

@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 V2 = nil --filename
-V3 = {} --non-builtin commands
+V3 = {}  --non-builtin commands
 
 local PRINT_BYTECODE = false
 local PRETTY_PRINT = false
@@ -35,57 +35,57 @@ end
 
 local function script_real_path()
 	local path = arg[0]
-	local windows = package.config:sub(1,1) == '\\'
+	local windows = package.config:sub(1, 1) == '\\'
 
 	if windows then
 		local ffi_installed, ffi = pcall(require, 'ffi')
 
 		if not ffi_installed then return '' end
 
-        ffi.cdef[[
+		ffi.cdef [[
             typedef unsigned long DWORD;
             typedef char CHAR;
             typedef DWORD ( __stdcall *GetFullPathNameA_t )(const CHAR*, DWORD, CHAR*, CHAR**);
         ]]
-        local kernel32 = ffi.load("kernel32")
-        local MAX_PATH = 260
-        local buf = ffi.new("char[?]", MAX_PATH)
-        local getFullPathName = ffi.cast("GetFullPathNameA_t", kernel32.GetFullPathNameA)
-        local length = getFullPathName(path, MAX_PATH, buf, nil)
-        if length == 0 then
-            return '' -- Failed to get path
-        else
-            return ffi.string(buf, length)
-        end
+		local kernel32 = ffi.load("kernel32")
+		local MAX_PATH = 260
+		local buf = ffi.new("char[?]", MAX_PATH)
+		local getFullPathName = ffi.cast("GetFullPathNameA_t", kernel32.GetFullPathNameA)
+		local length = getFullPathName(path, MAX_PATH, buf, nil)
+		if length == 0 then
+			return '' -- Failed to get path
+		else
+			return ffi.string(buf, length)
+		end
 	else
 		-- If on Linux, resolve symbolic links
-        local resolvedPath = io.popen("readlink -f " .. path):read("*a")
-        if resolvedPath then
-            return resolvedPath:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
-        else
-            return '' -- Failed to get path
-        end
+		local resolvedPath = io.popen("readlink -f " .. path):read("*a")
+		if resolvedPath then
+			return resolvedPath:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
+		else
+			return ''                                      -- Failed to get path
+		end
 	end
 end
 
 ---@param text string
 local function is_zlib_compressed(text)
-	local header = text:sub(1,2)
+	local header = text:sub(1, 2)
 
 	if #header < 2 then return false end
 
-    -- Convert the two bytes to integer values
-    local byte1, byte2 = header:byte(1, 2)
+	-- Convert the two bytes to integer values
+	local byte1, byte2 = header:byte(1, 2)
 
-    -- Check the zlib header
-    -- The first byte (CMF - Compression Method and Flags)
-    -- The second byte (FLG - Additional Flags)
-    return (byte1 == 0x78) and (byte2 == 0x01 or byte2 == 0x9C or byte2 == 0xDA)
+	-- Check the zlib header
+	-- The first byte (CMF - Compression Method and Flags)
+	-- The second byte (FLG - Additional Flags)
+	return (byte1 == 0x78) and (byte2 == 0x01 or byte2 == 0x9C or byte2 == 0xDA)
 end
 
 --@param text string
 local function is_paisley_bytecode(text)
-	if text:sub(1,2) ~= '[[' or text:sub(#text-1,#text) ~= ']]' then return false end
+	if text:sub(1, 2) ~= '[[' or text:sub(#text - 1, #text) ~= ']]' then return false end
 	return json.verify(text)
 end
 
@@ -95,15 +95,16 @@ if dir == nil then dir = '' end
 function STDLIB(filename)
 	if dir == nil then return nil, filename end
 
-	local fname = dir .. 'stdlib/' .. filename:gsub('%.','/') .. '.paisley'
+	local fname = dir .. 'stdlib/' .. filename:gsub('%.', '/') .. '.paisley'
 	return io.open(fname), fname
 end
 
 local lfs_installed, lfs = pcall(require, 'lfs')
 local zlib_installed, zlib = pcall(require, 'zlib')
 
-local VERSION = --[[build-replace=version.txt]] io.open(dir..'version.txt'):read() --[[/build-replace]]
-local HELPTEXT = --[[build-replace=helptext.txt]] io.open(dir..'helptext.txt'):read('*all'):gsub('[\r\n]+$', ''):gsub('^[\r\n]+', '') --[[/build-replace]]
+local VERSION = --[[build-replace=version.txt]] io.open(dir .. 'version.txt'):read() --[[/build-replace]]
+local HELPTEXT = --[[build-replace=helptext.txt]] io.open(dir .. 'helptext.txt'):read('*all'):gsub('[\r\n]+$', ''):gsub(
+'^[\r\n]+', '') --[[/build-replace]]
 
 local old_working_dir = nil
 if lfs_installed and dir ~= nil then
@@ -116,15 +117,15 @@ require 'src.shared.json'
 require 'src.shared.stdlib'
 
 for i, v in ipairs(arg) do
-	if v:sub(1,1) == '-' and v ~= '-' then
-		if v:sub(1,2) == '-c' then
-			table.insert(V3, v:sub(3,#v))
+	if v:sub(1, 1) == '-' and v ~= '-' then
+		if v:sub(1, 2) == '-c' then
+			table.insert(V3, v:sub(3, #v))
 		elseif v == '--help' or v == '-h' then
-			print('Paisley ' .. VERSION )
-			print('\n' .. HELPTEXT )
+			print('Paisley ' .. VERSION)
+			print('\n' .. HELPTEXT)
 			ENDED = true
 		elseif v == '--version' or v == '-V' then
-			print('Paisley ' .. VERSION )
+			print('Paisley ' .. VERSION)
 			ENDED = true
 		elseif v == '--bytecode' or v == '-b' then
 			PRINT_BYTECODE = true
@@ -159,18 +160,18 @@ for i, v in ipairs(arg) do
 			INTROSPECT_FUNCLIST = true
 		elseif v == '--commands' then
 			INTROSPECT_CMDLIST = true
-		elseif v:sub(1,3) == '-if' then
-			table.insert(INTROSPECT_FUNCS, v:sub(4,#v))
-		elseif v:sub(1,3) == '-ic' then
-			table.insert(INTROSPECT_CMDS, v:sub(4,#v))
+		elseif v:sub(1, 3) == '-if' then
+			table.insert(INTROSPECT_FUNCS, v:sub(4, #v))
+		elseif v:sub(1, 3) == '-ic' then
+			table.insert(INTROSPECT_CMDS, v:sub(4, #v))
 		elseif v == '--repl' or v == '-r' then
 			REPL = true
-		elseif v:sub(1,8) == '--stdin=' then
+		elseif v:sub(1, 8) == '--stdin=' then
 			LSP_FILENAME = v:sub(9, #v)
 		elseif v == '--no-prune-dead-code' then
 			KEEP_DEAD_CODE = true
 		else
-			error('Unknown flag `'..v..'`. Try running with `--help` to see all options.')
+			error('Unknown flag `' .. v .. '`. Try running with `--help` to see all options.')
 		end
 	elseif V2 then
 		OUTPUT_FILE = v
@@ -243,26 +244,28 @@ if INTROSPECTION then
 				break
 			end
 			if not BUILTIN_COMMANDS[key] and not ALLOWED_COMMANDS[key] then
-				error('ERROR: `'..key..'` is not a built-in or user-defined command.')
+				error('ERROR: `' .. key .. '` is not a built-in or user-defined command.')
 			end
 		end
 
 		for i = 1, #INTROSPECT_CMDS do
 			local key = INTROSPECT_CMDS[i]
 			print(key)
-			if BUILTIN_COMMANDS[key] then print('  Returns: ' .. TYPE_TEXT(BUILTIN_COMMANDS[key])) else print('  Returns: ' .. TYPE_TEXT(ALLOWED_COMMANDS[key])) end
-			if BUILTIN_COMMANDS[key] then print('  Desc: ' .. CMD_DESCRIPTION[key]) else print('  Desc: User-defined command.') end
+			if BUILTIN_COMMANDS[key] then print('  Returns: ' .. TYPE_TEXT(BUILTIN_COMMANDS[key])) else print(
+				'  Returns: ' .. TYPE_TEXT(ALLOWED_COMMANDS[key])) end
+			if BUILTIN_COMMANDS[key] then print('  Desc: ' .. CMD_DESCRIPTION[key]) else print(
+				'  Desc: User-defined command.') end
 		end
 	elseif not INTROSPECT_FUNCLIST and #INTROSPECT_FUNCS == 0 then
 		--Generate table of commands
 		local t = {}
-		table.insert(t, {'COMMAND','RETURN TYPE'})
+		table.insert(t, { 'COMMAND', 'RETURN TYPE' })
 		for key, val in pairs(BUILTIN_COMMANDS) do
 			---@diagnostic disable-next-line
-			table.insert(t, {key, TYPE_TEXT(val)})
+			table.insert(t, { key, TYPE_TEXT(val) })
 		end
 		for key, val in pairs(ALLOWED_COMMANDS) do
-			table.insert(t, {key, TYPE_TEXT(val)})
+			table.insert(t, { key, TYPE_TEXT(val) })
 		end
 
 		print('COMMAND LIST:')
@@ -289,7 +292,7 @@ if INTROSPECTION then
 			end
 
 			if not BUILTIN_FUNCS[key] then
-				error('ERROR: `'..key..'` is not a built-in function.')
+				error('ERROR: `' .. key .. '` is not a built-in function.')
 			end
 		end
 
@@ -315,20 +318,20 @@ if INTROSPECTION then
 	elseif not INTROSPECT_CMDLIST and #INTROSPECT_CMDS == 0 then
 		--Generate table of functions
 		local t = {}
-		table.insert(t, {'FUNCTION SIGNATURE'})
+		table.insert(t, { 'FUNCTION SIGNATURE' })
 		for i = 1, #funcs do
 			local key = funcs[i]
 			if key == 'reduce' then
-				table.insert(t, {key .. '(' .. FUNCSIG(key) .. ') -> bool|number'})
+				table.insert(t, { key .. '(' .. FUNCSIG(key) .. ') -> bool|number' })
 			elseif TYPESIG[key].out == 1 then
 				--Return type is the same as 1st param
 				local types = {}
 				for i, k in ipairs(TYPESIG[key].valid) do
 					table.insert(types, k[1])
 				end
-				table.insert(t, {key .. '(' .. FUNCSIG(key) .. ') -> ' .. std.join(types, '|', TYPE_TEXT)})
+				table.insert(t, { key .. '(' .. FUNCSIG(key) .. ') -> ' .. std.join(types, '|', TYPE_TEXT) })
 			else
-				table.insert(t, {key .. '(' .. FUNCSIG(key) .. ') -> ' .. TYPE_TEXT(TYPESIG[key].out)})
+				table.insert(t, { key .. '(' .. FUNCSIG(key) .. ') -> ' .. TYPE_TEXT(TYPESIG[key].out) })
 			end
 		end
 
@@ -371,7 +374,7 @@ if not ENDED then
 		if file then
 			V1 = file:read('*all')
 		else
-			error('Error: Cannot open file `'..V2..'`.')
+			error('Error: Cannot open file `' .. V2 .. '`.')
 		end
 	end
 
@@ -393,7 +396,7 @@ if not ENDED then
 			--We'll instead be running raw bytecode.
 			bytecode = json.parse(inflated)
 		else
-			error('Error during decompression: '..err)
+			error('Error during decompression: ' .. err)
 		end
 	elseif is_paisley_bytecode(V1) then
 		local bc = V1
@@ -418,7 +421,8 @@ if not ENDED then
 				local comma = ''
 				if i < #bytecode then comma = ',\n' end
 				text = text .. '  '
-				if i < #bytecode then text = text .. json.stringify(bytecode[i]) .. ',\n'
+				if i < #bytecode then
+					text = text .. json.stringify(bytecode[i]) .. ',\n'
 				else
 					text = text .. '[\n'
 					for k = 1, #bytecode[i] do
@@ -435,15 +439,17 @@ if not ENDED then
 
 		if ZLIB_COMPRESS then
 			local deflated, err = zlib.deflate()(text, 'finish')
-			if deflated then text = deflated else
-				error('Error during compression: '..err)
+			if deflated then
+				text = deflated
+			else
+				error('Error during compression: ' .. err)
 			end
 		end
 
 		if OUTPUT_FILE then
 			local fp = io.open(OUTPUT_FILE, 'wb')
 			if not fp then
-				error('Failed to write to file: '..OUTPUT_FILE)
+				error('Failed to write to file: ' .. OUTPUT_FILE)
 			end
 
 			fp:write(text)
@@ -485,7 +491,7 @@ if not ENDED and not LANGUAGE_SERVER and bytecode ~= nil then
 			-- os.execute('sleep 0.01') --emulate behavior in Plasma where program execution pauses periodicaly to avoid lag.
 		elseif port == 2 then
 			--run a non-builtin command (currently not supported outside of Plasma)
-			error('Error on line '.. line_no .. ': Cannot run program `' .. std.str(value) .. '`')
+			error('Error on line ' .. line_no .. ': Cannot run program `' .. std.str(value) .. '`')
 		elseif port == 3 then
 			ENDED = true --program successfully completed
 		elseif port == 4 then
@@ -497,7 +503,7 @@ if not ENDED and not LANGUAGE_SERVER and bytecode ~= nil then
 		elseif port == 5 then
 			--get current time (seconds since midnight)
 			local date = os.date('*t', os.time())
-			local sec_since_midnight = date.hour*3600 + date.min*60 + date.sec
+			local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
 
 			if socket_installed then
 				sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
@@ -508,11 +514,11 @@ if not ENDED and not LANGUAGE_SERVER and bytecode ~= nil then
 			if value == 2 then
 				--get system date (day, month, year)
 				local date = os.date('*t', os.time())
-				V5 = {date.day, date.month, date.year} --command return value
+				V5 = { date.day, date.month, date.year } --command return value
 			elseif value == 1 then
 				--get system time (seconds since midnight)
 				local date = os.date('*t', os.time())
-				local sec_since_midnight = date.hour*3600 + date.min*60 + date.sec
+				local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
 
 				if socket_installed then
 					sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)

@@ -79,7 +79,7 @@ TOK = {
 	--Below this point are composite or meta tokens that don't exist during initial lexing phase, only get created as part of AST gen
 
 	value = k(), --any value in an expression: number, string, literal, or variable
-	add = k(), -- value + value, value - value
+	add = k(),   -- value + value, value - value
 	multiply = k(), -- multiplication or division
 	exponent = k(),
 	boolean = k(),
@@ -179,25 +179,28 @@ function parse_error(span, msg, file)
 			INFO.error(span, msg, file)
 		else --[[/minify-delete]]
 			if file ~= nil and file ~= '' then
-				print(file..': '..span.from.line..', '..span.from.col..': '..msg)
+				print(file .. ': ' .. span.from.line .. ', ' .. span.from.col .. ': ' .. msg)
 			else
-				print(span.from.line..', '..span.from.col..': '..msg)
+				print(span.from.line .. ', ' .. span.from.col .. ': ' .. msg)
 			end
-		--[[minify-delete]]
+			--[[minify-delete]]
 		end
 	end
 	--[[/minify-delete]]
 
 	ERRORED = true
-	--[[minify-delete]] if not SHOW_MULTIPLE_ERRORS then --[[/minify-delete]]
-	terminate()
-	--[[minify-delete]] end --[[/minify-delete]]
+	--[[minify-delete]]
+	if not SHOW_MULTIPLE_ERRORS then --[[/minify-delete]]
+		terminate()
+		--[[minify-delete]]
+	end --[[/minify-delete]]
 end
 
 --[[minify-delete]]
 local function lsp_msg(span, msg, loglevel, file)
 	if file == INFO.root_file or not _G['LANGUAGE_SERVER'] or not INFO.root_file then
-		print(loglevel..','..(span.from.line-1)..','..span.from.col..','..(span.to.line-1)..','..span.to.col..'|'..msg)
+		print(loglevel .. ',' ..
+		(span.from.line - 1) .. ',' .. span.from.col .. ',' .. (span.to.line - 1) .. ',' .. span.to.col .. '|' .. msg)
 	end
 end
 
@@ -212,9 +215,13 @@ INFO = {
 --[[/minify-delete]]
 
 function terminate()
-	--[[minify-delete]] if _G['LANGUAGE_SERVER'] or _G['REPL'] then error() else --[[/minify-delete]]
-	error('ERROR in user-supplied Paisley script.')
-	--[[minify-delete]] end --[[/minify-delete]]
+	--[[minify-delete]]
+	if _G['LANGUAGE_SERVER'] or _G['REPL'] then
+		error()
+	else --[[/minify-delete]]
+		error('ERROR in user-supplied Paisley script.')
+		--[[minify-delete]]
+	end --[[/minify-delete]]
 end
 
 function token_text(token_id)
@@ -235,31 +242,32 @@ function print_token(token, indent)
 
 	if DEBUG_EXTRA then
 		if token.meta_id ~= nil then
-			id = token_text(token.id)..'*'
-			meta = '    (meta='..token_text(token.meta_id)..')'
+			id = token_text(token.id) .. '*'
+			meta = '    (meta=' .. token_text(token.meta_id) .. ')'
 		end
 	else
 		local tp = token.type
 		if type(tp) == 'table' then tp = TYPE_TEXT(tp) else tp = std.debug_str(tp) end
 
 		if token.value ~= nil then
-			meta = '    (='..std.debug_str(token.value)..')'
+			meta = '    (=' .. std.debug_str(token.value) .. ')'
 			if token.type ~= nil then
-				meta = '    ('..tp..'='..std.debug_str(token.value)..')'
+				meta = '    (' .. tp .. '=' .. std.debug_str(token.value) .. ')'
 			end
 		elseif token.type ~= nil then
-			meta = '    ('..tp..')'
+			meta = '    (' .. tp .. ')'
 		end
 	end
 
 	if token.ignored ~= nil or token.is_referenced ~= nil then
 		meta = meta .. ' ['
-		if token.ignored then meta = meta..'#' else meta = meta..'-' end
-		if token.is_referenced then meta = meta..'#' else meta = meta..'-' end
+		if token.ignored then meta = meta .. '#' else meta = meta .. '-' end
+		if token.is_referenced then meta = meta .. '#' else meta = meta .. '-' end
 		meta = meta .. ']'
 	end
 
-	print((indent..'%2d:%2d: %13s = %s%s'):format(token.span.from.line, token.span.from.col, id, token.text:gsub('\n', '<nl>'):gsub('\x09','<nl>'), meta))
+	print((indent .. '%2d:%2d: %13s = %s%s'):format(token.span.from.line, token.span.from.col, id,
+		token.text:gsub('\n', '<nl>'):gsub('\x09', '<nl>'), meta))
 end
 
 function print_tokens_recursive(root, indent)
@@ -267,10 +275,11 @@ function print_tokens_recursive(root, indent)
 	print_token(root, indent)
 	if root.children then
 		for _, child in pairs(root.children) do
-			print_tokens_recursive(child, indent..'  ')
+			print_tokens_recursive(child, indent .. '  ')
 		end
 	end
 end
+
 --[[/minify-delete]]
 
 --Generate unique label ids (ones that can't clash with subroutine names)

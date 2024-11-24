@@ -50,7 +50,7 @@ std = {
 			end
 			return '{' .. result .. '}'
 		elseif type(data) == 'string' then
-			return '"'..data..'"'
+			return '"' .. data .. '"'
 		elseif type(data) == 'boolean' then
 			if data then return 'true' else return 'false' end
 		elseif data == nil then
@@ -139,12 +139,12 @@ std = {
 
 		if tp == 'array' and #data > 0 then
 			local subtype = std.deep_type(data[1])
-			local found = {[subtype] = true}
+			local found = { [subtype] = true }
 
 			for i = 2, #data do
 				local s_tp = std.deep_type(data[i])
 				if not found[s_tp] then
-					subtype = subtype..'|'..s_tp
+					subtype = subtype .. '|' .. s_tp
 					found[s_tp] = true
 				end
 			end
@@ -284,17 +284,17 @@ std = {
 	---@return string
 	b64_encode = function(data)
 		--[[Source: http://lua-users.org/wiki/BaseSixtyFour]]
-		local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+		local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 		return ((data:gsub('.', function(x)
-			local r,b='',x:byte()
-			for i=8,1,-1 do r=r..(b%2^i-b%2^(i-1)>0 and '1' or '0') end
+			local r, b = '', x:byte()
+			for i = 8, 1, -1 do r = r .. (b % 2 ^ i - b % 2 ^ (i - 1) > 0 and '1' or '0') end
 			return r
-		end)..'0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+		end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
 			if (#x < 6) then return '' end
-			local c=0
-			for i=1,6 do c=c+(x:sub(i,i)=='1' and 2^(6-i) or 0) end
-			return b:sub(c+1,c+1)
-		end)..({ '', '==', '=' })[#data%3+1])
+			local c = 0
+			for i = 1, 6 do c = c + (x:sub(i, i) == '1' and 2 ^ (6 - i) or 0) end
+			return b:sub(c + 1, c + 1)
+		end) .. ({ '', '==', '=' })[#data % 3 + 1])
 	end,
 
 	---Encode a string as its base64 representation.
@@ -302,18 +302,18 @@ std = {
 	---@return string
 	b64_decode = function(data)
 		--[[Source: http://lua-users.org/wiki/BaseSixtyFour]]
-		local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-		data = string.gsub(data, '[^'..b..'=]', '')
+		local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+		data = string.gsub(data, '[^' .. b .. '=]', '')
 		return (data:gsub('.', function(x)
 			if (x == '=') then return '' end
-			local r,f='',(b:find(x)-1)
-			for i=6,1,-1 do r=r..(f%2^i-f%2^(i-1)>0 and '1' or '0') end
+			local r, f = '', (b:find(x) - 1)
+			for i = 6, 1, -1 do r = r .. (f % 2 ^ i - f % 2 ^ (i - 1) > 0 and '1' or '0') end
 			return r
 		end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
 			if (#x ~= 8) then return '' end
-			local c=0
-			for i=1,8 do c=c+(x:sub(i,i)=='1' and 2^(8-i) or 0) end
-				return string.char(c)
+			local c = 0
+			for i = 1, 8 do c = c + (x:sub(i, i) == '1' and 2 ^ (8 - i) or 0) end
+			return string.char(c)
 		end))
 	end,
 
@@ -324,13 +324,13 @@ std = {
 	filter = function(text, pattern)
 		local result, in_text = '', text
 		while #in_text > 0 do
-			local m = in_text:match('^'..pattern)
+			local m = in_text:match('^' .. pattern)
 			if m and (#m > 0) then
 				result = result .. m
 			else
 				m = 'x'
 			end
-			in_text = in_text:sub(#m+1, #in_text)
+			in_text = in_text:sub(#m + 1, #in_text)
 		end
 		return result
 	end,
@@ -340,13 +340,13 @@ std = {
 	---Create an object with appropriate metatable data.
 	---@return table
 	object = function()
-		return setmetatable({}, {is_array = false})
+		return setmetatable({}, { is_array = false })
 	end,
 
 	---Create an array with appropriate metatable data.
 	---@return table
 	array = function()
-		return setmetatable({}, {is_array = true})
+		return setmetatable({}, { is_array = true })
 	end,
 
 	---Swap a table's keys and values.
@@ -492,7 +492,7 @@ std = {
 			end
 			return string.char(48 + digit) -- '0'
 		end
-		
+
 		--Generate integer part
 		while integral > 0 do
 			result = to_base(integral % base) .. result

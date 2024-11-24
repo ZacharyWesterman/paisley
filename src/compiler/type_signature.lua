@@ -12,25 +12,25 @@
 ---
 ---Arrays and objects may have an optional subtype, e.g. "array[number]". if not specified,
 ---this subtype will default to "any".
---- 
+---
 ---@param signature string A type signature string representation.
 ---@param ignore_errors boolean? If true, don't error with bad type signatures.
 ---@return table TypeSignature A table representing a type signature. This should not be manipulated directly, instead use the functions in this file.
 function SIGNATURE(signature, ignore_errors)
-	local patterns = {'^%w+', '^|', '^%[', '^%]', '?'}
-	local typenames = {any = true, object = true, array = true, string = true, number = true, boolean = true, null = true,}
+	local patterns = { '^%w+', '^|', '^%[', '^%]', '?' }
+	local typenames = { any = true, object = true, array = true, string = true, number = true, boolean = true, null = true, }
 	local tokens = {}
 	local sig = signature
 	local bracket_ct = 0
 
 	local function do_error(message, char)
-		if not ignore_errors then error(message .. ' in type signature "'..signature..'" at char '..char) end
+		if not ignore_errors then error(message .. ' in type signature "' .. signature .. '" at char ' .. char) end
 	end
 
 	--Split signature into valid tokens
 	while #sig > 0 do
 		--Ignore spaces
-		if sig:sub(1,1) == ' ' then
+		if sig:sub(1, 1) == ' ' then
 			sig = sig:sub(2, #sig)
 		end
 
@@ -39,7 +39,7 @@ function SIGNATURE(signature, ignore_errors)
 			m = sig:match(patterns[i])
 			if m then
 				if i == 1 and not typenames[m] then
-					do_error('Invalid type "'..m..'"', #signature - #sig)
+					do_error('Invalid type "' .. m .. '"', #signature - #sig)
 				elseif i == 3 then
 					bracket_ct = bracket_ct + 1
 				elseif i == 4 then
@@ -48,16 +48,16 @@ function SIGNATURE(signature, ignore_errors)
 						do_error('Bracket mismatch', #signature - #sig)
 					end
 				end
-				
+
 				sig = sig:sub(#m + 1, #sig)
 
 				if i == 5 then
 					--Equate "?" operator to mean "|null".
-					table.insert(tokens, {text = '|', kind = 2}) --Insert bar
-					m, i = 'null', 1 --Change type to "null"
+					table.insert(tokens, { text = '|', kind = 2 }) --Insert bar
+					m, i = 'null', 1              --Change type to "null"
 				end
 
-				table.insert(tokens, {text = m, kind = i})
+				table.insert(tokens, { text = m, kind = i })
 				break
 			end
 		end
@@ -72,7 +72,7 @@ function SIGNATURE(signature, ignore_errors)
 
 	--Parse signature into a valid type tree
 	local function do_error(message)
-		error(message .. ' in type signature "'..signature..'"')
+		error(message .. ' in type signature "' .. signature .. '"')
 	end
 	local function ast(index)
 		local opt, i, exp_delim, subtypes, found = {}, index, false, nil, {}
@@ -91,13 +91,13 @@ function SIGNATURE(signature, ignore_errors)
 
 				if t.kind == 1 then
 					if t.text == 'object' or t.text == 'array' then
-						if not subtypes then subtypes = {any = {type = 'any'}} end
+						if not subtypes then subtypes = { any = { type = 'any' } } end
 					elseif subtypes then
-						do_error('Type "'..t.text..'" cannot have a subtype')
+						do_error('Type "' .. t.text .. '" cannot have a subtype')
 					end
 
 					if opt[t.text] then
-						do_error('Redundant use of type "'..t.text..'"')
+						do_error('Redundant use of type "' .. t.text .. '"')
 					elseif opt.any then
 						do_error('Cannot mix "any" with other types')
 					end
@@ -117,7 +117,7 @@ function SIGNATURE(signature, ignore_errors)
 					return opt, i
 				end
 			end
-		
+
 			i = i - 1
 		end
 
@@ -170,7 +170,7 @@ function EXACT_TYPE(lhs, rhs)
 			if rhs[key].subtypes then return false end
 			return true
 		end
-		
+
 		if not rhs[key].subtypes then return false end
 		if not EXACT_TYPE(val.subtypes, rhs[key].subtypes) then return false end
 	end
@@ -202,7 +202,7 @@ function TYPE_TEXT(tp)
 		if #result > 0 then result = result .. '|' end
 		result = result .. key
 		if val.subtypes then
-			result = result..'['..TYPE_TEXT(val.subtypes)..']'
+			result = result .. '[' .. TYPE_TEXT(val.subtypes) .. ']'
 		end
 	end
 	return result
@@ -217,4 +217,5 @@ function PRINT_TYPESIG(ast, indent)
 		end
 	end
 end
+
 --[[/minify-delete]]

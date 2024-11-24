@@ -2,5 +2,6 @@
 	"Lua.diagnostics.globals": [
 		"output",
 		"output_array"
-	]
+	],
+	"editor.formatOnSave": true
 }

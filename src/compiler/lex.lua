@@ -21,7 +21,7 @@ local kwds = {
 	['initial'] = TOK.kwd_initial,
 	['stop'] = TOK.kwd_stop,
 	['match'] = TOK.kwd_match,
-	--[[minify-delete]] ['require'] = TOK.kwd_import_file, --[[/minify-delete]]
+	--[[minify-delete]]['require'] = TOK.kwd_import_file, --[[/minify-delete]]
 }
 
 local opers = {
@@ -58,10 +58,10 @@ local opers = {
 }
 
 local oper_block = {
-	['/'] = {'/'},
-	['>'] = {'='},
-	['<'] = {'='},
-	['='] = {'=', '>'},
+	['/'] = { '/' },
+	['>'] = { '=' },
+	['<'] = { '=' },
+	['='] = { '=', '>' },
 }
 
 local literals = {
@@ -100,9 +100,9 @@ function Lexer(text, file)
 	---@param this_paren string
 	local function check_parens(last_paren, this_paren)
 		local errtype = {
-			['('] = {['}']=true, [']']=true},
-			['{'] = {[')']=true, [']']=true},
-			['['] = {['}']=true, [')']=true},
+			['('] = { ['}'] = true, [']'] = true },
+			['{'] = { [')'] = true, [']'] = true },
+			['['] = { ['}'] = true, [')'] = true },
 		}
 
 		local expected = {
@@ -112,7 +112,8 @@ function Lexer(text, file)
 		}
 
 		if errtype[last_paren][this_paren] then
-			parse_error(Span:new(line, col, line, col), 'Mismatched parentheses, expected "'..expected[last_paren]..'", got "'..this_paren..'"', file)
+			parse_error(Span:new(line, col, line, col),
+				'Mismatched parentheses, expected "' .. expected[last_paren] .. '", got "' .. this_paren .. '"', file)
 		end
 	end
 
@@ -222,7 +223,7 @@ function Lexer(text, file)
 				--keywords
 				if not match then
 					for key, value in pairs(kwds) do
-						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^[%w_][%w_]') then
+						if (text:sub(1, #key) == key) and not text:sub(#key, #key + 1):match('^[%w_][%w_]') then
 							match = key
 							tok_type = value
 
@@ -239,7 +240,6 @@ function Lexer(text, file)
 					match = text:match('^[^ \t\n\r"\'{};$]+')
 					if match then tok_type = TOK.text end
 				end
-
 			elseif curr_scope == '{' or curr_scope == '(' or curr_scope == '[' then
 				--Parse rules when inside expressions
 
@@ -340,7 +340,7 @@ function Lexer(text, file)
 
 				--Numbers (can have formats 0xAAAA, 0bAAAA, AA.AAA, A_AAA_AAA.AAA)
 				if not match then
-					match = text:match('^0[xb][0-9_a-fA-F]*') --0x12af / 0b0011
+					match = text:match('^0[xb][0-9_a-fA-F]*')          --0x12af / 0b0011
 					if not match then match = text:match('^%.[0-9]+') end --.123456
 					if not match then match = text:match('^[0-9][0-9_]*%.[0-9]+') end --1_234.657
 					if not match then match = text:match('^[0-9][0-9_]*') end --1_234_567
@@ -349,10 +349,10 @@ function Lexer(text, file)
 						local m = match:gsub('_', '')
 						local n
 						local tp = ''
-						if m:sub(2,2) == 'x' then
+						if m:sub(2, 2) == 'x' then
 							n = tonumber(m:sub(3, #m), 16)
 							tp = 'hexadecimal '
-						elseif m:sub(2,2) == 'b' then
+						elseif m:sub(2, 2) == 'b' then
 							n = tonumber(m:sub(3, #m), 2)
 							tp = 'binary '
 						else
@@ -360,7 +360,8 @@ function Lexer(text, file)
 						end
 
 						if n == nil then
-							parse_error(Span:new(line, col - 1, line, col + #match - 1), 'Invalid '..tp..'number "'..match..'"', file)
+							parse_error(Span:new(line, col - 1, line, col + #match - 1),
+								'Invalid ' .. tp .. 'number "' .. match .. '"', file)
 						end
 						tok_type = TOK.lit_number
 						real_value = n
@@ -370,7 +371,7 @@ function Lexer(text, file)
 				--Operators
 				if not match then
 					for key, value in pairs(opers) do
-						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^[%w_][%w_]') then
+						if (text:sub(1, #key) == key) and not text:sub(#key, #key + 1):match('^[%w_][%w_]') then
 							--Look ahead to avoid ambiguity with operators
 							if not oper_block[key] or std.arrfind(oper_block[key], text:sub(#key + 1, #key + 1), 1) == 0 then
 								match = key
@@ -392,11 +393,13 @@ function Lexer(text, file)
 				--Named constants
 				if not match then
 					for key, value in pairs(literals) do
-						if (text:sub(1, #key) == key) and not text:sub(#key,#key+1):match('^[%w_][%w_]') then
+						if (text:sub(1, #key) == key) and not text:sub(#key, #key + 1):match('^[%w_][%w_]') then
 							match = key
 							tok_type = value
-							if match == 'true' then real_value = true
-							elseif match == 'false' then real_value = false
+							if match == 'true' then
+								real_value = true
+							elseif match == 'false' then
+								real_value = false
 							end
 							break
 						end
@@ -422,7 +425,8 @@ function Lexer(text, file)
 					local this_chr = text:sub(this_ix, this_ix)
 
 					if this_chr == '' then
-						parse_error(Span:new(line, col + #this_str, line, col + #this_str), 'Unexpected EOF inside string', file)
+						parse_error(Span:new(line, col + #this_str, line, col + #this_str),
+							'Unexpected EOF inside string', file)
 						--[[minify-delete]]
 						--Hack to get REPL version to not loop forever
 						if _G['REPL'] then
@@ -434,7 +438,8 @@ function Lexer(text, file)
 
 					--No line breaks are allowed inside strings
 					if this_chr == '\n' then
-						parse_error(Span:new(line, col + #this_str, line, col + #this_str), 'Unexpected line ending inside string', file)
+						parse_error(Span:new(line, col + #this_str, line, col + #this_str),
+							'Unexpected line ending inside string', file)
 						--[[minify-delete]]
 						--Hack to get REPL version to not loop forever
 						if _G['REPL'] then
@@ -446,7 +451,7 @@ function Lexer(text, file)
 
 					--Once string ends, add text to token list and exit string.
 					--If we found an expression instead, add to the stack (only in double-quoted strings).
-					local next_chr = text:sub(this_ix+1,this_ix+1)
+					local next_chr = text:sub(this_ix + 1, this_ix + 1)
 					if this_chr == curr_scope or ((this_chr == '{' or (this_chr == '$' and next_chr == '{')) and curr_scope ~= '\'') then
 						if #this_str > 0 then
 							--Insert current built string
@@ -485,7 +490,8 @@ function Lexer(text, file)
 						this_ix = this_ix + 1
 						this_chr = text:sub(this_ix, this_ix)
 						if this_chr == '' then
-							parse_error(Span:new(line, col + #this_str, line, col + #this_str), 'Unexpected EOF inside string (after "\\")', file)
+							parse_error(Span:new(line, col + #this_str, line, col + #this_str),
+								'Unexpected EOF inside string (after "\\")', file)
 						else
 							local found_esc = false
 							for search, replace in pairs(ESCAPE_CODES) do
@@ -498,7 +504,8 @@ function Lexer(text, file)
 							end
 
 							if not found_esc then
-								parse_error(Span:new(line, col + #this_str, line, col + #this_str), 'Invalid escape sequence (after "\\")', file)
+								parse_error(Span:new(line, col + #this_str, line, col + #this_str),
+									'Invalid escape sequence (after "\\")', file)
 							end
 						end
 					end
@@ -506,7 +513,6 @@ function Lexer(text, file)
 					this_str = this_str .. this_chr
 					this_ix = this_ix + 1
 				end
-
 			elseif curr_scope == 'let' then
 				--line endings (end of variable declaration)
 				match = text:match('^[\n;]')
@@ -554,7 +560,7 @@ function Lexer(text, file)
 			--Append currently matched token to token list
 			if match then
 				col = col + #match
-				text = text:sub(#match+1, #text)
+				text = text:sub(#match + 1, #text)
 				if not tok_ignore then
 					--[[minify-delete]]
 					if EXPORT_NEXT_TOKEN then
@@ -573,9 +579,9 @@ function Lexer(text, file)
 					}
 				end
 			else
-				parse_error(Span:new(line, col, line, col), 'Unexpected character "'..text:sub(1,1)..'"', file)
+				parse_error(Span:new(line, col, line, col), 'Unexpected character "' .. text:sub(1, 1) .. '"', file)
 				col = col + 1
-				text = text:sub(2,#text)
+				text = text:sub(2, #text)
 				break
 			end
 		end
@@ -589,9 +595,11 @@ function Lexer(text, file)
 		elseif remaining_scope == '[' then
 			parse_error(Span:new(line, col, line, col), 'Missing bracket, expected "]"', file)
 		elseif remaining_scope == '{' then
-			--[[minify-delete]] if not _G['IGNORE_MISSING_BRACE'] then --[[/minify-delete]]
-			parse_error(Span:new(line, col, line, col), 'Missing brace after expression, expected "}"', file)
-			--[[minify-delete]] end --[[/minify-delete]]
+			--[[minify-delete]]
+			if not _G['IGNORE_MISSING_BRACE'] then --[[/minify-delete]]
+				parse_error(Span:new(line, col, line, col), 'Missing brace after expression, expected "}"', file)
+				--[[minify-delete]]
+			end --[[/minify-delete]]
 		elseif remaining_scope == '$' then
 			parse_error(Span:new(line, col, line, col), 'Missing brace after command eval, expected "}"', file)
 		end

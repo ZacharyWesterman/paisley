@@ -8,7 +8,7 @@ DEBUG_EXTRA = false
 RUN_PROGRAM = false
 STEP_PROGRAM = false
 for i, v in ipairs(arg) do
-	if v:sub(1,1) == '-' and v ~= '-' then
+	if v:sub(1, 1) == '-' and v ~= '-' then
 		if v == '--extra' then
 			DEBUG_EXTRA = true
 		elseif v == '--run' then
@@ -34,7 +34,7 @@ else
 	if file then
 		V1 = file:read('*all')
 	else
-		error('Error: Cannot open file `'..V2..'`.')
+		error('Error: Cannot open file `' .. V2 .. '`.')
 	end
 end
 
@@ -50,36 +50,36 @@ end
 
 local function script_real_path()
 	local path = arg[0]
-	local windows = package.config:sub(1,1) == '\\'
+	local windows = package.config:sub(1, 1) == '\\'
 
 	if windows then
 		local ffi_installed, ffi = pcall(require, 'ffi')
 
 		if not ffi_installed then return '' end
 
-        ffi.cdef[[
+		ffi.cdef [[
             typedef unsigned long DWORD;
             typedef char CHAR;
             typedef DWORD ( __stdcall *GetFullPathNameA_t )(const CHAR*, DWORD, CHAR*, CHAR**);
         ]]
-        local kernel32 = ffi.load("kernel32")
-        local MAX_PATH = 260
-        local buf = ffi.new("char[?]", MAX_PATH)
-        local getFullPathName = ffi.cast("GetFullPathNameA_t", kernel32.GetFullPathNameA)
-        local length = getFullPathName(path, MAX_PATH, buf, nil)
-        if length == 0 then
-            return '' -- Failed to get path
-        else
-            return ffi.string(buf, length)
-        end
+		local kernel32 = ffi.load("kernel32")
+		local MAX_PATH = 260
+		local buf = ffi.new("char[?]", MAX_PATH)
+		local getFullPathName = ffi.cast("GetFullPathNameA_t", kernel32.GetFullPathNameA)
+		local length = getFullPathName(path, MAX_PATH, buf, nil)
+		if length == 0 then
+			return '' -- Failed to get path
+		else
+			return ffi.string(buf, length)
+		end
 	else
 		-- If on Linux, resolve symbolic links
-        local resolvedPath = io.popen("readlink -f " .. path):read("*a")
-        if resolvedPath then
-            return resolvedPath:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
-        else
-            return '' -- Failed to get path
-        end
+		local resolvedPath = io.popen("readlink -f " .. path):read("*a")
+		if resolvedPath then
+			return resolvedPath:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
+		else
+			return ''                                      -- Failed to get path
+		end
 	end
 end
 
@@ -89,7 +89,7 @@ if dir == nil then dir = '' end
 function STDLIB(filename)
 	if dir == nil then return nil, filename end
 
-	local fname = dir .. 'stdlib/' .. filename:gsub('%.','/') .. '.paisley'
+	local fname = dir .. 'stdlib/' .. filename:gsub('%.', '/') .. '.paisley'
 	return io.open(fname), fname
 end
 
@@ -137,7 +137,7 @@ if RUN_PROGRAM then
 			os.execute('sleep 0.01') --emulate behavior in Plasma where program execution pauses periodicaly to avoid lag.
 		elseif port == 2 then
 			--run a non-builtin command (currently not supported outside of Plasma)
-			error('Error on line '.. line_no .. ': Cannot run program `' .. std.str(value) .. '`')
+			error('Error on line ' .. line_no .. ': Cannot run program `' .. std.str(value) .. '`')
 		elseif port == 3 then
 			ENDED = true --program successfully completed
 		elseif port == 4 then
@@ -149,7 +149,7 @@ if RUN_PROGRAM then
 		elseif port == 5 then
 			--get current time (seconds since midnight)
 			local date = os.date('*t', os.time())
-			local sec_since_midnight = date.hour*3600 + date.min*60 + date.sec
+			local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
 
 			if socket_installed then
 				sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
@@ -160,11 +160,11 @@ if RUN_PROGRAM then
 			if value == 2 then
 				--get system date (day, month, year)
 				local date = os.date('*t', os.time())
-				V5 = {date.day, date.month, date.year} --command return value
+				V5 = { date.day, date.month, date.year } --command return value
 			elseif value == 1 then
 				--get system time (seconds since midnight)
 				local date = os.date('*t', os.time())
-				local sec_since_midnight = date.hour*3600 + date.min*60 + date.sec
+				local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
 
 				if socket_installed then
 					sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
@@ -241,7 +241,7 @@ if RUN_PROGRAM then
 		end
 		print_header('END STACK / BEG VARS')
 		for key, value in pairs(VARS) do
-			print(key..' = '.. std.debug_str(value))
+			print(key .. ' = ' .. std.debug_str(value))
 		end
 		print_header('END VARS')
 

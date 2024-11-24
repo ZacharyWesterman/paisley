@@ -42,7 +42,8 @@ function print_bytecode(instructions, file)
 		end
 
 		if not instr_text then
-			parse_error(Span:new(0, 0, 0, 0), 'COMPILER BUG: Unknown bytecode instruction with id '..instr[1]..'!', file)
+			parse_error(Span:new(0, 0, 0, 0), 'COMPILER BUG: Unknown bytecode instruction with id ' .. instr[1] .. '!',
+				file)
 		end
 
 		local line = ''
@@ -55,9 +56,10 @@ function print_bytecode(instructions, file)
 		end
 
 		if instr[4] then
-			line = i..' @ line '..instr[2]..': '..instr_text..' '..call_text..' '..std.debug_str(instr[4])
+			line = i .. ' @ line ' .. instr[2] .. ': ' .. instr_text .. ' ' .. call_text .. ' ' ..
+			std.debug_str(instr[4])
 		else
-			line = i..' @ line '..instr[2]..': '..instr_text..' '..call_text
+			line = i .. ' @ line ' .. instr[2] .. ': ' .. instr_text .. ' ' .. call_text
 		end
 
 		if COMPILER_DEBUG then
@@ -69,6 +71,7 @@ function print_bytecode(instructions, file)
 		print(line)
 	end
 end
+
 --[[/minify-delete]]
 
 function generate_bytecode(root, file)
@@ -83,19 +86,21 @@ function generate_bytecode(root, file)
 	local function emit(instruction_id, param1, param2)
 		if instruction_id == bc.call then
 			if not CALL_CODES[param1] then
-				parse_error(Span:new(current_line, 0, current_line, 0), 'COMPILER BUG: No call code for function "'..std.str(param1)..'"!', file)
+				parse_error(Span:new(current_line, 0, current_line, 0),
+					'COMPILER BUG: No call code for function "' .. std.str(param1) .. '"!', file)
 			end
 			param1 = CALL_CODES[param1]
 		end
 
-		table.insert(instructions, {instruction_id, current_line, param1, param2})
+		table.insert(instructions, { instruction_id, current_line, param1, param2 })
 
 		local instr_text = bc_get_key(instruction_id, bc)
 		local call_text = param1
 		if instruction_id == bc.call then call_text = bc_get_key(param1, CALL_CODES) end
 
 		if not instr_text then
-			parse_error(Span:new(current_line, 0, current_line, 0), 'COMPILER BUG: Unknown bytecode instruction with id '..instruction_id..'!', file)
+			parse_error(Span:new(current_line, 0, current_line, 0),
+				'COMPILER BUG: Unknown bytecode instruction with id ' .. instruction_id .. '!', file)
 		end
 
 		--TEMP: print code as it's generated
@@ -113,7 +118,8 @@ function generate_bytecode(root, file)
 
 	local function enter(token)
 		if not codegen_rules[token.id] then
-			parse_error(token.span, 'COMPILER BUG: Unable to generate bytecode for token of type "'..token_text(token.id)..'"!', file)
+			parse_error(token.span,
+				'COMPILER BUG: Unable to generate bytecode for token of type "' .. token_text(token.id) .. '"!', file)
 		end
 
 		current_line = token.span.from.line
@@ -207,7 +213,7 @@ function generate_bytecode(root, file)
 			--Then don't generate the (dead) code for it.
 			--[[minify-delete]]
 			if not _G['REPL'] then
-			--[[/minify-delete]]
+				--[[/minify-delete]]
 				local v1 = token.children[1]
 				if v1.ignore and not v1.is_referenced then
 					local not_used, multivars = true, v1.children
@@ -222,7 +228,7 @@ function generate_bytecode(root, file)
 
 					if not_used then return end
 				end
-			--[[minify-delete]]
+				--[[minify-delete]]
 			end
 			--[[/minify-delete]]
 
@@ -261,7 +267,7 @@ function generate_bytecode(root, file)
 
 			if token.children[1].children then
 				--Multi-var assignment is basically just getting the nth element of the array
-				local vars = {token.children[1].text}
+				local vars = { token.children[1].text }
 				for i = 1, #token.children[1].children do
 					table.insert(vars, token.children[1].children[i].text)
 				end
@@ -351,7 +357,8 @@ function generate_bytecode(root, file)
 			elseif token.value ~= nil then
 				emit(bc.push, token.value)
 			else
-				parse_error(token.span, 'COMPILER BUG: Codegen for "string_open", token has no children or const value!', file)
+				parse_error(token.span, 'COMPILER BUG: Codegen for "string_open", token has no children or const value!',
+					file)
 			end
 		end,
 
@@ -450,22 +457,25 @@ function generate_bytecode(root, file)
 			if token.children[3] == nil then
 				local list = token.children[2]
 				--If list is entirely constant, just use the last value.
-				--[[minify-delete]] if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
-				if is_const(list) then
-					local val = list.value
-					if val ~= nil then
-						if std.type(val) == 'array' then val = val[#val]
-						elseif std.type(val) == 'object' then
-							local v
-							for key, value in pairs(val) do v = key end
-							val = v
+				--[[minify-delete]]
+				if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
+					if is_const(list) then
+						local val = list.value
+						if val ~= nil then
+							if std.type(val) == 'array' then
+								val = val[#val]
+							elseif std.type(val) == 'object' then
+								local v
+								for key, value in pairs(val) do v = key end
+								val = v
+							end
+							emit(bc.push, val)
+							emit(bc.set, token.children[1].text)
 						end
-						emit(bc.push, val)
-						emit(bc.set, token.children[1].text)
+						return
 					end
-					return
-				end
-				--[[minify-delete]] end --[[/minify-delete]]
+					--[[minify-delete]]
+				end --[[/minify-delete]]
 
 				--Optimize out slices
 				--This does not optimize for size, but rather run time.
@@ -578,9 +588,11 @@ function generate_bytecode(root, file)
 			local val = std.bool(token.children[1].value)
 
 			--If the loop will never get executed, don't generate it.
-			--[[minify-delete]] if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
-			if const and not val then return end
-			--[[minify-delete]] end --[[/minify-delete]]
+			--[[minify-delete]]
+			if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
+				if const and not val then return end
+				--[[minify-delete]]
+			end --[[/minify-delete]]
 
 			--Loop setup
 			emit(bc.label, loop_beg_label)
@@ -701,7 +713,8 @@ function generate_bytecode(root, file)
 			local val = std.bool(token.children[1].value)
 			local endif_label
 
-			--[[minify-delete]] if _G['KEEP_DEAD_CODE'] then const = false end --[[/minify-delete]]
+			--[[minify-delete]]
+			if _G['KEEP_DEAD_CODE'] then const = false end --[[/minify-delete]]
 
 			local has_else = #token.children > 2 and token.children[3].id ~= TOK.kwd_end and not (const and val)
 
@@ -747,7 +760,6 @@ function generate_bytecode(root, file)
 			end
 
 			if not const then emit(bc.label, endif_label) end
-
 		end,
 
 		--ELIF STATEMENT (Functionally identical to the IF statement)
@@ -755,9 +767,11 @@ function generate_bytecode(root, file)
 
 		--GOSUB STATEMENT
 		[TOK.gosub_stmt] = function(token, file)
-			--[[minify-delete]] if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
-			if token.ignore then return end
-			--[[minify-delete]] end --[[/minify-delete]]
+			--[[minify-delete]]
+			if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
+				if token.ignore then return end
+				--[[minify-delete]]
+			end --[[/minify-delete]]
 
 			--Push any parameters passed to the gosub
 			if #token.children > 1 then
@@ -784,7 +798,7 @@ function generate_bytecode(root, file)
 					for name, index in pairs(labels) do
 						if name:sub(1, 1) ~= '?' then
 							table.insert(names, name)
-							table.insert(indexes, index-1)
+							table.insert(indexes, index - 1)
 						end
 					end
 
@@ -811,12 +825,12 @@ function generate_bytecode(root, file)
 					emit(bc.label, fail_label)
 					emit(bc.pop_goto_index, true) --Unlike regular subroutines, don't clean up the stack here.
 				end
-
 			elseif is_const(token.children[1]) then
 				emit(bc.push_index)
 				emit(bc.call, 'jump', token.children[1].text)
 			else
-				parse_error(token.span, 'Label for gosub must either be a constant, or wrapped inside an if statement', file)
+				parse_error(token.span, 'Label for gosub must either be a constant, or wrapped inside an if statement',
+					file)
 			end
 		end,
 
@@ -986,7 +1000,7 @@ function generate_bytecode(root, file)
 	end
 
 	emit(bc.label, EOF_LABEL)
-	for i = old_instr_ct+1, #instructions do
+	for i = old_instr_ct + 1, #instructions do
 		local instr = instructions[i]
 		if instr and instr[1] == bc.label then
 			labels[instr[3]] = ct
@@ -1014,7 +1028,8 @@ function generate_bytecode(root, file)
 		if instr[1] == bc.call and (instr[3] == CALL_CODES.jump or instr[3] == CALL_CODES.jumpifnil or instr[3] == CALL_CODES.jumpiffalse) then
 			if instr[4] ~= nil then
 				if labels[instr[4]] == nil then
-					parse_error(Span:new(instr[2], 0, instr[2], 0), 'COMPILER BUG: Attempt to reference unknown label of ID "'..std.str(instr[4])..'"!', file)
+					parse_error(Span:new(instr[2], 0, instr[2], 0),
+						'COMPILER BUG: Attempt to reference unknown label of ID "' .. std.str(instr[4]) .. '"!', file)
 				end
 
 				instr[4] = labels[instr[4]] - 1

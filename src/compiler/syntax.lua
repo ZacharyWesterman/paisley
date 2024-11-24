@@ -11,7 +11,8 @@ local function _match_stmt_onmatch(token, file)
 		else
 			if_ct = if_ct + 1
 			if node.children[3].id ~= TOK.kwd_end then
-				parse_error(node.children[3].span, 'Extra conditional branch does not make sense inside a `match` statement', file)
+				parse_error(node.children[3].span,
+					'Extra conditional branch does not make sense inside a `match` statement', file)
 			end
 		end
 	end
@@ -22,10 +23,10 @@ end
 local rules = {
 	--Function call, dot-notation
 	{
-		match = {{TOK.value, TOK.comparison, TOK.func_call}, {TOK.op_dot}, {TOK.value, TOK.func_call, TOK.comparison}},
+		match = { { TOK.value, TOK.comparison, TOK.func_call }, { TOK.op_dot }, { TOK.value, TOK.func_call, TOK.comparison } },
 		id = TOK.func_call,
 		text = 3,
-		not_after = {TOK.op_dot, TOK.op_slice},
+		not_after = { TOK.op_dot, TOK.op_slice },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -41,12 +42,12 @@ local rules = {
 					id = TOK.index,
 					span = Span:merge(c1.span, c3.span),
 					text = '.',
-					children = {c1, {
+					children = { c1, {
 						id = TOK.string_open,
 						text = '\'',
 						span = c3.span,
-						children = {c3},
-					}},
+						children = { c3 },
+					} },
 				}
 			elseif c3.id == TOK.func_call then
 				table.insert(c3.children, 1, c1)
@@ -60,18 +61,18 @@ local rules = {
 
 	--String Concatenation
 	{
-		match = {{TOK.comparison, TOK.array_concat}, {TOK.comparison, TOK.array_concat}},
+		match = { { TOK.comparison, TOK.array_concat }, { TOK.comparison, TOK.array_concat } },
 		id = TOK.concat,
-		not_after = {TOK.op_assign, TOK.string_close, TOK.text, TOK.op_dot, TOK.comparison, TOK.line_ending},
-		not_before = {TOK.index_open},
+		not_after = { TOK.op_assign, TOK.string_close, TOK.text, TOK.op_dot, TOK.comparison, TOK.line_ending },
+		not_before = { TOK.index_open },
 		expr_only = true,
 		text = '..',
 	},
 
 	--Empty expressions (ERROR)
 	{
-		match = {{TOK.expr_open}, {TOK.expr_close}},
-		not_after = {TOK.var_assign},
+		match = { { TOK.expr_open }, { TOK.expr_close } },
+		not_after = { TOK.var_assign },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -80,7 +81,7 @@ local rules = {
 	},
 	--Empty command (ERROR)
 	{
-		match = {{TOK.command_open}, {TOK.command_close}},
+		match = { { TOK.command_open }, { TOK.command_close } },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -90,13 +91,13 @@ local rules = {
 
 	--Function call
 	{
-		match = {{TOK.text, TOK.variable}, {TOK.paren_open}, {TOK.comparison}, {TOK.paren_close}},
+		match = { { TOK.text, TOK.variable }, { TOK.paren_open }, { TOK.comparison }, { TOK.paren_close } },
 		id = TOK.func_call,
-		keep = {3},
+		keep = { 3 },
 		text = 1,
 	},
 	{
-		match = {{TOK.text, TOK.variable}, {TOK.paren_open}, {TOK.paren_close}},
+		match = { { TOK.text, TOK.variable }, { TOK.paren_open }, { TOK.paren_close } },
 		id = TOK.func_call,
 		keep = {},
 		text = 1,
@@ -104,224 +105,224 @@ local rules = {
 
 	--Special "reduce" function call
 	{
-		match = {{TOK.text, TOK.variable}, {TOK.paren_open}, {TOK.comparison}, {TOK.op_comma}, {TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_idiv, TOK.op_div, TOK.op_mod, TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne}, {TOK.paren_close}},
+		match = { { TOK.text, TOK.variable }, { TOK.paren_open }, { TOK.comparison }, { TOK.op_comma }, { TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_idiv, TOK.op_div, TOK.op_mod, TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne }, { TOK.paren_close } },
 		id = TOK.func_call,
-		keep = {3, 5},
+		keep = { 3, 5 },
 		text = 1,
 	},
 	--Special "reduce", function call (for dot notation)
 	{
-		match = {{TOK.text, TOK.variable}, {TOK.paren_open}, {TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_idiv, TOK.op_div, TOK.op_mod, TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne}, {TOK.paren_close}},
+		match = { { TOK.text, TOK.variable }, { TOK.paren_open }, { TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_idiv, TOK.op_div, TOK.op_mod, TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne }, { TOK.paren_close } },
 		id = TOK.func_call,
-		keep = {3},
+		keep = { 3 },
 		text = 1,
 	},
 
 	--Array indexing
 	{
-		match = {{TOK.comparison}, {TOK.index_open}, {TOK.comparison}, {TOK.index_close}},
+		match = { { TOK.comparison }, { TOK.index_open }, { TOK.comparison }, { TOK.index_close } },
 		id = TOK.index,
-		keep = {1, 3},
+		keep = { 1, 3 },
 		text = 2,
-		not_after = {TOK.op_dot},
+		not_after = { TOK.op_dot },
 	},
 
 	--Treat all literals the same.
 	{
-		match = {{TOK.lit_number, TOK.lit_boolean, TOK.lit_null, TOK.negate, TOK.string, TOK.parentheses, TOK.func_call, TOK.index, TOK.expression, TOK.inline_command, TOK.concat, TOK.lambda, TOK.lambda_ref, TOK.ternary, TOK.list_comp, TOK.key_value_pair}},
+		match = { { TOK.lit_number, TOK.lit_boolean, TOK.lit_null, TOK.negate, TOK.string, TOK.parentheses, TOK.func_call, TOK.index, TOK.expression, TOK.inline_command, TOK.concat, TOK.lambda, TOK.lambda_ref, TOK.ternary, TOK.list_comp, TOK.key_value_pair } },
 		id = TOK.value,
 		meta = true,
 	},
 	{
-		match = {{TOK.variable}},
+		match = { { TOK.variable } },
 		id = TOK.value,
 		meta = true,
-		not_before = {TOK.paren_open},
-		not_after = {TOK.kwd_for_expr},
+		not_before = { TOK.paren_open },
+		not_after = { TOK.kwd_for_expr },
 	},
 
 	--Length operator
 	{
-		match = {{TOK.op_count}, {TOK.value, TOK.comparison}},
+		match = { { TOK.op_count }, { TOK.value, TOK.comparison } },
 		id = TOK.length,
-		keep = {2},
+		keep = { 2 },
 		text = 1,
-		not_before = {TOK.paren_open, TOK.op_dot},
+		not_before = { TOK.paren_open, TOK.op_dot },
 	},
 
 	--Unary negation is a bit weird; highest precedence and cannot occur after certain nodes.
 	{
-		match = {{TOK.op_minus}, {TOK.value, TOK.comparison}},
+		match = { { TOK.op_minus }, { TOK.value, TOK.comparison } },
 		id = TOK.negate,
-		keep = {2},
+		keep = { 2 },
 		text = 1,
-		not_after = {TOK.lit_number, TOK.lit_false, TOK.lit_true, TOK.lit_null, TOK.negate, TOK.command_close, TOK.expr_close, TOK.string_close, TOK.string_open, TOK.paren_close, TOK.inline_command, TOK.expression, TOK.parentheses, TOK.variable, TOK.func_call, TOK.index_close, TOK.index},
-		not_before = {TOK.op_dot},
+		not_after = { TOK.lit_number, TOK.lit_boolean, TOK.lit_null, TOK.negate, TOK.command_close, TOK.expr_close, TOK.string_close, TOK.string_open, TOK.paren_close, TOK.inline_command, TOK.expression, TOK.parentheses, TOK.variable, TOK.func_call, TOK.index_close, TOK.index },
+		not_before = { TOK.op_dot },
 	},
 
 	--Exponentiation
 	{
-		match = {{TOK.value, TOK.exponent, TOK.comparison}, {TOK.op_exponent}, {TOK.value, TOK.comparison}},
+		match = { { TOK.value, TOK.exponent, TOK.comparison }, { TOK.op_exponent }, { TOK.value, TOK.comparison } },
 		id = TOK.exponent,
-		not_after = {TOK.op_exponent, TOK.op_dot},
-		keep = {1, 3},
+		not_after = { TOK.op_exponent, TOK.op_dot },
+		keep = { 1, 3 },
 		text = 2,
-		not_before = {TOK.op_dot},
+		not_before = { TOK.op_dot },
 	},
 
 	--If no other exponent was detected, just promote the value.
 	--This is to keep exponent as higher precedence than multiplication.
 	{
-		match = {{TOK.value}},
+		match = { { TOK.value } },
 		id = TOK.multiply,
 		meta = true,
 	},
 
 	--Multiplication
 	{
-		match = {{TOK.value, TOK.multiply, TOK.comparison}, {TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod}, {TOK.value, TOK.multiply, TOK.comparison}},
+		match = { { TOK.value, TOK.multiply, TOK.comparison }, { TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod }, { TOK.value, TOK.multiply, TOK.comparison } },
 		id = TOK.multiply,
-		not_before = {TOK.op_dot, TOK.op_exponent, TOK.op_slice},
-		not_after = {TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_dot, TOK.op_exponent, TOK.op_slice},
-		keep = {1, 3},
+		not_before = { TOK.op_dot, TOK.op_exponent, TOK.op_slice },
+		not_after = { TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_dot, TOK.op_exponent, TOK.op_slice },
+		keep = { 1, 3 },
 		text = 2,
 	},
 
 	--If no other multiplication was detected, just promote the value to mult status.
 	--This is to keep mult as higher precedence than addition.
 	{
-		match = {{TOK.value}},
+		match = { { TOK.value } },
 		id = TOK.multiply,
 		meta = true,
-		not_before = {TOK.op_dot},
+		not_before = { TOK.op_dot },
 	},
 
 	--Addition (lower precedence than multiplication)
 	{
-		match = {{TOK.exponent, TOK.multiply, TOK.add, TOK.comparison}, {TOK.op_plus, TOK.op_minus}, {TOK.exponent, TOK.multiply, TOK.add, TOK.comparison}},
+		match = { { TOK.exponent, TOK.multiply, TOK.add, TOK.comparison }, { TOK.op_plus, TOK.op_minus }, { TOK.exponent, TOK.multiply, TOK.add, TOK.comparison } },
 		id = TOK.add,
-		not_before = {TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_dot, TOK.op_exponent, TOK.op_slice},
-		not_after = {TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_dot, TOK.op_exponent, TOK.op_slice},
-		keep = {1, 3},
+		not_before = { TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_dot, TOK.op_exponent, TOK.op_slice },
+		not_after = { TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_dot, TOK.op_exponent, TOK.op_slice },
+		keep = { 1, 3 },
 		text = 2,
 	},
 
 	--If no other addition was detected, just promote the value to add status.
 	--This is to keep add as higher precedence than boolean.
 	{
-		match = {{TOK.exponent, TOK.multiply}},
+		match = { { TOK.exponent, TOK.multiply } },
 		id = TOK.add,
 		meta = true,
 	},
 
 	--Array Slicing
 	{
-		match = {{TOK.add, TOK.array_slice, TOK.comparison}, {TOK.op_slice}, {TOK.add, TOK.array_slice, TOK.comparison}},
+		match = { { TOK.add, TOK.array_slice, TOK.comparison }, { TOK.op_slice }, { TOK.add, TOK.array_slice, TOK.comparison } },
 		id = TOK.array_slice,
-		keep = {1, 3},
+		keep = { 1, 3 },
 		text = 2,
-		not_before = {TOK.index_open},
+		not_before = { TOK.index_open },
 	},
 	{ --non-terminated array slicing
-		match = {{TOK.add, TOK.array_slice, TOK.comparison}, {TOK.op_slice}, {TOK.op_slice}},
+		match = { { TOK.add, TOK.array_slice, TOK.comparison }, { TOK.op_slice }, { TOK.op_slice } },
 		id = TOK.array_slice,
-		keep = {1},
+		keep = { 1 },
 		text = 2,
 	},
 	{
-		match = {{TOK.add}},
+		match = { { TOK.add } },
 		id = TOK.array_slice,
 		meta = true,
 	},
 
 	--Array Concatenation
 	{
-		match = {{TOK.array_slice, TOK.array_concat, TOK.comparison}, {TOK.op_comma}, {TOK.array_slice, TOK.array_concat, TOK.comparison}},
+		match = { { TOK.array_slice, TOK.array_concat, TOK.comparison }, { TOK.op_comma }, { TOK.array_slice, TOK.array_concat, TOK.comparison } },
 		id = TOK.array_concat,
-		keep = {1, 3},
+		keep = { 1, 3 },
 		text = 2,
-		not_before = {TOK.index_open, TOK.op_arrow, TOK.op_dot, TOK.kwd_if_expr, TOK.kwd_for_expr},
-		not_after = {TOK.op_dot, TOK.op_arrow, TOK.op_in, TOK.kwd_else_expr, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_plus, TOK.op_minus, TOK.op_exponent},
+		not_before = { TOK.index_open, TOK.op_arrow, TOK.op_dot, TOK.kwd_if_expr, TOK.kwd_for_expr },
+		not_after = { TOK.op_dot, TOK.op_arrow, TOK.op_in, TOK.kwd_else_expr, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_plus, TOK.op_minus, TOK.op_exponent },
 	},
 	{
-		match = {{TOK.array_slice}},
+		match = { { TOK.array_slice } },
 		id = TOK.array_concat,
 		meta = true,
 	},
 	{
-		match = {{TOK.array_slice, TOK.array_concat, TOK.comparison}, {TOK.op_comma}},
+		match = { { TOK.array_slice, TOK.array_concat, TOK.comparison }, { TOK.op_comma } },
 		id = TOK.array_concat,
-		keep = {1},
+		keep = { 1 },
 		text = 2,
-		not_before = {TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.string_open, TOK.command_open, TOK.expr_open, TOK.array_slice, TOK.array_concat, TOK.comparison, TOK.paren_open, TOK.index_open, TOK.parentheses, TOK.variable, TOK.func_call, TOK.index, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_idiv, TOK.op_div, TOK.op_mod, TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne, TOK.op_arrow, TOK.key_value_pair},
-		not_after = {TOK.op_arrow, TOK.op_dot, TOK.op_in, TOK.kwd_else_expr, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_plus, TOK.op_minus, TOK.op_exponent},
+		not_before = { TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.string_open, TOK.command_open, TOK.expr_open, TOK.array_slice, TOK.array_concat, TOK.comparison, TOK.paren_open, TOK.index_open, TOK.parentheses, TOK.variable, TOK.func_call, TOK.index, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_idiv, TOK.op_div, TOK.op_mod, TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne, TOK.op_arrow, TOK.key_value_pair },
+		not_after = { TOK.op_arrow, TOK.op_dot, TOK.op_in, TOK.kwd_else_expr, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_plus, TOK.op_minus, TOK.op_exponent },
 	},
 	{
-		match = {{TOK.op_comma}},
+		match = { { TOK.op_comma } },
 		id = TOK.array_concat,
 		keep = {},
 		text = 1,
-		only_after = {TOK.expr_open, TOK.paren_open},
+		only_after = { TOK.expr_open, TOK.paren_open },
 	},
 
 	--Object definitions, key-value pairs
 	{
-		match = {{TOK.comparison}, {TOK.op_arrow}, {TOK.comparison}},
+		match = { { TOK.comparison }, { TOK.op_arrow }, { TOK.comparison } },
 		id = TOK.key_value_pair,
-		keep = {1, 3},
+		keep = { 1, 3 },
 		text = 2,
-		not_before = {TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.string_open, TOK.command_open, TOK.expr_open, TOK.array_slice, TOK.array_concat, TOK.comparison, TOK.paren_open, TOK.index_open, TOK.parentheses, TOK.variable, TOK.func_call, TOK.index, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_idiv, TOK.op_div, TOK.op_mod, TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne, TOK.kwd_for_expr, TOK.kwd_if_expr, TOK.op_dot},
+		not_before = { TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.string_open, TOK.command_open, TOK.expr_open, TOK.array_slice, TOK.array_concat, TOK.comparison, TOK.paren_open, TOK.index_open, TOK.parentheses, TOK.variable, TOK.func_call, TOK.index, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_idiv, TOK.op_div, TOK.op_mod, TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne, TOK.kwd_for_expr, TOK.kwd_if_expr, TOK.op_dot },
 	},
 	{
-		match = {{TOK.op_arrow}},
+		match = { { TOK.op_arrow } },
 		id = TOK.key_value_pair,
 		keep = {},
 		text = 1,
-		only_after = {TOK.op_comma, TOK.expr_open, TOK.paren_open},
+		only_after = { TOK.op_comma, TOK.expr_open, TOK.paren_open },
 	},
 
 	--Prefix Boolean not
 	{
-		match = {{TOK.op_not}, {TOK.array_concat, TOK.boolean, TOK.comparison}},
+		match = { { TOK.op_not }, { TOK.array_concat, TOK.boolean, TOK.comparison } },
 		id = TOK.boolean,
-		keep = {2},
+		keep = { 2 },
 		text = 1,
 	},
 
 	--Postfix Exists operator
 	{
-		match = {{TOK.array_concat, TOK.boolean, TOK.comparison}, {TOK.op_exists}},
+		match = { { TOK.array_concat, TOK.boolean, TOK.comparison }, { TOK.op_exists } },
 		id = TOK.boolean,
-		keep = {1},
+		keep = { 1 },
 		text = 2,
 	},
 
 	--Infix Boolean operators
 	{
-		match = {{TOK.array_concat, TOK.boolean, TOK.comparison}, {TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_in, TOK.op_like}, {TOK.array_concat, TOK.boolean, TOK.comparison}},
+		match = { { TOK.array_concat, TOK.boolean, TOK.comparison }, { TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_in, TOK.op_like }, { TOK.array_concat, TOK.boolean, TOK.comparison } },
 		id = TOK.boolean,
-		keep = {1, 3},
+		keep = { 1, 3 },
 		text = 2,
-		not_after = {TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le},
-		not_before = {TOK.index_open, TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le},
+		not_after = { TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le },
+		not_before = { TOK.index_open, TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le },
 	},
 	{
-		match = {{TOK.array_concat, TOK.boolean, TOK.comparison}, {TOK.op_in}, {TOK.array_concat, TOK.boolean, TOK.comparison}},
+		match = { { TOK.array_concat, TOK.boolean, TOK.comparison }, { TOK.op_in }, { TOK.array_concat, TOK.boolean, TOK.comparison } },
 		id = TOK.boolean,
-		keep = {1, 3},
+		keep = { 1, 3 },
 		text = 2,
-		not_after = {TOK.kwd_for_expr, TOK.op_dot},
-		not_before = {TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod},
+		not_after = { TOK.kwd_for_expr, TOK.op_dot },
+		not_before = { TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod },
 	},
 
 	--Special "{value not in array}" syntax
 	{
-		match = {{TOK.array_concat, TOK.boolean, TOK.comparison}, {TOK.op_not}, {TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_in, TOK.op_like}, {TOK.array_concat, TOK.boolean, TOK.comparison}},
+		match = { { TOK.array_concat, TOK.boolean, TOK.comparison }, { TOK.op_not }, { TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_in, TOK.op_like }, { TOK.array_concat, TOK.boolean, TOK.comparison } },
 		id = TOK.boolean,
-		keep = {1, 4},
+		keep = { 1, 4 },
 		text = 3,
-		not_after = {TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le},
-		not_before = {TOK.index_open, TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le},
+		not_after = { TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le },
+		not_before = { TOK.index_open, TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -329,40 +330,40 @@ local rules = {
 				text = 'not',
 				id = TOK.boolean,
 				span = token.span,
-				children = {token},
+				children = { token },
 			}
 		end,
 	},
 
 	--List comprehension
 	{
-		match = {{TOK.comparison}, {TOK.kwd_for_expr}, {TOK.variable}, {TOK.op_in}, {TOK.comparison}},
+		match = { { TOK.comparison }, { TOK.kwd_for_expr }, { TOK.variable }, { TOK.op_in }, { TOK.comparison } },
 		id = TOK.list_comp,
-		keep = {1, 3, 5},
+		keep = { 1, 3, 5 },
 		text = 2,
-		not_before = {TOK.kwd_if_expr, TOK.op_dot},
+		not_before = { TOK.kwd_if_expr, TOK.op_dot },
 	},
 	{
-		match = {{TOK.comparison}, {TOK.kwd_for_expr}, {TOK.variable}, {TOK.op_in}, {TOK.comparison}, {TOK.kwd_if_expr}, {TOK.comparison}},
+		match = { { TOK.comparison }, { TOK.kwd_for_expr }, { TOK.variable }, { TOK.op_in }, { TOK.comparison }, { TOK.kwd_if_expr }, { TOK.comparison } },
 		id = TOK.list_comp,
-		keep = {1, 3, 5, 7},
+		keep = { 1, 3, 5, 7 },
 		text = 2,
-		not_before = {TOK.kwd_else_expr, TOK.op_dot, TOK.index_open, TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le},
+		not_before = { TOK.kwd_else_expr, TOK.op_dot, TOK.index_open, TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le },
 	},
 
 	--If no other boolean op was detected, just promote the value to bool status.
 	--This is to keep booleans as higher precedence than comparison.
 	{
-		match = {{TOK.array_concat}},
+		match = { { TOK.array_concat } },
 		id = TOK.boolean,
 		meta = true,
 	},
 
 	--Logical Comparison
 	{
-		match = {{TOK.boolean, TOK.comparison}, {TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne}, {TOK.boolean, TOK.comparison}},
+		match = { { TOK.boolean, TOK.comparison }, { TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne }, { TOK.boolean, TOK.comparison } },
 		id = TOK.comparison,
-		keep = {1, 3},
+		keep = { 1, 3 },
 		text = 2,
 		---@param token Token
 		---@param file string?
@@ -370,26 +371,26 @@ local rules = {
 			if token.text == '~=' then token.text = '!=' end
 			if token.text == '=' then token.text = '==' end
 		end,
-		not_after = {TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod},
+		not_after = { TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod },
 	},
 	{
-		match = {{TOK.boolean, TOK.length}},
+		match = { { TOK.boolean, TOK.length } },
 		id = TOK.comparison,
 		meta = true,
 	},
 
 	--Parentheses
 	{
-		match = {{TOK.paren_open}, {TOK.comparison}, {TOK.paren_close}},
+		match = { { TOK.paren_open }, { TOK.comparison }, { TOK.paren_close } },
 		id = TOK.parentheses,
-		not_after = {TOK.variable},
-		keep = {2},
+		not_after = { TOK.variable },
+		keep = { 2 },
 		text = 1,
 	},
 	{
-		match = {{TOK.paren_open}, {TOK.paren_close}},
+		match = { { TOK.paren_open }, { TOK.paren_close } },
 		id = TOK.parentheses,
-		not_after = {TOK.variable},
+		not_after = { TOK.variable },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -399,79 +400,80 @@ local rules = {
 
 	--Expressions
 	{
-		match = {{TOK.expr_open}, {TOK.comparison}, {TOK.expr_close}},
+		match = { { TOK.expr_open }, { TOK.comparison }, { TOK.expr_close } },
 		id = TOK.expression,
-		keep = {2},
+		keep = { 2 },
 		text = 1,
 	},
 
 
 	--Strings
 	{
-		match = {{TOK.string_open}, {TOK.expression, TOK.text, TOK.inline_command, TOK.comparison}},
+		match = { { TOK.string_open }, { TOK.expression, TOK.text, TOK.inline_command, TOK.comparison } },
 		append = true, --This is an "append" token: the first token in the group does not get consumed, instead all other tokens are appended as children.
 	},
 	{
-		match = {{TOK.string_open}, {TOK.string_close}},
+		match = { { TOK.string_open }, { TOK.string_close } },
 		id = TOK.string,
 		meta = true,
 	},
 
 	--Inline commands
 	{
-		match = {{TOK.command_open}, {TOK.command, TOK.program, TOK.statement}, {TOK.command_close}},
+		match = { { TOK.command_open }, { TOK.command, TOK.program, TOK.statement }, { TOK.command_close } },
 		id = TOK.inline_command,
-		keep = {2},
+		keep = { 2 },
 		text = 1,
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
 			if token.children[1].id ~= TOK.command and token.children[1].id ~= TOK.gosub_stmt then
-				parse_error(token.span, 'Malformed statement inside command eval block. Must be a single command or gosub', file)
+				parse_error(token.span,
+					'Malformed statement inside command eval block. Must be a single command or gosub', file)
 			end
 		end,
 	},
 
 	--Commands
 	{
-		match = {{TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.comparison}},
+		match = { { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.comparison } },
 		id = TOK.command,
-		not_after_range = {TOK.expr_open, TOK.command}, --Command cannot come after anything in this range
-		not_after = {TOK.kwd_for, TOK.kwd_subroutine, TOK.kwd_if_expr, TOK.kwd_else_expr, TOK.var_assign, TOK.kwd_match},
+		not_after_range = { TOK.expr_open, TOK.command }, --Command cannot come after anything in this range
+		not_after = { TOK.kwd_for, TOK.kwd_subroutine, TOK.kwd_if_expr, TOK.kwd_else_expr, TOK.var_assign, TOK.kwd_match },
 		text = 'cmd',
 	},
 	{
-		match = {{TOK.command}, {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.comparison}},
+		match = { { TOK.command }, { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.comparison } },
 		append = true,
 	},
 
 	--IF block
 	{
-		match = {{TOK.kwd_if}, {TOK.command, TOK.gosub_stmt}, {TOK.kwd_then}, {TOK.command, TOK.program, TOK.statement}, {TOK.kwd_end, TOK.elif_stmt, TOK.else_stmt}},
+		match = { { TOK.kwd_if }, { TOK.command, TOK.gosub_stmt }, { TOK.kwd_then }, { TOK.command, TOK.program, TOK.statement }, { TOK.kwd_end, TOK.elif_stmt, TOK.else_stmt } },
 		id = TOK.if_stmt,
-		keep = {2, 4, 5},
+		keep = { 2, 4, 5 },
 		text = 1,
 	},
 	{
-		match = {{TOK.kwd_if}, {TOK.command, TOK.gosub_stmt}, {TOK.kwd_then}, {TOK.kwd_end, TOK.elif_stmt, TOK.else_stmt}},
+		match = { { TOK.kwd_if }, { TOK.command, TOK.gosub_stmt }, { TOK.kwd_then }, { TOK.kwd_end, TOK.elif_stmt, TOK.else_stmt } },
 		id = TOK.if_stmt,
-		keep = {2, 3, 4},
+		keep = { 2, 3, 4 },
 		text = 1,
 	},
 	{
-		match = {{TOK.kwd_if}, {TOK.command, TOK.gosub_stmt}, {TOK.else_stmt}},
+		match = { { TOK.kwd_if }, { TOK.command, TOK.gosub_stmt }, { TOK.else_stmt } },
 		id = TOK.if_stmt,
-		keep = {2, 1, 3},
+		keep = { 2, 1, 3 },
 		text = 1,
 		onmatch = function(token, file)
 			token.children[2].id = TOK.kwd_then
 		end,
 	},
 	{ --Invalid if
-		match = {{TOK.kwd_if}, {TOK.command, TOK.gosub_stmt}},
+		match = { { TOK.kwd_if }, { TOK.command, TOK.gosub_stmt } },
 		id = TOK.if_stmt,
 		text = 1,
-		not_before = {TOK.kwd_then, TOK.line_ending, TOK.kwd_else, TOK.else_stmt},
+		not_before = { TOK.kwd_then, TOK.line_ending, TOK.kwd_else, TOK.else_stmt },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -480,35 +482,35 @@ local rules = {
 	},
 	--ELSE block
 	{
-		match = {{TOK.kwd_else}, {TOK.command, TOK.program, TOK.statement}, {TOK.kwd_end}},
+		match = { { TOK.kwd_else }, { TOK.command, TOK.program, TOK.statement }, { TOK.kwd_end } },
 		id = TOK.else_stmt,
-		keep = {2},
+		keep = { 2 },
 		text = 1,
 	},
 	{ --Empty else block
-		match = {{TOK.kwd_else}, {TOK.kwd_end}},
+		match = { { TOK.kwd_else }, { TOK.kwd_end } },
 		id = TOK.else_stmt,
 		keep = {},
 		text = 1,
 	},
 	--ELIF block
 	{
-		match = {{TOK.kwd_elif}, {TOK.command}, {TOK.kwd_then}, {TOK.command, TOK.program, TOK.statement}, {TOK.kwd_end, TOK.elif_stmt, TOK.else_stmt}},
+		match = { { TOK.kwd_elif }, { TOK.command }, { TOK.kwd_then }, { TOK.command, TOK.program, TOK.statement }, { TOK.kwd_end, TOK.elif_stmt, TOK.else_stmt } },
 		id = TOK.elif_stmt,
-		keep = {2, 4, 5},
+		keep = { 2, 4, 5 },
 		text = 1,
 	},
 	{
-		match = {{TOK.kwd_elif}, {TOK.command}, {TOK.kwd_then}, {TOK.kwd_end, TOK.elif_stmt, TOK.else_stmt}},
+		match = { { TOK.kwd_elif }, { TOK.command }, { TOK.kwd_then }, { TOK.kwd_end, TOK.elif_stmt, TOK.else_stmt } },
 		id = TOK.elif_stmt,
-		keep = {2, 3, 4},
+		keep = { 2, 3, 4 },
 		text = 1,
 	},
 	{ --Invalid elif
-		match = {{TOK.kwd_elif}, {TOK.command}},
+		match = { { TOK.kwd_elif }, { TOK.command } },
 		id = TOK.if_stmt,
 		text = 1,
-		not_before = {TOK.kwd_then, TOK.line_ending},
+		not_before = { TOK.kwd_then, TOK.line_ending },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -518,23 +520,23 @@ local rules = {
 
 	--WHILE loop
 	{
-		match = {{TOK.kwd_while}, {TOK.command}, {TOK.kwd_do}, {TOK.command, TOK.program, TOK.statement}, {TOK.kwd_end}},
+		match = { { TOK.kwd_while }, { TOK.command }, { TOK.kwd_do }, { TOK.command, TOK.program, TOK.statement }, { TOK.kwd_end } },
 		id = TOK.while_stmt,
-		keep = {2, 4},
+		keep = { 2, 4 },
 		text = 1,
 	},
 	{
-		match = {{TOK.kwd_while}, {TOK.command}, {TOK.kwd_do}, {TOK.kwd_end}},
+		match = { { TOK.kwd_while }, { TOK.command }, { TOK.kwd_do }, { TOK.kwd_end } },
 		id = TOK.while_stmt,
-		keep = {2},
+		keep = { 2 },
 		text = 1,
 	},
 	--Invalid while loops
 	{
-		match = {{TOK.kwd_while}, {TOK.command}},
+		match = { { TOK.kwd_while }, { TOK.command } },
 		id = TOK.while_stmt,
 		text = 1,
-		not_before = {TOK.kwd_do, TOK.line_ending, TOK.kwd_in, TOK.text, TOK.expression, TOK.string_open, TOK.expr_open, TOK.command_open, TOK.inline_command},
+		not_before = { TOK.kwd_do, TOK.line_ending, TOK.kwd_in, TOK.text, TOK.expression, TOK.string_open, TOK.expr_open, TOK.command_open, TOK.inline_command },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -544,49 +546,49 @@ local rules = {
 
 	--FOR loop
 	{
-		match = {{TOK.kwd_for}, {TOK.text}, {TOK.kwd_in}, {TOK.command, TOK.comparison}, {TOK.kwd_do}, {TOK.command, TOK.program, TOK.statement}, {TOK.kwd_end}},
+		match = { { TOK.kwd_for }, { TOK.text }, { TOK.kwd_in }, { TOK.command, TOK.comparison }, { TOK.kwd_do }, { TOK.command, TOK.program, TOK.statement }, { TOK.kwd_end } },
 		id = TOK.for_stmt,
-		keep = {2, 4, 6},
+		keep = { 2, 4, 6 },
 		text = 1,
 	},
 	{
-		match = {{TOK.kwd_for}, {TOK.text}, {TOK.kwd_in}, {TOK.command, TOK.comparison}, {TOK.kwd_do}, {TOK.kwd_end}},
+		match = { { TOK.kwd_for }, { TOK.text }, { TOK.kwd_in }, { TOK.command, TOK.comparison }, { TOK.kwd_do }, { TOK.kwd_end } },
 		id = TOK.for_stmt,
-		keep = {2, 4},
+		keep = { 2, 4 },
 		text = 1,
 	},
 	{
-		match = {{TOK.kwd_for}, {TOK.text}, {TOK.kwd_in}, {TOK.command, TOK.comparison}, {TOK.kwd_do}, {TOK.line_ending}, {TOK.kwd_end}},
+		match = { { TOK.kwd_for }, { TOK.text }, { TOK.kwd_in }, { TOK.command, TOK.comparison }, { TOK.kwd_do }, { TOK.line_ending }, { TOK.kwd_end } },
 		id = TOK.for_stmt,
-		keep = {2, 4},
+		keep = { 2, 4 },
 		text = 1,
 	},
 	--Key/Value for loop
 	{
-		match = {{TOK.kwd_for}, {TOK.text}, {TOK.text}, {TOK.kwd_in}, {TOK.command, TOK.comparison}, {TOK.kwd_do}, {TOK.command, TOK.program, TOK.statement}, {TOK.kwd_end}},
+		match = { { TOK.kwd_for }, { TOK.text }, { TOK.text }, { TOK.kwd_in }, { TOK.command, TOK.comparison }, { TOK.kwd_do }, { TOK.command, TOK.program, TOK.statement }, { TOK.kwd_end } },
 		id = TOK.kv_for_stmt,
-		keep = {2, 3, 5, 7},
+		keep = { 2, 3, 5, 7 },
 		text = 1,
 	},
 	{
-		match = {{TOK.kwd_for}, {TOK.text}, {TOK.text}, {TOK.kwd_in}, {TOK.command, TOK.comparison}, {TOK.kwd_do}, {TOK.kwd_end}},
+		match = { { TOK.kwd_for }, { TOK.text }, { TOK.text }, { TOK.kwd_in }, { TOK.command, TOK.comparison }, { TOK.kwd_do }, { TOK.kwd_end } },
 		id = TOK.kv_for_stmt,
-		keep = {2, 3, 5},
+		keep = { 2, 3, 5 },
 		text = 1,
 	},
 	{
-		match = {{TOK.kwd_for}, {TOK.text}, {TOK.text}, {TOK.kwd_in}, {TOK.command, TOK.comparison}, {TOK.kwd_do}, {TOK.line_ending}, {TOK.kwd_end}},
+		match = { { TOK.kwd_for }, { TOK.text }, { TOK.text }, { TOK.kwd_in }, { TOK.command, TOK.comparison }, { TOK.kwd_do }, { TOK.line_ending }, { TOK.kwd_end } },
 		id = TOK.kv_for_stmt,
-		keep = {2, 3, 5},
+		keep = { 2, 3, 5 },
 		text = 1,
 	},
 
 	--Invalid for loops
 	{
-		match = {{TOK.kwd_for}, {TOK.text}, {TOK.kwd_in}, {TOK.command, TOK.comparison}},
+		match = { { TOK.kwd_for }, { TOK.text }, { TOK.kwd_in }, { TOK.command, TOK.comparison } },
 		id = TOK.for_stmt,
 		text = 1,
-		not_before = {TOK.kwd_do, TOK.text, TOK.expression, TOK.string_open, TOK.expr_open, TOK.command_open, TOK.inline_command},
+		not_before = { TOK.kwd_do, TOK.text, TOK.expression, TOK.string_open, TOK.expr_open, TOK.command_open, TOK.inline_command },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -594,10 +596,10 @@ local rules = {
 		end,
 	},
 	{
-		match = {{TOK.kwd_for}, {TOK.text}},
+		match = { { TOK.kwd_for }, { TOK.text } },
 		id = TOK.for_stmt,
 		text = 1,
-		not_before = {TOK.kwd_in, TOK.text, TOK.expression, TOK.string_open, TOK.expr_open, TOK.command_open, TOK.inline_command},
+		not_before = { TOK.kwd_in, TOK.text, TOK.expression, TOK.string_open, TOK.expr_open, TOK.command_open, TOK.inline_command },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -608,16 +610,16 @@ local rules = {
 
 	--Delete statement
 	{
-		match = {{TOK.kwd_delete}, {TOK.command}},
+		match = { { TOK.kwd_delete }, { TOK.command } },
 		id = TOK.delete_stmt,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison},
-		keep = {2},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison },
+		keep = { 2 },
 		text = 1,
 	},
 
 	--SUBROUTINE statement
 	{
-		match = {{TOK.kwd_subroutine}, {TOK.text}},
+		match = { { TOK.kwd_subroutine }, { TOK.text } },
 		id = TOK.subroutine_label,
 		text = 2,
 		onmatch = function(token, file)
@@ -626,19 +628,19 @@ local rules = {
 		end,
 	},
 	{
-		match = {{TOK.subroutine_label}, {TOK.command, TOK.program, TOK.statement}, {TOK.kwd_end}},
+		match = { { TOK.subroutine_label }, { TOK.command, TOK.program, TOK.statement }, { TOK.kwd_end } },
 		id = TOK.subroutine,
-		keep = {2},
+		keep = { 2 },
 		text = 1,
 	},
 	{
-		match = {{TOK.subroutine_label}, {TOK.kwd_end}},
+		match = { { TOK.subroutine_label }, { TOK.kwd_end } },
 		id = TOK.subroutine,
 		keep = {},
 		text = 1,
 	},
 	{
-		match = {{TOK.subroutine_label}, {TOK.line_ending}, {TOK.kwd_end}},
+		match = { { TOK.subroutine_label }, { TOK.line_ending }, { TOK.kwd_end } },
 		id = TOK.subroutine,
 		keep = {},
 		text = 1,
@@ -646,9 +648,9 @@ local rules = {
 
 	--Invalid subroutine
 	{
-		match = {{TOK.kwd_subroutine}},
+		match = { { TOK.kwd_subroutine } },
 		id = TOK.subroutine,
-		not_before = {TOK.text},
+		not_before = { TOK.text },
 		text = 1,
 		---@param token Token
 		---@param file string?
@@ -659,65 +661,65 @@ local rules = {
 
 	--GOSUB statement
 	{
-		match = {{TOK.kwd_gosub}, {TOK.command}},
+		match = { { TOK.kwd_gosub }, { TOK.command } },
 		id = TOK.gosub_stmt,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison},
-		keep = {2},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison },
+		keep = { 2 },
 		text = 1,
 	},
 
 	--BREAK statement (can break out of multiple loops)
 	{
-		match = {{TOK.kwd_break}, {TOK.command}},
+		match = { { TOK.kwd_break }, { TOK.command } },
 		id = TOK.break_stmt,
-		keep = {2},
+		keep = { 2 },
 		text = 1,
 	},
 	{
-		match = {{TOK.kwd_break}},
+		match = { { TOK.kwd_break } },
 		id = TOK.break_stmt,
 		keep = {},
 		text = 1,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison },
 	},
 
 	--CONTINUE statement (can continue any parent loop)
 	{
-		match = {{TOK.kwd_continue}, {TOK.command}},
+		match = { { TOK.kwd_continue }, { TOK.command } },
 		id = TOK.continue_stmt,
-		keep = {2},
+		keep = { 2 },
 		text = 1,
 	},
 	{
-		match = {{TOK.kwd_continue}},
+		match = { { TOK.kwd_continue } },
 		id = TOK.continue_stmt,
 		keep = {},
 		text = 1,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison },
 	},
 
 	--Variable assignment
 	{
-		match = {{TOK.kwd_let}, {TOK.var_assign}, {TOK.op_assign}, {TOK.command, TOK.expression, TOK.string}},
+		match = { { TOK.kwd_let }, { TOK.var_assign }, { TOK.op_assign }, { TOK.command, TOK.expression, TOK.string } },
 		id = TOK.let_stmt,
-		keep = {2, 4},
+		keep = { 2, 4 },
 		text = 1,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison },
 	},
 	{
-		match = {{TOK.kwd_let}, {TOK.var_assign}},
+		match = { { TOK.kwd_let }, { TOK.var_assign } },
 		id = TOK.let_stmt,
-		keep = {2},
+		keep = { 2 },
 		text = 1,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison, TOK.op_assign, TOK.var_assign},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison, TOK.op_assign, TOK.var_assign },
 	},
 	--Assign multiple variables at the same time
 	{
-		match = {{TOK.var_assign}, {TOK.var_assign}},
+		match = { { TOK.var_assign }, { TOK.var_assign } },
 		id = TOK.var_assign,
 		text = 1,
-		keep = {1, 2},
-		not_after = {TOK.var_assign},
+		keep = { 1, 2 },
+		not_after = { TOK.var_assign },
 		onmatch = function(token, file)
 			local t = token.children[1]
 			if t.children == nil then t.children = {} end
@@ -728,32 +730,33 @@ local rules = {
 
 	--Variable initialization
 	{
-		match = {{TOK.kwd_initial}, {TOK.var_assign}, {TOK.op_assign}, {TOK.command, TOK.expression, TOK.string}},
+		match = { { TOK.kwd_initial }, { TOK.var_assign }, { TOK.op_assign }, { TOK.command, TOK.expression, TOK.string } },
 		id = TOK.let_stmt,
-		keep = {2, 4},
+		keep = { 2, 4 },
 		text = 1,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison },
 	},
 	{
-		match = {{TOK.kwd_initial}, {TOK.var_assign}},
+		match = { { TOK.kwd_initial }, { TOK.var_assign } },
 		id = TOK.let_stmt,
-		keep = {2},
+		keep = { 2 },
 		text = 1,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison, TOK.op_assign},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison, TOK.op_assign },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
-			parse_error(token.span, 'Incomplete variable initialization, `'.. token.children[1].text ..'` must have a value', file)
+			parse_error(token.span,
+				'Incomplete variable initialization, `' .. token.children[1].text .. '` must have a value', file)
 		end,
 	},
 
 	--SUB variable assignment
 	{
-		match = {{TOK.kwd_let}, {TOK.var_assign}, {TOK.expression, TOK.comparison}, {TOK.op_assign}, {TOK.command, TOK.expression, TOK.string}},
+		match = { { TOK.kwd_let }, { TOK.var_assign }, { TOK.expression, TOK.comparison }, { TOK.op_assign }, { TOK.command, TOK.expression, TOK.string } },
 		id = TOK.let_stmt,
-		keep = {2, 5, 3},
+		keep = { 2, 5, 3 },
 		text = 1,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -765,11 +768,11 @@ local rules = {
 
 	--APPEND variable assignment
 	{
-		match = {{TOK.kwd_let}, {TOK.var_assign}, {TOK.expr_open}, {TOK.expr_close}, {TOK.op_assign}, {TOK.command, TOK.expression, TOK.string}},
+		match = { { TOK.kwd_let }, { TOK.var_assign }, { TOK.expr_open }, { TOK.expr_close }, { TOK.op_assign }, { TOK.command, TOK.expression, TOK.string } },
 		id = TOK.let_stmt,
-		keep = {2, 6, 3},
+		keep = { 2, 6, 3 },
 		text = 1,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -781,8 +784,8 @@ local rules = {
 
 	--INVALID variable assignment
 	{
-		match = {{TOK.kwd_let}, {TOK.var_assign}, {TOK.op_assign}},
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.command},
+		match = { { TOK.kwd_let }, { TOK.var_assign }, { TOK.op_assign } },
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.command },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -790,8 +793,8 @@ local rules = {
 		end,
 	},
 	{
-		match = {{TOK.kwd_let}, {TOK.var_assign}, {TOK.expression}, {TOK.op_assign}},
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.command},
+		match = { { TOK.kwd_let }, { TOK.var_assign }, { TOK.expression }, { TOK.op_assign } },
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.command },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -801,11 +804,11 @@ local rules = {
 
 	--Return Statements
 	{
-		match = {{TOK.kwd_return}, {TOK.command}},
+		match = { { TOK.kwd_return }, { TOK.command } },
 		id = TOK.return_stmt,
-		keep = {2},
+		keep = { 2 },
 		text = 1,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison },
 		---@param token Token
 		---@param file string?
 		onmatch = function(token, file)
@@ -814,44 +817,44 @@ local rules = {
 		end,
 	},
 	{
-		match = {{TOK.kwd_return}},
+		match = { { TOK.kwd_return } },
 		id = TOK.return_stmt,
 		keep = {},
 		text = 1,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison, TOK.command},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison, TOK.command },
 	},
 
 	--Statements
 	{
-		match = {{TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, TOK.import_stmt, TOK.match_stmt}},
+		match = { { TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, TOK.import_stmt, TOK.match_stmt } },
 		id = TOK.statement,
 		meta = true,
 	},
 	{
-		match = {{TOK.statement}, {TOK.line_ending}},
+		match = { { TOK.statement }, { TOK.line_ending } },
 		id = TOK.statement,
 		meta = true,
 	},
 
 	--Full program
 	{
-		match = {{TOK.command, TOK.program, TOK.statement}, {TOK.command, TOK.program, TOK.statement}},
+		match = { { TOK.command, TOK.program, TOK.statement }, { TOK.command, TOK.program, TOK.statement } },
 		id = TOK.program,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison},
-		not_after = {TOK.op_assign},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison },
+		not_after = { TOK.op_assign },
 		text = 'stmt_list',
 	},
 	{
-		match = {{TOK.program}, {TOK.line_ending}},
+		match = { { TOK.program }, { TOK.line_ending } },
 		id = TOK.program,
 		meta = true,
 	},
 	{
-		match = {{TOK.line_ending}, {TOK.command, TOK.program, TOK.statement, TOK.kwd_for, TOK.kwd_while, TOK.kwd_in, TOK.kwd_do, TOK.kwd_if, TOK.kwd_then, TOK.kwd_elif, TOK.kwd_else, TOK.kwd_end}},
+		match = { { TOK.line_ending }, { TOK.command, TOK.program, TOK.statement, TOK.kwd_for, TOK.kwd_while, TOK.kwd_in, TOK.kwd_do, TOK.kwd_if, TOK.kwd_then, TOK.kwd_elif, TOK.kwd_else, TOK.kwd_end } },
 		id = TOK.program,
 		onmatch = function(token)
 			--Catch possible dead ends where line endings come before any commands.
-			for _, i in ipairs({'text', 'span', 'id', 'meta_id', 'value', 'filename'}) do
+			for _, i in ipairs({ 'text', 'span', 'id', 'meta_id', 'value', 'filename' }) do
 				token[i] = token.children[2][i]
 			end
 			token.children = token.children[2].children
@@ -859,23 +862,23 @@ local rules = {
 	},
 
 	{
-		match = {{TOK.line_ending}, {TOK.line_ending}},
+		match = { { TOK.line_ending }, { TOK.line_ending } },
 		id = TOK.line_ending,
 		meta = true,
 	},
 
 	--Lambda definition
 	{
-		match = {{TOK.op_exclamation}, {TOK.index_open}, {TOK.comparison}, {TOK.index_close}},
+		match = { { TOK.op_exclamation }, { TOK.index_open }, { TOK.comparison }, { TOK.index_close } },
 		id = TOK.lambda,
-		keep = {3},
+		keep = { 3 },
 		text = 1,
 	},
 
 	--Lambda reference
 	{
-		match = {{TOK.op_exclamation}},
-		not_before = {TOK.index_open},
+		match = { { TOK.op_exclamation } },
+		not_before = { TOK.index_open },
 		keep = {},
 		text = 1,
 		id = TOK.lambda_ref,
@@ -883,39 +886,39 @@ local rules = {
 
 	--Ternary operator
 	{
-		match = {{TOK.comparison}, {TOK.kwd_if_expr}, {TOK.comparison}, {TOK.kwd_else_expr}, {TOK.comparison}},
-		keep = {3, 1, 5},
+		match = { { TOK.comparison }, { TOK.kwd_if_expr }, { TOK.comparison }, { TOK.kwd_else_expr }, { TOK.comparison } },
+		keep = { 3, 1, 5 },
 		text = 'ternary',
 		id = TOK.ternary,
-		not_after = {TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod},
+		not_after = { TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod },
 	},
 
 	--Match structure
 	{
-		match = {{TOK.kwd_match}, {TOK.comparison, TOK.text}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_end}},
-		keep = {2, 4, 5},
+		match = { { TOK.kwd_match }, { TOK.comparison, TOK.text }, { TOK.kwd_do }, { TOK.program, TOK.command, TOK.statement }, { TOK.kwd_end } },
+		keep = { 2, 4, 5 },
 		text = 'match',
 		id = TOK.match_stmt,
-		not_before = {TOK.kwd_else},
+		not_before = { TOK.kwd_else },
 		onmatch = _match_stmt_onmatch,
 	},
 	{
-		match = {{TOK.kwd_match}, {TOK.comparison, TOK.text}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.else_stmt}},
-		keep = {2, 4, 5},
+		match = { { TOK.kwd_match }, { TOK.comparison, TOK.text }, { TOK.kwd_do }, { TOK.program, TOK.command, TOK.statement }, { TOK.else_stmt } },
+		keep = { 2, 4, 5 },
 		text = 'match',
 		id = TOK.match_stmt,
 		onmatch = _match_stmt_onmatch,
 	},
 	{
-		match = {{TOK.kwd_match}, {TOK.comparison, TOK.text}, {TOK.kwd_do}, {TOK.program, TOK.command, TOK.statement}, {TOK.kwd_else}, {TOK.kwd_end}},
-		keep = {2, 4, 6},
+		match = { { TOK.kwd_match }, { TOK.comparison, TOK.text }, { TOK.kwd_do }, { TOK.program, TOK.command, TOK.statement }, { TOK.kwd_else }, { TOK.kwd_end } },
+		keep = { 2, 4, 6 },
 		text = 'match',
 		id = TOK.match_stmt,
 		onmatch = _match_stmt_onmatch,
 	},
 	--Invalid match struct (no comparison branches)
 	{
-		match = {{TOK.kwd_match}, {TOK.comparison, TOK.text}, {TOK.kwd_do}, {TOK.else_stmt, TOK.kwd_end, TOK.kwd_else}},
+		match = { { TOK.kwd_match }, { TOK.comparison, TOK.text }, { TOK.kwd_do }, { TOK.else_stmt, TOK.kwd_end, TOK.kwd_else } },
 		text = 'match',
 		id = TOK.match_stmt,
 		onmatch = function(token, file)
@@ -926,11 +929,11 @@ local rules = {
 	--File import statement
 	--[[minify-delete]]
 	{
-		match = {{TOK.kwd_import_file}, {TOK.command}},
+		match = { { TOK.kwd_import_file }, { TOK.command } },
 		id = TOK.import_stmt,
-		keep = {2},
+		keep = { 2 },
 		text = 1,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison },
 		onmatch = function(token, file)
 			local kids = token.children[1].children
 
@@ -943,13 +946,14 @@ local rules = {
 			token.value = {}
 			for i = 1, #kids do
 				if kids[i].id ~= TOK.text and (kids[i].id ~= TOK.string_open or not kids[i].children or #kids[i].children > 1 or #kids[i].children[1].id ~= TOK.text) then
-					parse_error(kids[i].span, 'All parameters to `'..token.text..'` statement must be non-empty string literals', file)
+					parse_error(kids[i].span,
+						'All parameters to `' .. token.text .. '` statement must be non-empty string literals', file)
 				else
 					local orig_filename = kids[i].text
 					if kids[i].id == TOK.string_open then orig_filename = kids[i].children[1].text end
 
 					--Make sure import points to a valid file
-					local filename = current_script_dir .. orig_filename:gsub('%.','/') .. '.paisley'
+					local filename = current_script_dir .. orig_filename:gsub('%.', '/') .. '.paisley'
 					local fp = io.open(filename, 'r')
 
 					--If the file doesn't exist locally, try the stdlib
@@ -960,7 +964,8 @@ local rules = {
 					end
 
 					if fp == nil then
-						parse_error(kids[i].span, 'Cannot load "'..filename..'": file does not exist or is unreadable', file)
+						parse_error(kids[i].span, 'Cannot load "' .. filename ..
+							'": file does not exist or is unreadable', file)
 					else
 						table.insert(token.value, filename)
 					end
@@ -971,13 +976,13 @@ local rules = {
 	},
 	--Invalid import statement
 	{
-		match = {{TOK.kwd_import_file}},
+		match = { { TOK.kwd_import_file } },
 		id = TOK.import_stmt,
 		keep = {},
 		text = 1,
-		not_before = {TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison, TOK.command},
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison, TOK.command },
 		onmatch = function(token, file)
-			parse_error(token.span, 'At least one file must be given to `'..token.text..'` statement', file)
+			parse_error(token.span, 'At least one file must be given to `' .. token.text .. '` statement', file)
 		end,
 	},
 	--[[/minify-delete]]
@@ -992,7 +997,7 @@ for _i, _rule in pairs(rules) do
 		if rule_lookup[_id] then
 			table.insert(rule_lookup[_id], _i)
 		else
-			rule_lookup[_id] = {_i}
+			rule_lookup[_id] = { _i }
 		end
 	end
 end
@@ -1073,7 +1078,7 @@ function SyntaxParser(tokens, file)
 					rule_matches = false
 				else
 					for rule_index = 1, #rule.match do
-						if not matches(index + rule_index - 1,  rule, rule_index) then
+						if not matches(index + rule_index - 1, rule, rule_index) then
 							rule_matches = false
 							if rule_index > greatest_len then
 								greatest_len = rule_index
@@ -1149,7 +1154,6 @@ function SyntaxParser(tokens, file)
 
 						return new_token, #rule.match, nil
 					end
-
 				end
 			end
 		end
@@ -1217,7 +1221,7 @@ function SyntaxParser(tokens, file)
 			end
 
 			if (id and id ~= TOK.command and id ~= TOK.kwd_stop and id < TOK.program) or id == TOK.else_stmt or id == TOK.elif_stmt then
-				parse_error(Span:new(1, 1, 1, 1), 'Unexpected token "'..new_tokens[1].text..'"', file)
+				parse_error(Span:new(1, 1, 1, 1), 'Unexpected token "' .. new_tokens[1].text .. '"', file)
 			end
 
 			tokens = new_tokens
@@ -1235,11 +1239,12 @@ function SyntaxParser(tokens, file)
 
 		if not did_reduce or loops_since_reduction > 500 then
 			if first_failure == nil then
-				parse_error(Span:new(1, 1, 1, 1), 'COMPILER BUG: Max iterations exceeded but no syntax error was found!', file)
+				parse_error(Span:new(1, 1, 1, 1), 'COMPILER BUG: Max iterations exceeded but no syntax error was found!',
+					file)
 			end
 
 			local token = tokens[first_failure]
-			parse_error(token.span, 'Unexpected token "'..token.text..'"', file)
+			parse_error(token.span, 'Unexpected token "' .. token.text .. '"', file)
 		end
 
 		tokens = new_tokens

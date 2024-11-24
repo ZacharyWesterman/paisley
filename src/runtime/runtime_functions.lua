@@ -15,9 +15,9 @@ function runtime_error(line, msg)
 	end
 
 	if FILE ~= nil and FILE ~= '' then
-		print(FILE..': '..line..': '..msg)
+		print(FILE .. ': ' .. line .. ': ' .. msg)
 	else
-		print(line..': '..msg)
+		print(line .. ': ' .. msg)
 	end
 	error('ERROR in user-supplied Paisley script.')
 end
@@ -68,8 +68,8 @@ local function mathfunc(funcname)
 
 		--If null was passed to the function, in a way that could not be determined at compile time, coerce it to be zero.
 		if #p == 0 then
-			print('WARNING: line '..line..': Null passed to math function, coerced to 0')
-			p = {0}
+			print('WARNING: line ' .. line .. ': Null passed to math function, coerced to 0')
+			p = { 0 }
 		end
 
 		PUSH(math[funcname](u(p)))
@@ -78,8 +78,8 @@ end
 
 local function number_op(v1, v2, operator)
 	if type(v1) == 'table' or type(v2) == 'table' then
-		if type(v1) ~= 'table' then v1 = {v1} end
-		if type(v2) ~= 'table' then v2 = {v2} end
+		if type(v1) ~= 'table' then v1 = { v1 } end
+		if type(v2) ~= 'table' then v2 = { v2 } end
 
 		local result = {}
 		for i = 1, math.min(#v1, #v2) do
@@ -220,11 +220,13 @@ local functions = {
 				if index < 0 then
 					index = #data + index + 1
 				elseif index == 0 then
-					print('WARNING: line '..line..': Indexes begin at 1, not 0')
+					print('WARNING: line ' .. line .. ': Indexes begin at 1, not 0')
 				end
 
 				result = data[index]
-			else result = data[std.str(index)] end
+			else
+				result = data[std.str(index)]
+			end
 		else
 			result = {}
 			for i = 1, #index do
@@ -233,7 +235,7 @@ local functions = {
 					if ix < 0 then
 						ix = #data + ix + 1
 					elseif ix == 0 then
-						print('WARNING: line '..line..': Indexes begin at 1, not 0')
+						print('WARNING: line ' .. line .. ': Indexes begin at 1, not 0')
 					end
 					table.insert(result, data[ix])
 				else
@@ -252,7 +254,10 @@ local functions = {
 
 		--For performance, limit how big slices can be.
 		if stop - start > std.MAX_ARRAY_LEN then
-			print('WARNING: line '..line..': Attempt to create an array of '..(stop - start)..' elements (max is '..std.MAX_ARRAY_LEN..'). Array truncated.')
+			print('WARNING: line ' ..
+			line ..
+			': Attempt to create an array of ' ..
+			(stop - start) .. ' elements (max is ' .. std.MAX_ARRAY_LEN .. '). Array truncated.')
 			stop = start + std.MAX_ARRAY_LEN
 		end
 
@@ -266,7 +271,7 @@ local functions = {
 	function(line, param)
 		local result = ''
 		while param > 0 do
-			result = std.str(POP())..result
+			result = std.str(POP()) .. result
 			param = param - 1
 		end
 		PUSH(result)
@@ -322,16 +327,16 @@ local functions = {
 	function() PUSH(POP() ~= POP()) end,
 
 	--GREATER THAN
-	function() PUSH( std.compare(POP(), POP(), function(p1, p2) return p1 < p2 end) ) end,
+	function() PUSH(std.compare(POP(), POP(), function(p1, p2) return p1 < p2 end)) end,
 
 	--GREATER THAN OR EQUAL
-	function() PUSH( std.compare(POP(), POP(), function(p1, p2) return p1 <= p2 end) ) end,
+	function() PUSH(std.compare(POP(), POP(), function(p1, p2) return p1 <= p2 end)) end,
 
 	--LESS THAN
-	function() PUSH( std.compare(POP(), POP(), function(p1, p2) return p1 > p2 end) ) end,
+	function() PUSH(std.compare(POP(), POP(), function(p1, p2) return p1 > p2 end)) end,
 
 	--LESS THAN OR EQUAL
-	function() PUSH( std.compare(POP(), POP(), function(p1, p2) return p1 >= p2 end) ) end,
+	function() PUSH(std.compare(POP(), POP(), function(p1, p2) return p1 >= p2 end)) end,
 
 	--BOOLEAN NOT
 	function() PUSH(not std.bool(POP())) end,
@@ -366,15 +371,17 @@ local functions = {
 		local t1, t2 = type(a), type(b)
 		local result
 
-		if t1 ~= 'table' and t2 == 'table' then b = b[1]
-		elseif t1 == 'table' and t2 ~= 'table' then a = a[1]
+		if t1 ~= 'table' and t2 == 'table' then
+			b = b[1]
+		elseif t1 == 'table' and t2 ~= 'table' then
+			a = a[1]
 		end
 
 		if t1 == 'table' then
 			local total = 0
 			for i = 1, math.min(#a, #b) do
 				local p = a[i] - b[i]
-				total = total + p*p
+				total = total + p * p
 			end
 			result = math.sqrt(total)
 		else
@@ -494,7 +501,7 @@ local functions = {
 			table.insert(v[1], v[2])
 			PUSH(v[1])
 		else
-			PUSH({v[1], v[2]})
+			PUSH({ v[1], v[2] })
 		end
 	end,
 
@@ -512,24 +519,24 @@ local functions = {
 
 	--LOWERCASE
 	function()
-		PUSH( std.str(POP()):lower() )
+		PUSH(std.str(POP()):lower())
 	end,
 
 	--UPPERCASE
 	function()
-		PUSH( std.str(POP()):upper() )
+		PUSH(std.str(POP()):upper())
 	end,
 
 	--CAMEL CASE
 	function()
 		local v = std.str(POP())
-		PUSH(v:gsub('(%l)(%w*)', function(x,y) return x:upper()..y end))
+		PUSH(v:gsub('(%l)(%w*)', function(x, y) return x:upper() .. y end))
 	end,
 
 	--STRING REPLACE
 	function()
 		local v = POP()
-		PUSH( std.join(std.split(std.str(v[1]), std.str(v[2])), std.str(v[3])) )
+		PUSH(std.join(std.split(std.str(v[1]), std.str(v[2])), std.str(v[3])))
 	end,
 
 	--JSON_ENCODE
@@ -573,37 +580,37 @@ local functions = {
 
 	--BASE64_ENCODE
 	function()
-		PUSH( std.b64_encode(std.str(POP()[1])) )
+		PUSH(std.b64_encode(std.str(POP()[1])))
 	end,
 
 	--BASE64_DECODE
 	function()
-		PUSH( std.b64_decode(std.str(POP()[1])) )
+		PUSH(std.b64_decode(std.str(POP()[1])))
 	end,
 
 	--LEFT PAD STRING
 	function()
 		local v = POP()
 		local text = std.str(v[1])
-		local character = std.str(v[2]):sub(1,1)
+		local character = std.str(v[2]):sub(1, 1)
 		local width = std.num(v[3])
 
-		PUSH( character:rep(width - #text) .. text )
+		PUSH(character:rep(width - #text) .. text)
 	end,
 
 	--RIGHT PAD STRING
 	function()
 		local v = POP()
 		local text = std.str(v[1])
-		local character = std.str(v[2]):sub(1,1)
+		local character = std.str(v[2]):sub(1, 1)
 		local width = std.num(v[3])
 
-		PUSH( text .. character:rep(width - #text) )
+		PUSH(text .. character:rep(width - #text))
 	end,
 
 	--CONVERT NUMBER TO HEX
 	function()
-		PUSH( string.format('%x', std.num(POP()[1])) )
+		PUSH(string.format('%x', std.num(POP()[1])))
 	end,
 
 	--FILTER STRING CHARS BASED ON PATTERN
@@ -642,7 +649,7 @@ local functions = {
 			PUSH(v:reverse())
 			return
 		elseif type(v) ~= 'table' then
-			PUSH({v})
+			PUSH({ v })
 			return
 		end
 
@@ -657,7 +664,7 @@ local functions = {
 	function()
 		local is_table, v = false, POP()[1]
 		if type(v) ~= 'table' then
-			PUSH({v})
+			PUSH({ v })
 			return
 		end
 
@@ -705,8 +712,8 @@ local functions = {
 	--MERGE TWO ARRAYS
 	function()
 		local v = POP()
-		if type(v[1]) ~= 'table' then v[1] = {v[1]} end
-		if type(v[2]) ~= 'table' then v[2] = {v[2]} end
+		if type(v[1]) ~= 'table' then v[1] = { v[1] } end
+		if type(v[2]) ~= 'table' then v[2] = { v[2] } end
 
 		for i = 1, #v[2] do
 			table.insert(v[1], v[2][i])
@@ -728,7 +735,7 @@ local functions = {
 			return
 		end
 
-		if type(indices) ~= 'table' then indices = {indices} end
+		if type(indices) ~= 'table' then indices = { indices } end
 		if #indices == 0 then
 			PUSH(object)
 			return
@@ -738,7 +745,8 @@ local functions = {
 		local sub_object = object
 		for i = 1, #indices - 1 do
 			local ix, tp = indices[i], std.type(sub_object)
-			if tp == 'object' then ix = std.str(ix)
+			if tp == 'object' then
+				ix = std.str(ix)
 			elseif tp ~= 'array' then
 				PUSH(object)
 				return
@@ -777,7 +785,7 @@ local functions = {
 	--INSERT ELEMENT IN ARRAY
 	function()
 		local v = POP()
-		if type(v[1]) ~= 'table' then v[1] = {v[1]} end
+		if type(v[1]) ~= 'table' then v[1] = { v[1] } end
 		local n = std.num(v[2])
 
 		local meta = getmetatable(v[1])
@@ -800,7 +808,7 @@ local functions = {
 	--DELETE ELEMENT FROM ARRAY
 	function()
 		local v = POP()
-		if type(v[1]) ~= 'table' then v[1] = {v[1]} end
+		if type(v[1]) ~= 'table' then v[1] = { v[1] } end
 		table.remove(v[1], std.num(v[2]))
 		PUSH(v[1])
 	end,
@@ -815,7 +823,8 @@ local functions = {
 	--SELECT RANDOM ELEMENT FROM ARRAY
 	function()
 		local v = POP()
-		if type(v[1]) ~= 'table' then PUSH(v[1])
+		if type(v[1]) ~= 'table' then
+			PUSH(v[1])
 		else
 			PUSH(v[1][math.random(1, #v[1])])
 		end
@@ -823,7 +832,7 @@ local functions = {
 
 	--GENERATE SHA256 HASH OF A STRING
 	function()
-		PUSH( std.hash(std.str( POP()[1] )) )
+		PUSH(std.hash(std.str(POP()[1])))
 	end,
 
 	--FOLD ARRAY INTO OBJECT
@@ -831,7 +840,7 @@ local functions = {
 		local result, array = std.object(), POP()[1]
 		if type(array) == 'table' then
 			for i = 1, #array, 2 do
-				result[std.str(array[i])] = array[i+1]
+				result[std.str(array[i])] = array[i + 1]
 			end
 		end
 		PUSH(result)
@@ -876,7 +885,7 @@ local functions = {
 		local result, object = {}, POP()[1]
 		if type(object) == 'table' then
 			for key, value in pairs(object) do
-				table.insert(result, {key, value})
+				table.insert(result, { key, value })
 			end
 		end
 		PUSH(result)
@@ -893,8 +902,10 @@ local functions = {
 			end
 			for i = length + 1, #v[1] do table.insert(result, v[1][i]) end
 			for i = length + 1, #v[2] do table.insert(result, v[2][i]) end
-		elseif type(v[1]) == 'table' then result = v[1]
-		elseif type(v[2]) == 'table' then result = v[2]
+		elseif type(v[1]) == 'table' then
+			result = v[1]
+		elseif type(v[2]) == 'table' then
+			result = v[2]
 		end
 		PUSH(result)
 	end,
@@ -905,7 +916,7 @@ local functions = {
 		if type(v) == 'table' then
 			PUSH(std.unique(v))
 		else
-			PUSH {v}
+			PUSH { v }
 		end
 	end,
 
@@ -913,8 +924,8 @@ local functions = {
 	function()
 		local v = POP()
 		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = {a} end
-		if type(b) ~= 'table' then b = {b} end
+		if type(a) ~= 'table' then a = { a } end
+		if type(b) ~= 'table' then b = { b } end
 		PUSH(std.union(a, b))
 	end,
 
@@ -922,8 +933,8 @@ local functions = {
 	function()
 		local v = POP()
 		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = {a} end
-		if type(b) ~= 'table' then b = {b} end
+		if type(a) ~= 'table' then a = { a } end
+		if type(b) ~= 'table' then b = { b } end
 		PUSH(std.intersection(a, b))
 	end,
 
@@ -931,8 +942,8 @@ local functions = {
 	function()
 		local v = POP()
 		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = {a} end
-		if type(b) ~= 'table' then b = {b} end
+		if type(a) ~= 'table' then a = { a } end
+		if type(b) ~= 'table' then b = { b } end
 		PUSH(std.difference(a, b))
 	end,
 
@@ -940,8 +951,8 @@ local functions = {
 	function()
 		local v = POP()
 		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = {a} end
-		if type(b) ~= 'table' then b = {b} end
+		if type(a) ~= 'table' then a = { a } end
+		if type(b) ~= 'table' then b = { b } end
 		PUSH(std.symmetric_difference(a, b))
 	end,
 
@@ -949,8 +960,8 @@ local functions = {
 	function()
 		local v = POP()
 		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = {a} end
-		if type(b) ~= 'table' then b = {b} end
+		if type(a) ~= 'table' then a = { a } end
+		if type(b) ~= 'table' then b = { b } end
 		PUSH(std.is_disjoint(a, b))
 	end,
 
@@ -958,8 +969,8 @@ local functions = {
 	function()
 		local v = POP()
 		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = {a} end
-		if type(b) ~= 'table' then b = {b} end
+		if type(a) ~= 'table' then a = { a } end
+		if type(b) ~= 'table' then b = { b } end
 		PUSH(std.is_subset(a, b))
 	end,
 
@@ -967,8 +978,8 @@ local functions = {
 	function()
 		local v = POP()
 		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = {a} end
-		if type(b) ~= 'table' then b = {b} end
+		if type(a) ~= 'table' then a = { a } end
+		if type(b) ~= 'table' then b = { b } end
 		PUSH(std.is_superset(a, b))
 	end,
 
@@ -1076,8 +1087,11 @@ local functions = {
 		end
 		local result = ''
 		for i = 1, #v do
-			if i > 3 then result = result .. '.'
-			elseif #result > 0 then result = result .. ':' end
+			if i > 3 then
+				result = result .. '.'
+			elseif #result > 0 then
+				result = result .. ':'
+			end
 			local val = tostring(std.num(v[i]))
 			result = result .. ('0'):rep(2 - #val) .. val
 		end
@@ -1087,7 +1101,7 @@ local functions = {
 	--CONVERT DATE ARRAY INTO DATE STRING
 	function()
 		local v = POP()[1]
-		if type(v) ~= 'table' then v = {v} end
+		if type(v) ~= 'table' then v = { v } end
 		local result = ''
 		for i = #v, 1, -1 do
 			if #result > 0 then result = result .. '-' end
@@ -1109,7 +1123,7 @@ local functions = {
 
 COMMANDS = {
 	--CALL
-	[0] = function(line, p1, p2) functions[p1+1](line, p2) end,
+	[0] = function(line, p1, p2) functions[p1 + 1](line, p2) end,
 
 	--SET VARIABLE
 	[2] = function(line, p1, p2)
@@ -1179,14 +1193,14 @@ COMMANDS = {
 
 		if not ALLOWED_COMMANDS[cmd_name] and not BUILTIN_COMMANDS[cmd_name] then
 			--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
-			local msg = 'Unknown command "'..cmd_name..'"'
+			local msg = 'Unknown command "' .. cmd_name .. '"'
 			local guess = closest_word(cmd_name, ALLOWED_COMMANDS, 4)
 			if guess == nil or guess == '' then
 				guess = closest_word(cmd_name, BUILTIN_COMMANDS, 4)
 			end
 
 			if guess ~= nil and guess ~= '' then
-				msg = msg .. ' (did you mean "'..guess..'"?)'
+				msg = msg .. ' (did you mean "' .. guess .. '"?)'
 			end
 			runtime_error(line, msg)
 		end
@@ -1204,21 +1218,21 @@ COMMANDS = {
 			elseif cmd_name == 'print' --[[minify-delete]] or cmd_name == 'stdin' or cmd_name == 'stdout' or cmd_name == 'stderr' --[[/minify-delete]] then
 				table.remove(command_array, 1)
 				local msg = std.join(command_array, ' ')
-				output_array({cmd_name, msg}, 7)
+				output_array({ cmd_name, msg }, 7)
 			elseif cmd_name == 'error' then
 				table.remove(command_array, 1)
-				local msg = line..': '..std.join(command_array, ' ')
+				local msg = line .. ': ' .. std.join(command_array, ' ')
 				---@diagnostic disable-next-line
-				if file then msg = file..': '..msg end
-				output_array({"error", msg}, 7)
+				if file then msg = file .. ': ' .. msg end
+				output_array({ "error", msg }, 7)
 
 				--[[minify-delete]]
 			elseif cmd_name == '!' or cmd_name == '?' then
 				table.remove(command_array, 1)
-				output_array({cmd_name, std.join(cmd_array, ' ')}, 9)
+				output_array({ cmd_name, std.join(cmd_array, ' ') }, 9)
 				--[[/minify-delete]]
 			else
-				runtime_error(line, 'RUNTIME BUG: No logic implemented for built-in command "'..command_array[1]..'"')
+				runtime_error(line, 'RUNTIME BUG: No logic implemented for built-in command "' .. command_array[1] .. '"')
 			end
 		else
 			output_array(command_array, 2)
@@ -1234,7 +1248,7 @@ COMMANDS = {
 	--PUSH THE CURRENT INSTRUCTION INDEX TO THE STACK
 	[8] = function(line, p1, p2)
 		table.insert(INSTR_STACK, CURRENT_INSTRUCTION + 1)
-		table.insert(INSTR_STACK, #STACK-1) --Keep track of how big the stack SHOULD be when returning
+		table.insert(INSTR_STACK, #STACK - 1) --Keep track of how big the stack SHOULD be when returning
 		table.insert(INSTR_STACK, STACK[#STACK]) --Append any subroutine parameters
 	end,
 
@@ -1268,8 +1282,8 @@ COMMANDS = {
 	--SWAP THE TOP 2 ELEMENTS ON THE STACK
 	[12] = function(line, p1, p2)
 		local v1 = STACK[#STACK]
-		local v2 = STACK[#STACK-1]
-		STACK[#STACK-1] = v1
+		local v2 = STACK[#STACK - 1]
+		STACK[#STACK - 1] = v1
 		STACK[#STACK] = v2
 	end,
 

@@ -35,7 +35,7 @@ function output(value, port)
 		--continue program
 	elseif port == 2 then
 		--run a non-builtin command (currently not supported outside of Plasma)
-		error('Error on line '.. line_no .. ': Cannot run program `' .. std.str(value) .. '`')
+		error('Error on line ' .. line_no .. ': Cannot run program `' .. std.str(value) .. '`')
 	elseif port == 3 then
 		ENDED = true --program successfully completed
 	elseif port == 4 then
@@ -45,7 +45,7 @@ function output(value, port)
 	elseif port == 5 then
 		--get current time (seconds since midnight)
 		local date = os.date('*t', os.time())
-		local sec_since_midnight = date.hour*3600 + date.min*60 + date.sec
+		local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
 
 		if socket_installed then
 			sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
@@ -56,11 +56,11 @@ function output(value, port)
 		if value == 2 then
 			--get system date (day, month, year)
 			local date = os.date('*t', os.time())
-			V5 = {date.day, date.month, date.year} --command return value
+			V5 = { date.day, date.month, date.year } --command return value
 		elseif value == 1 then
 			--get system time (seconds since midnight)
 			local date = os.date('*t', os.time())
-			local sec_since_midnight = date.hour*3600 + date.min*60 + date.sec
+			local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
 
 			if socket_installed then
 				sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
@@ -158,7 +158,7 @@ for input_line in function() return io.read('*l') end do
 	ERRORED = false
 	SHOW_MULTIPLE_ERRORS = true
 
-	if append_text then append_text(input_line..'\n') end
+	if append_text then append_text(input_line .. '\n') end
 
 	for token in lexer do
 		if indent_tokens[token.id] then
@@ -172,7 +172,7 @@ for input_line in function() return io.read('*l') end do
 	if indent > 0 then
 		---@type Token
 		local nl = {
-			span = Span:new(0,0,0,0),
+			span = Span:new(0, 0, 0, 0),
 			id = TOK.line_ending,
 			text = '\n',
 		}
@@ -180,7 +180,6 @@ for input_line in function() return io.read('*l') end do
 		io.write('... ')
 		io.flush()
 	elseif not ERRORED then
-
 		--Make sure braces match up (since we disabled their context in the lexer)
 		local braces = {}
 		for i = 1, #token_cache do

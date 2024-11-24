@@ -2,8 +2,8 @@ require "src.compiler.functions.fold"
 
 local function number_op(v1, v2, operator)
 	if type(v1) == 'table' or type(v2) == 'table' then
-		if type(v1) ~= 'table' then v1 = {v1} end
-		if type(v2) ~= 'table' then v2 = {v2} end
+		if type(v1) ~= 'table' then v1 = { v1 } end
+		if type(v2) ~= 'table' then v2 = { v2 } end
 
 		local result = {}
 		for i = 1, math.min(#v1, #v2) do
@@ -83,7 +83,7 @@ function FOLD_CONSTANTS(token, file)
 	--Even if not const, we can still tell the output type of list comprehension
 	if token.id == TOK.list_comp then
 		if token.children[1].type then
-			token.type = SIGNATURE('array['..TYPE_TEXT(token.children[1].type)..']')
+			token.type = SIGNATURE('array[' .. TYPE_TEXT(token.children[1].type) .. ']')
 		else
 			token.type = _G['TYPE_ARRAY']
 		end
@@ -103,22 +103,38 @@ function FOLD_CONSTANTS(token, file)
 			local result = c1.value[1]
 			for i = 2, #c1.value do
 				local v = c1.value[i]
-				if operator == '==' then result = result == v
-				elseif operator == '<' then result = std.compare(result, v, function(p1, p2) return p1 < p2 end)
-				elseif operator == '<=' then result = std.compare(result, v, function(p1, p2) return p1 <= p2 end)
-				elseif operator == '>' then result = std.compare(result, v, function(p1, p2) return p1 > p2 end)
-				elseif operator == '>=' then result = std.compare(result, v, function(p1, p2) return p1 >= p2 end)
-				elseif operator == '!=' then result = result ~= v
-				elseif operator == '+' then result = std.num(result) + std.num(v)
-				elseif operator == '-' then result = std.num(result) - std.num(v)
-				elseif operator == '*' then result = std.num(result) * std.num(v)
-				elseif operator == '/' then result = std.num(result) / std.num(v)
-				elseif operator == '//' then result = math.floor(std.num(result) / std.num(v))
-				elseif operator == '%' then result = std.num(result) % std.num(v)
-				elseif operator == '^' then result = std.num(result) ^ std.num(v)
-				elseif operator == 'and' then result = std.bool(result) and std.bool(v)
-				elseif operator == 'or' then result = std.bool(result) or std.bool(v)
-				elseif operator == 'xor' then result = (std.bool(result) or std.bool(v)) and not (std.bool(result) and std.bool(v))
+				if operator == '==' then
+					result = result == v
+				elseif operator == '<' then
+					result = std.compare(result, v, function(p1, p2) return p1 < p2 end)
+				elseif operator == '<=' then
+					result = std.compare(result, v, function(p1, p2) return p1 <= p2 end)
+				elseif operator == '>' then
+					result = std.compare(result, v, function(p1, p2) return p1 > p2 end)
+				elseif operator == '>=' then
+					result = std.compare(result, v, function(p1, p2) return p1 >= p2 end)
+				elseif operator == '!=' then
+					result = result ~= v
+				elseif operator == '+' then
+					result = std.num(result) + std.num(v)
+				elseif operator == '-' then
+					result = std.num(result) - std.num(v)
+				elseif operator == '*' then
+					result = std.num(result) * std.num(v)
+				elseif operator == '/' then
+					result = std.num(result) / std.num(v)
+				elseif operator == '//' then
+					result = math.floor(std.num(result) / std.num(v))
+				elseif operator == '%' then
+					result = std.num(result) % std.num(v)
+				elseif operator == '^' then
+					result = std.num(result) ^ std.num(v)
+				elseif operator == 'and' then
+					result = std.bool(result) and std.bool(v)
+				elseif operator == 'or' then
+					result = std.bool(result) or std.bool(v)
+				elseif operator == 'xor' then
+					result = (std.bool(result) or std.bool(v)) and not (std.bool(result) and std.bool(v))
 				end
 				--Ignore any other operators... we only care about binary operators.
 			end
@@ -128,8 +144,10 @@ function FOLD_CONSTANTS(token, file)
 			token.children = nil
 		else
 			--Even if the parameter is not constant, we can still deduce the output type based on the operator
-			if std.arrfind({'+', '-', '/', '//', '%'}, c2.text, 1) > 0 then token.type = 'number'
-			elseif std.arrfind({'==', '<', '<=', '>', '>=', '!=', 'and', 'or', 'xor'}, c2.text, 1) > 0 then token.type = 'boolean'
+			if std.arrfind({ '+', '-', '/', '//', '%' }, c2.text, 1) > 0 then
+				token.type = 'number'
+			elseif std.arrfind({ '==', '<', '<=', '>', '>=', '!=', 'and', 'or', 'xor' }, c2.text, 1) > 0 then
+				token.type = 'boolean'
 			end
 		end
 		return
@@ -168,19 +186,26 @@ function FOLD_CONSTANTS(token, file)
 	if token.id == TOK.add or token.id == TOK.multiply or token.id == TOK.exponent then
 		--Fold the two values into a single value
 		local result
-		if operator == '+' then result = number_op(c1.value, c2.value, function(a, b) return a + b end)
-		elseif operator == '-' then result = number_op(c1.value, c2.value, function(a, b) return a - b end)
-		elseif operator == '*' then result = number_op(c1.value, c2.value, function(a, b) return a * b end)
-		elseif operator == '/' then result = number_op(c1.value, c2.value, function(a, b) return a / b end)
-		elseif operator == '//' then result = number_op(c1.value, c2.value, function(a, b) return math.floor(c1.value / c2.value) end)
-		elseif operator == '%' then result = number_op(c1.value, c2.value, function(a, b) return a % b end)
-		elseif operator == '^' then result = number_op(c1.value, c2.value, function(a, b) return a ^ b end)
+		if operator == '+' then
+			result = number_op(c1.value, c2.value, function(a, b) return a + b end)
+		elseif operator == '-' then
+			result = number_op(c1.value, c2.value, function(a, b) return a - b end)
+		elseif operator == '*' then
+			result = number_op(c1.value, c2.value, function(a, b) return a * b end)
+		elseif operator == '/' then
+			result = number_op(c1.value, c2.value, function(a, b) return a / b end)
+		elseif operator == '//' then
+			result = number_op(c1.value, c2.value, function(a, b) return math.floor(c1.value / c2.value) end)
+		elseif operator == '%' then
+			result = number_op(c1.value, c2.value, function(a, b) return a % b end)
+		elseif operator == '^' then
+			result = number_op(c1.value, c2.value, function(a, b) return a ^ b end)
 		else
-			parse_error(token.span, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
+			parse_error(token.span, 'COMPILER BUG: No constant folding rule for operator "' .. operator .. '"!', file)
 		end
 
 		local r = tostring(result)
-		if r == tostring(1/0) or r == tostring(0/0) or r == tostring(-(0/0)) then
+		if r == tostring(1 / 0) or r == tostring(0 / 0) or r == tostring(-(0 / 0)) then
 			parse_error(token.span, 'Division by zero', file)
 		end
 
@@ -188,24 +213,28 @@ function FOLD_CONSTANTS(token, file)
 		token.children = nil
 		token.text = tostring(result)
 		token.id = TOK.lit_number
-
 	elseif token.id == TOK.comparison then
 		local result
-		if operator == '==' then result = c1.value == c2.value
-		elseif operator == '<' then result = std.compare(c1.value, c2.value, function(p1, p2) return p1 < p2 end)
-		elseif operator == '<=' then result = std.compare(c1.value, c2.value, function(p1, p2) return p1 <= p2 end)
-		elseif operator == '>' then result = std.compare(c1.value, c2.value, function(p1, p2) return p1 > p2 end)
-		elseif operator == '>=' then result = std.compare(c1.value, c2.value, function(p1, p2) return p1 >= p2 end)
-		elseif operator == '!=' then result = c1.value ~= c2.value
+		if operator == '==' then
+			result = c1.value == c2.value
+		elseif operator == '<' then
+			result = std.compare(c1.value, c2.value, function(p1, p2) return p1 < p2 end)
+		elseif operator == '<=' then
+			result = std.compare(c1.value, c2.value, function(p1, p2) return p1 <= p2 end)
+		elseif operator == '>' then
+			result = std.compare(c1.value, c2.value, function(p1, p2) return p1 > p2 end)
+		elseif operator == '>=' then
+			result = std.compare(c1.value, c2.value, function(p1, p2) return p1 >= p2 end)
+		elseif operator == '!=' then
+			result = c1.value ~= c2.value
 		else
-			parse_error(token.span, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
+			parse_error(token.span, 'COMPILER BUG: No constant folding rule for operator "' .. operator .. '"!', file)
 		end
 
 		token.value = result
 		token.children = nil
 		token.text = tostring(result)
 		token.id = TOK.lit_boolean
-
 	elseif token.id == TOK.boolean then
 		if c2 then --Binary operators
 			if operator == 'or' then
@@ -234,13 +263,12 @@ function FOLD_CONSTANTS(token, file)
 
 				token.value = result
 				token.id = TOK.lit_boolean
-
 			elseif operator == 'like' then
 				local v1 = std.str(c1.value)
 				local v2 = std.str(c2.value)
 				token.value, token.id = v1:match(v2) ~= nil, TOK.lit_boolean
 			else
-				parse_error(token.span, 'COMPILER BUG: No constant folding rule for operator "'..operator..'"!', file)
+				parse_error(token.span, 'COMPILER BUG: No constant folding rule for operator "' .. operator .. '"!', file)
 			end
 			token.children = nil
 			token.text = tostring(token.value)
@@ -300,30 +328,34 @@ function FOLD_CONSTANTS(token, file)
 			if token.value ~= nil then
 				token.text = tostring(token.value)
 				local tp = std.deep_type(token.value)
-				if tp == 'boolean' then token.id = TOK.lit_boolean
-				elseif tp == 'number' then token.id = TOK.lit_number
-				elseif tp == 'string' then token.id = TOK.string_open
-				elseif tp:sub(1,5) == 'array' then
+				if tp == 'boolean' then
+					token.id = TOK.lit_boolean
+				elseif tp == 'number' then
+					token.id = TOK.lit_number
+				elseif tp == 'string' then
+					token.id = TOK.string_open
+				elseif tp:sub(1, 5) == 'array' then
 					token.id = TOK.lit_array
 					token.text = '[]'
 					token.type = SIGNATURE(tp)
-				elseif tp:sub(1,6) == 'object' then
+				elseif tp:sub(1, 6) == 'object' then
 					token.id = TOK.lit_object
 					token.text = '{}'
 					token.type = SIGNATURE(tp)
 				else
-					parse_error(token.span, 'COMPILER BUG: Folding of function "'..token.text..'" resulted in data of type "'..tp..'"!', file)
+					parse_error(token.span,
+						'COMPILER BUG: Folding of function "' .. token.text .. '" resulted in data of type "' .. tp ..
+						'"!', file)
 				end
 				token.children = nil
 			end
-
 		elseif math[token.text] then
 			local val = math[token.text](c1.value)
 
 			--Check for NaN
 			local r = tostring(val)
-			if r == tostring(1/0) or r == tostring(0/0) or r == tostring(-(0/0)) then
-				parse_error(token.span, 'Result of "'..token.text..'('..c1.value..')" is not a number', file)
+			if r == tostring(1 / 0) or r == tostring(0 / 0) or r == tostring(-(0 / 0)) then
+				parse_error(token.span, 'Result of "' .. token.text .. '(' .. c1.value .. ')" is not a number', file)
 			end
 
 			token.id, token.value, token.text, token.children = TOK.lit_number, val, tostring(val), nil
@@ -345,12 +377,13 @@ function FOLD_CONSTANTS(token, file)
 		end
 		token.type = SIGNATURE(std.deep_type(token.value))
 		token.children = nil
-
 	elseif token.id == TOK.array_slice then
 		token.type = _G['TYPE_ARRAY_NUMBER']
 		if #token.children == 1 then
 			if not token.unterminated then
-				parse_error(token.span, 'Unterminated slices can only be used when indexing an array or string, e.g. `value[begin_index:]`, and must be the only expression inside the brackets', file)
+				parse_error(token.span,
+					'Unterminated slices can only be used when indexing an array or string, e.g. `value[begin_index:]`, and must be the only expression inside the brackets',
+					file)
 			end
 			token.value = c1.value
 			return
@@ -369,35 +402,33 @@ function FOLD_CONSTANTS(token, file)
 			token.children = nil
 			token.reduce_array_concat = true --If a slice operator is nested in an array_concat operation, merge the arrays
 		elseif stop - start >= std.MAX_ARRAY_LEN then
-			local msg = 'Attempt to create an array of '..(stop - start + 1)..' elements (max is '..std.MAX_ARRAY_LEN..'). Array truncated.'
+			local msg = 'Attempt to create an array of ' ..
+			(stop - start + 1) .. ' elements (max is ' .. std.MAX_ARRAY_LEN .. '). Array truncated.'
 			--[[minify-delete]]
 			if _G['LANGUAGE_SERVER'] then
 				INFO.warning(token.span, msg, file)
 			else
-			--[[/minify-delete]]
-				msg = token.span.from.line..', '..token.span.from.col..': '..msg
+				--[[/minify-delete]]
+				msg = token.span.from.line .. ', ' .. token.span.from.col .. ': ' .. msg
 				if file then msg = file .. ': ' .. msg end
 				print('WARNING: ' .. msg)
-			--[[minify-delete]]
+				--[[minify-delete]]
 			end
 			--[[/minify-delete]]
 
 			--We KNOW the array will be to large, so truncate it.
 			token.children[2].value = std.MAX_ARRAY_LEN + start - 1
 		end
-
 	elseif token.id == TOK.negate then
 		token.id = TOK.lit_number
 		token.value = number_op(0, c1.value, function(a, b) return a - b end)
 		token.text = tostring(token.value)
 		token.children = nil
-
 	elseif token.id == TOK.concat then
 		token.id = TOK.string_open
 		token.value = std.str(c1.value) .. std.str(c2.value)
 		token.text = token.value
 		token.children = nil
-
 	elseif token.id == TOK.string_open then
 		token.value = ''
 		local i
@@ -405,7 +436,6 @@ function FOLD_CONSTANTS(token, file)
 			token.value = token.value .. std.str(token.children[i].value)
 		end
 		token.children = nil
-
 	elseif token.id == TOK.index then
 		local val = c1.value
 		local is_string = false
@@ -413,7 +443,7 @@ function FOLD_CONSTANTS(token, file)
 			is_string = true
 			val = std.split(val, '')
 		elseif type(val) ~= 'table' then
-			parse_error(token.span, 'Cannot get subset of a value of type "'..std.type(val)..'"', file)
+			parse_error(token.span, 'Cannot get subset of a value of type "' .. std.type(val) .. '"', file)
 		end
 
 		if c2.unterminated then
@@ -432,7 +462,7 @@ function FOLD_CONSTANTS(token, file)
 			result = {}
 			for i = 1, #c2.value do
 				local ix = c2.value[i]
-				if type(ix) ~= 'number' and std.type(val):sub(1,6) ~= 'object' then
+				if type(ix) ~= 'number' and std.type(val):sub(1, 6) ~= 'object' then
 					parse_error(token.span, 'Cannot use a non-number value as an array index', file)
 				end
 
@@ -486,7 +516,7 @@ function FOLD_CONSTANTS(token, file)
 	elseif token.id == TOK.key_value_pair then
 		token.is_constant = true
 	else
-		parse_error(token.span, 'COMPILER BUG: No constant folding rule for token id "'..token_text(token.id)..'"!', file)
+		parse_error(token.span, 'COMPILER BUG: No constant folding rule for token id "' .. token_text(token.id) .. '"!',
+			file)
 	end
-
 end
