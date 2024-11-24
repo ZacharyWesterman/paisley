@@ -161,6 +161,23 @@ function SIMILAR_TYPE(lhs, rhs)
 	return false
 end
 
+function EXACT_TYPE(lhs, rhs)
+	if not lhs or not rhs then return false end
+
+	for key, val in pairs(lhs) do
+		if not rhs[key] then return false end
+		if not val.subtypes then
+			if rhs[key].subtypes then return false end
+			return true
+		end
+		
+		if not rhs[key].subtypes then return false end
+		if not EXACT_TYPE(val.subtypes, rhs[key].subtypes) then return false end
+	end
+
+	return false
+end
+
 function HAS_SUBTYPES(tp)
 	for key, val in pairs(tp) do
 		if val.subtypes then return true end

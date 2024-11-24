@@ -1117,7 +1117,7 @@ function SemanticAnalyzer(tokens, root_file)
 						if labels[cmd.text] then
 							INFO.hint(cmd.span, 'Subroutine `'..cmd.text..'` defined on line '..labels[cmd.text].span.from.line..', col '..labels[cmd.text].span.from.col, file)
 							local tp = labels[cmd.text].type
-							if tp == 'null' then
+							if EXACT_TYPE(tp, TYPE_NULL) then
 								INFO.info(cmd.span, 'Subroutine `'..cmd.text..'` always returns null, so using an inline command eval here is not helpful', file)
 							elseif tp then
 								INFO.hint(cmd.span, 'returns: '..TYPE_TEXT(tp), file)
@@ -1137,7 +1137,7 @@ function SemanticAnalyzer(tokens, root_file)
 							INFO.hint(cmd.span, 'returns: '..TYPE_TEXT(tp), file)
 						end
 
-						if token.id == TOK.inline_command and tp == 'null' then
+						if token.id == TOK.inline_command and EXACT_TYPE(tp, TYPE_NULL) then
 							INFO.info(cmd.span, 'Command `'..cmd.text..'` always returns null, so using an inline command eval here is not helpful', file)
 						end
 					end
