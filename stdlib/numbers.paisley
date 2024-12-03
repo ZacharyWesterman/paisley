@@ -1,6 +1,9 @@
 
 #Constants
 define {!pi[3.141592653589]}
+define {!e[2.718281828459]}
+define {!phi[1.61803398874989]}
+define {!tau[!pi*2]}
 
 #@export
 subroutine numeral
