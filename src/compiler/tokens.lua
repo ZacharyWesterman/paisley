@@ -30,6 +30,7 @@ TOK = {
 	kwd_else_expr = k(),
 	kwd_for_expr = k(),
 	kwd_match = k(),
+	kwd_cache = k(),
 	--[[minify-delete]] kwd_import_file = k(), --[[/minify-delete]]
 
 	expr_open = k(),
@@ -126,6 +127,7 @@ TOK = {
 	continue_stmt = k(),
 	return_stmt = k(),
 	match_stmt = k(),
+	uncache_stmt = k(),
 	statement = k(),
 
 	lit_array = k(), --This only gets created during constant folding
@@ -152,6 +154,7 @@ require "src.compiler.span"
 ---@field ignore boolean? If true, optimize this token away. Only defined on subroutine and variable definitions.
 ---@field unterminated boolean? Whether this slice token is unterminated (e.g. var[1::]). Only defined on slices.
 ---@field is_referenced boolean? Whether this subroutine token is referenced. Only defined on subroutine and variable definitions.
+---@field memoize boolean? If true, memoize (cache) calls to this subroutine.
 ---@field filename string? The name of the file that this token came from.
 Token = {}
 
@@ -200,7 +203,7 @@ end
 local function lsp_msg(span, msg, loglevel, file)
 	if file == INFO.root_file or not _G['LANGUAGE_SERVER'] or not INFO.root_file then
 		print(loglevel .. ',' ..
-		(span.from.line - 1) .. ',' .. span.from.col .. ',' .. (span.to.line - 1) .. ',' .. span.to.col .. '|' .. msg)
+			(span.from.line - 1) .. ',' .. span.from.col .. ',' .. (span.to.line - 1) .. ',' .. span.to.col .. '|' .. msg)
 	end
 end
 

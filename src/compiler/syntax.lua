@@ -439,7 +439,7 @@ local rules = {
 		match = { { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.comparison } },
 		id = TOK.command,
 		not_after_range = { TOK.expr_open, TOK.command }, --Command cannot come after anything in this range
-		not_after = { TOK.kwd_for, TOK.kwd_subroutine, TOK.kwd_if_expr, TOK.kwd_else_expr, TOK.var_assign, TOK.kwd_match },
+		not_after = { TOK.kwd_for, TOK.kwd_subroutine, TOK.kwd_if_expr, TOK.kwd_else_expr, TOK.var_assign, TOK.kwd_match, TOK.kwd_cache },
 		text = 'cmd',
 	},
 	{
@@ -646,6 +646,23 @@ local rules = {
 		text = 1,
 	},
 
+	--Add CACHE flag to subroutines
+	{
+		match = { { TOK.kwd_cache }, { TOK.subroutine } },
+		id = TOK.subroutine,
+		text = 2,
+		onmatch = function(token, file)
+			if token.children[2].memoize then
+				parse_error(token.children[1].span,
+					'Subroutine is already memoized; multiple uses of `cache` don\'t make sense',
+					file)
+			end
+
+			token.children[2].memoize = true
+			return token.children[2]
+		end,
+	},
+
 	--Invalid subroutine
 	{
 		match = { { TOK.kwd_subroutine } },
@@ -680,7 +697,15 @@ local rules = {
 		id = TOK.break_stmt,
 		keep = {},
 		text = 1,
-		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison },
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison, TOK.kwd_cache },
+	},
+	--Manually delete cache for memoized subroutines
+	--Add CACHE flag to subroutines
+	{
+		match = { { TOK.kwd_break }, { TOK.kwd_cache }, { TOK.text } },
+		id = TOK.uncache_stmt,
+		keep = { 3 },
+		text = 'break cache',
 	},
 
 	--CONTINUE statement (can continue any parent loop)
@@ -826,7 +851,7 @@ local rules = {
 
 	--Statements
 	{
-		match = { { TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, TOK.import_stmt, TOK.match_stmt } },
+		match = { { TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, TOK.import_stmt, TOK.match_stmt, TOK.uncache_stmt } },
 		id = TOK.statement,
 		meta = true,
 	},
