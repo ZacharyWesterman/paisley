@@ -851,7 +851,7 @@ local rules = {
 
 	--Statements
 	{
-		match = { { TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, TOK.import_stmt, TOK.match_stmt, TOK.uncache_stmt } },
+		match = { { TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.match_stmt, TOK.uncache_stmt } },
 		id = TOK.statement,
 		meta = true,
 	},
