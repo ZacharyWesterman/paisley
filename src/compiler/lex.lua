@@ -414,8 +414,14 @@ function Lexer(text, file)
 
 				--Special "list of params" and "list of commands" variables
 				if not match then
-					match = text:match('^[@%$]')
-					if match then tok_type = TOK.variable end
+					--Special param indexer syntax, e.g. @1 means the same as @[1]
+					match = text:match('^@%d+')
+					if match then
+						tok_type = TOK.variable
+					else
+						match = text:match('^[@%$]')
+						if match then tok_type = TOK.variable end
+					end
 				end
 			elseif curr_scope == '"' or curr_scope == '\'' then
 				--Logic for inside strings

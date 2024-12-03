@@ -90,32 +90,33 @@ function SemanticAnalyzer(tokens, root_file)
 		recurse(root,
 			{ TOK.subroutine, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.if_stmt, TOK.for_stmt, TOK
 				.kv_for_stmt, TOK.while_stmt }, function(token, file)
-			--[[minify-delete]]
-			if token.id == TOK.import_stmt then
-				found_import = true
-			end
-			--[[/minify-delete]]
-
-			--Enter scope
-			if tok_level > 0 then
-				if token.id == TOK.subroutine then
-					parse_error(token.span, 'Subroutines cannot be defined inside other structures', file)
-					--[[minify-delete]]
-				elseif token.id == TOK.import_stmt then
-					parse_error(token.span, 'Statement `' .. token.text .. '` cannot be inside other structures', file)
-					--[[/minify-delete]]
+				--[[minify-delete]]
+				if token.id == TOK.import_stmt then
+					found_import = true
 				end
-			end
+				--[[/minify-delete]]
 
-			if token.text:sub(1, 1) == '?' then
-				parse_error(token.span, 'Subroutine name cannot begin with `?`', file)
-			end
+				--Enter scope
+				if tok_level > 0 then
+					if token.id == TOK.subroutine then
+						parse_error(token.span, 'Subroutines cannot be defined inside other structures', file)
+						--[[minify-delete]]
+					elseif token.id == TOK.import_stmt then
+						parse_error(token.span, 'Statement `' .. token.text .. '` cannot be inside other structures',
+							file)
+						--[[/minify-delete]]
+					end
+				end
 
-			tok_level = tok_level + 1
-		end, function(token, file)
-			--Exit scope
-			tok_level = tok_level - 1
-		end)
+				if token.text:sub(1, 1) == '?' then
+					parse_error(token.span, 'Subroutine name cannot begin with `?`', file)
+				end
+
+				tok_level = tok_level + 1
+			end, function(token, file)
+				--Exit scope
+				tok_level = tok_level - 1
+			end)
 		--[[minify-delete]]
 	end
 	check_top_level_stmts()
@@ -194,6 +195,31 @@ function SemanticAnalyzer(tokens, root_file)
 		token.children = kids
 	end)
 
+	--Convert @DIGIT variables into @[DIGIT] indexes
+	recurse(root, { TOK.variable }, function(token, file)
+		if #token.text > 1 and token.text:sub(1, 1) == '@' then
+			local index = tonumber(token.text:sub(2))
+			if index < 1 then
+				parse_error(token.span, 'Indexes start at 1', file)
+			end
+
+			token.id = TOK.index
+			token.children = {
+				{
+					span = token.span,
+					id = TOK.variable,
+					text = '@',
+				},
+				{
+					span = token.span,
+					id = TOK.lit_number,
+					text = tostring(index),
+					value = index,
+				}
+			}
+		end
+	end)
+
 	--BREAK and CONTINUE statements are only allowed to have up to a single CONSTANT INTEGER operand
 	recurse(root, { TOK.break_stmt, TOK.continue_stmt }, function(token, file)
 		if not token.children or #token.children == 0 then
@@ -210,7 +236,7 @@ function SemanticAnalyzer(tokens, root_file)
 		local val = tonumber(token.children[1].text, 10)
 		if #token.children > 1 or val == nil or val < 1 then
 			parse_error(token.span, 'Only a constant positive integer is allowed as a parameter for "' .. token.text ..
-			'"', file)
+				'"', file)
 		end
 	end)
 
@@ -370,14 +396,14 @@ function SemanticAnalyzer(tokens, root_file)
 	recurse(root,
 		{ TOK.lambda, TOK.lambda_ref, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.subroutine, TOK
 			.else_stmt, TOK.elif_stmt }, function(token, file)
-		if token.id ~= TOK.lambda and token.id ~= TOK.lambda_ref then
-			if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
-				pop_scope(token, file, true)
+			if token.id ~= TOK.lambda and token.id ~= TOK.lambda_ref then
+				if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
+					pop_scope(token, file, true)
+				end
+				--Make sure lambdas are only referenced in the appropriate scope, never outside the scope they're defined.
+				tok_level = tok_level + 1
 			end
-			--Make sure lambdas are only referenced in the appropriate scope, never outside the scope they're defined.
-			tok_level = tok_level + 1
-		end
-	end, pop_scope)
+		end, pop_scope)
 
 	--Replace lambda definitions with the appropriate node.
 	recurse(root, { TOK.lambda }, nil, function(token, file)
@@ -1142,14 +1168,18 @@ function SemanticAnalyzer(tokens, root_file)
 				.subroutine }, type_precheck, type_checking)
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
-		if not ERRORED then recurse(root,
+		if not ERRORED then
+			recurse(root,
 				{ TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK
 					.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary, TOK
-					.list_comp, TOK.object, TOK.key_value_pair }, nil, FOLD_CONSTANTS) end
+					.list_comp, TOK.object, TOK.key_value_pair }, nil, FOLD_CONSTANTS)
+		end
 
 		--Set any variables we can
-		if not ERRORED then recurse(root, { TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.variable },
-				variable_assignment, variable_unassignment) end
+		if not ERRORED then
+			recurse(root, { TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.variable },
+				variable_assignment, variable_unassignment)
+		end
 
 		if ERRORED then break end
 	end
@@ -1294,10 +1324,12 @@ function SemanticAnalyzer(tokens, root_file)
 
 			--If branch condition is constant, try to fold constants one more time.
 			--This improves performance at runtime, and can allow branches to be pruned at compile time.
-			if not ERRORED then recurse(root,
+			if not ERRORED then
+				recurse(root,
 					{ TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK
 						.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary,
-						TOK.list_comp, TOK.object, TOK.key_value_pair }, nil, FOLD_CONSTANTS) end
+						TOK.list_comp, TOK.object, TOK.key_value_pair }, nil, FOLD_CONSTANTS)
+			end
 		else
 			token.children = { condition, else_branch }
 		end
@@ -1385,8 +1417,8 @@ function SemanticAnalyzer(tokens, root_file)
 
 			loop_depth = loop_depth + 1
 		end, function(token, file)
-		loop_depth = loop_depth - 1
-	end)
+			loop_depth = loop_depth - 1
+		end)
 
 	--Check if subroutines are even used
 	--We also keep track of what subroutines each subroutine references.
@@ -1461,7 +1493,7 @@ function SemanticAnalyzer(tokens, root_file)
 				local begins_with = begins and k:sub(1, #std.str(begins.value)) == begins.value
 				local ends_with = ends and k:sub(#k - #std.str(ends.value) + 1, #k) == ends.value
 				local does_contain = #contains == 0 and (not begins or not begins.value) and
-				(not ends or not ends.value)                                                                  --If there are no const parts, then we can't know.
+					(not ends or not ends.value) --If there are no const parts, then we can't know.
 
 				for j = 1, #contains do
 					if std.contains(k, contains[j]) then does_contain = true end
