@@ -14,6 +14,9 @@ local bc = {
 	delete = 11,
 	swap = 12,
 	pop_until_null = 13,
+	get_cache_else_jump = 14,
+	set_cache = 15,
+	delete_cache = 16,
 }
 
 require "src.compiler.functions.codes"
@@ -57,7 +60,7 @@ function print_bytecode(instructions, file)
 
 		if instr[4] then
 			line = i .. ' @ line ' .. instr[2] .. ': ' .. instr_text .. ' ' .. call_text .. ' ' ..
-			std.debug_str(instr[4])
+				std.debug_str(instr[4])
 		else
 			line = i .. ' @ line ' .. instr[2] .. ': ' .. instr_text .. ' ' .. call_text
 		end
@@ -133,6 +136,16 @@ function generate_bytecode(root, file)
 
 	--Create a termination label which will be appended to the end
 	local EOF_LABEL = LABEL_ID()
+
+	local cache_id = 0
+	local cache_ids = {}
+	local function get_cache_id(text)
+		if not cache_ids[text] then
+			cache_ids[text] = cache_id
+			cache_id = cache_id + 1
+		end
+		return cache_ids[text]
+	end
 
 	local LIST_COMP_VAR = {}
 
@@ -842,13 +855,33 @@ function generate_bytecode(root, file)
 				local skipsub = LABEL_ID()
 				emit(bc.call, 'jump', skipsub)
 				emit(bc.label, token.text)
+
+				if token.memoize then
+					local no_cache = LABEL_ID()
+					emit(bc.get_cache_else_jump, get_cache_id(token.text), no_cache)
+
+					--If cached, just use the cache value and return
+					emit(bc.pop_goto_index)
+					emit(bc.label, no_cache)
+
+					--If not cached, set up a return point so value can be cached
+					local use_cache = LABEL_ID()
+					emit(bc.push_index)
+					emit(bc.call, 'jump', use_cache)
+
+					--Set cache and return
+					emit(bc.set_cache, get_cache_id(token.text))
+					emit(bc.pop_goto_index)
+
+					emit(bc.label, use_cache)
+				end
+				--Subroutine body
 				enter(token.children[1])
 
 				--Make sure to push a value to the stack before returning
 				--TODO: optimize this away if return is guaranteed
 				emit(bc.push, nil)
 				emit(bc.pop_goto_index)
-
 				emit(bc.label, skipsub)
 			end
 		end,
@@ -980,6 +1013,11 @@ function generate_bytecode(root, file)
 			codegen_rules.recur_push(token.children[1])
 			codegen_rules.recur_push(token.children[2])
 		end,
+
+		--BREAK CACHE OF SUBROUTINE
+		[TOK.uncache_stmt] = function(token, file)
+			emit(bc.delete_cache, get_cache_id(token.text))
+		end,
 	}
 
 	enter(root)
@@ -1025,7 +1063,7 @@ function generate_bytecode(root, file)
 	for i = 1, #result2 do
 		local instr = result2[i]
 		--CLEAN OUT LABEL REFERENCES
-		if instr[1] == bc.call and (instr[3] == CALL_CODES.jump or instr[3] == CALL_CODES.jumpifnil or instr[3] == CALL_CODES.jumpiffalse) then
+		if instr[1] == bc.call and (instr[3] == CALL_CODES.jump or instr[3] == CALL_CODES.jumpifnil or instr[3] == CALL_CODES.jumpiffalse) or instr[1] == bc.get_cache_else_jump then
 			if instr[4] ~= nil then
 				if labels[instr[4]] == nil then
 					parse_error(Span:new(instr[2], 0, instr[2], 0),

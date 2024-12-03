@@ -348,13 +348,11 @@ function SemanticAnalyzer(tokens, root_file)
 		end
 	end)
 
-	--Check subroutine references.
+	--Reduce subroutine references.
 	recurse(root, { TOK.gosub_stmt }, function(token, file)
-		--[[minify-delete]]
-		if token.children[1].id == TOK.command then --[[/minify-delete]]
+		if token.children[1].id == TOK.command then
 			token.children = token.children[1].children
-			--[[minify-delete]]
-		end --[[/minify-delete]]
+		end
 	end)
 
 	--Resolve all lambda references
@@ -1505,6 +1503,22 @@ function SemanticAnalyzer(tokens, root_file)
 			end
 			return
 		end
+
+		if labels[label] == nil then
+			local msg = 'Subroutine `' .. label .. '` not declared anywhere'
+			local guess = closest_word(label, labels, 4)
+			if guess ~= nil and guess ~= '' then
+				msg = msg .. ' (did you mean "' .. guess .. '"?)'
+			end
+			parse_error(token.children[1].span, msg, file)
+		else
+			token.ignore = labels[label].ignore
+		end
+	end)
+
+	--Make sure `break cache` refers to an existing subroutine
+	recurse(root, { TOK.uncache_stmt }, function(token, file)
+		local label = token.children[1].text
 
 		if labels[label] == nil then
 			local msg = 'Subroutine `' .. label .. '` not declared anywhere'
