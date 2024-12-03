@@ -1,26 +1,17 @@
 #Calculate a bunch of numbers in the fibonacci sequence.
-#See how the higher numbers take longer to calculate, but still do not cause lag spikes.
+#See how, since the subroutine is memoized,
+#results are generated very quickly, even though the
+#recursive implementation is well-known for its slowness.
+
 for n in {0:100} do
-    gosub fibonacci
-    print "fib({n}) = {fibonacci}"
+    print "fib({n}) = ${gosub fibonacci {n}}"
 end
 
-#@input n:number The index of the Fibonacci sequence to calculate.
-#@output fibonacci:number The respective Fibonacci number.
-#@mutate __prev:number
-subroutine fibonacci
-    #Cache results, never recompute fibonacci numbers if we calculated it before
-    initial __fibonacci = 0 1
-    if {__fibonacci[n+1] != null} then
-        let fibonacci = {__fibonacci[n+1]}
-        return
-    end
-
-    let __prev = {__fibonacci[&__fibonacci-1]}
-    let fibonacci = {__fibonacci[&__fibonacci]}
-    for i in {(&__fibonacci+1):(n+1)} do
-        let fibonacci = {__prev + fibonacci}
-        let __prev = {fibonacci - __prev}
-        let __fibonacci{i} = {fibonacci}
-    end
+#Remove `cache` to see how slow this subroutine can be.
+cache subroutine fibonacci
+    if {@1 < 2} then return {@1} end
+    return {
+        ${gosub fibonacci {@1-1}} +
+        ${gosub fibonacci {@1-2}}
+    }
 end
