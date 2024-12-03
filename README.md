@@ -169,7 +169,7 @@ An example subroutine usage might look like the following:
 ```
 subroutine print_numbers
 	for i in {0 : @[1]} do
-		if {i > 30} do
+		if {i > 30} then
 			print "whoa, too big!"
 			return
 		end
@@ -186,7 +186,7 @@ end
 
 print ${gosub power 2 10}
 ```
-See how in the above, the `@` variable stores any parameters passed to a subroutine as an array, so the first parameter is `@[1]`, the second is `@[2]` and so on.
+See how in the above, the `@` variable stores any parameters passed to a subroutine as an array, so the first parameter is `@[1]`, the second is `@[2]` and so on. For constant indexes, the square brackets are optional, e.g. `@1` and `@2` will also work, but **not** `@ 2`.
 Also see that subroutines return values the same way that commands do, using the inline command evaluation syntax, `${...}`.
 
 Note that it is also possible to jump to subroutines with an arbitrary label ID. See how in the following example, the program will randomly call one of 5 possible subroutines, and then print "Subroutine exists".
@@ -201,6 +201,27 @@ subroutine 3 end
 subroutine 4 end
 subroutine 5 end
 ```
+
+## Subroutine Memoization:
+Some subroutines may take a very long time to compute values, when we only really need them to be computed once for any given input.
+For these kinds of subroutines, the `cache` keyword can be used to memoize the subroutine and only compute the results once.
+See the following recursive fibonacci example:
+```
+cache subroutine fib
+	if {@1 < 2} then return {@1} end
+	return {
+		${gosub fib {@1 - 1}} +
+		${gosub fib {@1 - 2}}
+	}
+end
+```
+Subsequent calls to `fib` will be *very* fast, because each fibonacci number only has to be computed once.
+
+If it turns out that you need to invalidate a specific subroutine's cache, you can manually do so:
+```
+break cache fib
+```
+If the subroutine is not memoized, this of course does nothing.
 
 ## Lambdas:
 Lambdas are another good way to reuse code, however unlike subroutines, these are specifically for reusing parts of expressions.
