@@ -879,7 +879,7 @@ local rules = {
 		id = TOK.program,
 		onmatch = function(token)
 			--Catch possible dead ends where line endings come before any commands.
-			for _, i in ipairs({ 'text', 'span', 'id', 'meta_id', 'value', 'filename' }) do
+			for _, i in ipairs({ 'text', 'span', 'id', 'meta_id', 'value', 'filename', 'memoize' }) do
 				token[i] = token.children[2][i]
 			end
 			token.children = token.children[2].children

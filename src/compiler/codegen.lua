@@ -1016,7 +1016,7 @@ function generate_bytecode(root, file)
 
 		--BREAK CACHE OF SUBROUTINE
 		[TOK.uncache_stmt] = function(token, file)
-			emit(bc.delete_cache, get_cache_id(token.text))
+			emit(bc.delete_cache, get_cache_id(token.children[1].text))
 		end,
 	}
 

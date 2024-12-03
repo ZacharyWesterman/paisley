@@ -255,9 +255,9 @@ local functions = {
 		--For performance, limit how big slices can be.
 		if stop - start > std.MAX_ARRAY_LEN then
 			print('WARNING: line ' ..
-			line ..
-			': Attempt to create an array of ' ..
-			(stop - start) .. ' elements (max is ' .. std.MAX_ARRAY_LEN .. '). Array truncated.')
+				line ..
+				': Attempt to create an array of ' ..
+				(stop - start) .. ' elements (max is ' .. std.MAX_ARRAY_LEN .. '). Array truncated.')
 			stop = start + std.MAX_ARRAY_LEN
 		end
 
@@ -1290,5 +1290,38 @@ COMMANDS = {
 	--POP STACK UNTIL AND INCLUDING NULL
 	[13] = function(line, p1, p2)
 		while POP() ~= nil do end
+	end,
+
+	--GET VALUE FROM CACHE IF IT EXISTS, ELSE JUMP
+	[14] = function(line, p1, p2)
+		local params = {}
+		if #INSTR_STACK > 0 then params = INSTR_STACK[#INSTR_STACK] end
+
+		--If cache value exists, place it in the "command return" slot.
+		if MEMOIZE_CACHE[p1] then
+			local serialized = json.stringify(params)
+			if MEMOIZE_CACHE[p1][serialized] ~= nil then
+				PUSH(MEMOIZE_CACHE[p1][serialized])
+				return
+			end
+		end
+
+		--if cache doesn't exist, jump.
+		CURRENT_INSTRUCTION = p2
+	end,
+
+	--SET CACHE FROM RETURN VALUE
+	[15] = function(line, p1, p2)
+		local params = {}
+		if #INSTR_STACK > 0 then params = INSTR_STACK[#INSTR_STACK] end
+
+		if not MEMOIZE_CACHE[p1] then MEMOIZE_CACHE[p1] = {} end
+		MEMOIZE_CACHE[p1][json.stringify(params)] = V5
+		PUSH(V5)
+	end,
+
+	--DELETE VALUE FROM MEMOIZATION CACHE
+	[16] = function(line, p1, p2)
+		MEMOIZE_CACHE[p1] = nil
 	end,
 }
