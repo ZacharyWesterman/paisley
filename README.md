@@ -202,7 +202,7 @@ subroutine 4 end
 subroutine 5 end
 ```
 
-## Subroutine Memoization:
+### Subroutine Memoization:
 Some subroutines may take a very long time to compute values, when we only really need them to be computed once for any given input.
 For these kinds of subroutines, the `cache` keyword can be used to memoize the subroutine and only compute the results once.
 See the following recursive fibonacci example:
@@ -222,6 +222,8 @@ If it turns out that you need to invalidate a specific subroutine's cache, you c
 break cache fib
 ```
 If the subroutine is not memoized, this of course does nothing.
+
+In short, memoization can be a good way to get a significant performance boost, basically for free (there *is* a slight runtime overhead, but it's negligible). Do keep in mind that any side effects (e.g. running commands, modifying variables, etc) of the called subroutine will not trigger if the result is already cached, so do not use this feature if you *want* your subroutine to always cause side effects.
 
 ## Lambdas:
 Lambdas are another good way to reuse code, however unlike subroutines, these are specifically for reusing parts of expressions.
