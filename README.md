@@ -593,20 +593,4 @@ Note that all commands take a little bit of time to run (at least 0.02s), whethe
 
 ---
 
-Lastly, to give an idea of the syntax, here is an example program that will create a clock that stays in sync with the client system.
-
-```
-#Repeat forever. "while 1 do" would also work.
-while {true} do
-	#Format date as YYYY-MM-DD
-	let date = {${sysdate}.reverse().join('-')}
-
-	#Format time as HH:MM:SS
-	#Note the lpad() use makes sure that hours/minutes/seconds are always 2 digits
-	let time = {(i.lpad('0', 2) for i in ${systime}.clocktime()[1:3]).join(':')}
-	print {date ' @ ' time}
-
-	#Only update once per second
-	sleep 1
-end
-```
+To get an idea of the syntax, check out the examples/ or stdlib/ directories.
