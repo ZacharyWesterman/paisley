@@ -31,6 +31,8 @@ TOK = {
 	kwd_for_expr = k(),
 	kwd_match = k(),
 	kwd_cache = k(),
+	kwd_using = k(),
+	kwd_as = k(),
 	--[[minify-delete]] kwd_import_file = k(), --[[/minify-delete]]
 
 	expr_open = k(),
@@ -128,6 +130,7 @@ TOK = {
 	return_stmt = k(),
 	match_stmt = k(),
 	uncache_stmt = k(),
+	alias_stmt = k(),
 	statement = k(),
 
 	lit_array = k(), --This only gets created during constant folding

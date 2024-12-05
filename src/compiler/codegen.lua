@@ -1018,6 +1018,9 @@ function generate_bytecode(root, file)
 		[TOK.uncache_stmt] = function(token, file)
 			emit(bc.delete_cache, get_cache_id(token.children[1].text))
 		end,
+
+		--Ignore "using X as Y" statements
+		[TOK.alias_stmt] = function(token, file) end,
 	}
 
 	enter(root)

@@ -439,7 +439,7 @@ local rules = {
 		match = { { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.comparison } },
 		id = TOK.command,
 		not_after_range = { TOK.expr_open, TOK.command }, --Command cannot come after anything in this range
-		not_after = { TOK.kwd_for, TOK.kwd_subroutine, TOK.kwd_if_expr, TOK.kwd_else_expr, TOK.var_assign, TOK.kwd_match, TOK.kwd_cache },
+		not_after = { TOK.kwd_for, TOK.kwd_subroutine, TOK.kwd_if_expr, TOK.kwd_else_expr, TOK.var_assign, TOK.kwd_match, TOK.kwd_cache, TOK.kwd_using, TOK.kwd_as },
 		text = 'cmd',
 	},
 	{
@@ -851,7 +851,7 @@ local rules = {
 
 	--Statements
 	{
-		match = { { TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.match_stmt, TOK.uncache_stmt } },
+		match = { { TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.match_stmt, TOK.uncache_stmt, TOK.alias_stmt } },
 		id = TOK.statement,
 		meta = true,
 	},
@@ -1011,6 +1011,48 @@ local rules = {
 		end,
 	},
 	--[[/minify-delete]]
+
+	--Subroutine name aliasing statements (using X as Y)
+	{
+		match = { { TOK.kwd_using }, { TOK.text, TOK.comparison }, { TOK.kwd_as }, { TOK.text, TOK.comparison } },
+		id = TOK.alias_stmt,
+		keep = { 2, 4 },
+		text = 1,
+		onmatch = function(token, file)
+			for i = 1, #token.children do
+				local c = token.children[i]
+				if c.id ~= TOK.text then
+					parse_error(c.span, 'Expected a subroutine name, got an expression instead', file)
+				end
+			end
+		end,
+	},
+	--Subroutine alias without an explicit name to assign (using X)
+	{
+		match = { { TOK.kwd_using }, { TOK.text, TOK.comparison } },
+		not_before = { TOK.kwd_as },
+		id = TOK.alias_stmt,
+		keep = { 2 },
+		text = 1,
+		onmatch = function(token, file)
+			local c = token.children[1]
+			local alias = c.text:match('%.[^%.]+$')
+
+			if c.id ~= TOK.text then
+				parse_error(c.span, 'Expected a subroutine name, got an expression instead', file)
+			elseif not alias then
+				parse_error(c.span,
+					'Unable to deduce alias from subroutine name (e.g. `A.B` or `A.C.B` will be aliased to `B`)',
+					file)
+			else
+				table.insert(token.children, {
+					id = TOK.text,
+					span = c.span,
+					text = alias:sub(2, #alias),
+				})
+			end
+		end,
+	},
 }
 
 --Build a table for quick rule lookup. This is a performance optimization

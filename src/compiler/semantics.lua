@@ -355,6 +355,51 @@ function SemanticAnalyzer(tokens, root_file)
 		end
 	end)
 
+	--Resolve all subroutine aliases
+	--Unlike other structures, these do respect scope.
+	local aliases = { {} }
+	recurse(root,
+		{ TOK.gosub_stmt, TOK.alias_stmt, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.subroutine, TOK
+			.else_stmt, TOK.elif_stmt, TOK.match_stmt },
+		function(token, file)
+			if token.id == TOK.alias_stmt then
+				--Set the alias
+				local c = token.children[1]
+				aliases[#aliases][token.children[2].text] = c.text
+
+				--If alias refers to a subroutine that doesn't exist, error.
+				if not labels[c.text] then
+					local msg = 'Subroutine `' .. c.text .. '` not declared anywhere'
+					local guess = closest_word(c.text, labels, 4)
+					if guess ~= nil and guess ~= '' then
+						msg = msg .. ' (did you mean "' .. guess .. '"?)'
+					end
+					parse_error(c.span, msg, file)
+				end
+			elseif token.id == TOK.gosub_stmt then
+				--Check for an alias that matches
+				for i = #aliases, 1, -1 do
+					local c = token.children[1]
+					local a = aliases[i][c.text]
+					if a then
+						--If one matches, use it.
+						c.text = a
+						break
+					end
+				end
+			else
+				if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
+					table.remove(aliases)
+				end
+				table.insert(aliases, {})
+			end
+		end, function(token, file)
+			if token.id ~= TOK.alias_stmt and token.id ~= TOK.gosub_stmt then
+				table.remove(aliases)
+			end
+		end
+	)
+
 	--Resolve all lambda references
 	local lambdas = {}
 	local tok_level = 0
@@ -393,7 +438,7 @@ function SemanticAnalyzer(tokens, root_file)
 	end
 	recurse(root,
 		{ TOK.lambda, TOK.lambda_ref, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.subroutine, TOK
-			.else_stmt, TOK.elif_stmt }, function(token, file)
+			.else_stmt, TOK.elif_stmt, TOK.match_stmt }, function(token, file)
 			if token.id ~= TOK.lambda and token.id ~= TOK.lambda_ref then
 				if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
 					pop_scope(token, file, true)
