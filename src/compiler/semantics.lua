@@ -424,9 +424,6 @@ function SemanticAnalyzer(tokens, root_file)
 					end
 				end
 			else
-				if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
-					table.remove(aliases)
-				end
 				table.insert(aliases, {})
 			end
 		end, function(token, file)
