@@ -189,7 +189,8 @@ print ${gosub power 2 10}
 See how in the above, the `@` variable stores any parameters passed to a subroutine as an array, so the first parameter is `@[1]`, the second is `@[2]` and so on. For constant indexes, the square brackets are optional, e.g. `@1` and `@2` will also work, but **not** `@ 2`.
 Also see that subroutines return values the same way that commands do, using the inline command evaluation syntax, `${...}`.
 
-Note that it is also possible to jump to subroutines with an arbitrary label ID. See how in the following example, the program will randomly call one of 5 possible subroutines, and then print "Subroutine exists".
+Note that it is also possible to jump to subroutines with an arbitrary label ID. Unlike a regular gosub, a dynamic gosub could fail at runtime, and so requires a conditional check `if gosub {expression} then ... else ... end` to make sure the label is valid.
+See how in the following example, the program will randomly call one of 5 possible subroutines, and then print "Subroutine exists".
 ```
 if gosub "{random_int(1,5)}" then
 	print "Subroutine exists"
@@ -249,6 +250,16 @@ if {x} then
 end
 gosub mysub #This is an error; "mysub" alias is not defined in this scope.
 ```
+You can also alias subroutines according to a wildcard, if you end the subroutine name with an asterisk.
+```
+subroutine sub1 end
+subroutine sub2 end
+alias sub* #Can now do `gosub 1` and `gosub 2`
+alias sub* as s* #Can now do `gosub s1` and `gosub s2`
+alias sub* as *s #Can now do `gosub 1s` and `gosub 2s`
+alias nonexistent.sub.* #Nothing happens unless at least 1 subroutine matches the pattern.
+```
+Note that aliases do NOT work with dynamic gosubs; those require the full subroutine name, to avoid any ambiguity at runtime.
 
 ## Lambdas:
 Lambdas are another good way to reuse code, however unlike subroutines, these are specifically for reusing parts of expressions.
