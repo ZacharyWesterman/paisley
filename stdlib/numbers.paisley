@@ -6,7 +6,7 @@ define {!phi[1.61803398874989]}
 define {!tau[!pi*2]}
 
 #@export
-subroutine numeral
+subroutine numbers.numeral
 	let n_ = {abs(@[1])}
 
 	if {n_ = 0} then return zero end
@@ -51,8 +51,8 @@ subroutine numeral
 end
 
 #@export
-subroutine ordinal
-	let r_ = ${gosub numeral {@[1]}}
+subroutine numbers.ordinal
+	let r_ = ${gosub numbers.numeral {@[1]}}
 
 	let _repl = {
 		'twelve' => 'twelfth',
