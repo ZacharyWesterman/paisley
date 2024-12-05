@@ -225,6 +225,31 @@ If the subroutine is not memoized, this of course does nothing.
 
 In short, memoization can be a good way to get a significant performance boost, basically for free (there *is* a slight runtime overhead, but it's negligible). Do keep in mind that any side effects (e.g. running commands, modifying variables, etc) of the called subroutine will not trigger if the result is already cached, so do not use this feature if you *want* your subroutine to always cause side effects.
 
+### Subroutine Aliases:
+
+Some subroutines may have very long names that are unwieldy to type. In such cases you can create an alias with the `using` keyword:
+```
+subroutine very_long_name_thats_annoying_to_type end
+using very_long_name_thats_annoying_to_type as short_name
+gosub short_name
+
+#If your subroutine name has at least one period in it,
+#then you don't have to manually write the alias name.
+#It will be deduced from the text after the last period.
+subroutine example.sub end
+using example.sub
+gosub sub
+```
+Do note that aliases are restricted to their scope, for example:
+```
+subroutine example.sub end
+if {x} then
+	using example.sub as mysub
+	gosub mysub #This is valid.
+end
+gosub mysub #This is an error; "mysub" alias is not defined in this scope.
+```
+
 ## Lambdas:
 Lambdas are another good way to reuse code, however unlike subroutines, these are specifically for reusing parts of expressions.
 Lambdas are defined with the syntax `![expression]`, and are referred to with that same `!` identifier, just without the brackets. Note that the `!` can be any number of exclamation marks, optionally followed by an alphanumeric identifier. So for example, `!!`, `!2`, and `!!lambda_1` are all valid lambda identifiers, all referring to different lambdas. Note that unlike lambdas in other languages, lambdas in Paisley are not true functions; they don't take any parameters. However, they do have access to the same global scope as the rest of the program.
