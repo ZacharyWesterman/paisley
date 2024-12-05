@@ -36,6 +36,7 @@ chmod +x build/paisley || exit 1
 
 rm -f "$HOME/.local/bin/paisley"
 mv build/paisley "$HOME/.local/bin/paisley"
+rsync -a stdlib "$HOME/.local/bin/"
 rm build -rf
 
 install_dependency()
