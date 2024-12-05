@@ -355,6 +355,42 @@ function SemanticAnalyzer(tokens, root_file)
 		end
 	end)
 
+	--Split up subroutine aliases that end with an asterisk
+	recurse(root, { TOK.alias_stmt }, function(token, file)
+		local l, a = token.children[1], token.children[2]
+		local label, alias = l.text, a.text
+
+		if label:sub(#label) == '*' and alias:match('%*') then
+			label = label:sub(1, #label - 1)
+			local aliases = {}
+			for i, _ in pairs(labels) do
+				if i:sub(1, #label) == label and i ~= label then
+					table.insert(aliases, {
+						id = TOK.alias_stmt,
+						text = 'using',
+						span = token.span,
+						children = {
+							{
+								id = TOK.text,
+								span = l.span,
+								text = i,
+							},
+							{
+								id = TOK.text,
+								span = a.span,
+								text = alias:gsub('%*', i:sub(#label + 1)),
+							}
+						},
+					})
+				end
+			end
+
+			token.id = TOK.program
+			token.children = aliases
+		end
+	end)
+
+
 	--Resolve all subroutine aliases
 	--Unlike other structures, these do respect scope.
 	local aliases = { {} }
