@@ -41,6 +41,9 @@ function FUNCSIG(func_name)
 end
 
 local file_cache = {}
+--[[minfy-delete]]
+local aliases_toplevel = { {} }
+--[[/minify-delete]]
 
 function SemanticAnalyzer(tokens, root_file)
 	--[[minify-delete]]
@@ -394,6 +397,13 @@ function SemanticAnalyzer(tokens, root_file)
 	--Resolve all subroutine aliases
 	--Unlike other structures, these do respect scope.
 	local aliases = { {} }
+
+	--[[minify-delete]]
+	if _G['REPL'] then
+		aliases = { aliases_toplevel }
+	end
+	--[[/minify-delete]]
+
 	recurse(root,
 		{ TOK.gosub_stmt, TOK.alias_stmt, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.subroutine, TOK
 			.else_stmt, TOK.elif_stmt, TOK.match_stmt },
@@ -432,6 +442,14 @@ function SemanticAnalyzer(tokens, root_file)
 			end
 		end
 	)
+
+	--[[minify-delete]]
+	if _G['REPL'] then
+		for key, value in pairs(aliases[1]) do
+			aliases_toplevel[key] = value
+		end
+	end
+	--[[/minify-delete]]
 
 	--Resolve all lambda references
 	local lambdas = {}
