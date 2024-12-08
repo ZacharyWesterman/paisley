@@ -49,7 +49,10 @@ arrayslice
 concat
 	CONSUME top 2 elements (a, b) from the stack, string-concatenate the values, and PUSH to the stack
 
-booland, boolor, boolxor, inarray, strlike, equal, notequal, greater, greaterequal, less, lessequal
+booland, boolor
+	EVALUATE first operand, and shortcut if result is known. If not, evaluate second operand and set as result.
+
+boolxor, inarray, strlike, equal, notequal, greater, greaterequal, less, lessequal
 	CONSUME top 2 elements (a, b) from the stack and PUSH the result of the appropriate boolean operation
 
 boolnot, varexists

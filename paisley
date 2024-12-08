@@ -21,6 +21,7 @@ AST_AFTER_SEMANTIC = false
 WORKING_DIR = ''
 LSP_FILENAME = ''
 KEEP_DEAD_CODE = false
+NO_SHORTCUT = false
 
 local ENDED = false
 
@@ -63,7 +64,7 @@ local function script_real_path()
 		if resolvedPath then
 			return resolvedPath:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
 		else
-			return ''                                      -- Failed to get path
+			return ''                             -- Failed to get path
 		end
 	end
 end
@@ -104,7 +105,7 @@ local zlib_installed, zlib = pcall(require, 'zlib')
 
 local VERSION = --[[build-replace=version.txt]] io.open(dir .. 'version.txt'):read() --[[/build-replace]]
 local HELPTEXT = --[[build-replace=helptext.txt]] io.open(dir .. 'helptext.txt'):read('*all'):gsub('[\r\n]+$', ''):gsub(
-'^[\r\n]+', '') --[[/build-replace]]
+	'^[\r\n]+', '') --[[/build-replace]]
 
 local old_working_dir = nil
 if lfs_installed and dir ~= nil then
@@ -170,6 +171,8 @@ for i, v in ipairs(arg) do
 			LSP_FILENAME = v:sub(9, #v)
 		elseif v == '--no-prune-dead-code' then
 			KEEP_DEAD_CODE = true
+		elseif v == '--no-shortcut' then
+			NO_SHORTCUT = true
 		else
 			error('Unknown flag `' .. v .. '`. Try running with `--help` to see all options.')
 		end
@@ -251,10 +254,18 @@ if INTROSPECTION then
 		for i = 1, #INTROSPECT_CMDS do
 			local key = INTROSPECT_CMDS[i]
 			print(key)
-			if BUILTIN_COMMANDS[key] then print('  Returns: ' .. TYPE_TEXT(BUILTIN_COMMANDS[key])) else print(
-				'  Returns: ' .. TYPE_TEXT(ALLOWED_COMMANDS[key])) end
-			if BUILTIN_COMMANDS[key] then print('  Desc: ' .. CMD_DESCRIPTION[key]) else print(
-				'  Desc: User-defined command.') end
+			if BUILTIN_COMMANDS[key] then
+				print('  Returns: ' .. TYPE_TEXT(BUILTIN_COMMANDS[key]))
+			else
+				print(
+					'  Returns: ' .. TYPE_TEXT(ALLOWED_COMMANDS[key]))
+			end
+			if BUILTIN_COMMANDS[key] then
+				print('  Desc: ' .. CMD_DESCRIPTION[key])
+			else
+				print(
+					'  Desc: User-defined command.')
+			end
 		end
 	elseif not INTROSPECT_FUNCLIST and #INTROSPECT_FUNCS == 0 then
 		--Generate table of commands

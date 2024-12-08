@@ -438,9 +438,40 @@ function generate_bytecode(root, file)
 				['like'] = 'strlike',
 				['exists'] = 'varexists',
 			}
+			local shortcut = {
+				['and'] = function(c1, c2)
+					local shortcut = LABEL_ID()
+					codegen_rules.recur_push(c1)
+					emit(bc.call, 'bool')
+					emit(bc.call, 'jumpiffalse', shortcut)
+					emit(bc.pop)
+					codegen_rules.recur_push(c2)
+					emit(bc.call, 'bool')
+					emit(bc.label, shortcut)
+				end,
+				['or'] = function(c1, c2)
+					local shortcut = LABEL_ID()
+					codegen_rules.recur_push(c1)
+					emit(bc.call, 'boolnot')
+					emit(bc.call, 'jumpiffalse', shortcut)
+					emit(bc.pop)
+					codegen_rules.recur_push(c2)
+					emit(bc.call, 'boolnot')
+					emit(bc.label, shortcut)
+					emit(bc.call, 'boolnot')
+				end,
+			}
+			--[[minify-delete]]
+			if _G['NO_SHORTCUT'] then shortcut = {} end
+			--[[/minify-delete]]
 
 			if #token.children > 1 then
-				codegen_rules.binary_op(token, op[token.text])
+				local s = shortcut[token.text]
+				if s then
+					s(token.children[1], token.children[2])
+				else
+					codegen_rules.binary_op(token, op[token.text])
+				end
 			else
 				codegen_rules.recur_push(token.children[1])
 				emit(bc.call, op[token.text])

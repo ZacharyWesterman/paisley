@@ -13,6 +13,7 @@ FLAGS:
         --stdin=[FILE]     Pretend that stdin input has the given filename
         --no-ast-errors    Don't report errors in the syntax tree
         --no-prune-dead-code Don't remove "dead code" that will never get run
+        --no-shortcut      Don't allow `and` and `or` expressions to shortcut
         --tokens           Print all generated tokens and then exit
         --ast              Print the abstract syntax tree and then exit
         --ast-sem          Print the AST after semantic analysis and then exit
