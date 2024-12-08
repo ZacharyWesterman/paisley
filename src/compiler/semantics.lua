@@ -451,34 +451,34 @@ function SemanticAnalyzer(tokens, root_file)
 	end
 	--[[/minify-delete]]
 
-	--Resolve all lambda references
-	local lambdas = {}
+	--Resolve all macro references
+	local macros = {}
 	local tok_level = 0
 	local pop_scope = function(token, file, no_decrement)
-		if token.id == TOK.lambda then
-			if not lambdas[token.text] then lambdas[token.text] = {} end
-			table.insert(lambdas[token.text], {
+		if token.id == TOK.macro then
+			if not macros[token.text] then macros[token.text] = {} end
+			table.insert(macros[token.text], {
 				level = tok_level,
 				node = token.children[1]
 			})
-		elseif token.id == TOK.lambda_ref then
-			if not lambdas[token.text] then
-				parse_error(token.span, 'Lambda "' .. token.text .. '" is not defined in the current scope', file)
+		elseif token.id == TOK.macro_ref then
+			if not macros[token.text] then
+				parse_error(token.span, 'Macro "' .. token.text .. '" is not defined in the current scope', file)
 			else
-				--Lambda is defined, so replace it with the appropriate node
-				local lambda_node = lambdas[token.text][#lambdas[token.text]].node
+				--Macro is defined, so replace it with the appropriate node
+				local macro_node = macros[token.text][#macros[token.text]].node
 				for _, i in ipairs({ 'text', 'span', 'id', 'value', 'type' }) do
-					token[i] = lambda_node[i]
+					token[i] = macro_node[i]
 				end
-				token.children = lambda_node.children
+				token.children = macro_node.children
 			end
 		else
-			--Make sure lambdas are only referenced in the appropriate scope, never outside the scope they're defined.
-			for i in pairs(lambdas) do
-				while lambdas[i][#lambdas[i]].level > tok_level do
-					table.remove(lambdas[i])
-					if #lambdas[i] == 0 then
-						lambdas[i] = nil
+			--Make sure macros are only referenced in the appropriate scope, never outside the scope they're defined.
+			for i in pairs(macros) do
+				while macros[i][#macros[i]].level > tok_level do
+					table.remove(macros[i])
+					if #macros[i] == 0 then
+						macros[i] = nil
 						break
 					end
 				end
@@ -488,24 +488,24 @@ function SemanticAnalyzer(tokens, root_file)
 		end
 	end
 	recurse(root,
-		{ TOK.lambda, TOK.lambda_ref, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.subroutine, TOK
+		{ TOK.macro, TOK.macro_ref, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.subroutine, TOK
 			.else_stmt, TOK.elif_stmt, TOK.match_stmt }, function(token, file)
-			if token.id ~= TOK.lambda and token.id ~= TOK.lambda_ref then
+			if token.id ~= TOK.macro and token.id ~= TOK.macro_ref then
 				if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
 					pop_scope(token, file, true)
 				end
-				--Make sure lambdas are only referenced in the appropriate scope, never outside the scope they're defined.
+				--Make sure macros are only referenced in the appropriate scope, never outside the scope they're defined.
 				tok_level = tok_level + 1
 			end
 		end, pop_scope)
 
-	--Replace lambda definitions with the appropriate node.
-	recurse(root, { TOK.lambda }, nil, function(token, file)
-		local lambda_node = token.children[1]
+	--Replace macro definitions with the appropriate node.
+	recurse(root, { TOK.macro }, nil, function(token, file)
+		local macro_node = token.children[1]
 		for _, i in ipairs({ 'text', 'span', 'id', 'value', 'type' }) do
-			token[i] = lambda_node[i]
+			token[i] = macro_node[i]
 		end
-		token.children = lambda_node.children
+		token.children = macro_node.children
 	end)
 
 	--Check function calls

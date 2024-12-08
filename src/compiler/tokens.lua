@@ -102,8 +102,8 @@ TOK = {
 
 	string_open = k(),
 	string_close = k(),
-	lambda = k(),
-	lambda_ref = k(),
+	macro = k(),
+	macro_ref = k(),
 
 	expression = k(),
 	inline_command = k(),

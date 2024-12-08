@@ -129,7 +129,7 @@ local rules = {
 
 	--Treat all literals the same.
 	{
-		match = { { TOK.lit_number, TOK.lit_boolean, TOK.lit_null, TOK.negate, TOK.string, TOK.parentheses, TOK.func_call, TOK.index, TOK.expression, TOK.inline_command, TOK.concat, TOK.lambda, TOK.lambda_ref, TOK.ternary, TOK.list_comp, TOK.key_value_pair } },
+		match = { { TOK.lit_number, TOK.lit_boolean, TOK.lit_null, TOK.negate, TOK.string, TOK.parentheses, TOK.func_call, TOK.index, TOK.expression, TOK.inline_command, TOK.concat, TOK.macro, TOK.macro_ref, TOK.ternary, TOK.list_comp, TOK.key_value_pair } },
 		id = TOK.value,
 		meta = true,
 	},
@@ -892,21 +892,21 @@ local rules = {
 		meta = true,
 	},
 
-	--Lambda definition
+	--Macro definition
 	{
 		match = { { TOK.op_exclamation }, { TOK.index_open }, { TOK.comparison }, { TOK.index_close } },
-		id = TOK.lambda,
+		id = TOK.macro,
 		keep = { 3 },
 		text = 1,
 	},
 
-	--Lambda reference
+	--Macro reference
 	{
 		match = { { TOK.op_exclamation } },
 		not_before = { TOK.index_open },
 		keep = {},
 		text = 1,
-		id = TOK.lambda_ref,
+		id = TOK.macro_ref,
 	},
 
 	--Ternary operator

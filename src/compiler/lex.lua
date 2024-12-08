@@ -385,7 +385,7 @@ function Lexer(text, file)
 					end
 				end
 
-				--Lambda operators
+				--Macro operators
 				if not match then
 					match = text:match('^!+[%w_]*')
 					if match then

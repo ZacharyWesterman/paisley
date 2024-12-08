@@ -261,11 +261,11 @@ alias nonexistent.sub.* #Nothing happens unless at least 1 subroutine matches th
 ```
 Note that aliases do NOT work with dynamic gosubs; those require the full subroutine name, to avoid any ambiguity at runtime.
 
-## Lambdas:
-Lambdas are another good way to reuse code, however unlike subroutines, these are specifically for reusing parts of expressions.
-Lambdas are defined with the syntax `![expression]`, and are referred to with that same `!` identifier, just without the brackets. Note that the `!` can be any number of exclamation marks, optionally followed by an alphanumeric identifier. So for example, `!!`, `!2`, and `!!lambda_1` are all valid lambda identifiers, all referring to different lambdas. Note that unlike lambdas in other languages, lambdas in Paisley are not true functions; they don't take any parameters. However, they do have access to the same global scope as the rest of the program.
+## Macros:
+Macros are another good way to reuse code, however unlike subroutines, these are specifically for reusing parts of expressions.
+Macros are defined with the syntax `![expression]`, and are referred to with that same `!` identifier, just without the brackets. Note that the `!` can be any number of exclamation marks, optionally followed by an alphanumeric identifier. So for example, `!!`, `!2`, and `!!macro_1` are all valid macro identifiers, all referring to different macros. Note that macros are not functions; they don't take any parameters, instead they behave exactly as if you had written the contained expression instead of the macro.
 
-Below is an example of lambda usage. Both the top and bottom commands will print 5 random numbers in the range 0-100.
+Below is an example of macro usage. Both the top and bottom commands will print 5 random numbers in the range 0-100.
 ```
 print {![random_int(0, 100)], !, !, !, !}
 
@@ -278,7 +278,7 @@ Note that either of the above commands are equivalent to the following:
 print {random_int(0, 100), random_int(0, 100), random_int(0, 100), random_int(0, 100), random_int(0, 100)}
 ```
 
-Unlike variables, lambdas are restricted to their scope. Thus, for example, if you define a lambda in a subroutine, you cannot use it outside the subroutine, unless that outside scope also has a lambda definition with the same identifier.
+Unlike variables, macros are restricted to their scope. Thus, for example, if you define a macro in a subroutine, you cannot use it outside the subroutine, unless that outside scope also has a macro definition with the same identifier.
 
 ## Other statements:
 - `break` or `break 1` or `break 2` etc, will exit as many while/for loops as are specified (defaults to 1 if not specified)
@@ -286,7 +286,7 @@ Unlike variables, lambdas are restricted to their scope. Thus, for example, if y
 - `delete` will delete the variables listed, e.g. `delete x y z`
 - `stop` will immediately halt program execution.
 - `return` returns from a subroutine back to the caller.
-- `define` will parse the following expression(s) but will ignore them at run time. This is most useful for defining lambdas outside of where they're used.
+- `define` will parse the following expression(s) but will ignore them at run time. This is most useful for defining macros outside of where they're used.
 
 ## Expressions:
 First and foremost, expressions will only be evaluated inside curly braces, `{}`. If you place an expression outside of braces, it will be treated as plain text. For example `print {1+2}` will print "3" but `print 1+2` will print the actual string "1+2".
