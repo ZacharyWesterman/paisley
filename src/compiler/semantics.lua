@@ -43,6 +43,7 @@ end
 local file_cache = {}
 --[[minfy-delete]]
 local aliases_toplevel = { {} }
+local macros_toplevel = {}
 --[[/minify-delete]]
 
 function SemanticAnalyzer(tokens, root_file)
@@ -453,6 +454,13 @@ function SemanticAnalyzer(tokens, root_file)
 
 	--Resolve all macro references
 	local macros = {}
+
+	--[[minify-delete]]
+	if _G['REPL'] then
+		macros = macros_toplevel
+	end
+	--[[/minify-delete]]
+
 	local tok_level = 0
 	local pop_scope = function(token, file, no_decrement)
 		if token.id == TOK.macro then
@@ -497,7 +505,14 @@ function SemanticAnalyzer(tokens, root_file)
 				--Make sure macros are only referenced in the appropriate scope, never outside the scope they're defined.
 				tok_level = tok_level + 1
 			end
-		end, pop_scope)
+		end, pop_scope
+	)
+
+	--[[minify-delete]]
+	if _G['REPL'] then
+		macros_toplevel = macros
+	end
+	--[[/minify-delete]]
 
 	--Replace macro definitions with the appropriate node.
 	recurse(root, { TOK.macro }, nil, function(token, file)
