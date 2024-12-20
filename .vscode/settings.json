@@ -3,5 +3,9 @@
 		"output",
 		"output_array"
 	],
-	"editor.formatOnSave": true
+	"editor.formatOnSave": true,
+	"autopep8.args": [
+		"--max-line-length",
+		"256"
+	]
 }
