@@ -107,7 +107,7 @@ def generate_full_source(filename: str, remove_debug: bool) -> str:
 
 
 # Allow only generating specific files.
-files = ['compiler.lua', 'runtime.lua']
+files = ['compiler.lua', 'runtime.lua', 'paisley']
 if len(argv) > 1:
     files = []
 
@@ -115,6 +115,8 @@ if 'compiler' in argv:
     files += ['compiler.lua']
 if 'runtime' in argv:
     files += ['runtime.lua']
+if 'paisley' in argv or 'standalone' in argv:
+    files += ['paisley']
 
 # Build the Plasma version of the Paisley engine
 for i in ['compiler.lua', 'runtime.lua']:
@@ -128,7 +130,7 @@ for i in ['compiler.lua', 'runtime.lua']:
     with open('build/'+i, 'w') as out:
         out.write(prefix + text)
 
-if 'paisley' in argv or 'standalone' in argv:
+if 'paisley' in files:
     # Build the desktop version of the Paisley engine
     text = generate_full_source('paisley', False)
     with open('build/paisley_standalone.lua', 'w') as out:
