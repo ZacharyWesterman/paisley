@@ -3,6 +3,7 @@
 import re
 from pathlib import Path
 from sys import argv
+import subprocess
 
 require = re.compile(r'require +[\'"]([^\'"]+)[\'"]')
 debug = re.compile(
@@ -40,6 +41,15 @@ PATTERNS = (
 )
 
 Path('build/').mkdir(exist_ok=True)
+
+if '--fetch-srlua' in argv:
+    if not Path('/tmp/paisley-build-srlua').exists():
+        subprocess.call(['git', 'clone', 'https://github.com/LuaDist/srlua.git', '/tmp/paisley-build-srlua'])
+
+    if not Path('/tmp/paisley-build-srlua/build/glue').exists():
+        Path('/tmp/paisley-build-srlua/build').mkdir(exist_ok=True)
+        subprocess.call(['cmake', '-B/tmp/paisley-build-srlua/build', '-S/tmp/paisley-build-srlua'])
+        subprocess.call(['make', '-C', '/tmp/paisley-build-srlua/build'])
 
 VERSION = open('version.txt', 'r').readline().strip()
 

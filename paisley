@@ -462,7 +462,7 @@ if not ENDED then
 			require "src.luac"
 			text = LUAC_RUNTIME_TEXT(text)
 
-			os.execute('python3 build.py runtime --quiet')
+			os.execute('python3 build.py runtime --quiet --fetch-srlua')
 			local runtime_file = io.open('build/runtime.lua', 'r')
 			if not runtime_file then
 				error('ERROR: Unable to build Paisley runtime! Exiting.')
@@ -494,13 +494,30 @@ if not ENDED then
 
 			if not STANDALONE_OUTPUT then
 				text = '#!/usr/bin/env paisley\n' .. text
+
+				fp:write(text)
+				fp:close()
 			else
+				fp:close()
+
 				--If standalone, compile lua source into bytecode
 				--Strip out debug info to reduce file size
 				text = LUAC_STRIP(LUAC_DUMP(text))
+
+				--At this point, srlua exists and can be used.
+				--So package this text into an executable
+				local srluadir = '/tmp/paisley-build-srlua/build'
+				local fp2 = io.open(srluadir .. '/luac.out', 'wb')
+				if not fp2 then
+					error(
+						'ERROR: srlua is not installed, so the program cannot be compiled into a standalone executable. Exiting.')
+				end
+				fp2:write(text)
+				fp2:close()
+
+				os.execute(srluadir .. '/glue ' .. srluadir .. '/srlua ' .. srluadir .. '/luac.out ' .. OUTPUT_FILE)
+				os.execute('chmod +x ' .. OUTPUT_FILE)
 			end
-			fp:write(text)
-			fp:close()
 		elseif ZLIB_COMPRESS and not STANDALONE_OUTPUT then
 			io.write(text)
 		else
