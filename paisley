@@ -459,106 +459,10 @@ if not ENDED then
 		end
 
 		if STANDALONE_OUTPUT then
-			text = 'V1 = "' .. text:gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n') .. '"\n'
-			text = text .. 'V4 = os.time()\n'
-			text = text .. 'V8 = 1000000000000\n'
-			text = text .. [[
-			function output(value, port)
-				if port == 1 then
-					--continue program
-					-- os.execute('sleep 0.01') --emulate behavior in Plasma where program execution pauses periodicaly to avoid lag.
-				elseif port == 2 then
-					--run a non-builtin command (currently not supported outside of Plasma)
-					error('Error on line ' .. line_no .. ': Cannot run program `' .. std.str(value) .. '`')
-				elseif port == 3 then
-					ENDED = true --program successfully completed
-				elseif port == 4 then
-					--delay execution for an amount of time
-					local exit_code = os.execute('sleep ' .. value)
-					if exit_code ~= 0 and exit_code ~= true then ENDED = true end
-		
-					V5 = nil
-				elseif port == 5 then
-					--get current time (seconds since midnight)
-					local date = os.date('*t', os.time())
-					local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
-		
-					if socket_installed then
-						sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
-					end
-		
-					V5 = sec_since_midnight --command return value
-				elseif port == 6 then
-					if value == 2 then
-						--get system date (day, month, year)
-						local date = os.date('*t', os.time())
-						V5 = { date.day, date.month, date.year } --command return value
-					elseif value == 1 then
-						--get system time (seconds since midnight)
-						local date = os.date('*t', os.time())
-						local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
-		
-						if socket_installed then
-							sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
-						end
-		
-						V5 = sec_since_midnight --command return value
-					end
-				elseif port == 7 then
-					V5 = nil
-					--Print text or error
-					local cmd = value[1]
-					table.remove(value, 1)
-					local args = std.str(value)
-					if cmd == 'stdout' then
-						io.write(args)
-					elseif cmd == 'stderr' then
-						io.write(io.stderr, args)
-					elseif cmd == 'stdin' then
-						V5 = io.read('*l')
-					else
-						print(args)
-					end
-					io.flush()
-				elseif port == 8 then
-					--value is current line number
-				elseif port == 9 then
-					--Get the output of the last run unix command
-					if value[2] == '' then
-						V5 = CMD_LAST_RESULT[value[1] ]
-						return
-					end
-		
-					--Run new unix command
-					CMD_LAST_RESULT = {
-						['!'] = '', --stdout of command
-						['?'] = nil, --result of execution
-					}
-		
-					local program = io.popen(value[2] .. ' 2>&1', 'r')
-					if program then
-						local line = program:read('*l')
-						while line do
-							if value[1] ~= '!' then print(line) end
-							if #CMD_LAST_RESULT['!'] > 0 then line = '\n' .. line end
-							CMD_LAST_RESULT['!'] = CMD_LAST_RESULT['!'] .. line
-		
-							line = program:read('*l')
-						end
-		
-						CMD_LAST_RESULT['?'] = program:close()
-					end
-		
-					V5 = CMD_LAST_RESULT[value[1] ]
-				else
-					print(port, json.stringify(value))
-				end
-			end
-		
-			function output_array(value, port) output(value, port) end
-			]]
+			require "src.luac"
+			text = LUAC_RUNTIME_TEXT(text)
 
-			os.execute('python3 build.py runtime')
+			os.execute('python3 build.py runtime --quiet')
 			local runtime_file = io.open('build/runtime.lua', 'r')
 			if not runtime_file then
 				error('ERROR: Unable to build Paisley runtime! Exiting.')
@@ -569,8 +473,10 @@ if not ENDED then
 				error('ERROR: Unable to load Paisley runtime! Exiting.')
 			end
 
-			text = '#!/usr/bin/env lua\n' .. text .. runtime_lua
-			text = text .. '\nwhile true do ITER() if not INSTRUCTIONS[CURRENT_INSTRUCTION] then break end end'
+			--Do we want to add the shebang? No, don't think so since this will get compiled into exe.
+			--text = '#!/usr/bin/env lua\n' .. text
+
+			text = text .. runtime_lua .. LUAC_EXEC_TEXT()
 		elseif ZLIB_COMPRESS then
 			local deflated, err = zlib.deflate()(text, 'finish')
 			if deflated then
@@ -588,6 +494,10 @@ if not ENDED then
 
 			if not STANDALONE_OUTPUT then
 				text = '#!/usr/bin/env paisley\n' .. text
+			else
+				--If standalone, compile lua source into bytecode
+				--Strip out debug info to reduce file size
+				text = LUAC_STRIP(LUAC_DUMP(text))
 			end
 			fp:write(text)
 			fp:close()

@@ -76,7 +76,8 @@ def minify(lua_source: str) -> str:
 
 
 def generate_full_source(filename: str, remove_debug: bool) -> str:
-    print('Building ' + filename + '...')
+    if '--quiet' not in argv:
+        print('Building ' + filename + '...')
 
     with open(filename, 'r') as fp:
 
