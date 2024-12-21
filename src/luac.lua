@@ -181,5 +181,5 @@ function LUAC_RUNTIME_TEXT(bytecode_text)
 end
 
 function LUAC_EXEC_TEXT()
-    return '\nwhile true do ITER() if not INSTRUCTIONS[CURRENT_INSTRUCTION] then break end end'
+    return '\nwhile true do RUN() if not INSTRUCTIONS[CURRENT_INSTRUCTION] then break end end'
 end
