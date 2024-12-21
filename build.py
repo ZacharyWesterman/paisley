@@ -105,8 +105,7 @@ def generate_full_source(filename: str, remove_debug: bool) -> str:
         # Replace certain blocks with the contents of a file
         for i in debug2.findall(text):
             with open(i[1], 'r') as subfile:
-                subtext = subfile.read().strip().replace(
-                    '\r', '').replace('\n', '\\n').replace('"', '\\"')
+                subtext = subfile.read().strip().replace('\\', '\\\\').replace('\r', '').replace('\n', '\\n').replace('"', '\\"')
                 # if remove_debug:
                 # 	subtext = subtext.replace('--', '@@@')
                 text = text.replace(i[0], '"' + subtext + '"')

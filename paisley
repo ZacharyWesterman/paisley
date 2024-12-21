@@ -462,13 +462,13 @@ if not ENDED then
 			require "src.luac"
 			text = LUAC_RUNTIME_TEXT(text)
 
-			os.execute('python3 build.py runtime --quiet --fetch-srlua')
-			local runtime_file = io.open('build/runtime.lua', 'r')
-			if not runtime_file then
-				error('ERROR: Unable to build Paisley runtime! Exiting.')
-			end
+			local PYTEXT = --[[build-replace=build.py]] io.open(dir .. 'build.py'):read('*all') --[[/build-replace]]
+			PYTEXT = PYTEXT:gsub('\\', '\\\\'):gsub(
+				'"', '\\"'):gsub('\n', '\\n'):gsub('%$', '\\$'):gsub('`', '\\`'):gsub('!', '\\!') --Make sure bash doesn't parse the string
 
-			local runtime_lua = runtime_file:read('*all')
+			os.execute('python3 -c "' .. PYTEXT .. '" runtime --quiet --fetch-srlua')
+
+			local runtime_lua = --[[build-replace=build/runtime.lua]] io.open('build/runtime.lua', 'r'):read('*all') --[[/build-replace]]
 			if not runtime_lua then
 				error('ERROR: Unable to load Paisley runtime! Exiting.')
 			end
