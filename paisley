@@ -470,11 +470,18 @@ if not ENDED then
 			if WINDOWS then PYTEXT = PYTEXT:gsub('\\"', '`"') end
 
 			-- print('python -c "' .. PYTEXT .. '" runtime --quiet --fetch-srlua')
-			os.execute('python -c "' .. PYTEXT .. '" runtime --quiet --fetch-srlua')
+			os.execute('python -c "' .. PYTEXT .. '" runtime --quiet --fetch-srlua --tempdir')
 
-			local runtime_lua = --[[build-replace=build/runtime.lua]] io.open('build/runtime.lua', 'r'):read('*all') --[[/build-replace]]
+			local runtime_lua = --[[build-replace=build/runtime.lua]] io.open('.paisley-build/runtime.lua', 'r'):read(
+				'*all') --[[/build-replace]]
 			if not runtime_lua then
 				error('ERROR: Unable to load Paisley runtime! Exiting.')
+			end
+
+			if WINDOWS then
+				os.execute('rmdir \\s .paisley-build')
+			else
+				os.execute('rm -rf .paisley-build')
 			end
 
 			--Do we want to add the shebang? No, don't think so since this will get compiled into exe.

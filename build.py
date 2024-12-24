@@ -40,7 +40,9 @@ PATTERNS = (
     (whitespace, Action.IGNORE),
 )
 
-Path('build/').mkdir(exist_ok=True)
+build_dir = '.paisley-build' if '--tempdir' in argv else 'build'
+
+Path(f'{build_dir}/').mkdir(exist_ok=True)
 dir = Path('/tmp')
 if not dir.exists():
     dir = Path('.')
@@ -140,11 +142,11 @@ for i in ['compiler.lua', 'runtime.lua']:
     module = i.split('.')[0]
     prefix = f'--[[Paisley {module} v{VERSION}, written by SenorCluckens]]\n--[[This build has been minified to reduce file size]]\n'
 
-    with open('build/'+i, 'w') as out:
+    with open(f'{build_dir}/{i}', 'w') as out:
         out.write(prefix + text)
 
 if 'paisley' in files:
     # Build the desktop version of the Paisley engine
     text = generate_full_source('paisley', False)
-    with open('build/paisley_standalone.lua', 'w') as out:
+    with open(f'{build_dir}/paisley_standalone.lua', 'w') as out:
         out.write(text)
