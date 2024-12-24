@@ -41,15 +41,18 @@ PATTERNS = (
 )
 
 Path('build/').mkdir(exist_ok=True)
+dir = Path('/tmp')
+if not dir.exists():
+    dir = Path('.')
 
 if '--fetch-srlua' in argv:
-    if not Path('/tmp/paisley-build-srlua').exists():
-        subprocess.call(['git', 'clone', 'https://github.com/LuaDist/srlua.git', '/tmp/paisley-build-srlua'])
+    if not (dir / 'paisley-build-srlua').exists():
+        subprocess.call(['git', 'clone', 'https://github.com/LuaDist/srlua.git', f'{dir}/paisley-build-srlua'])
 
-    if not Path('/tmp/paisley-build-srlua/build/glue').exists():
-        Path('/tmp/paisley-build-srlua/build').mkdir(exist_ok=True)
-        subprocess.call(['cmake', '-B/tmp/paisley-build-srlua/build', '-S/tmp/paisley-build-srlua'])
-        subprocess.call(['make', '-C', '/tmp/paisley-build-srlua/build'])
+    if not (dir / 'paisley-build-srlua/build/glue').exists():
+        (dir / 'paisley-build-srlua/build').mkdir(exist_ok=True)
+        subprocess.call(['cmake', f'-B{dir}/paisley-build-srlua/build', f'-S{dir}/paisley-build-srlua'])
+        subprocess.call(['make', '-C', f'{dir}/paisley-build-srlua/build'])
 
 VERSION = open('version.txt', 'r').readline().strip()
 

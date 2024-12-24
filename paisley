@@ -28,6 +28,7 @@ local ENDED = false
 
 local OUTPUT_FILE = nil
 
+local WINDOWS = package.config:sub(1, 1) == '\\'
 
 --Override default "error" behavior; just print the error, not a stack trace.
 function error(text)
@@ -37,9 +38,8 @@ end
 
 local function script_real_path()
 	local path = arg[0]
-	local windows = package.config:sub(1, 1) == '\\'
 
-	if windows then
+	if WINDOWS then
 		local ffi_installed, ffi = pcall(require, 'ffi')
 
 		if not ffi_installed then return '' end
@@ -464,9 +464,13 @@ if not ENDED then
 
 			local PYTEXT = --[[build-replace=build.py]] io.open(dir .. 'build.py'):read('*all') --[[/build-replace]]
 			PYTEXT = PYTEXT:gsub('\\', '\\\\'):gsub(
-				'"', '\\"'):gsub('\n', '\\n'):gsub('%$', '\\$'):gsub('`', '\\`'):gsub('!', '\\!') --Make sure bash doesn't parse the string
+				'"', '\\"'):gsub('%$', '\\$'):gsub('`', '\\`'):gsub('!', '\\!') --Make sure bash doesn't parse the string
 
-			os.execute('python3 -c "' .. PYTEXT .. '" runtime --quiet --fetch-srlua')
+			--Escape strings correctly in powershell
+			if WINDOWS then PYTEXT = PYTEXT:gsub('\\"', '`"') end
+
+			-- print('python -c "' .. PYTEXT .. '" runtime --quiet --fetch-srlua')
+			os.execute('python -c "' .. PYTEXT .. '" runtime --quiet --fetch-srlua')
 
 			local runtime_lua = --[[build-replace=build/runtime.lua]] io.open('build/runtime.lua', 'r'):read('*all') --[[/build-replace]]
 			if not runtime_lua then
