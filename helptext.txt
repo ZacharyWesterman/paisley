@@ -1,3 +1,6 @@
+This is the Paisley compiler and runtime engine.
+https://github.com/ZacharyWesterman/paisley
+
 USAGE:
     paisley [FLAGS] <input> [<output>]
 
