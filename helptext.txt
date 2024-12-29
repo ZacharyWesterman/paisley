@@ -26,6 +26,7 @@ FLAGS:
     -ic[CMD_NAME]          If introspecting, output details about the command
     -s, --standalone       Output a standalone program that can be run on
                            systems that don't have Paisley or Lua installed.
+    -cs,--compress-standalone Compress the above standalone program if possible.
 
 ARGS:
     <input>    The input file. Replace with `-` to read from stdin.

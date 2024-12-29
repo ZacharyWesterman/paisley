@@ -12,6 +12,7 @@ local INTROSPECT_FUNCS = {}
 local INTROSPECT_FUNCLIST = false
 local INTROSPECT_CMDLIST = false
 local STANDALONE_OUTPUT = false
+local STANDALONE_COMPRESS = false
 REPL = false
 LANGUAGE_SERVER = false
 RESTRICT_TO_PLASMA_BUILD = false
@@ -135,6 +136,12 @@ for i, v in ipairs(arg) do
 			ZLIB_COMPRESS = false
 		elseif v == '--standalone' or v == '-s' then
 			STANDALONE_OUTPUT = true
+			PRINT_BYTECODE = true
+			PRETTY_PRINT = false
+			ZLIB_COMPRESS = false
+		elseif v == '--compress-standalone' or v == '-cs' then
+			STANDALONE_OUTPUT = true
+			STANDALONE_COMPRESS = true
 			PRINT_BYTECODE = true
 			PRETTY_PRINT = false
 			ZLIB_COMPRESS = false
@@ -527,7 +534,15 @@ if not ENDED then
 				fp2:close()
 
 				os.execute(srluadir .. '/glue ' .. srluadir .. '/srlua ' .. srluadir .. '/luac.out ' .. OUTPUT_FILE)
-				os.execute('chmod +x ' .. OUTPUT_FILE)
+
+				if not WINDOWS then
+					os.execute('chmod +x ' .. OUTPUT_FILE) --Make executable
+
+					if STANDALONE_COMPRESS then
+						os.execute('gzexe ' .. OUTPUT_FILE) --Decrease the size of the executable
+						os.execute('rm -f ' .. OUTPUT_FILE .. '~')
+					end
+				end
 			end
 		elseif ZLIB_COMPRESS and not STANDALONE_OUTPUT then
 			io.write(text)
