@@ -470,6 +470,7 @@ if not ENDED then
 			text = LUAC_RUNTIME_TEXT(text)
 
 			local PYTEXT = --[[build-replace=build.py]] io.open(dir .. 'build.py'):read('*all') --[[/build-replace]]
+			PYTEXT = PYTEXT:gsub('VERSION = .+$', 'VERSION = "' .. VERSION .. '"')
 			PYTEXT = PYTEXT:gsub('\\', '\\\\'):gsub(
 				'"', '\\"'):gsub('%$', '\\$'):gsub('`', '\\`'):gsub('!', '\\!') --Make sure bash doesn't parse the string
 
