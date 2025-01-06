@@ -159,9 +159,9 @@ function LUAC_RUNTIME_TEXT(bytecode_text)
             if program then
                 local line = program:read('*l')
                 while line do
-                    if value[1] ~= '!' then print(line) end
-                    if #CMD_LAST_RESULT['!'] > 0 then line = '\n' .. line end
-                    CMD_LAST_RESULT['!'] = CMD_LAST_RESULT['!'] .. line
+                    if value[1] ~= '?' then print(line) end
+                    if #CMD_LAST_RESULT['?'] > 0 then line = '\n' .. line end
+                    CMD_LAST_RESULT['?'] = CMD_LAST_RESULT['?'] .. line
 
                     line = program:read('*l')
                 end

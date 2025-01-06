@@ -85,17 +85,17 @@ function output(value, port)
 
 		--Run new unix command
 		CMD_LAST_RESULT = {
-			['!'] = '', --stdout of command
-			['?'] = nil, --result of execution
+			['?'] = '', --stdout of command
+			['!'] = nil, --result of execution
 		}
 
 		local program = io.popen(value[2] .. ' 2>&1', 'r')
 		if program then
 			local line = program:read('*l')
 			while line do
-				if value[1] ~= '!' then print(line) end
-				if #CMD_LAST_RESULT['!'] > 0 then line = '\n' .. line end
-				CMD_LAST_RESULT['!'] = CMD_LAST_RESULT['!'] .. line
+				if value[1] ~= '?' then print(line) end
+				if #CMD_LAST_RESULT['?'] > 0 then line = '\n' .. line end
+				CMD_LAST_RESULT['?'] = CMD_LAST_RESULT['?'] .. line
 
 				line = program:read('*l')
 			end

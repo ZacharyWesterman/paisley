@@ -207,13 +207,13 @@ if RUN_PROGRAM then
 			if program then
 				local line = program:read('*l')
 				while line do
-					if value[1] ~= '!' then print(line) end
-					CMD_LAST_RESULT['!'] = CMD_LAST_RESULT['!'] .. line
+					if value[1] ~= '?' then print(line) end
+					CMD_LAST_RESULT['?'] = CMD_LAST_RESULT['?'] .. line
 
 					line = program:read('*l')
 				end
 
-				CMD_LAST_RESULT['?'] = program:close()
+				CMD_LAST_RESULT['!'] = program:close()
 			end
 
 			V5 = CMD_LAST_RESULT[value[1]]
