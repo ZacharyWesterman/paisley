@@ -572,8 +572,8 @@ if not ENDED and not LANGUAGE_SERVER and bytecode ~= nil then
 
 	local line_no = 0
 	local CMD_LAST_RESULT = {
-		['!'] = '', --stdout of command
-		['?'] = nil, --result of execution
+		['?'] = '', --stdout of command
+		['!'] = nil, --result of execution
 	}
 
 	function output(value, port)

@@ -151,8 +151,8 @@ function LUAC_RUNTIME_TEXT(bytecode_text)
 
             --Run new unix command
             CMD_LAST_RESULT = {
-                ['!'] = '', --stdout of command
-                ['?'] = nil, --result of execution
+                ['?'] = '', --stdout of command
+                ['!'] = nil, --result of execution
             }
 
             local program = io.popen(value[2] .. ' 2>&1', 'r')
@@ -166,7 +166,7 @@ function LUAC_RUNTIME_TEXT(bytecode_text)
                     line = program:read('*l')
                 end
 
-                CMD_LAST_RESULT['?'] = program:close()
+                CMD_LAST_RESULT['!'] = program:close()
             end
 
             V5 = CMD_LAST_RESULT[value[1] ]

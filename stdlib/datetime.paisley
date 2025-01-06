@@ -1,4 +1,6 @@
 #@export
+#@brief Get the current date and time.
+#@return object The current date and time.
 subroutine datetime.now
 	return {
 		'date' => ${sysdate},
@@ -7,11 +9,18 @@ subroutine datetime.now
 end
 
 #@export
+#@brief Format a datetime object as a string in ISO 8601 format.
+#@param datetime object The input datetime object.
+#@return string The formatted string.
 subroutine datetime.isoformat
 	return "{date(@[1].date)}T{time(@[1].time)}"
 end
 
 #@export
+#@brief Parse a string in ISO 8601 format.
+#@param str string The input string to parse.
+#@return object The parsed date and time.
+#@mutate _dt
 subroutine datetime.fromiso
 	let _dt = {@[1].split('T')}
 	return {
@@ -21,6 +30,9 @@ subroutine datetime.fromiso
 end
 
 #@export
+#@brief Check if a string is in ISO 8601 format.
+#@param str string The input string to check.
+#@return boolean True if the string is in ISO 8601 format, false otherwise.
 subroutine datetime.isiso
 	return {@[1] like '%d%d%d%d%-%d%d%-%d%dT%d%d:%d%d:%d%d'}
 end

@@ -26,8 +26,8 @@ ENDED = false
 
 local line_no = 0
 local CMD_LAST_RESULT = {
-	['!'] = '', --stdout of command
-	['?'] = nil, --result of execution
+	['?'] = '', --stdout of command
+	['!'] = nil, --result of execution
 }
 
 function output(value, port)
@@ -100,7 +100,8 @@ function output(value, port)
 				line = program:read('*l')
 			end
 
-			CMD_LAST_RESULT['?'] = program:close()
+			---@diagnostic disable-next-line
+			CMD_LAST_RESULT['!'] = program:close()
 		end
 
 		V5 = CMD_LAST_RESULT[value[1]]

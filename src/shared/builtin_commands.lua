@@ -27,8 +27,8 @@ CMD_DESCRIPTION = {
 	stdin = 'Read a line of text from stdin.',
 	stdout = 'Write text to stdout, with no line ending.',
 	stderr = 'Write text to stderr, with no line ending.',
-	['!'] = 'Execute a unix command, capturing the output. Run with no params to output the result of the last command.',
-	['?'] =
+	['?'] = 'Execute a unix command, capturing the output. Run with no params to output the result of the last command.',
+	['!'] =
 	'Execute a unix command, capturing the return value. Run with no params to output the result of the last command.',
 }
 --[[/minify-delete]]

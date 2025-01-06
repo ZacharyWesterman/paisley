@@ -78,7 +78,7 @@ local function script_real_path()
 		if resolvedPath then
 			return resolvedPath:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
 		else
-			return ''                                      -- Failed to get path
+			return ''                             -- Failed to get path
 		end
 	end
 end
@@ -127,8 +127,8 @@ if RUN_PROGRAM then
 
 	local line_no = 0
 	local CMD_LAST_RESULT = {
-		['!'] = '', --stdout of command
-		['?'] = nil, --result of execution
+		['?'] = '', --stdout of command
+		['!'] = nil, --result of execution
 	}
 
 	function output(value, port)
