@@ -86,4 +86,6 @@ BUILTIN_FUNCS = {
 	numeric_string = 3,
 	time = 1,
 	date = 1,
+	random_elements = 2,
+	shuffle = 1,
 }

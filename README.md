@@ -388,6 +388,8 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Random integer: `random_int(min_value, max_value) -> number`
 - Random real number: `random_float(min_value, max_value) -> number`
 - Select a random element from a list: `random_element(array) -> any`
+- Select (non-repeating) random elements from a list: `random_elements(array, count) -> array`
+- Shuffle an array's elements into a random order: `shuffle(array) -> array`
 - Difference between two strings: `word_diff(str1, str2) -> number` (levenshtein distance)
 - Euclidean distance (numbers or vectors of N dimension): `dist(point1, point2) -> number`
 - Trig functions: `sin(x), cos(x), tan(x), asin(x), acos(x), atan(x), atan2(x, y), sinh(x), cosh(x), tanh(x) -> number`

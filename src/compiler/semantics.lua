@@ -642,6 +642,16 @@ function SemanticAnalyzer(tokens, root_file)
 			}
 			token.text = 'floor'
 			token.children = { node }
+		elseif token.text == 'shuffle' then
+			--Convert "shuffle(x)" into "random_elements(x, MAX_INT)"
+			token.text = 'random_elements'
+			table.insert(token.children, {
+				id = TOK.lit_number,
+				span = token.span,
+				type = TYPE_NUMBER,
+				value = std.MAX_ARRAY_LEN,
+				text = tostring(std.MAX_ARRAY_LEN),
+			})
 		elseif token.children then
 			for i = 1, #token.children do
 				local child = token.children[i]

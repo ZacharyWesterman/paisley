@@ -681,6 +681,22 @@ TYPESIG = {
 		description = 'Convert an array representation of a date (day, month, year) into an ISO compliant date string.',
 		--[[/minify-delete]]
 	},
+	random_elements = {
+		valid = { { 'array', 'number' } },
+		out = 'any',
+		--[[minify-delete]]
+		params = { 'list', 'count' },
+		description = 'Select (non-repeating) random elements from a list',
+		--[[/minify-delete]]
+	},
+	shuffle = {
+		valid = { { 'array' } },
+		out = 'array',
+		--[[minify-delete]]
+		params = { 'list' },
+		description = 'Shuffle an array\'s elements into a random order',
+		--[[/minify-delete]]
+	},
 
 	[TOK.add] = {
 		valid = { { 'number' }, { 'array[number]' } },
