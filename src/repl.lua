@@ -171,13 +171,6 @@ for input_line in function() return io.read('*l') end do
 	end
 
 	if indent > 0 then
-		---@type Token
-		local nl = {
-			span = Span:new(0, 0, 0, 0),
-			id = TOK.line_ending,
-			text = '\n',
-		}
-		table.insert(token_cache, nl)
 		io.write('... ')
 		io.flush()
 	elseif not ERRORED then
