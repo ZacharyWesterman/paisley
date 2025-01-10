@@ -166,6 +166,9 @@ function Lexer(text, file)
 								end
 							end
 						end
+					elseif text:upper():match('^#+[ \t]*@SHELL[^%w_]') then
+						--Allow unknown commands to coerce to shell exec
+						COERCE_SHELL_CMDS = true
 					elseif _G['LANGUAGE_SERVER'] then
 						for i in text:upper():gmatch('@[%w_]+') do
 							if i == '@EXPORT' then EXPORT_NEXT_TOKEN = true end

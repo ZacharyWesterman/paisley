@@ -30,6 +30,7 @@ FLAGS:
     -s, --standalone       Output a standalone program that can be run on
                            systems that don't have Paisley or Lua installed.
     -cs,--compress-standalone Compress the above standalone program if possible.
+    -l, --shell            Allow unrecognized commands to coerce to shell exec
 
 ARGS:
     <input>    The input file. Replace with `-` to read from stdin.

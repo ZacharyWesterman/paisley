@@ -826,9 +826,13 @@ function SemanticAnalyzer(tokens, root_file)
 	local variables = {}
 	local deduced_variable_types
 	local current_sub = nil
+	--[[minify-delete]]
+	local in_cmd_eval = false
+	--[[minify-delete]]
 
 	local function type_precheck(token, file)
 		if token.id == TOK.subroutine then current_sub = token.text end
+		if token.id == TOK.inline_command then in_cmd_eval = true end
 	end
 
 	local function type_checking(token, file)
@@ -855,18 +859,41 @@ function SemanticAnalyzer(tokens, root_file)
 
 			if ch.value ~= nil and ch.id ~= TOK.lit_null and token.id == TOK.command then
 				if not ALLOWED_COMMANDS[ch.value] and not BUILTIN_COMMANDS[ch.value] then
-					--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
-					local msg = 'Unknown command "' .. std.str(ch.value) .. '"'
-					local guess = closest_word(std.str(ch.value), ALLOWED_COMMANDS, 4)
-					if guess == nil or guess == '' then
-						guess = closest_word(std.str(ch.value), BUILTIN_COMMANDS, 4)
-					end
+					--[[minify-delete]]
+					if _G['COERCE_SHELL_CMDS'] and not _G['RESTRICT_TO_PLASMA_BUILD'] then
+						--If bash extension is enabled, try to run a shell command
+						local bashcmd = '!'
+						if in_cmd_eval then bashcmd = '?' end
 
-					if guess ~= nil and guess ~= '' then
-						msg = msg .. ' (did you mean "' .. std.str(guess) .. '"?)'
+						table.insert(token.children, 1, {
+							id = TOK.string,
+							span = ch.span,
+							text = bashcmd,
+							value = bashcmd,
+						})
+					else
+						--[[/minify-delete]]
+
+						--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
+						local msg = 'Unknown command "' .. std.str(ch.value) .. '"'
+						local guess = closest_word(std.str(ch.value), ALLOWED_COMMANDS, 4)
+						if guess == nil or guess == '' then
+							guess = closest_word(std.str(ch.value), BUILTIN_COMMANDS, 4)
+						end
+
+						if guess ~= nil and guess ~= '' then
+							msg = msg .. ' (did you mean "' .. std.str(guess) .. '"?)'
+						end
+						parse_error(token.span, msg, file)
+
+						--[[minify-delete]]
 					end
-					parse_error(token.span, msg, file)
+					--[[/minify-delete]]
 				end
+
+				--[[minify-delete]]
+				in_cmd_eval = false
+				--[[/minify-delete]]
 
 				if ALLOWED_COMMANDS[ch.value] then
 					token.type = ALLOWED_COMMANDS[ch.value]

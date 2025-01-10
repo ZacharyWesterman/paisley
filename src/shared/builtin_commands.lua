@@ -10,8 +10,8 @@ BUILTIN_COMMANDS = {
 	"stdin:string",
 	"stdout:null",
 	"stderr:null",
-	"!:string",
-	"?:boolean",
+	"!:boolean",
+	"?:string",
 	--[[/minify-delete]]
 }
 

@@ -24,6 +24,7 @@ WORKING_DIR = ''
 LSP_FILENAME = ''
 KEEP_DEAD_CODE = false
 NO_SHORTCUT = false
+COERCE_SHELL_CMDS = false
 
 local ENDED = false
 
@@ -186,6 +187,8 @@ for i, v in ipairs(arg) do
 			KEEP_DEAD_CODE = true
 		elseif v == '--no-shortcut' then
 			NO_SHORTCUT = true
+		elseif v == '--shell' or v == '-l' then
+			COERCE_SHELL_CMDS = true
 		else
 			error('Unknown flag `' .. v .. '`. Try running with `--help` to see all options.')
 		end
