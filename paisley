@@ -435,6 +435,9 @@ if not ENDED then
 		require "src.compiler"
 		bytecode = json.parse(bc)
 	else
+		--Re-add shebang to prevent incorrect line number reporting
+		V1 = m .. V1
+		--Compile program
 		require "src.compiler"
 	end
 
