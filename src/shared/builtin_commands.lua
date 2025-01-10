@@ -49,11 +49,16 @@ BUILTIN_COMMANDS = _explode(BUILTIN_COMMANDS)
 ALLOWED_COMMANDS = _explode(ALLOWED_COMMANDS)
 
 --[[minify-delete]]
-if _G['RESTRICT_TO_PLASMA_BUILD'] then
+function PLASMA_RESTRICT()
+	RESTRICT_TO_PLASMA_BUILD = true
 	BUILTIN_COMMANDS['stdin'] = nil
 	BUILTIN_COMMANDS['stdout'] = nil
 	BUILTIN_COMMANDS['stderr'] = nil
 	BUILTIN_COMMANDS['!'] = nil
 	BUILTIN_COMMANDS['?'] = nil
+end
+
+if _G['RESTRICT_TO_PLASMA_BUILD'] then
+	PLASMA_RESTRICT()
 end
 --[[/minify-delete]]

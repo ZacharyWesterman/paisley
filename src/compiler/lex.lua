@@ -171,7 +171,7 @@ function Lexer(text, file)
 						COERCE_SHELL_CMDS = true
 					elseif text:upper():match('^#+[ \t]*@PLASMA[^%w_]') then
 						--Allow script to specify that it's meant for the Plasma build
-						RESTRICT_TO_PLASMA_BUILD = true
+						PLASMA_RESTRICT()
 					elseif _G['LANGUAGE_SERVER'] then
 						for i in text:upper():gmatch('@[%w_]+') do
 							if i == '@EXPORT' then EXPORT_NEXT_TOKEN = true end
