@@ -603,9 +603,17 @@ function Lexer(text, file)
 		if remaining_scope == '"' or remaining_scope == '\'' then
 			parse_error(Span:new(line, col, line, col), 'Unexpected EOF inside string', file)
 		elseif remaining_scope == '(' then
-			parse_error(Span:new(line, col, line, col), 'Missing parenthesis, expected ")"', file)
+			--[[minify-delete]]
+			if not _G['IGNORE_MISSING_BRACE'] then --[[/minify-delete]]
+				parse_error(Span:new(line, col, line, col), 'Missing parenthesis, expected ")"', file)
+				--[[minify-delete]]
+			end --[[/minify-delete]]
 		elseif remaining_scope == '[' then
-			parse_error(Span:new(line, col, line, col), 'Missing bracket, expected "]"', file)
+			--[[minify-delete]]
+			if not _G['IGNORE_MISSING_BRACE'] then --[[/minify-delete]]
+				parse_error(Span:new(line, col, line, col), 'Missing bracket, expected "]"', file)
+				--[[minify-delete]]
+			end --[[/minify-delete]]
 		elseif remaining_scope == '{' then
 			--[[minify-delete]]
 			if not _G['IGNORE_MISSING_BRACE'] then --[[/minify-delete]]
