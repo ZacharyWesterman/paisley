@@ -655,13 +655,11 @@ if not ENDED and not LANGUAGE_SERVER and bytecode ~= nil then
 
 			local program = io.popen(value[2] .. ' 2>&1', 'r')
 			if program then
-				local line = program:read('*l')
-				while line do
-					if value[1] ~= '?' then print(line) end
-					if #CMD_LAST_RESULT['?'] > 0 then line = '\n' .. line end
-					CMD_LAST_RESULT['?'] = CMD_LAST_RESULT['?'] .. line
-
-					line = program:read('*l')
+				local chr = program:read(1)
+				while chr do
+					if value[1] ~= '?' then io.stdout:write(chr) end
+					CMD_LAST_RESULT['?'] = CMD_LAST_RESULT['?'] .. chr
+					chr = program:read(1)
 				end
 
 				CMD_LAST_RESULT['!'] = program:close()
