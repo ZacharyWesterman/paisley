@@ -1246,7 +1246,16 @@ COMMANDS = {
 				--[[minify-delete]]
 			elseif cmd_name == '!' or cmd_name == '?' then
 				table.remove(command_array, 1)
-				output_array({ cmd_name, std.join(cmd_array, ' ') }, 9)
+				--Quote and escape all params, this will be run thru shell
+				local text = ''
+				for i = 1, #cmd_array do
+					local cmd_text = cmd_array[i]:gsub('\\', '\\\\'):gsub(
+						'"', '\\"'):gsub('%$', '\\$'):gsub('`', '\\`'):gsub('!', '\\!')
+					--Escape strings correctly in powershell
+					if _G['WINDOWS'] then cmd_text = cmd_text:gsub('\\"', '`"') end
+					text = text .. '"' .. cmd_text .. '" '
+				end
+				output_array({ cmd_name, text }, 9)
 				--[[/minify-delete]]
 			else
 				runtime_error(line, 'RUNTIME BUG: No logic implemented for built-in command "' .. command_array[1] .. '"')

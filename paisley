@@ -30,7 +30,7 @@ local ENDED = false
 
 local OUTPUT_FILE = nil
 
-local WINDOWS = package.config:sub(1, 1) == '\\'
+WINDOWS = package.config:sub(1, 1) == '\\'
 
 --Override default "error" behavior; just print the error, not a stack trace.
 function error(text)
@@ -411,15 +411,16 @@ if not ENDED then
 
 	--Remove the shebang from the beginning of the input file if there is one.
 	local m = V1:match('^#![^\n]*\n')
-	if m then V1 = V1:sub(#m + 1) end
+	local paisley_src = V1
+	if m then paisley_src = V1:sub(#m + 1) end
 
 	--Check if we were given compressed bytecode
-	if is_zlib_compressed(V1) then
+	if is_zlib_compressed(paisley_src) then
 		if not zlib_installed then
 			error('Error: Cannot read compressed bytecode, zlib dependency is not installed.')
 		end
 
-		local inflated, err = zlib.inflate()(V1)
+		local inflated, err = zlib.inflate()(paisley_src)
 		if inflated then
 			V1 = ''
 			require "src.compiler" --include important stuff, but don't actually compile anything.
@@ -429,14 +430,12 @@ if not ENDED then
 		else
 			error('Error during decompression: ' .. err)
 		end
-	elseif is_paisley_bytecode(V1) then
-		local bc = V1
+	elseif is_paisley_bytecode(paisley_src) then
+		local bc = paisley_src
 		V1 = ''
 		require "src.compiler"
 		bytecode = json.parse(bc)
 	else
-		--Re-add shebang to prevent incorrect line number reporting
-		V1 = m .. V1
 		--Compile program
 		require "src.compiler"
 	end
