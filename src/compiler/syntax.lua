@@ -985,7 +985,7 @@ local rules = {
 
 			token.value = {}
 			for i = 1, #kids do
-				if kids[i].id ~= TOK.text and (kids[i].id ~= TOK.string_open or not kids[i].children or #kids[i].children > 1 or #kids[i].children[1].id ~= TOK.text) then
+				if kids[i].id ~= TOK.text and (kids[i].id ~= TOK.string_open or not kids[i].children or #kids[i].children > 1 or kids[i].children[1].id ~= TOK.text) then
 					parse_error(kids[i].span,
 						'All parameters to `' .. token.text .. '` statement must be non-empty string literals', file)
 				else
