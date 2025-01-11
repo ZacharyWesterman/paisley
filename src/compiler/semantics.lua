@@ -1422,7 +1422,7 @@ function SemanticAnalyzer(tokens, root_file)
 				local expr = kids[i].children[1]
 				if expr.id == TOK.comparison then expr.in_match = true end
 			end
-		elseif not token.in_match then
+		elseif not token.in_match and #token.children < 2 then
 			parse_error(token.span, 'Operator `' .. token.text .. '` expected 2 operands, but got 1', file)
 		end
 	end)
