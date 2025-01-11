@@ -58,7 +58,7 @@ json = {
 					local ct = 0
 					for key, value in pairs(data) do
 						local str = __stringify(tostring(key), indent, next_indent) ..
-						colon .. __stringify(value, indent, next_indent)
+							colon .. __stringify(value, indent, next_indent)
 						if indent ~= nil then
 							if ct > 0 then result = result .. ',\n' end
 							result = result .. (' '):rep(next_indent) .. str
@@ -210,8 +210,12 @@ json = {
 				table.insert(tokens, newtoken(nil, _tok.literal))
 				i = i + 3
 			else
-				local num = text:match('^%-?%d+%.?%d*', i)
-				if num == nil then
+				local num = text:match('^%-?%d+%.?%d*[eE][-+]?%d+', i)
+				if not num then
+					num = text:match('^%-?%d+%.?%d*', i)
+				end
+
+				if not num then
 					return do_error('Invalid character "' .. chr .. '".')
 				else
 					table.insert(tokens, newtoken(tonumber(num), _tok.literal))
@@ -266,7 +270,7 @@ json = {
 						i = i + 1
 					elseif this_token.kind ~= _tok.rbracket then
 						return lex_error(this_token, 'Unexpected token "' .. this_token.value ..
-						'" (expected "," or "]").')
+							'" (expected "," or "]").')
 					end
 					i = i + 1
 					this_token = tokens[i]
@@ -296,7 +300,7 @@ json = {
 						i = i + 1
 					elseif this_token.kind ~= _tok.rbrace then
 						return lex_error(this_token, 'Unexpected token "' .. this_token.value ..
-						'" (expected "," or "}").')
+							'" (expected "," or "}").')
 					end
 					i = i + 1
 					this_token = tokens[i]
