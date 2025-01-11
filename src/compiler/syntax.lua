@@ -373,6 +373,21 @@ local rules = {
 		end,
 		not_after = { TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod },
 	},
+	--Special logical comparison with only an RHS operand.
+	--This is only for use in "match" statements,
+	--where the LHS operand is implied to be the match expression.
+	{
+		match = { { TOK.expr_open }, { TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne, TOK.op_like }, { TOK.boolean, TOK.comparison }, { TOK.expr_close } },
+		id = TOK.comparison,
+		keep = { 3 },
+		text = 2,
+		---@param token Token
+		---@param file string?
+		onmatch = function(token, file)
+			if token.text == '~=' then token.text = '!=' end
+			if token.text == '=' then token.text = '==' end
+		end,
+	},
 	{
 		match = { { TOK.boolean, TOK.length } },
 		id = TOK.comparison,

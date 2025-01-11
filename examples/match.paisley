@@ -1,0 +1,6 @@
+let x = {random_int(1,100)}
+
+match {x} do
+    if {>= 70} then print {x} is high end
+    if {<= 30} then print {x} is low end
+else print {x} is average end

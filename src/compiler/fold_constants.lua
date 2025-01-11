@@ -214,6 +214,9 @@ function FOLD_CONSTANTS(token, file)
 		token.text = tostring(result)
 		token.id = TOK.lit_number
 	elseif token.id == TOK.comparison then
+		--Can't fold constants for "match" top-level comparisons
+		if not c2 then return end
+
 		local result
 		if operator == '==' then
 			result = c1.value == c2.value
@@ -403,7 +406,7 @@ function FOLD_CONSTANTS(token, file)
 			token.reduce_array_concat = true --If a slice operator is nested in an array_concat operation, merge the arrays
 		elseif stop - start >= std.MAX_ARRAY_LEN then
 			local msg = 'Attempt to create an array of ' ..
-			(stop - start + 1) .. ' elements (max is ' .. std.MAX_ARRAY_LEN .. '). Array truncated.'
+				(stop - start + 1) .. ' elements (max is ' .. std.MAX_ARRAY_LEN .. '). Array truncated.'
 			--[[minify-delete]]
 			if _G['LANGUAGE_SERVER'] then
 				INFO.warning(token.span, msg, file)

@@ -159,6 +159,7 @@ require "src.compiler.span"
 ---@field is_referenced boolean? Whether this subroutine token is referenced. Only defined on subroutine and variable definitions.
 ---@field memoize boolean? If true, memoize (cache) calls to this subroutine.
 ---@field filename string? The name of the file that this token came from.
+---@field in_match boolean? If true, this is a boolean operator directly inside a "match" statement
 Token = {}
 
 --[[minify-delete]]

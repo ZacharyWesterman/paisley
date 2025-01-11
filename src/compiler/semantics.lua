@@ -1409,6 +1409,24 @@ function SemanticAnalyzer(tokens, root_file)
 	end
 	--[[/minify-delete]]
 
+	--Make sure that comparisons that aren't directly under match statements
+	--always have two operands
+	recurse(root, { TOK.match_stmt, TOK.comparison }, function(token, file)
+		if token.id == TOK.match_stmt then
+			local body = token.children[2]
+			local kids = body.children
+			if not kids then return end
+			if body.id == TOK.if_stmt then kids = { body } end
+
+			for i = 1, #kids do
+				local expr = kids[i].children[1]
+				if expr.id == TOK.comparison then expr.in_match = true end
+			end
+		elseif not token.in_match then
+			parse_error(token.span, 'Operator `' .. token.text .. '` expected 2 operands, but got 1', file)
+		end
+	end)
+
 	--Restructure match statements into an equivalent if/elif/else block.
 	recurse(root, { TOK.match_stmt }, function(token, file)
 		local iter = { token.children[2] }
@@ -1454,15 +1472,22 @@ function SemanticAnalyzer(tokens, root_file)
 				}
 			end
 
-			else_branch.children[1] = {
-				id = TOK.comparison,
-				text = '==',
-				span = else_branch.children[1].span,
-				children = {
-					compare_node,
-					else_branch.children[1],
-				},
-			}
+			local else_node = else_branch.children[1]
+			if else_node.id == TOK.comparison and #else_node.children < 2 then
+				--Handle special fuzzy match syntax like "if {> expr} then ... end", etc.
+				table.insert(else_node.children, 1, compare_node)
+			else
+				--Default behavior is to insert "==" operator.
+				else_branch.children[1] = {
+					id = TOK.comparison,
+					text = '==',
+					span = else_node.span,
+					children = {
+						compare_node,
+						else_node,
+					},
+				}
+			end
 		end
 
 		if constant then

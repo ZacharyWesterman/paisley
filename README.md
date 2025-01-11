@@ -73,10 +73,16 @@ For example:
 match {random_int(1,5)} do
 	if 1 then print one end
 	if 2 then print two end
+	if {> 4} then print 4 or 5 end
+	if {like '%d+'} then error "it's a string?!" end
 else
 	print "some other number"
 end
 ```
+Note how, inside match statements, the top-level boolean operators (`=`, `!=`, `>`, `<`, `>=`, `<=`, `like`) don't have a left operand.
+Instead, the left operand is implied to be the value of the match expression.
+If the operator is left out, then `=` is implied. e.g. `{3}` is the same as `{=3}`.
+
 Of course, like `if` statements, the `else` branch is optional and can be excluded.
 
 ## Loops:
