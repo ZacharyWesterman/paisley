@@ -149,13 +149,82 @@ local dedent_tokens = {
 	[TOK.kwd_end] = true,
 }
 
-io.write('>>> ')
-io.flush()
 local token_cache = {}
 local subroutine_cache = {} --Keep cache of all subroutines the user creates
 local lexer, append_text = Lexer('')
 
-for input_line in function() return io.read('*l') end do
+local curses_installed, curses = pcall(require, 'curses')
+
+--Default readline, used when curses is not installed
+local function readline()
+	return io.read('*l')
+end
+local function printf(text)
+	io.write(text)
+	io.flush()
+end
+print = function(text)
+	printf(text .. '\n')
+end
+
+
+--If curses is installed, use that for REPL
+--It gives better terminal control
+if curses_installed then
+	local stdscr = curses.initscr()
+	curses.echo(false)
+
+	readline = function()
+		local text = ''
+		local y0, x0 = stdscr:getyx()
+
+		while true do
+			local c = stdscr:getch()
+
+			if c == 127 then
+				--Backspace
+			elseif c == 27 then
+				--Special keys
+				local k1, k2 = stdscr:getch(), stdscr:getch()
+				if k1 == 91 and k2 == 68 then
+					--left arrow
+					local _, x = stdscr:getyx()
+					x = math.max(x0, x - 1)
+					stdscr:move(y0, x)
+				elseif k1 == 91 and k2 == 67 then
+					--right arrow
+					local _, x = stdscr:getyx()
+					x = math.min(x0 + #text, x + 1)
+					stdscr:move(y0, x)
+				else
+					printf('CTRL[' .. k1 .. ',' .. k2 .. ']')
+				end
+			elseif c < 256 then
+				--Regular characters
+				c = string.char(c)
+				if c == '\n' then break end
+				printf(c)
+				text = text .. c
+			else
+				return nil
+			end
+		end
+
+		stdscr:move(y0 + 1, 0)
+		return text
+	end
+
+	printf = function(text)
+		stdscr:addstr(text)
+	end
+end
+
+
+printf('Paisley ' .. _G['VERSION'] .. ' interactive REPL.\n')
+printf('Type `stop` or press Ctrl-D to quit.\n')
+printf('>>> ')
+
+for input_line in readline do
 	ERRORED = false
 	SHOW_MULTIPLE_ERRORS = true
 
@@ -171,8 +240,7 @@ for input_line in function() return io.read('*l') end do
 	end
 
 	if indent > 0 then
-		io.write('... ')
-		io.flush()
+		printf('... ')
 	elseif not ERRORED then
 		--Make sure braces match up (since we disabled their context in the lexer)
 		local braces = {}
@@ -263,8 +331,7 @@ for input_line in function() return io.read('*l') end do
 
 		--Done running, wait ont next line
 		token_cache = {}
-		io.write('>>> ')
-		io.flush()
+		printf('>>> ')
 	end
 end
 print()

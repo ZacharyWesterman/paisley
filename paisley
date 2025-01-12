@@ -106,7 +106,7 @@ end
 local lfs_installed, lfs = pcall(require, 'lfs')
 local zlib_installed, zlib = pcall(require, 'zlib')
 
-local VERSION = --[[build-replace=version.txt]] io.open(dir .. 'version.txt'):read() --[[/build-replace]]
+VERSION = --[[build-replace=version.txt]] io.open(dir .. 'version.txt'):read() --[[/build-replace]]
 local HELPTEXT = --[[build-replace=helptext.txt]] io.open(dir .. 'helptext.txt'):read('*all'):gsub('[\r\n]+$', ''):gsub(
 	'^[\r\n]+', '') --[[/build-replace]]
 
@@ -377,9 +377,6 @@ if ZLIB_COMPRESS and not zlib_installed then
 end
 
 if not ENDED and REPL then
-	print('Paisley ' .. VERSION .. ' interactive REPL.')
-	print('Type `stop` or press Ctrl-D to quit.')
-
 	require "src.repl"
 	ENDED = true
 end
