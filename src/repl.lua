@@ -30,6 +30,10 @@ local CMD_LAST_RESULT = {
 	['!'] = nil, --result of execution
 }
 
+local function clear()
+	os.execute('clear')
+end
+
 function output(value, port)
 	if port == 1 then
 		--continue program
@@ -69,11 +73,23 @@ function output(value, port)
 			V5 = sec_since_midnight --command return value
 		end
 	elseif port == 7 then
-		--Print text or error
-		table.remove(value, 1)
-		print(std.str(value))
-		io.flush()
 		V5 = nil
+		--Print text or error
+		local cmd = value[1]
+		table.remove(value, 1)
+		local args = std.str(value)
+		if cmd == 'stdout' then
+			io.write(args)
+		elseif cmd == 'stderr' then
+			io.write(io.stderr, args)
+		elseif cmd == 'stdin' then
+			V5 = io.read('*l')
+		elseif cmd == 'clear' then
+			clear()
+		else
+			print(args)
+		end
+		io.flush()
 	elseif port == 8 then
 		--value is current line number
 	elseif port == 9 then
@@ -515,6 +531,10 @@ if curses_installed then
 		if color then stdscr:attron(curses.color_pair(color)) end
 		stdscr:addstr(text)
 		if color then stdscr:attroff(curses.color_pair(color)) end
+	end
+
+	clear = function()
+		stdscr:clear()
 	end
 end
 

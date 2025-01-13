@@ -7,6 +7,7 @@ BUILTIN_COMMANDS = {
 	"sysdate:array[number]",
 	--[[minify-delete]]
 	--The following commands are only available in the CLI version of Paisley
+	"clear:null",
 	"stdin:string",
 	"stdout:null",
 	"stderr:null",
@@ -24,6 +25,7 @@ CMD_DESCRIPTION = {
 	error = 'Send all arguments to the "error" output.',
 	sleep = 'Pause script execution for the given amount of seconds.',
 	--The following commands are only available in the CLI version of Paisley
+	clear = 'Clear the screen if the terminal supports it.',
 	stdin = 'Read a line of text from stdin.',
 	stdout = 'Write text to stdout, with no line ending.',
 	stderr = 'Write text to stderr, with no line ending.',
@@ -51,6 +53,7 @@ ALLOWED_COMMANDS = _explode(ALLOWED_COMMANDS)
 --[[minify-delete]]
 function PLASMA_RESTRICT()
 	RESTRICT_TO_PLASMA_BUILD = true
+	BUILTIN_COMMANDS['clear'] = nil
 	BUILTIN_COMMANDS['stdin'] = nil
 	BUILTIN_COMMANDS['stdout'] = nil
 	BUILTIN_COMMANDS['stderr'] = nil

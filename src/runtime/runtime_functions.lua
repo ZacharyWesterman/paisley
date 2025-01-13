@@ -1232,7 +1232,7 @@ COMMANDS = {
 				output(1, 6)
 			elseif cmd_name == 'sysdate' then
 				output(2, 6)
-			elseif cmd_name == 'print' --[[minify-delete]] or cmd_name == 'stdin' or cmd_name == 'stdout' or cmd_name == 'stderr' --[[/minify-delete]] then
+			elseif cmd_name == 'print' --[[minify-delete]] or cmd_name == 'stdin' or cmd_name == 'stdout' or cmd_name == 'stderr' or cmd_name == 'clear' --[[/minify-delete]] then
 				table.remove(command_array, 1)
 				local msg = std.join(command_array, ' ')
 				output_array({ cmd_name, msg }, 7)

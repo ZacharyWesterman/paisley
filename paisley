@@ -648,6 +648,8 @@ if not ENDED and not LANGUAGE_SERVER and bytecode ~= nil then
 				io.write(io.stderr, args)
 			elseif cmd == 'stdin' then
 				V5 = io.read('*l')
+			elseif cmd == 'clear' then
+				os.execute('clear')
 			else
 				print(args)
 			end
