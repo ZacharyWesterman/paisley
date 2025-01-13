@@ -211,6 +211,8 @@ if curses_installed then
 		literal = colors.cyan,
 		operator = colors.orange,
 		command = colors.blue,
+		funccall = colors.yellow,
+		error = colors.red,
 	}
 
 	if curses.has_colors() then
@@ -340,9 +342,22 @@ if curses_installed then
 					if match then printf(match, entity.comment) end
 				end
 
+				--Function calls
+				if not match then
+					match = text:match('^[%w_]+%s*%(')
+					if match then
+						match = match:match('^[%w_]+')
+						if BUILTIN_FUNCS[match] then
+							printf(match, entity.funccall)
+						else
+							printf(match, entity.error)
+						end
+					end
+				end
+
 				--Literals and keyword operators
 				if not match then
-					match = text:match('^%w+')
+					match = text:match('^[%w_]+')
 					if match then
 						if literals[match] then
 							printf(match, entity.literal)
