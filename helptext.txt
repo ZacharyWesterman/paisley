@@ -31,6 +31,7 @@ FLAGS:
                            systems that don't have Paisley or Lua installed.
     -cs,--compress-standalone Compress the above standalone program if possible.
     -l, --shell            Allow unrecognized commands to coerce to shell exec
+        --rocks            List the recommended Lua packages to be installed
 
 ARGS:
     <input>    The input file. Replace with `-` to read from stdin.

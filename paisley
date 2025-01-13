@@ -189,6 +189,23 @@ for i, v in ipairs(arg) do
 			NO_SHORTCUT = true
 		elseif v == '--shell' or v == '-l' then
 			COERCE_SHELL_CMDS = true
+		elseif v == '--rocks' then
+			io.stderr:write('For best results, install the following Lua rocks:\n')
+
+			local text = --[[build-replace=requires.txt]] io.open(dir .. 'requires.txt'):read('*all') --[[/build-replace]]
+			local args = ''
+			for l in text:gmatch('[^\n]+') do
+				i = l:match('^[^ ]+')
+				print(i)
+				args = args .. ' ' .. i
+			end
+
+			io.stderr:write('\nNone of these are required for the Paisley compiler to work,\n')
+			io.stderr:write('but some extra features will be disabled if they\'re not installed.\n')
+			io.stderr:write('\nYou can use the following command to install them all:\n')
+			io.stderr:write('  luarocks install' .. args .. '\n')
+			io.stderr:write('Or, if you\'re on Linux, you can just run `./install.sh`\n')
+			os.exit(0)
 		else
 			error('Unknown flag `' .. v .. '`. Try running with `--help` to see all options.')
 		end
