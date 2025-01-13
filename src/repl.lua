@@ -233,8 +233,16 @@ if curses_installed then
 		end
 	end
 
+	local scopes = {}
+
+	local pe = parse_error
+	---@diagnostic disable-next-line
+	parse_error = function(span, msg, file)
+		scopes = {}
+		pe(span, msg, file)
+	end
+
 	local function printfmt(text)
-		local scopes = {}
 		local cmd_found = false
 
 		while #text > 0 do
@@ -281,7 +289,7 @@ if curses_installed then
 				if scope == '$' and not match and text:sub(1, 1) == '}' then
 					match = text:sub(1, 1)
 					printf(match, entity.braces)
-					table.remove(scopes)
+					if #scopes > 0 then table.remove(scopes) end
 				end
 
 				--Expression / command eval scope enter
@@ -315,7 +323,7 @@ if curses_installed then
 					end
 
 					if match == scope then
-						table.remove(scopes)
+						if #scopes > 0 then table.remove(scopes) end
 					end
 				end
 			elseif scope == '{' then
@@ -367,7 +375,7 @@ if curses_installed then
 				if not match and text:sub(1, 1) == '}' then
 					match = text:sub(1, 1)
 					printf(match, entity.braces)
-					table.remove(scopes)
+					if #scopes > 0 then table.remove(scopes) end
 				end
 				--Expression / command eval scope enter
 				if not match then
@@ -587,6 +595,13 @@ for input_line in readline do
 		end
 
 		--Done running, wait ont next line
+		if not ERRORED then
+			token_cache = {}
+			prompt(false)
+		end
+	end
+
+	if ERRORED then
 		token_cache = {}
 		prompt(false)
 	end

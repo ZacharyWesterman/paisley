@@ -462,7 +462,6 @@ function Lexer(text, file)
 						--Hack to get REPL version to not loop forever
 						if _G['REPL'] then
 							this_chr = curr_scope
-							ERRORED = false
 						end
 						--[[/minify-delete]]
 					end
