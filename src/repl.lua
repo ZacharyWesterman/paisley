@@ -198,16 +198,18 @@ if curses_installed then
 		aqua = 14,
 		white = 15,
 		cyan = 51,
+		orange = 172,
 	}
 
 	local entity = {
-		keyword = colors.blue,
+		keyword = colors.purple,
 		comment = colors.gray,
 		string = colors.green,
 		escape = colors.cyan,
 		braces = colors.white,
 		literal = colors.cyan,
-		operator = colors.purple,
+		operator = colors.orange,
+		command = colors.blue,
 	}
 
 	if curses.has_colors() then
@@ -233,6 +235,7 @@ if curses_installed then
 
 	local function printfmt(text)
 		local scopes = {}
+		local cmd_found = false
 
 		while #text > 0 do
 			local match = nil
@@ -245,14 +248,22 @@ if curses_installed then
 					if match then printf(match, entity.comment) end
 				end
 
-				--Keywords
+				--Keywords, and first command param
 				if not match then
-					match = text:match('^%w+')
+					match = text:match('^[^\'"%$%{%} \t#;]+')
 					if match then
 						if (scope and match == 'gosub') or (not scope and (kwds[match] or match == 'define')) then
+							cmd_found = true
+							if match == 'end' or match == 'then' or match == 'do' then
+								cmd_found = false
+							end
+
 							printf(match, entity.keyword)
+						elseif not cmd_found then
+							cmd_found = true
+							printf(match, entity.command)
 						else
-							printf(match)
+							match = nil
 						end
 					end
 				end
@@ -319,7 +330,7 @@ if curses_installed then
 					match = text:match('^%w+')
 					if match then
 						if literals[match] then
-							printf(entity.literal)
+							printf(match, entity.literal)
 						elseif opers[match] then
 							printf(match, entity.operator)
 						else
@@ -370,7 +381,15 @@ if curses_installed then
 
 			if not match then
 				match = text:sub(1, 1)
-				stdscr:addstr(match)
+
+				if match ~= ' ' and match ~= '\t' then cmd_found = true end
+
+				if scope ~= '"' and scope ~= "'" and match == ';' then
+					cmd_found = false
+					printf(match, entity.comment)
+				else
+					printf(match)
+				end
 			end
 
 			text = text:sub(#match + 1, #text)
@@ -426,17 +445,21 @@ if curses_installed then
 
 					stdscr:getch() --Extract the extra '~' that comes in.
 				else
-					printf('CTRL[' .. k1 .. ',' .. k2 .. ']')
+					--Some unknown control sequence
+					-- printf('CTRL[' .. k1 .. ',' .. k2 .. ']')
 				end
 			elseif c < 256 then
 				--Regular characters
 				c = string.char(c)
 				if c == '\n' then break end
-				text = text .. c
+
+
+				text = text:sub(1, x - x0) .. c .. text:sub(x - x0 + 1, #text)
 
 				--Reprint line so syntax highlighting is updated
 				stdscr:move(y0, x0)
 				printfmt(text)
+				stdscr:move(y0, x + 1)
 			else
 				return nil
 			end
