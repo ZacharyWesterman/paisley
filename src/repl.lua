@@ -233,17 +233,21 @@ if curses_installed then
 		end
 	end
 
-	local scopes = {}
+	local perm_scopes = {}
 
 	local pe = parse_error
 	---@diagnostic disable-next-line
 	parse_error = function(span, msg, file)
-		scopes = {}
+		perm_scopes = {}
 		pe(span, msg, file)
 	end
 
 	local function printfmt(text)
 		local cmd_found = false
+		local scopes = {}
+		for i = 1, #perm_scopes do
+			table.insert(scopes, perm_scopes[i])
+		end
 
 		while #text > 0 do
 			local match = nil
@@ -296,6 +300,7 @@ if curses_installed then
 				if not match then
 					match = text:match('^%$?%{')
 					if match then
+						if match == '${' then cmd_found = false end
 						printf(match, entity.braces)
 						table.insert(scopes, match:sub(1, 1))
 					end
@@ -304,6 +309,7 @@ if curses_installed then
 				--Expression / command eval scope enter
 				match = text:match('^%$?%{')
 				if match then
+					if match == '${' then cmd_found = false end
 					printf(match, entity.braces)
 					table.insert(scopes, match:sub(1, 1))
 				else
@@ -381,6 +387,7 @@ if curses_installed then
 				if not match then
 					match = text:match('^%$?%{')
 					if match then
+						if match == '${' then cmd_found = false end
 						printf(match, entity.braces)
 						table.insert(scopes, match:sub(1, 1))
 					end
@@ -402,11 +409,14 @@ if curses_installed then
 
 			text = text:sub(#match + 1, #text)
 		end
+
+		return scopes
 	end
 
 	readline = function()
 		local text = ''
 		local y0, x0 = stdscr:getyx()
+		local scopes = {}
 
 		while true do
 			local c = stdscr:getch()
@@ -423,7 +433,7 @@ if curses_installed then
 
 				--Reprint line so syntax highlighting is updated
 				stdscr:move(y0, x0)
-				printfmt(text .. ' ')
+				scopes = printfmt(text .. ' ')
 
 				x = math.max(x0, x - 1)
 				stdscr:move(y0, x)
@@ -446,7 +456,7 @@ if curses_installed then
 
 					--Reprint line so syntax highlighting is updated
 					stdscr:move(y0, x0)
-					printfmt(text .. ' ')
+					scopes = printfmt(text .. ' ')
 
 					x = math.max(x0, x)
 					stdscr:move(y0, x)
@@ -459,14 +469,16 @@ if curses_installed then
 			elseif c < 256 then
 				--Regular characters
 				c = string.char(c)
-				if c == '\n' then break end
-
+				if c == '\n' then
+					perm_scopes = scopes
+					break
+				end
 
 				text = text:sub(1, x - x0) .. c .. text:sub(x - x0 + 1, #text)
 
 				--Reprint line so syntax highlighting is updated
 				stdscr:move(y0, x0)
-				printfmt(text)
+				scopes = printfmt(text)
 				stdscr:move(y0, x + 1)
 			else
 				return nil
