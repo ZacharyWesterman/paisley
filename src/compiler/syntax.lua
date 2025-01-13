@@ -1303,7 +1303,9 @@ function SyntaxParser(tokens, file)
 			end
 
 			if (id and id ~= TOK.command and id ~= TOK.kwd_stop and id < TOK.program) or id == TOK.else_stmt or id == TOK.elif_stmt then
-				parse_error(Span:new(1, 1, 1, 1), 'Unexpected token "' .. new_tokens[1].text .. '"', file)
+				local t = new_tokens[1].text
+				if t == '\n' then t = '<newline>' else t = '"' .. t .. '"' end
+				parse_error(Span:new(1, 1, 1, 1), 'Unexpected token ' .. t, file)
 			end
 
 			tokens = new_tokens
@@ -1326,7 +1328,9 @@ function SyntaxParser(tokens, file)
 			end
 
 			local token = tokens[first_failure]
-			parse_error(token.span, 'Unexpected token "' .. token.text .. '"', file)
+			local t = token.text
+			if t == '\n' then t = '<newline>' else t = '"' .. t .. '"' end
+			parse_error(token.span, 'Unexpected token ' .. t, file)
 		end
 
 		tokens = new_tokens

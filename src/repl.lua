@@ -159,12 +159,19 @@ local curses_installed, curses = pcall(require, 'curses')
 local function readline()
 	return io.read('*l')
 end
-local function printf(text)
+local function printf(text, color)
 	io.write(text)
 	io.flush()
 end
 print = function(text)
 	printf(text .. '\n')
+end
+local function prompt(multiline)
+	if multiline then
+		printf('... ')
+	else
+		printf('>>> ')
+	end
 end
 
 
@@ -174,28 +181,118 @@ if curses_installed then
 	local stdscr = curses.initscr()
 	curses.echo(false)
 
+	local colors = {
+		red = 1,
+		green = 2,
+		yellow = 3,
+		blue = 4,
+		magenta = 5,
+		cyan = 6,
+		white = 7,
+		gray = 8,
+	}
+
+	if curses.has_colors() then
+		--Init colors
+		curses.start_color()
+		curses.use_default_colors()
+		for i = 0, curses.color_pairs() - 1 do
+			curses.init_pair(i, i, -1)
+		end
+
+		-- for i = 0, 50 do
+		-- 	stdscr:attron(curses.color_pair(i))
+		-- 	stdscr:addstr(i .. ' ')
+		-- 	stdscr:attroff(curses.color_pair(i))
+		-- end
+
+		prompt = function(multiline)
+			local text = '>>> '
+			if multiline then text = '... ' end
+			printf(text, colors.gray)
+		end
+	end
+
+	local function printfmt(text)
+		while #text > 0 do
+			local match = nil
+
+			--Comments
+			if not match then
+				match = text:match('^#.*')
+				if match then printf(match, colors.gray) end
+			end
+
+			--Keywords
+			if not match then
+				match = text:match('^%w+')
+				if match then
+					if kwds[match] then
+						printf(match, colors.magenta)
+					else
+						printf(match)
+					end
+				end
+			end
+
+
+			if not match then
+				match = text:sub(1, 1)
+				stdscr:addstr(match)
+			end
+
+			text = text:sub(#match + 1, #text)
+		end
+	end
+
 	readline = function()
 		local text = ''
 		local y0, x0 = stdscr:getyx()
 
 		while true do
 			local c = stdscr:getch()
+			local _, x = stdscr:getyx()
 
-			if c == 127 then
+			if c == 4 then
+				--Ctrl-D (EOF)
+				return nil
+			elseif c == 127 then
 				--Backspace
+				local before = text:sub(1, x - x0 - 1)
+				local after = text:sub(x - x0 + 1, #text)
+				text = before .. after
+
+				--Reprint line so syntax highlighting is updated
+				stdscr:move(y0, x0)
+				printfmt(text .. ' ')
+
+				x = math.max(x0, x - 1)
+				stdscr:move(y0, x)
 			elseif c == 27 then
 				--Special keys
 				local k1, k2 = stdscr:getch(), stdscr:getch()
 				if k1 == 91 and k2 == 68 then
 					--left arrow
-					local _, x = stdscr:getyx()
 					x = math.max(x0, x - 1)
 					stdscr:move(y0, x)
 				elseif k1 == 91 and k2 == 67 then
 					--right arrow
-					local _, x = stdscr:getyx()
 					x = math.min(x0 + #text, x + 1)
 					stdscr:move(y0, x)
+				elseif k1 == 91 and k2 == 51 then
+					--delete
+					local before = text:sub(1, x - x0)
+					local after = text:sub(x - x0 + 2, #text)
+					text = before .. after
+
+					--Reprint line so syntax highlighting is updated
+					stdscr:move(y0, x0)
+					printfmt(text .. ' ')
+
+					x = math.max(x0, x)
+					stdscr:move(y0, x)
+
+					stdscr:getch() --Extract the extra '~' that comes in.
 				else
 					printf('CTRL[' .. k1 .. ',' .. k2 .. ']')
 				end
@@ -203,8 +300,11 @@ if curses_installed then
 				--Regular characters
 				c = string.char(c)
 				if c == '\n' then break end
-				printf(c)
 				text = text .. c
+
+				--Reprint line so syntax highlighting is updated
+				stdscr:move(y0, x0)
+				printfmt(text)
 			else
 				return nil
 			end
@@ -214,15 +314,17 @@ if curses_installed then
 		return text
 	end
 
-	printf = function(text)
+	printf = function(text, color)
+		if color then stdscr:attron(curses.color_pair(color)) end
 		stdscr:addstr(text)
+		if color then stdscr:attroff(curses.color_pair(color)) end
 	end
 end
 
 
 printf('Paisley ' .. _G['VERSION'] .. ' interactive REPL.\n')
 printf('Type `stop` or press Ctrl-D to quit.\n')
-printf('>>> ')
+prompt(false)
 
 for input_line in readline do
 	ERRORED = false
@@ -240,7 +342,7 @@ for input_line in readline do
 	end
 
 	if indent > 0 then
-		printf('... ')
+		prompt(true)
 	elseif not ERRORED then
 		--Make sure braces match up (since we disabled their context in the lexer)
 		local braces = {}
@@ -331,7 +433,7 @@ for input_line in readline do
 
 		--Done running, wait ont next line
 		token_cache = {}
-		printf('>>> ')
+		prompt(false)
 	end
 end
 print()

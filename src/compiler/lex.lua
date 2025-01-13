@@ -1,7 +1,8 @@
 require "src.compiler.tokens"
 require "src.compiler.escape_codes"
 
-local kwds = {
+---@diagnostic disable-next-line
+kwds = {
 	['for'] = TOK.kwd_for,
 	['while'] = TOK.kwd_while,
 	['in'] = TOK.kwd_in,
@@ -27,7 +28,8 @@ local kwds = {
 	--[[minify-delete]]['require'] = TOK.kwd_import_file, --[[/minify-delete]]
 }
 
-local opers = {
+---@diagnostic disable-next-line
+opers = {
 	['for'] = TOK.kwd_for_expr,
 	['if'] = TOK.kwd_if_expr,
 	['else'] = TOK.kwd_else_expr,
