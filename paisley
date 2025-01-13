@@ -120,7 +120,24 @@ end
 require 'src.shared.json'
 require 'src.shared.stdlib'
 
-for i, v in ipairs(arg) do
+--Split up args
+local args = {}
+for _, v in ipairs(arg) do
+	if v ~= '-' and
+		v:sub(1, 1) == '-' and
+		v:sub(2, 2) ~= '-' and
+		v:sub(1, 3) ~= '-cs' and
+		v:sub(1, 3) ~= '-if' and
+		v:sub(1, 3) ~= '-ic' then
+		for i = 2, #v do
+			table.insert(args, '-' .. v:sub(i, i))
+		end
+	else
+		table.insert(args, v)
+	end
+end
+
+for _, v in ipairs(args) do
 	if v:sub(1, 1) == '-' and v ~= '-' then
 		if v:sub(1, 2) == '-c' then
 			table.insert(V3, v:sub(3, #v))
@@ -195,7 +212,7 @@ for i, v in ipairs(arg) do
 			local text = --[[build-replace=requires.txt]] io.open(dir .. 'requires.txt'):read('*all') --[[/build-replace]]
 			local args = ''
 			for l in text:gmatch('[^\n]+') do
-				i = l:match('^[^ ]+')
+				local i = l:match('^[^ ]+')
 				print(i)
 				args = args .. ' ' .. i
 			end
