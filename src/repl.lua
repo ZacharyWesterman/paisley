@@ -192,6 +192,12 @@ if curses_installed then
 		gray = 8,
 	}
 
+	local entity = {
+		keyword = colors.blue,
+		comment = colors.gray,
+		string = colors.green,
+	}
+
 	if curses.has_colors() then
 		--Init colors
 		curses.start_color()
@@ -220,17 +226,32 @@ if curses_installed then
 			--Comments
 			if not match then
 				match = text:match('^#.*')
-				if match then printf(match, colors.gray) end
+				if match then printf(match, entity.comment) end
 			end
 
 			--Keywords
 			if not match then
 				match = text:match('^%w+')
 				if match then
-					if kwds[match] then
-						printf(match, colors.magenta)
+					if kwds[match] or match == 'define' then
+						printf(match, entity.keyword)
 					else
 						printf(match)
+					end
+				end
+			end
+
+			--Strings
+			if not match then
+				match = text:match('^"[^"]*')
+				if match then
+					if text:sub(#match + 1, #match + 1) == '"' then match = match .. '"' end
+					printf(match, entity.string)
+				else
+					match = text:match("^'[^']*")
+					if match then
+						if text:sub(#match + 1, #match + 1) == "'" then match = match .. "'" end
+						printf(match, entity.string)
 					end
 				end
 			end
