@@ -182,20 +182,32 @@ if curses_installed then
 	curses.echo(false)
 
 	local colors = {
-		red = 1,
+		maroon = 1,
 		green = 2,
-		yellow = 3,
-		blue = 4,
-		magenta = 5,
-		cyan = 6,
-		white = 7,
+		olive = 3,
+		navy = 4,
+		purple = 5,
+		teal = 6,
+		silver = 7,
 		gray = 8,
+		red = 9,
+		lime = 10,
+		yellow = 11,
+		blue = 12,
+		magenta = 13,
+		aqua = 14,
+		white = 15,
+		cyan = 51,
 	}
 
 	local entity = {
 		keyword = colors.blue,
 		comment = colors.gray,
 		string = colors.green,
+		escape = colors.cyan,
+		braces = colors.white,
+		literal = colors.cyan,
+		operator = colors.purple,
 	}
 
 	if curses.has_colors() then
@@ -220,42 +232,141 @@ if curses_installed then
 	end
 
 	local function printfmt(text)
+		local scopes = {}
+
 		while #text > 0 do
 			local match = nil
+			local scope = scopes[#scopes]
 
-			--Comments
-			if not match then
-				match = text:match('^#.*')
-				if match then printf(match, entity.comment) end
-			end
+			if not scope or scope == '$' then
+				--Comments
+				if not match then
+					match = text:match('^#.*')
+					if match then printf(match, entity.comment) end
+				end
 
-			--Keywords
-			if not match then
-				match = text:match('^%w+')
-				if match then
-					if kwds[match] or match == 'define' then
-						printf(match, entity.keyword)
-					else
-						printf(match)
+				--Keywords
+				if not match then
+					match = text:match('^%w+')
+					if match then
+						if (scope and match == 'gosub') or (not scope and (kwds[match] or match == 'define')) then
+							printf(match, entity.keyword)
+						else
+							printf(match)
+						end
 					end
 				end
-			end
 
-			--Strings
-			if not match then
-				match = text:match('^"[^"]*')
-				if match then
-					if text:sub(#match + 1, #match + 1) == '"' then match = match .. '"' end
-					printf(match, entity.string)
-				else
-					match = text:match("^'[^']*")
+				--Strings
+				if not match then
+					match = text:match('^["\']')
 					if match then
-						if text:sub(#match + 1, #match + 1) == "'" then match = match .. "'" end
+						table.insert(scopes, match)
 						printf(match, entity.string)
 					end
 				end
-			end
 
+				--End inline command eval
+				if scope == '$' and not match and text:sub(1, 1) == '}' then
+					match = text:sub(1, 1)
+					printf(match, entity.braces)
+					table.remove(scopes)
+				end
+
+				--Expression / command eval scope enter
+				if not match then
+					match = text:match('^%$?%{')
+					if match then
+						printf(match, entity.braces)
+						table.insert(scopes, match:sub(1, 1))
+					end
+				end
+			elseif scope == '"' or scope == "'" then
+				--Expression / command eval scope enter
+				match = text:match('^%$?%{')
+				if match then
+					printf(match, entity.braces)
+					table.insert(scopes, match:sub(1, 1))
+				else
+					match = text:sub(1, 1)
+					if match == '\\' then
+						--Escape sequences
+						for k, v in pairs(ESCAPE_CODES) do
+							if text:sub(2, 1 + #k) == k then
+								match = text:sub(1, 1 + #k)
+								break
+							end
+						end
+
+						printf(match, entity.escape)
+					else
+						printf(match, entity.string)
+					end
+
+					if match == scope then
+						table.remove(scopes)
+					end
+				end
+			elseif scope == '{' then
+				--Comments
+				if not match then
+					match = text:match('^#.*')
+					if match then printf(match, entity.comment) end
+				end
+
+				--Literals and keyword operators
+				if not match then
+					match = text:match('^%w+')
+					if match then
+						if literals[match] then
+							printf(entity.literal)
+						elseif opers[match] then
+							printf(match, entity.operator)
+						else
+							printf(match)
+						end
+					end
+				end
+
+				--Non-keyword operators
+				if not match then
+					match = text:sub(1, 2)
+					if opers[match] then
+						printf(match, entity.operator)
+					else
+						match = text:sub(1, 1)
+						if opers[match] then
+							printf(match, entity.operator)
+						else
+							match = nil
+						end
+					end
+				end
+
+				--Strings
+				if not match then
+					match = text:match('^["\']')
+					if match then
+						table.insert(scopes, match)
+						printf(match, entity.string)
+					end
+				end
+
+				--Expression scope exit
+				if not match and text:sub(1, 1) == '}' then
+					match = text:sub(1, 1)
+					printf(match, entity.braces)
+					table.remove(scopes)
+				end
+				--Expression / command eval scope enter
+				if not match then
+					match = text:match('^%$?%{')
+					if match then
+						printf(match, entity.braces)
+						table.insert(scopes, match:sub(1, 1))
+					end
+				end
+			end
 
 			if not match then
 				match = text:sub(1, 1)

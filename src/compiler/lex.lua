@@ -69,7 +69,8 @@ local oper_block = {
 	['='] = { '=', '>' },
 }
 
-local literals = {
+---@diagnostic disable-next-line
+literals = {
 	['true'] = TOK.lit_boolean,
 	['false'] = TOK.lit_boolean,
 	['null'] = TOK.lit_null,
