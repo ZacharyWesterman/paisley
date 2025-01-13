@@ -180,6 +180,7 @@ end
 if curses_installed then
 	local stdscr = curses.initscr()
 	curses.echo(false)
+	stdscr:scrollok(true)
 
 	local colors = {
 		maroon = 1,
@@ -485,6 +486,7 @@ if curses_installed then
 			end
 		end
 
+		stdscr:addstr('\n')
 		stdscr:move(y0 + 1, 0)
 		return text
 	end
