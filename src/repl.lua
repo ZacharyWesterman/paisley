@@ -164,7 +164,11 @@ local function printf(text, color)
 	io.flush()
 end
 print = function(text)
-	printf(text .. '\n')
+	if text ~= nil then
+		printf(text .. '\n')
+	else
+		printf('\n')
+	end
 end
 local function prompt(multiline)
 	if multiline then
@@ -497,7 +501,8 @@ if curses_installed then
 				scopes = printfmt(text)
 				stdscr:move(y0, x + 1)
 			else
-				return nil
+				--Just ignore window events
+				-- return nil
 			end
 		end
 
