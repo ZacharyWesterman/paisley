@@ -291,10 +291,12 @@ function FOLD_CONSTANTS(token, file)
 		if c1.value ~= nil or c1.id == TOK.lit_null and (not c1.children or #c1.children == 0) then
 			if type(c1.value) ~= 'string' and type(c1.value) ~= 'table' then
 				parse_error(token.span, 'Length operator can only operate on strings and arrays', file)
+				token.value = #std.str(c1.value)
+			else
+				token.value = #c1.value
 			end
 
 			token.id = TOK.lit_number
-			token.value = #c1.value
 			token.text = tostring(token.value)
 			token.children = nil
 		end

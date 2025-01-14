@@ -1336,7 +1336,7 @@ function SemanticAnalyzer(tokens, root_file)
 			{ TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK
 				.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK
 				.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.variable, TOK.inline_command, TOK.command, TOK
-				.return_stmt, TOK.subroutine }, nil, type_checking)
+				.return_stmt, TOK.subroutine, TOK.length }, nil, type_checking)
 	end
 
 	--If running as language server, print type info for any variable declarations or command calls.
