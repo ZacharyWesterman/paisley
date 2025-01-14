@@ -346,7 +346,11 @@ if curses_installed then
 							end
 						end
 
-						printf(match, entity.escape)
+						if match == '\\' then
+							printf(match, entity.error)
+						else
+							printf(match, entity.escape)
+						end
 					else
 						printf(match, entity.string)
 					end
