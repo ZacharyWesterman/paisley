@@ -298,7 +298,7 @@ if curses_installed then
 							cmd_found = true
 							printf(match, entity.command)
 						else
-							match = nil
+							printf(match)
 						end
 					end
 				end
