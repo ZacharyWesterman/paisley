@@ -1,0 +1,41 @@
+# Create an array
+let array = {1, 2, 3, 4, 5}
+
+# Access elements
+print {array[1]}  # prints "1"
+print {array[3]}  # prints "3"
+
+# Modify elements
+let array{2} = 10  # array is now {1, 10, 3, 4, 5}
+let array{-1} = 20  # array is now {1, 10, 3, 4, 20}
+
+# Append elements
+let array{} = 30  # array is now {1, 10, 3, 4, 20, 30}
+
+let array = {1, 2, 3, 4, 5}
+
+# Iterate over array elements
+for value in {array} do
+    print {value}
+end
+
+# Iterate with index
+for index value in {pairs(array)} do
+    print "Index: {index}, Value: {value}"
+end
+
+# Sort an array
+let array = {5, 3, 1, 4, 2}
+let sorted_array = {sort(array)}
+print {sorted_array}  # prints "{1, 2, 3, 4, 5}"
+
+# Shuffle an array
+print {shuffle(array)} # prints something like "{3, 5, 1, 4, 2}"
+# Note that shuffling is the same as selecting
+# as many random elements as there are in the array.
+# (and under the hood, it's the exact same function)
+print {random_elements(array, &array)}
+
+# Reverse an array
+let reversed_array = {reverse(array)}
+print {reversed_array}  # prints "{2, 4, 1, 3, 5}"

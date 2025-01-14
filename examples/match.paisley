@@ -1,6 +1,56 @@
-let x = {random_int(1,100)}
+# The `match` block is a powerful tool for elegant pattern matching in Paisley.
+# It is similar to the `switch` statement in other languages, but with a more specific use case.
+# In particular, unlike `switch`, logic does not "fall through" from one case to the next.
+# Additionally, unlike `switch`, `match` can check for more than just equality; any boolean operation can be used.
 
-match {x} do
-    if {>= 70} then print {x} is high end
-    if {<= 30} then print {x} is low end
-else print {x} is average end
+# Here's an example that's most similar to a `switch` statement:
+let day = {random_int(1,7)}
+
+match {day} do
+    if 1 then print "Monday" end
+    if 2 then print "Tuesday" end
+    if 3 then print "Wednesday" end
+    if 4 then print "Thursday" end
+    if 5 then print "Friday" end
+    if 6 then print "Saturday" end
+    if 7 then print "Sunday" end
+else
+    print "Invalid day"
+end
+
+# But a match block can also do more fuzzy matching:
+let score = {random_int(40,100)}
+
+match {score} do
+    if {>= 90} then print "Grade: A" end
+    if {>= 80} then print "Grade: B" end
+    if {>= 70} then print "Grade: C" end
+    if {>= 60} then print "Grade: D" end
+else
+    print "Grade: F"
+end
+
+# And it can match against text patterns:
+let input = "hello123"
+
+match {input} do
+    if {like '^%d+$'} then print "Input contains only digits" end
+    if {like '^%a+$'} then print "Input contains only letters" end
+    if {like '^%w+$'} then print "Input contains only letters and digits" end
+else print "Input contains some non-letter and non-digit characters" end
+
+
+# Nested match blocks are of course possible:
+let weather = "sunny"
+let temperature = {random_int(0, 40)}
+
+match {weather} do
+    if "sunny" then
+        match {temperature} do
+            if {< 20} then print "It's a cool sunny day" end
+            if {>= 20} then print "It's a warm sunny day" end
+        else print "Temperature out of range" end
+    end
+    if "rainy" then print "It's a rainy day" end
+    if "cloudy" then print "It's a cloudy day" end
+else print "Unknown weather condition" end

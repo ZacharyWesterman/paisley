@@ -1,0 +1,43 @@
+# Create an object
+let object = {
+    'name' => 'Alice',
+    'age' => 30,
+    'city' => 'Wonderland'
+}
+
+# Access properties
+print {object['name']}  # prints "Alice"
+print {object.age}  # prints "30"
+
+# Modify properties
+let object{'age'} = 31  # object is now {'name' => 'Alice', 'age' => 31, 'city' => 'Wonderland'}
+let object{'city'} = 'New Wonderland'  # object is now {'name' => 'Alice', 'age' => 31, 'city' => 'New Wonderland'}
+
+print{object.json_encode(true)} # Pretty-print the object as JSON
+
+# Iterate over object properties
+for key value in {pairs(object)} do
+    print "{key}: {value}"
+end
+
+# Create a nested object
+# Note that inside the initial braces {...} block, braces or parentheses are interchangeable.
+let person = {
+    'name' => 'Alice',
+    'age' => 30,
+    'address' => (
+        'city' => 'Wonderland',
+        'zipcode' => '12345'
+    ),
+    'hobbies' => {'reading', 'chess', 'gardening'}
+}
+
+# Access nested properties
+print {person.address.city}  # prints "Wonderland"
+print {person.hobbies[2]}  # prints "chess"
+
+# Modify nested properties
+let person{'address', 'zipcode'} = '54321'  # person.address.zipcode is now '54321'
+let person{'hobbies', 1} = 'writing'  # person.hobbies is now {'writing', 'chess', 'gardening'}
+
+print{json_encode(person, true)} # Pretty-print the object as JSON

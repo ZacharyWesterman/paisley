@@ -1,0 +1,29 @@
+# Create an object
+let object = {
+    'name' => 'Alice',
+    'age' => 30,
+    'city' => 'Wonderland',
+}
+
+# You could split the object into its keys and values, then interleave the values into a new array:
+let keys = {keys(object)}
+let values = {values(object)}
+let data = {interleave(keys, values)}
+
+# But a simpler way is to convert the object to an array directly.
+# This does the same as the above three lines, but in one line.
+let data = {array(object)}
+
+# The resulting array will be ['name', 'Alice', 'age', 30, 'city', 'Wonderland']
+# In the Plasma build at least, this is a common format that object data will be sent and received in.
+print {json_encode(data, true)}  # Pretty-print the array as JSON
+
+# Reconstructing the object from the array is just as easy.
+let new_object = {object(data)}
+print {json_encode(new_object, true)}  # Pretty-print the object as JSON
+
+# Of course, you could also construct the object the long way, by iterating over the array.
+let new_object = {=>}
+for i in {i for i in 1:&data if i % 2 = 0} do
+    let new_object{data[i]} = {data[i + 1]}
+end
