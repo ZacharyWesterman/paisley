@@ -1092,6 +1092,20 @@ local rules = {
 			end
 		end,
 	},
+	{
+		match = { { TOK.kwd_try }, { TOK.program, TOK.command, TOK.statement }, { TOK.kwd_catch, TOK.catch_expr }, { TOK.kwd_end } },
+		id = TOK.try_stmt,
+		keep = { 2, 4, 3 },
+		text = 1,
+		onmatch = function(token, file)
+			local var = token.children[3]
+			if var.id == TOK.kwd_catch then
+				table.remove(token.children)
+			else
+				token.children[3] = var.children[1]
+			end
+		end,
+	},
 }
 
 --Build a table for quick rule lookup. This is a performance optimization

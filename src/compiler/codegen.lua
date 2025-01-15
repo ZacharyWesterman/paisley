@@ -1074,7 +1074,9 @@ function generate_bytecode(root, file)
 			end
 
 			--Run the catch block
-			enter(token.children[2])
+			if token.children[2].id ~= TOK.kwd_end then
+				enter(token.children[2])
+			end
 
 			emit(bc.label, end_label)
 		end,
