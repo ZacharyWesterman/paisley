@@ -26,6 +26,8 @@ kwds = {
 	['using'] = TOK.kwd_using,
 	['as'] = TOK.kwd_as,
 	--[[minify-delete]]['require'] = TOK.kwd_import_file, --[[/minify-delete]]
+	['try'] = TOK.kwd_try,
+	['catch'] = TOK.kwd_catch,
 }
 
 ---@diagnostic disable-next-line

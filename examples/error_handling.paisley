@@ -1,0 +1,5 @@
+try
+    error "This is an error"
+catch e
+    print "Caught an error: {e}"
+end

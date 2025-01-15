@@ -159,6 +159,7 @@ local indent_tokens = {
 	[TOK.kwd_elif] = true,
 	[TOK.kwd_subroutine] = true,
 	[TOK.expr_open] = true,
+	[TOK.kwd_try] = true,
 }
 local dedent_tokens = {
 	[TOK.expr_close] = true,
