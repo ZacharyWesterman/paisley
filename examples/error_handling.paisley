@@ -1,5 +1,7 @@
 try
     error "This is an error"
 catch e
-    print "Caught an error: {e}"
+    print "Caught an error: {e.message}"
 end
+
+print glontch

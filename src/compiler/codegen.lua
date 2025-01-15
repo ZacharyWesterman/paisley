@@ -17,6 +17,7 @@ local bc = {
 	get_cache_else_jump = 14,
 	set_cache = 15,
 	delete_cache = 16,
+	push_catch_loc = 17,
 }
 
 require "src.compiler.functions.codes"
@@ -1053,6 +1054,30 @@ function generate_bytecode(root, file)
 
 		--Ignore "using X as Y" statements
 		[TOK.alias_stmt] = function(token, file) end,
+
+		--CATCH ERRORS
+		[TOK.try_stmt] = function(token, file)
+			local catch_label = LABEL_ID()
+			local end_label = LABEL_ID()
+
+			emit(bc.push_catch_loc, catch_label)
+			enter(token.children[1]) --At run-time, any 'error' command will jump to the catch block
+			emit(bc.call, 'jump', end_label) --If no error, skip the catch block
+			emit(bc.label, catch_label)
+
+			--If we're assigning the error to a variable, do so.
+			--Othersise just ignore the error message.
+			if token.children[3] then
+				emit(bc.set, token.children[3].text)
+			else
+				emit(bc.pop)
+			end
+
+			--Run the catch block
+			enter(token.children[2])
+
+			emit(bc.label, end_label)
+		end,
 	}
 
 	enter(root)
@@ -1098,14 +1123,17 @@ function generate_bytecode(root, file)
 	for i = 1, #result2 do
 		local instr = result2[i]
 		--CLEAN OUT LABEL REFERENCES
-		if instr[1] == bc.call and (instr[3] == CALL_CODES.jump or instr[3] == CALL_CODES.jumpifnil or instr[3] == CALL_CODES.jumpiffalse) or instr[1] == bc.get_cache_else_jump then
-			if instr[4] ~= nil then
-				if labels[instr[4]] == nil then
+		if (instr[1] == bc.call and (instr[3] == CALL_CODES.jump or instr[3] == CALL_CODES.jumpifnil or instr[3] == CALL_CODES.jumpiffalse)) or instr[1] == bc.get_cache_else_jump or instr[1] == bc.push_catch_loc then
+			local ix = 4
+			if instr[1] ~= bc.call then ix = 3 end
+
+			if instr[ix] ~= nil then
+				if labels[instr[ix]] == nil then
 					parse_error(Span:new(instr[2], 0, instr[2], 0),
-						'COMPILER BUG: Attempt to reference unknown label of ID "' .. std.str(instr[4]) .. '"!', file)
+						'COMPILER BUG: Attempt to reference unknown label of ID "' .. std.str(instr[ix]) .. '"!', file)
 				end
 
-				instr[4] = labels[instr[4]] - 1
+				instr[ix] = labels[instr[ix]] - 1
 			end
 		end
 
