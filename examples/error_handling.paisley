@@ -1,7 +1,7 @@
 try
     error "This is an error"
 catch e
-    print "Caught an error: {e.message}"
+    print "Caught error: {e.json_encode()}"
 end
 
-print glontch
+print "after error"
