@@ -1097,7 +1097,6 @@ local rules = {
 --Build a table for quick rule lookup. This is a performance optimization
 --Check this lookup table for a rule id instead of looping over every rule every time
 local rule_lookup = {}
-local _i, _k, _rule, _id
 for _i, _rule in pairs(rules) do
 	for _k, _id in pairs(_rule.match[1]) do
 		if rule_lookup[_id] then
@@ -1120,8 +1119,6 @@ function SyntaxParser(tokens, file)
 		local this_token = tokens[index]
 		local group = rule.match[rule_index]
 
-		local _
-		local _t
 		for _, _t in ipairs(group) do
 			if (this_token.meta_id == nil and this_token.id == _t) or (this_token.meta_id == _t) then
 				return true
