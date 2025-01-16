@@ -454,7 +454,7 @@ local rules = {
 		match = { { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.comparison } },
 		id = TOK.command,
 		not_after_range = { TOK.expr_open, TOK.command }, --Command cannot come after anything in this range
-		not_after = { TOK.kwd_for, TOK.kwd_subroutine, TOK.kwd_if_expr, TOK.kwd_else_expr, TOK.var_assign, TOK.kwd_match, TOK.kwd_cache, TOK.kwd_using, TOK.kwd_as },
+		not_after = { TOK.kwd_for, TOK.kwd_subroutine, TOK.kwd_if_expr, TOK.kwd_else_expr, TOK.var_assign, TOK.kwd_match, TOK.kwd_cache, TOK.kwd_using, TOK.kwd_as, TOK.kwd_catch },
 		text = 'cmd',
 	},
 	{
@@ -866,7 +866,7 @@ local rules = {
 
 	--Statements
 	{
-		match = { { TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.match_stmt, TOK.uncache_stmt, TOK.alias_stmt } },
+		match = { { TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.delete_stmt, TOK.subroutine, TOK.gosub_stmt, TOK.return_stmt, TOK.continue_stmt, TOK.kwd_stop, TOK.break_stmt, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.match_stmt, TOK.uncache_stmt, TOK.alias_stmt, TOK.try_stmt } },
 		id = TOK.statement,
 		meta = true,
 	},
@@ -890,7 +890,7 @@ local rules = {
 		meta = true,
 	},
 	{
-		match = { { TOK.line_ending }, { TOK.command, TOK.program, TOK.statement, TOK.kwd_for, TOK.kwd_while, TOK.kwd_in, TOK.kwd_do, TOK.kwd_if, TOK.kwd_then, TOK.kwd_elif, TOK.kwd_else, TOK.kwd_end } },
+		match = { { TOK.line_ending }, { TOK.command, TOK.program, TOK.statement, TOK.kwd_for, TOK.kwd_while, TOK.kwd_in, TOK.kwd_do, TOK.kwd_if, TOK.kwd_then, TOK.kwd_elif, TOK.kwd_else, TOK.kwd_end, TOK.kwd_catch, TOK.catch_expr } },
 		id = TOK.program,
 		onmatch = function(token)
 			--Catch possible dead ends where line endings come before any commands.
@@ -1068,12 +1068,49 @@ local rules = {
 			end
 		end,
 	},
+
+	{
+		match = { { TOK.kwd_catch }, { TOK.text } },
+		id = TOK.catch_expr,
+		keep = { 2 },
+		text = 1,
+		onmatch = function(token, file)
+		end,
+	},
+
+	{
+		match = { { TOK.kwd_try }, { TOK.program, TOK.command, TOK.statement }, { TOK.kwd_catch, TOK.catch_expr }, { TOK.program, TOK.command, TOK.statement }, { TOK.kwd_end } },
+		id = TOK.try_stmt,
+		keep = { 2, 4, 3 },
+		text = 1,
+		onmatch = function(token, file)
+			local var = token.children[3]
+			if var.id == TOK.kwd_catch then
+				table.remove(token.children)
+			else
+				token.children[3] = var.children[1]
+			end
+		end,
+	},
+	{
+		match = { { TOK.kwd_try }, { TOK.program, TOK.command, TOK.statement }, { TOK.kwd_catch, TOK.catch_expr }, { TOK.kwd_end } },
+		id = TOK.try_stmt,
+		keep = { 2, 4, 3 },
+		text = 1,
+		onmatch = function(token, file)
+			local var = token.children[3]
+			if var.id == TOK.kwd_catch then
+				table.remove(token.children)
+			else
+				token.children[3] = var.children[1]
+			end
+		end,
+	},
 }
 
 --Build a table for quick rule lookup. This is a performance optimization
 --Check this lookup table for a rule id instead of looping over every rule every time
 local rule_lookup = {}
-local _i, _k, _rule, _id
 for _i, _rule in pairs(rules) do
 	for _k, _id in pairs(_rule.match[1]) do
 		if rule_lookup[_id] then
@@ -1096,8 +1133,6 @@ function SyntaxParser(tokens, file)
 		local this_token = tokens[index]
 		local group = rule.match[rule_index]
 
-		local _
-		local _t
 		for _, _t in ipairs(group) do
 			if (this_token.meta_id == nil and this_token.id == _t) or (this_token.meta_id == _t) then
 				return true

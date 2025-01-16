@@ -62,6 +62,7 @@ function INIT()
 		if not VARS then VARS = std.object() end
 	end
 	INSTR_STACK = {}
+	EXCEPT_STACK = {}
 	MEMOIZE_CACHE = std.object()
 	output(#INSTRUCTIONS, 1)
 end

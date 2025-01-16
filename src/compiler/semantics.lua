@@ -1081,6 +1081,10 @@ function SemanticAnalyzer(tokens, root_file)
 					end
 				end
 			end
+		elseif token.id == TOK.try_stmt then
+			if token.children[3] then
+				push_var(token.children[3], _G['TYPE_OBJECT'])
+			end
 		end
 	end
 
@@ -1221,7 +1225,7 @@ function SemanticAnalyzer(tokens, root_file)
 		['_VARS'] = {},
 	}
 	local this_var = nil
-	recurse(root, { TOK.var_assign, TOK.inline_command }, function(token, file)
+	recurse(root, { TOK.var_assign, TOK.inline_command, TOK.try_stmt }, function(token, file)
 		local ix = token.span.from
 		if token.id == TOK.var_assign then
 			this_var = token.text
@@ -1238,6 +1242,12 @@ function SemanticAnalyzer(tokens, root_file)
 
 			if not assigned_vars[this_var] then assigned_vars[this_var] = {} end
 			assigned_vars[this_var][ix.line .. '|' .. ix.col] = token
+		elseif token.id == TOK.try_stmt then
+			local var = token.children[3]
+			if var then
+				if not assigned_vars[var.text] then assigned_vars[var.text] = {} end
+				assigned_vars[var.text][ix.line .. '|' .. ix.col] = var
+			end
 		elseif this_var then
 			local cmd = nil
 			if token.children[1].id == TOK.command then cmd = token.children[1].children[1].text end
@@ -1248,7 +1258,7 @@ function SemanticAnalyzer(tokens, root_file)
 			end
 		end
 	end, function(token, file)
-		if token.id == TOK.var_assign then this_var = nil end
+		if token.id == TOK.var_assign or token.id == TOK.try_stmt then this_var = nil end
 	end)
 	recurse(root, { TOK.variable, TOK.list_comp }, function(token, file)
 		if token.id == TOK.list_comp then
@@ -1323,7 +1333,7 @@ function SemanticAnalyzer(tokens, root_file)
 
 		--Set any variables we can
 		if not ERRORED then
-			recurse(root, { TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.variable },
+			recurse(root, { TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.variable, TOK.try_stmt },
 				variable_assignment, variable_unassignment)
 		end
 

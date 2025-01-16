@@ -1238,10 +1238,39 @@ COMMANDS = {
 				output_array({ cmd_name, msg }, 7)
 			elseif cmd_name == 'error' then
 				table.remove(command_array, 1)
-				local msg = line .. ': ' .. std.join(command_array, ' ')
-				---@diagnostic disable-next-line
-				if file then msg = file .. ': ' .. msg end
-				output_array({ "error", msg }, 7)
+				local msg = std.join(command_array, ' ')
+
+				if #EXCEPT_STACK > 0 then
+					--if exception is caught, unroll the stack and return to the catch block
+
+					local err = std.object()
+					err.message = msg
+					err.stack = { line }
+
+					--Unroll program stack
+					local catch = table.remove(EXCEPT_STACK)
+					while #STACK > catch.stack do
+						table.remove(STACK)
+					end
+
+					--Unroll call stack
+					while #INSTR_STACK > catch.instr_stack do
+						table.remove(INSTR_STACK) --Remove any subroutine parameters
+						table.remove(INSTR_STACK) --Remove stack size value
+						local instr_id = table.remove(INSTR_STACK)
+						table.insert(err.stack, 1, INSTRUCTIONS[instr_id][2])
+					end
+					CURRENT_INSTRUCTION = catch.instr
+
+					err.line = table.remove(err.stack, 1)
+
+					PUSH(err)
+				else
+					--If exception is not caught, end the program immediately and output the error
+					CURRENT_INSTRUCTION = #INSTRUCTIONS + 1
+					msg = '[line ' .. line .. '] ' .. msg .. '\nError not caught, program terminated.'
+					output_array({ "error", 'ERROR: ' .. msg }, 7)
+				end
 
 				--[[minify-delete]]
 			elseif cmd_name == '!' or cmd_name == '?' then
@@ -1349,5 +1378,14 @@ COMMANDS = {
 	--DELETE VALUE FROM MEMOIZATION CACHE
 	[16] = function(line, p1, p2)
 		MEMOIZE_CACHE[p1] = nil
+	end,
+
+	--PUSH CATCH RETURN LOCATION ONTO EXCEPTION STACK
+	[17] = function(line, p1, p2)
+		table.insert(EXCEPT_STACK, {
+			instr = p1,
+			stack = #STACK,
+			instr_stack = #INSTR_STACK,
+		})
 	end,
 }
