@@ -27,7 +27,7 @@ The only use of line endings is to separate commands, which can also be done wit
 
 A Paisley script may consist of a series of comments, statements, and/or commands.
 - Comments begin with a `#` character and continue to the end of the line. There are no multi-line comments.
-- There are 5 types of statements: conditionals (if/else/elif), loops (for/while), variable assignment, subroutines, and miscellaneous statements (return/break/etc).
+- There are 5 types of statements: conditionals (if/else/elif/match/try), loops (for/while), variable assignment, subroutines, and miscellaneous statements (return/break/etc).
 - Any text that is not a keyword or otherwise part of a statement is considered a command. More on that later.
 
 Before continuing, note that commands do not have to be hard-coded. You can put expressions in them, such as
@@ -285,6 +285,30 @@ print {random_int(0, 100), random_int(0, 100), random_int(0, 100), random_int(0,
 ```
 
 Unlike variables, macros are restricted to their scope. Thus, for example, if you define a macro in a subroutine, you cannot use it outside the subroutine, unless that outside scope also has a macro definition with the same identifier.
+
+## Exceptions:
+Sometimes, parts of a program **will** fail, and the failure point is not always easy to predict. Many languages use exceptions to gracefully handle errors, and Paisley does so as well. To raise an exception, use the `error` command along with any message. And then to handle an exception, you can use a `try/catch` block, where the `catch` can have an optional variable to set.
+
+```
+subroutine this_errors
+	error "your error message"
+end
+
+try
+	gosub this_errors
+catch e
+	print {json_encode(e)}
+end
+```
+The output variable (in this case `e`) will always be an object that looks like the following:
+```
+{
+	"message": "your error message",
+	"line": 6,
+	"stack": [2] 
+}
+```
+Where `line` is the line where the exception was caught, and `stack` is the line numbers for the subroutine call stack.
 
 ## Other statements:
 - `break` or `break 1` or `break 2` etc, will exit as many while/for loops as are specified (defaults to 1 if not specified)
@@ -594,7 +618,7 @@ For ease of use and consistency, there are 6 built-in commands that will always 
 - `systime`: Returns a number representing the system time (seconds since midnight). Arguments are ignored.
 - `sysdate`: Returns a numeric array containing the system day, month, and year (in that order). Arguments are ignored.
 - `print`: Send all arguments to the "print" output, as well as to the internal log.
-- `error`: Send all arguments (plus line number and file, if applicable) to the "error" output, as well as to the internal warning log.
+- `error`: Send all arguments (plus line number and file, if applicable) to the "error" output, and terminates the program if not caught.
 - `sleep`: Pause script execution for the given amount of seconds. If the first argument is not a positive number, delay defaults to minimum value (0.02s).
 
 Note that all commands take a little bit of time to run (at least 0.02s), whether they're built-in or not. This is to prevent "infinite loop" errors or performance drops.
