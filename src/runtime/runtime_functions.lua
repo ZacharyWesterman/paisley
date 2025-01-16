@@ -1242,18 +1242,28 @@ COMMANDS = {
 
 				if #EXCEPT_STACK > 0 then
 					--if exception is caught, unroll the stack and return to the catch block
+
+					local err = std.object()
+					err.message = msg
+					err.stack = { line }
+
+					--Unroll program stack
 					local catch = table.remove(EXCEPT_STACK)
 					while #STACK > catch.stack do
 						table.remove(STACK)
 					end
+
+					--Unroll call stack
 					while #INSTR_STACK > catch.instr_stack do
-						table.remove(INSTR_STACK)
+						table.remove(INSTR_STACK) --Remove any subroutine parameters
+						table.remove(INSTR_STACK) --Remove stack size value
+						local instr_id = table.remove(INSTR_STACK)
+						table.insert(err.stack, 1, INSTRUCTIONS[instr_id][2])
 					end
 					CURRENT_INSTRUCTION = catch.instr
 
-					local err = std.object()
-					err.line = line
-					err.message = msg
+					err.line = table.remove(err.stack, 1)
+
 					PUSH(err)
 				else
 					--If exception is not caught, end the program immediately and output the error

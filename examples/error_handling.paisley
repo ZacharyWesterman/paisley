@@ -1,5 +1,13 @@
-try
+subroutine e
     error "This is an error"
+end
+
+subroutine f
+    gosub e
+end
+
+try
+    gosub f
 catch e
     print "Caught error: {e.json_encode()}"
 end
