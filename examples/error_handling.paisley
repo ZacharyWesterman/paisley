@@ -1,5 +1,5 @@
 subroutine e
-    error "This is an error"
+    error "This is an error."
 end
 
 subroutine f
@@ -12,4 +12,8 @@ catch e
     print "Caught error: {e.json_encode()}"
 end
 
-print "after error"
+print "Error handled."
+
+error "This error will end the program!"
+
+print "This will not be printed."
