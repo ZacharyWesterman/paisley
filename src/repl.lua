@@ -290,7 +290,7 @@ if curses_installed then
 					if match then
 						if (scope and match == 'gosub') or (not scope and (kwds[match] or match == 'define')) then
 							cmd_found = true
-							if match == 'end' or match == 'then' or match == 'do' then
+							if match == 'end' or match == 'then' or match == 'do' or match == 'try' then
 								cmd_found = false
 							end
 
