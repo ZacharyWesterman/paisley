@@ -26,9 +26,14 @@ ENDED = false
 
 local line_no = 0
 local CMD_LAST_RESULT = {
+	['='] = nil, --result of execution
 	['?'] = '', --stdout of command
-	['!'] = nil, --result of execution
+	['!'] = '', --stderr of command
+	['?!'] = '', --stdout and stderr of command
 }
+
+local TMP1 = '.paisley.program.tmp.stdout'
+local TMP2 = '.paisley.program.tmp.stderr'
 
 local function clear()
 	os.execute('clear')
@@ -101,23 +106,51 @@ function output(value, port)
 
 		--Run new unix command
 		CMD_LAST_RESULT = {
+			['='] = nil, --result of execution
 			['?'] = '', --stdout of command
-			['!'] = nil, --result of execution
+			['!'] = '', --stderr of command
+			['?!'] = '', --stdout and stderr of command
 		}
 
-		local program = io.popen(value[2] .. ' 2>&1', 'r')
-		if program then
-			local line = program:read('*l')
-			while line do
-				if value[1] ~= '?' then print(line) end
-				if #CMD_LAST_RESULT['?'] > 0 then line = '\n' .. line end
-				CMD_LAST_RESULT['?'] = CMD_LAST_RESULT['?'] .. line
+		local cmd = value[2]
 
-				line = program:read('*l')
+		--By default (both captured), both stdout and stderr will just go to temp files and not be streamed.
+		local pipe = cmd .. '2>' .. TMP2 .. ' 1>' .. TMP1
+		--If capturing stderr, then stderr will be in file, stdout will be streamed.
+		if value[1] == '!' then pipe = cmd .. '2>' .. TMP2 .. ' | tee ' .. TMP1 end
+		--If capturing stdout, then stdout will be in file, stderr will be streamed.
+		if value[1] == '?' then pipe = cmd .. '1>' .. TMP1 .. ' 2>&1 | tee ' .. TMP2 end
+		--If capturing neither, then both will be streamed.
+		if value[1] == '=' then pipe = '{ { ' .. cmd .. '; } | tee ' .. TMP1 .. '; } 2>&1 | tee ' .. TMP2 end
+
+		cmd = pipe
+
+		local program = io.popen(cmd, 'r')
+		if program then
+			local chr = program:read(1)
+			while chr do
+				io.stdout:write(chr)
+				chr = program:read(1)
 			end
 
-			---@diagnostic disable-next-line
-			CMD_LAST_RESULT['!'] = program:close()
+			--Read stream results from files
+			local stdout = io.open(TMP1, 'r')
+			local stderr = io.open(TMP2, 'r')
+			if stdout then
+				CMD_LAST_RESULT['?'] = stdout:read('*all')
+				stdout:close()
+				os.remove(TMP1)
+			end
+			if stderr then
+				CMD_LAST_RESULT['!'] = stderr:read('*all')
+				stderr:close()
+				os.remove(TMP2)
+			end
+			CMD_LAST_RESULT['?!'] = CMD_LAST_RESULT['?'] .. CMD_LAST_RESULT['!']
+
+			--Store exec result
+			CMD_LAST_RESULT['='] = program:close()
+			io.stdout:flush()
 		end
 
 		V5 = CMD_LAST_RESULT[value[1]]

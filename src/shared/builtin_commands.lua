@@ -11,8 +11,10 @@ BUILTIN_COMMANDS = {
 	"stdin:string",
 	"stdout:null",
 	"stderr:null",
-	"!:boolean",
+	"=:boolean",
 	"?:string",
+	"!:string",
+	"?!:string",
 	--[[/minify-delete]]
 }
 
@@ -29,9 +31,14 @@ CMD_DESCRIPTION = {
 	stdin = 'Read a line of text from stdin.',
 	stdout = 'Write text to stdout, with no line ending.',
 	stderr = 'Write text to stderr, with no line ending.',
-	['?'] = 'Execute a unix command, capturing the output. Run with no params to output the result of the last command.',
-	['!'] =
+	['='] =
 	'Execute a unix command, capturing the return value. Run with no params to output the result of the last command.',
+	['?'] =
+	'Execute a unix command, capturing the stdout output. Run with no params to output the result of the last command.',
+	['!'] =
+	'Execute a unix command, capturing the stderr output. Run with no params to output the result of the last command.',
+	['?!'] =
+	'Execute a unix command, capturing both the stdout and stderr output. Run with no params to output the result of the last command.',
 }
 --[[/minify-delete]]
 
@@ -57,8 +64,10 @@ function PLASMA_RESTRICT()
 	BUILTIN_COMMANDS['stdin'] = nil
 	BUILTIN_COMMANDS['stdout'] = nil
 	BUILTIN_COMMANDS['stderr'] = nil
-	BUILTIN_COMMANDS['!'] = nil
+	BUILTIN_COMMANDS['='] = nil
 	BUILTIN_COMMANDS['?'] = nil
+	BUILTIN_COMMANDS['!'] = nil
+	BUILTIN_COMMANDS['?!'] = nil
 end
 
 if _G['RESTRICT_TO_PLASMA_BUILD'] then

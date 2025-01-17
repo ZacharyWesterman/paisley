@@ -862,7 +862,7 @@ function SemanticAnalyzer(tokens, root_file)
 					--[[minify-delete]]
 					if _G['COERCE_SHELL_CMDS'] and not _G['RESTRICT_TO_PLASMA_BUILD'] then
 						--If bash extension is enabled, try to run a shell command
-						local bashcmd = '!'
+						local bashcmd = '='
 						if in_cmd_eval then bashcmd = '?' end
 
 						table.insert(token.children, 1, {

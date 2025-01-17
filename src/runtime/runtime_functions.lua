@@ -1273,7 +1273,7 @@ COMMANDS = {
 				end
 
 				--[[minify-delete]]
-			elseif cmd_name == '!' or cmd_name == '?' then
+			elseif cmd_name == '!' or cmd_name == '?' or cmd_name == '?!' or cmd_name == '=' then
 				table.remove(command_array, 1)
 				--Quote and escape all params, this will be run thru shell
 				local text = ''
