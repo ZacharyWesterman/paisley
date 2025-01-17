@@ -1127,7 +1127,7 @@ function generate_bytecode(root, file)
 		--CLEAN OUT LABEL REFERENCES
 		if (instr[1] == bc.call and (instr[3] == CALL_CODES.jump or instr[3] == CALL_CODES.jumpifnil or instr[3] == CALL_CODES.jumpiffalse)) or instr[1] == bc.get_cache_else_jump or instr[1] == bc.push_catch_loc then
 			local ix = 4
-			if instr[1] ~= bc.call then ix = 3 end
+			if instr[1] == bc.push_catch_loc then ix = 3 end
 
 			if instr[ix] ~= nil then
 				if labels[instr[ix]] == nil then
