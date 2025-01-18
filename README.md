@@ -32,7 +32,7 @@ This language is meant to make complex device logic very easy to implement, whil
 As a general rule, white space and line endings *do not matter* in Paisley.
 The only use of line endings is to separate commands, which can also be done with a semicolon `;` character.
 
-A Paisley script may consist of a series of comments, statements, and/or commands.
+A Paisley script may consist of a series of comments, statements, and commands.
 - Comments begin with a `#` character and continue to the end of the line. There are no multi-line comments.
 - There are 5 types of statements: conditionals (if/else/elif/match/try), loops (for/while), variable assignment, subroutines, and miscellaneous statements (return/break/etc).
 - Any text that is not a keyword or otherwise part of a statement is considered a command. More on that later.
@@ -63,7 +63,7 @@ if {expression is truey} else
 end
 ```
 
-Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression's trueness: false, null, zero, and empty strings, arrays and objects are falsey, everything else is truey.
+Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression's trueness: false, null, zero, empty strings, empty arrays and empty objects are all falsey, everything else is truey.
 
 There is also the `match` structure, which is similar to c-like languages' `switch/case` structure (or Rust's `match`). This structure is included to allow for more readable logic with less repeated code.
 ```
@@ -125,7 +125,7 @@ For example, consider the following:
 let var = 13
 var = 99
 ```
-The second line will **not** set var's value to 13. Instead, that would attempt to run a command called "var" with the parameters `["=", "99"]`.
+The second line will **NOT** set var's value to 13. Instead, that would attempt to run a command called "var" with the parameters `["=", "99"]`.
 
 Of course, sometimes a variable will contain an array that you don't want to overwrite, instead you just want to update a *single element* or *append* to the array.
 The following will result in var containing the array `(1, 2, 123, 4, 99)`. Note that giving negative values as the index will start counting from the end, so index of -1 will update the last element.
@@ -267,10 +267,10 @@ You can also alias subroutines according to a wildcard, if you end the subroutin
 ```
 subroutine sub1 end
 subroutine sub2 end
-alias sub* #Can now do `gosub 1` and `gosub 2`
-alias sub* as s* #Can now do `gosub s1` and `gosub s2`
-alias sub* as *s #Can now do `gosub 1s` and `gosub 2s`
-alias nonexistent.sub.* #Nothing happens unless at least 1 subroutine matches the pattern.
+using sub* as * #Can now do `gosub 1` and `gosub 2`
+using sub* as s* #Can now do `gosub s1` and `gosub s2`
+using sub* as *s #Can now do `gosub 1s` and `gosub 2s`
+using nonexistent.sub.* #Nothing happens unless at least 1 subroutine matches the pattern.
 ```
 Note that aliases do NOT work with dynamic gosubs; those require the full subroutine name, to avoid any ambiguity at runtime.
 
@@ -345,6 +345,7 @@ There are a few special escape sequences:
 - `\{` outputs a left curly brace.
 - `\}` outputs a right curly brace.
 - `\x` followed by any 2 hexadecimal digits outputs the respective byte.
+
 There are also a bunch of escape sequences that correspond to emoticons, included for convenience:
 - `\^-^` outputs `<sprite=0>`
 - `\:relaxed:` outputs `<sprite=0>`
@@ -389,19 +390,19 @@ Expressions also give access to a full suite of operators and functions, listed 
 - *integer* division, `//` (divide then round down)
 - remainder/modulo, `%`
 - exponentiation, `^`, e.g. `a^3` raises `a` to the 3rd power.
-- boolean operators, `and`, `or`, `xor`, `not`. Note that the `and` and `or` operators can short-cut, i.e. given an expression `a and b`, `b` is never evaluated if `a` is false.
+- boolean operators, `and`, `or`, `xor`, `not`. Note that the `and` and `or` operators can short-cut, i.e. given an expression `a and b`: if `a` is false, then the whole expression *can never be true*, so `b` is not even evaluated.
 - comparison, `>`, `>=`, `<`, `<=`
 - comparison (equality), `=` or `==` (both are the same)
 - comparison (not equal), `!=` or `~=` (both are the same)
 - check for whether variables are set, `exists` (e.g. `x exists`)
 - string or array length, `&` (e.g. `&variable`)
 - array slicing, `:`. Note that slices are inclusive of both their upper and lower bounds (e.g. `0:5` gives `(0,1,2,3,4,5)`)
-- array listing, `,` (e.g. `1,2,3` is an array with 3 elements, `(1,)` is an array with 1 element, `(,)` has 0 elements, etc). can combine this with slicing, e.g. `1,3:5,9` gives `(1,3,4,5,9)`.
+- array listing, `,` (e.g. `1,2,3` is an array with 3 elements, `(1,)` is an array with 1 element, `(,)` has 0 elements, etc). You can combine this with slicing, e.g. `1,3:5,9` gives `(1,3,4,5,9)`.
 - pattern matching, `like`, checks whether a string matches a given pattern (e.g. `"123" like "%d+"` gives `true`).
 - array searching `in` (e.g. `3 in (1,2,4,5,6)` gives `false`)
 - string concatenation: There is no string concatenation operator. Seriously, two values next to each other, without an operator between them, results in string concatenation.
 - ternary operator, `val1 if expression else val2`. Like Python's ternary syntax, this will result in `val1` if `expression` evaluates to true, otherwise it will result in `val2`.
-- Indexing, `[]`. Like most languages, this lets you get an element from a string, array, or object (e.g. `"string"[2]` gives "t", `('a','b','c')[3]` gives "c", and `('a'=>'v1', 'b'=>'v2')['a']` gives "v1"), however Paisley also lets you select multiple items at once in a single index expression. E.g. "abcde"[2,5,5] gives "bee", "abcde"[1:3] gives "abc", `(6,7,8,9,0)[3,1,5]` gives `(8,6,0)`.
+- Indexing, `[]`. Like most languages, this lets you get an element from a string, array, or object (e.g. `"string"[2]` gives "t", `('a','b','c')[3]` gives "c", and `('a'=>'v1', 'b'=>'v2')['a']` gives "v1"), however Paisley also lets you select multiple items at once in a single index expression. E.g. `"abcde"[2,5,5]` gives "bee", `"abcde"[1:3]` gives "abc", `(6,7,8,9,0)[3,1,5]` gives `(8,6,0)`.
 
 An extra note on slices: when slicing an array or a string, it's possible to replace the second number with a colon, to indicate that the slice should go from the start index all the way to the end of the string or array.
 So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` would result in `(4,3,2,1)`, etc.
@@ -428,7 +429,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Select a random element from a list: `random_element(array) -> any`
 - Select (non-repeating) random elements from a list: `random_elements(array, count) -> array`
 - Shuffle an array's elements into a random order: `shuffle(array) -> array`
-- Difference between two strings: `word_diff(str1, str2) -> number` (levenshtein distance)
+- Difference between two strings: `word_diff(str1, str2) -> number` ([Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance))
 - Euclidean distance (numbers or vectors of N dimension): `dist(point1, point2) -> number`
 - Trig functions: `sin(x), cos(x), tan(x), asin(x), acos(x), atan(x), atan2(x, y), sinh(x), cosh(x), tanh(x) -> number`
 - Square root: `sqrt(x) -> number`
@@ -444,7 +445,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Linear interpolation of two numbers: `lerp(ratio, start, stop) -> number`
 - Split string into array: `split(value, delimiter) -> array`. Note that unlike in Lua, the delimiter is just a string, not a pattern.
 - Merge array into string: `join(values, delimiter) -> string`
-- Count the number of occurrences a value in an array or string: `count(array/string, value) -> number`
+- Count the number of occurrences of a value in an array or string: `count(array/string, value) -> number`
 - Find the index of the nth occurrence of a value in an array or string: `find(array/string, value, n) -> number`. Returns 0 if not found.
 - Find the index of the first occurrence of a value in an array or string: `index(array/string, value) -> number`. Returns 0 if not found.
 - Get data type: `type(value) -> string`. Output will be one of "null", "boolean", "number", "string", "array", or "object"
