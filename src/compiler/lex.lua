@@ -593,7 +593,7 @@ function Lexer(text, file)
 				text = text:sub(#match + 1, #text)
 				if not tok_ignore then
 					--[[minify-delete]]
-					if EXPORT_NEXT_TOKEN then
+					if EXPORT_NEXT_TOKEN and tok_type ~= TOK.line_ending then
 						EXPORT_LINES[line] = true
 						EXPORT_NEXT_TOKEN = false
 					end
