@@ -1,7 +1,7 @@
 --List of possible bytecode instructions
 local bc = {
-	call = 0,
-	label = 1,
+	label = 0,
+	call = 1,
 	set = 2,
 	get = 3,
 	push = 4,

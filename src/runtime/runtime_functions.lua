@@ -1140,10 +1140,10 @@ local functions = {
 
 COMMANDS = {
 	--CALL
-	[0] = function(line, p1, p2) functions[p1 + 1](line, p2) end,
+	function(line, p1, p2) functions[p1 + 1](line, p2) end,
 
 	--SET VARIABLE
-	[2] = function(line, p1, p2)
+	function(line, p1, p2)
 		local v = POP()
 		if v == nil then
 			VARS[p1] = NULL
@@ -1153,7 +1153,7 @@ COMMANDS = {
 	end,
 
 	--GET VARIABLE
-	[3] = function(line, p1, p2)
+	function(line, p1, p2)
 		if p1 == '@' then
 			--List-of-params variable
 			if #INSTR_STACK > 0 then
@@ -1187,17 +1187,13 @@ COMMANDS = {
 	end,
 
 	--PUSH VALUE ONTO STACK
-	[4] = function(line, p1, p2)
-		PUSH(p1)
-	end,
+	function(line, p1, p2) PUSH(p1) end,
 
 	--POP VALUE FROM STACK
-	[5] = function(line, p1, p2)
-		POP()
-	end,
+	function(line, p1, p2) POP() end,
 
 	--RUN COMMAND
-	[6] = function(line, p1, p2)
+	function(line, p1, p2)
 		local command_array = POP()
 		local cmd_array = {}
 		for i = 1, #command_array do
@@ -1305,19 +1301,19 @@ COMMANDS = {
 	end,
 
 	--PUSH LAST COMMAND RESULT TO THE STACK
-	[7] = function(line, p1, p2)
+	function(line, p1, p2)
 		PUSH(LAST_CMD_RESULT)
 	end,
 
 	--PUSH THE CURRENT INSTRUCTION INDEX TO THE STACK
-	[8] = function(line, p1, p2)
+	function(line, p1, p2)
 		table.insert(INSTR_STACK, CURRENT_INSTRUCTION + 1)
 		table.insert(INSTR_STACK, #STACK - 1) --Keep track of how big the stack SHOULD be when returning
 		table.insert(INSTR_STACK, STACK[#STACK]) --Append any subroutine parameters
 	end,
 
 	--POP THE NEW INSTRUCTION INDEX FROM THE STACK (GOTO THAT INDEX)
-	[9] = function(line, p1, p2)
+	function(line, p1, p2)
 		table.remove(INSTR_STACK) --Remove any subroutine parameters
 		local new_stack_size = table.remove(INSTR_STACK)
 		CURRENT_INSTRUCTION = table.remove(INSTR_STACK)
@@ -1334,17 +1330,17 @@ COMMANDS = {
 	end,
 
 	--COPY THE NTH STACK ELEMENT ONTO THE STACK AGAIN (BACKWARDS FROM TOP)
-	[10] = function(line, p1, p2)
+	function(line, p1, p2)
 		PUSH(STACK[#STACK - p1])
 	end,
 
 	--DELETE VARIABLE
-	[11] = function(line, p1, p2)
+	function(line, p1, p2)
 		VARS[p1] = nil
 	end,
 
 	--SWAP THE TOP 2 ELEMENTS ON THE STACK
-	[12] = function(line, p1, p2)
+	function(line, p1, p2)
 		local v1 = STACK[#STACK]
 		local v2 = STACK[#STACK - 1]
 		STACK[#STACK - 1] = v1
@@ -1352,12 +1348,12 @@ COMMANDS = {
 	end,
 
 	--POP STACK UNTIL AND INCLUDING NULL
-	[13] = function(line, p1, p2)
+	function(line, p1, p2)
 		while POP() ~= nil do end
 	end,
 
 	--GET VALUE FROM CACHE IF IT EXISTS, ELSE JUMP
-	[14] = function(line, p1, p2)
+	function(line, p1, p2)
 		local params = {}
 		if #INSTR_STACK > 0 then params = INSTR_STACK[#INSTR_STACK] end
 
@@ -1375,7 +1371,7 @@ COMMANDS = {
 	end,
 
 	--SET CACHE FROM RETURN VALUE
-	[15] = function(line, p1, p2)
+	function(line, p1, p2)
 		local params = {}
 		if #INSTR_STACK > 0 then params = INSTR_STACK[#INSTR_STACK] end
 
@@ -1385,12 +1381,12 @@ COMMANDS = {
 	end,
 
 	--DELETE VALUE FROM MEMOIZATION CACHE
-	[16] = function(line, p1, p2)
+	function(line, p1, p2)
 		MEMOIZE_CACHE[p1] = nil
 	end,
 
 	--PUSH CATCH RETURN LOCATION ONTO EXCEPTION STACK
-	[17] = function(line, p1, p2)
+	function(line, p1, p2)
 		table.insert(EXCEPT_STACK, {
 			instr = p1,
 			stack = #STACK,
