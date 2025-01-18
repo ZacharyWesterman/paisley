@@ -79,10 +79,11 @@ function LUAC_DUMP(text)
 end
 
 function LUAC_RUNTIME_TEXT(bytecode_text)
-    text = 'V1 = "' .. bytecode_text:gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n') .. '"\n'
-    text = text .. 'V4 = os.time()\n'
-    text = text .. 'V8 = 1000000000000\n'
+    local text = 'PGM_ARGS = arg\n'
+    text = text .. 'V1 = "' .. bytecode_text:gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n') .. '"\n'
     text = text .. [[
+    V4 = os.time()
+    V8 = 1000000000000
 	local TMP1 = '.paisley.program.tmp.stdout'
 	local TMP2 = '.paisley.program.tmp.stderr'
 
