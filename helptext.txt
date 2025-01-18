@@ -2,11 +2,12 @@ This is the Paisley compiler and runtime engine.
 https://github.com/ZacharyWesterman/paisley
 
 USAGE:
-    paisley [FLAGS] <input> [<output>]
+    paisley [FLAGS] <input> [-o <output>]
 
 FLAGS:
     -h, --help             Prints help information
     -V, --version          Prints version information
+    -o, --output           The next parameter is the output file
     -r, --repl             Start the Paisley runtime as an interactive REPL
     -b, --bytecode         Output bytecode instead of running the script
     -p, --pretty           Pretty-print bytecode output

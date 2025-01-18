@@ -1159,7 +1159,16 @@ COMMANDS = {
 			if #INSTR_STACK > 0 then
 				PUSH(INSTR_STACK[#INSTR_STACK])
 			else
-				PUSH({})
+				--If no params, then get argv
+				--[[minify-delete]]
+				if _G['PGM_ARGS'] then
+					PUSH(_G['PGM_ARGS'])
+				else
+					--[[/minify-delete]]
+					PUSH({})
+					--[[minify-delete]]
+				end
+				--[[/minify-delete]]
 			end
 		elseif p1 == '$' then
 			--List-of-commands variable
