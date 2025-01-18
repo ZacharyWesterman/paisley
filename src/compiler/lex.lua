@@ -515,9 +515,20 @@ function Lexer(text, file)
 							local found_esc = false
 							for search, replace in pairs(ESCAPE_CODES) do
 								if text:sub(this_ix, this_ix + #search - 1) == search then
-									found_esc = true
-									this_ix = this_ix + #search - 1
-									this_chr = replace
+									if type(replace) == 'table' then
+										--Special case for hex characters
+										local m = text:sub(this_ix - 1, this_ix + 9):match('^\\' ..
+											search .. replace.next)
+										if m then
+											this_chr = replace.op(m:sub(2 + #search, 3 + #search))
+											this_ix = this_ix + #m - 2
+											found_esc = true
+										end
+									else
+										found_esc = true
+										this_ix = this_ix + #search - 1
+										this_chr = replace
+									end
 									break
 								end
 							end

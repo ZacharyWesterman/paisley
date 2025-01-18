@@ -337,6 +337,7 @@ There are a few special escape sequences:
 - `\'` outputs a single quote.
 - `\{` outputs a left curly brace.
 - `\}` outputs a right curly brace.
+- `\x` followed by any 2 hexadecimal digits outputs the respective byte.
 There are also a bunch of escape sequences that correspond to emoticons, included for convenience:
 - `\^-^` outputs `<sprite=0>`
 - `\:relaxed:` outputs `<sprite=0>`

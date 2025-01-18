@@ -41,4 +41,11 @@ ESCAPE_CODES = {
 	[':('] = '<sprite=15>',
 	[':frown:'] = '<sprite=15>',
 	[':frowning:'] = '<sprite=15>',
+	['x'] = {
+		next = '%x%x',
+		op = function(next)
+			--convert 2 hex digits to a character
+			return string.char(tonumber(next, 16))
+		end,
+	},
 }

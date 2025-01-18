@@ -372,19 +372,28 @@ if curses_installed then
 				else
 					match = text:sub(1, 1)
 					if match == '\\' then
+						local color = entity.error
+
 						--Escape sequences
 						for k, v in pairs(ESCAPE_CODES) do
 							if text:sub(2, 1 + #k) == k then
-								match = text:sub(1, 1 + #k)
+								if type(v) == 'table' then
+									local next = text:match('^\\' .. k .. v.next)
+									if next then
+										match = next
+										color = entity.escape
+									else
+										match = '\\' .. k
+									end
+								else
+									match = text:sub(1, 1 + #k)
+									color = entity.escape
+								end
 								break
 							end
 						end
 
-						if match == '\\' then
-							printf(match, entity.error)
-						else
-							printf(match, entity.escape)
-						end
+						printf(match, color)
 					else
 						printf(match, entity.string)
 					end
