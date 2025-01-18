@@ -743,6 +743,13 @@ if not ENDED and not LANGUAGE_SERVER and bytecode ~= nil then
 				end
 				CMD_LAST_RESULT['?!'] = CMD_LAST_RESULT['?'] .. CMD_LAST_RESULT['!']
 
+				--Trim trailing newline from command capture
+				for _, i in pairs({ '?', '!', '?!' }) do
+					if CMD_LAST_RESULT[i]:sub(#CMD_LAST_RESULT[i]) == '\n' then
+						CMD_LAST_RESULT[i] = CMD_LAST_RESULT[i]:sub(1, #CMD_LAST_RESULT[i] - 1)
+					end
+				end
+
 				--Store exec result
 				CMD_LAST_RESULT['='] = program:close()
 				io.stdout:flush()

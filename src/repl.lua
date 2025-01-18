@@ -38,6 +38,10 @@ local TMP2 = '.paisley.program.tmp.stderr'
 local function clear()
 	os.execute('clear')
 end
+local function printf(text, color)
+	io.write(text)
+	io.flush()
+end
 
 function output(value, port)
 	if port == 1 then
@@ -129,7 +133,7 @@ function output(value, port)
 		if program then
 			local chr = program:read(1)
 			while chr do
-				io.stdout:write(chr)
+				printf(chr)
 				chr = program:read(1)
 			end
 
@@ -147,6 +151,13 @@ function output(value, port)
 				os.remove(TMP2)
 			end
 			CMD_LAST_RESULT['?!'] = CMD_LAST_RESULT['?'] .. CMD_LAST_RESULT['!']
+
+			--Trim trailing newline from command capture
+			for _, i in pairs({ '?', '!', '?!' }) do
+				if CMD_LAST_RESULT[i]:sub(#CMD_LAST_RESULT[i]) == '\n' then
+					CMD_LAST_RESULT[i] = CMD_LAST_RESULT[i]:sub(1, #CMD_LAST_RESULT[i] - 1)
+				end
+			end
 
 			--Store exec result
 			CMD_LAST_RESULT['='] = program:close()
@@ -208,10 +219,6 @@ local curses_installed, curses = pcall(require, 'curses')
 --Default readline, used when curses is not installed
 local function readline()
 	return io.read('*l')
-end
-local function printf(text, color)
-	io.write(text)
-	io.flush()
 end
 print = function(text)
 	if text ~= nil then
