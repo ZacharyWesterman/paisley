@@ -1,5 +1,5 @@
 # Paisley
-<table>
+<table style="border:none;">
 <tr>
 <td style="width:160px; border:none;">
 <img src="images/paisley-logo.png">
