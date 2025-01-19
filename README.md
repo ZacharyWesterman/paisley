@@ -1,10 +1,10 @@
 # Paisley
-<table style="border:none;">
+<table>
 <tr>
-<td style="width:160px; border:none;">
+<td style="width:160px">
 <img src="images/paisley-logo.png">
 </td>
-<td style="border:none;">
+<td>
 
 **PAISLey** (Plasma Automation / Instruction Scripting Language) is a scripting language designed to allow for easy command-based behavior scripting.
 The purpose of this language is NOT to be fast. Instead, Paisley is designed to be a simple, light-weight way to chain together more complex behavior (think NPC logic, device automation, etc.).
