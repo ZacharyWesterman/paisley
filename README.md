@@ -1,7 +1,7 @@
 # Paisley
 <table>
 <tr>
-<td style="width:160px">
+<td style="width:160px; border:none;">
 <img src="images/paisley-logo.png">
 </td>
 <td>
