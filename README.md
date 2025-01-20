@@ -6,9 +6,8 @@
 </td>
 <td>
 
-**PAISLey** (Plasma Automation / Instruction Scripting Language) is a scripting language designed to allow for easy command-based behavior scripting.
-The purpose of this language is NOT to be fast. Instead, Paisley is designed to be a simple, light-weight way to chain together more complex behavior (think NPC logic, device automation, etc.).
-This language is meant to make complex device logic very easy to implement, while also being as easy to learn as possible.
+**Paisley** is a scripting language designed to allow for easy command-based behavior scripting. It's designed to be a simple, light-weight way to chain together more complex behavior from existing commands, while also having a "batteries included" mindset when it comes to manipulating the output of those commands.
+As such, there is a whole suite of operations and functions for quick and easy data manipulation. 
 
 </td>
 </tr>
@@ -17,22 +16,42 @@ This language is meant to make complex device logic very easy to implement, whil
 ---
 
 ## FAQ
-**Q:** *Why not use Lua instead?*<br>
-**A:** The biggest advantage Paisley has over Lua nodes is that the script does not require any "pausing" logic that one would have to implement in order to get the same functionality in Lua; the Paisley runtime will automatically pause execution periodically to avoid Lua timeouts or performance drops, and will always wait on results from a command before continuing execution.
 
-**Q:** *Why not use sketch nodes instead?*<br>
-**A:** Paisley was designed as a language for scripting NPC behavior, and the thing about NPCs is that their behavior needs to be able to change in response to various events. First off, when using just sketch nodes, dynamically changing an NPC's programming is downright impossible. Second, connecting all the nodes necessary for every possible event is difficult and time consuming (for example NPC chatter, a sequence of movements, events that only happen ONCE, etc). TL;DR: NPC logic is difficult to implement using just sketch nodes. Trust me, I've done it.
+**Q:** *Where does the name "Paisley" come from?*<br>
+**A:** Originally it was an acronym "PAISLey" with the embarassing leftover "ey" that didn't stand for anything; but nowadays its name is just "Paisley", no acronym. If you want to assign a meaning to the name, you could say that paisleys are a simple pattern where you repeat pretty little curlies over and over all the way down. Likewise, Paisley is a simple language whose expression syntax uses curly braces all the way down. That's a potential answer at least. The real answer is that I like how paisleys look.
 
-**Q:** *How do I connect the Paisley engine to my device?*<br>
-**A:** Get the Paisley Engine device from the Steam workshop (ID **3087775427**), and attach it to your device. Then in a different controller, set the inputs (Paisley code, a list of valid commands for this device, and optional file name), and make sure the "Run Command" output will eventually flow back into the "Command Return" input. Keep in mind this MUST have a slight delay (0.02s at least) or Plasma will detect it as an infinite loop!
+**Q:** *What niche does Paisley fill?*<br>
+**A:** Paisley would fill a similar niche to Bash scripts, where you're chaining together other scripts/programs to make more complex logic. Similar to bash, commands can be run just by typing the command name and parameters separated by spaces.
 
-**Q:** Why???<br>
-**A:** haha
+**Q:** *What does Paisley do different?*<br>
+**A:** Simple and consistent syntax for one. As much as I love Bash, the syntax is quite frankly a *mess*. There are so many gotchas and oddities. E.g. expressions use `$((...))` but don't support floats, the language itself doesn't have actual types, not to mention constantly having to think about globbing and whether stuff is escaped or not. Paisley is very simple in that, if it's inside `{...}`, then it's an expression. It also supports arbitrarily nested data (3d arrays anyone?), which Bash does not.
 
-**Q:** Isn't writing an entire compiler in Plasma a bit overkill?<br>
-**A:** Your face is overkill. Compilers are fun, fight me.
+**Q:** *Why is this written in Lua?*<br>
+**A:** Originally this was written for use in a game called Plasma; this game would let you create node-based programs and Lua scripts to control machines, though the version of Lua was quite limited in features. This language was written to get around the tedium and limitations of certain aspects of the game engine, but snowballed into a bit of a passion project as well as a proof of concept that, yes, you can write a compiler in Lua without any extra dependencies. Many, many updates later, we have Paisley as it stands now. There is still a [Plasma Version FAQ](docs/plasma_version.md) if you're interested in that.
 
 ---
+
+## Installing Paisley
+
+Dependencies:
+- Lua
+- Python (for installing)
+
+If you don't want to install any lua dependencies, you can just run `./paisley` and it should work fine. No Python needed in this case.
+
+On Linux systems, just run `./install.sh` and it will install Lua rocks for all extra features, then compile Paisley into a single file and install on your system.
+On Windows, there is no build, just run Paisley locally.
+
+To uninstall, just run `./uninstall.sh`.
+
+Once installed, you can check out the examples, or run `paisley --help` for usage info.
+
+---
+---
+
+<br>
+<br>
+<br>
 
 # Syntax
 
@@ -325,6 +344,22 @@ The output variable (in this case `e`) will always be an object that looks like 
 }
 ```
 Where `line` is the line where the exception was caught, and `stack` is the line numbers for the subroutine call stack.
+
+## Importing other files:
+To allow organization and minimize bloat of individual scripts, Paisley does allow importing of other scripts with the `require` keyword. You can even import multiple files in the same statement.
+
+```
+#Import ./file1.pai or ./file1.paisley
+require file1
+
+#Import:
+# ./file2.pai
+# ./path/to/file3.pai
+# ./"filename with spaces".pai
+require file2 path.to.file3 "filename with spaces"
+```
+
+Note that these imports follow a strict top-down file structure (you can never go up a directory) and importing the same file more than once is an error.
 
 ## Other statements:
 - `break` or `break 1` or `break 2` etc, will exit as many while/for loops as are specified (defaults to 1 if not specified)
@@ -635,9 +670,19 @@ For ease of use and consistency, there are 6 built-in commands that will always 
 - `time`: Returns a number representing the in-game time. Arguments are ignored.
 - `systime`: Returns a number representing the system time (seconds since midnight). Arguments are ignored.
 - `sysdate`: Returns a numeric array containing the system day, month, and year (in that order). Arguments are ignored.
-- `print`: Send all arguments to the "print" output, as well as to the internal log.
-- `error`: Send all arguments (plus line number and file, if applicable) to the "error" output, and terminates the program if not caught.
+- `print`: Prints any params to the 'print' or 'stdout' output.
+- `error`: Raises an exception with the line number, message, and stack info. If not caught, outputs the error and ends the program.
 - `sleep`: Pause script execution for the given amount of seconds. If the first argument is not a positive number, delay defaults to minimum value (0.02s).
+
+In the PC build, the following commands are also available:
+- `clear`: Clears the screen.
+- `stdin`: Reads a line of text from stdin.
+- `stdout`: Prints text to stdout, without a line ending.
+- `stderr`: Prints text to stderr, without a line ending.
+- `=`: Executes a unix command, capturing the return value. Run with no params to output the result of the last command.
+- `?`: Executes a unix command, capturing the stdout output. Run with no params to output the result of the last command.
+- `!`: Executes a unix command, capturing the stderr output. Run with no params to output the result of the last command.
+- `?!`: Executes a unix command, capturing both the stdout and stderr output. Run with no params to output the result of the last command.
 
 Note that all commands take a little bit of time to run (at least 0.02s), whether they're built-in or not. This is to prevent "infinite loop" errors or performance drops.
 

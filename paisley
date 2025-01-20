@@ -108,7 +108,8 @@ local lfs_installed, lfs = pcall(require, 'lfs')
 local zlib_installed, zlib = pcall(require, 'zlib')
 
 VERSION = --[[build-replace=version.txt]] io.open(dir .. 'version.txt'):read() --[[/build-replace]]
-local HELPTEXT = --[[build-replace=helptext.txt]] io.open(dir .. 'helptext.txt'):read('*all'):gsub('[\r\n]+$', ''):gsub(
+local HELPTEXT = --[[build-replace=docs/helptext.txt]] io.open(dir .. 'docs/helptext.txt'):read('*all'):gsub('[\r\n]+$',
+	''):gsub(
 	'^[\r\n]+', '') --[[/build-replace]]
 
 local old_working_dir = nil
