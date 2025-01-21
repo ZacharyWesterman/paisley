@@ -453,7 +453,7 @@ function SemanticAnalyzer(tokens, root_file)
 	--[[/minify-delete]]
 
 	--Resolve all macro references
-	local macros = {}
+	local macros = { {} }
 
 	--[[minify-delete]]
 	if _G['REPL'] then
@@ -461,38 +461,36 @@ function SemanticAnalyzer(tokens, root_file)
 	end
 	--[[/minify-delete]]
 
+	local function get_macro(name)
+		for i = #macros, 1, -1 do
+			if macros[i][name] then
+				return macros[i][name]
+			end
+		end
+		return nil
+	end
+
 	local tok_level = 0
-	local pop_scope = function(token, file, no_decrement)
+	local pop_scope = function(token, file)
 		if token.id == TOK.macro then
-			if not macros[token.text] then macros[token.text] = {} end
-			table.insert(macros[token.text], {
+			macros[#macros][token.text] = {
 				level = tok_level,
 				node = token.children[1]
-			})
+			}
 		elseif token.id == TOK.macro_ref then
-			if not macros[token.text] then
+			local macro = get_macro(token.text)
+			if not macro then
 				parse_error(token.span, 'Macro "' .. token.text .. '" is not defined in the current scope', file)
 			else
 				--Macro is defined, so replace it with the appropriate node
-				local macro_node = macros[token.text][#macros[token.text]].node
-				for _, i in ipairs({ 'text', 'span', 'id', 'value', 'type' }) do
-					token[i] = macro_node[i]
+				for _, i in ipairs({ 'text', 'span', 'id', 'value', 'type', 'children' }) do
+					token[i] = macro.node[i]
 				end
-				token.children = macro_node.children
 			end
 		else
 			--Make sure macros are only referenced in the appropriate scope, never outside the scope they're defined.
-			for i in pairs(macros) do
-				while macros[i][#macros[i]].level > tok_level do
-					table.remove(macros[i])
-					if #macros[i] == 0 then
-						macros[i] = nil
-						break
-					end
-				end
-			end
-
-			if not no_decrement then tok_level = tok_level - 1 end
+			table.remove(macros)
+			tok_level = tok_level - 1
 		end
 	end
 	recurse(root,
@@ -500,8 +498,9 @@ function SemanticAnalyzer(tokens, root_file)
 			.else_stmt, TOK.elif_stmt, TOK.match_stmt }, function(token, file)
 			if token.id ~= TOK.macro and token.id ~= TOK.macro_ref then
 				if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
-					pop_scope(token, file, true)
+					table.remove(macros)
 				end
+				table.insert(macros, {})
 				--Make sure macros are only referenced in the appropriate scope, never outside the scope they're defined.
 				tok_level = tok_level + 1
 			end
