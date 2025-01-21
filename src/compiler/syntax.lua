@@ -983,6 +983,15 @@ local rules = {
 
 			local current_script_dir = file:match('(.-)([^\\/]-%.?([^%.\\/]*))$')
 
+			local function pai(filename)
+				local fname = filename:gsub('%.', '/')
+				local fp = io.open(fname .. '.pai')
+				if fp then
+					return fp, fname .. '.pai'
+				end
+				return io.open(fname), fname .. '.paisley'
+			end
+
 			token.value = {}
 			for i = 1, #kids do
 				if kids[i].id ~= TOK.text and (kids[i].id ~= TOK.string_open or not kids[i].children or #kids[i].children > 1 or kids[i].children[1].id ~= TOK.text) then
@@ -993,12 +1002,12 @@ local rules = {
 					if kids[i].id == TOK.string_open then orig_filename = kids[i].children[1].text end
 
 					--Make sure import points to a valid file
-					local filename = current_script_dir .. orig_filename:gsub('%.', '/') .. '.paisley'
-					local fp = io.open(filename, 'r')
+					local fp, filename = pai(current_script_dir .. orig_filename)
 
 					--If the file doesn't exist locally, try the stdlib
 					if fp == nil then
 						local fname
+						---@diagnostic disable-next-line
 						fp, fname = _G['STDLIB'](orig_filename)
 						if fp then filename = fname end
 					end

@@ -100,8 +100,12 @@ if dir == nil then dir = '' end
 function STDLIB(filename)
 	if dir == nil then return nil, filename end
 
-	local fname = dir .. 'stdlib/' .. filename:gsub('%.', '/') .. '.paisley'
-	return io.open(fname), fname
+	local fname = dir .. 'stdlib/' .. filename:gsub('%.', '/')
+	local fp = io.open(fname .. '.pai')
+	if fp then
+		return fp, fname .. '.pai'
+	end
+	return io.open(fname), fname .. '.paisley'
 end
 
 local lfs_installed, lfs = pcall(require, 'lfs')
