@@ -43,7 +43,7 @@ end
 local file_cache = {}
 --[[minfy-delete]]
 local aliases_toplevel = { {} }
-local macros_toplevel = {}
+local macros_toplevel = { {} }
 --[[/minify-delete]]
 
 function SemanticAnalyzer(tokens, root_file)
@@ -499,6 +499,7 @@ function SemanticAnalyzer(tokens, root_file)
 			if token.id ~= TOK.macro and token.id ~= TOK.macro_ref then
 				if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
 					table.remove(macros)
+					tok_level = tok_level - 1
 				end
 				table.insert(macros, {})
 				--Make sure macros are only referenced in the appropriate scope, never outside the scope they're defined.
