@@ -109,7 +109,11 @@ def generate_full_source(filename: str, remove_debug: bool) -> str:
 
         # Replace certain blocks with the contents of a file
         for i in debug2.findall(text):
-            with open(i[1], 'r') as subfile:
+            t = i[1]
+            if t.startswith('build/'):
+                t = build_dir + '/' + i[1][6:]
+
+            with open(t, 'r') as subfile:
                 subtext = subfile.read().strip().replace('\\', '\\\\').replace('\r', '').replace('\n', '\\n').replace('"', '\\"')
                 # if remove_debug:
                 # 	subtext = subtext.replace('--', '@@@')
@@ -123,7 +127,7 @@ def generate_full_source(filename: str, remove_debug: bool) -> str:
 
 # Allow only generating specific files.
 files = ['compiler.lua', 'runtime.lua', 'paisley']
-if len(argv) > 1:
+if any(i in argv for i in ['compiler', 'runtime', 'paisley', 'standalone']):
     files = []
 
 if 'compiler' in argv:

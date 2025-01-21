@@ -28,19 +28,19 @@ fi
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 #Package the program into Lua bytecode
-python3 build.py || exit 1
-python3 build.py --fetch-srlua || exit 1
-luac -o build/paisley.luac build/paisley_standalone.lua || exit 1
+echo 'Building Paisley...'
+python3 build.py --fetch-srlua --tempdir --quiet || exit 1
+luac -o .paisley-build/paisley.luac .paisley-build/paisley_standalone.lua || exit 1
 
 #Build the standalone executable
 srluadir='/tmp/paisley-build-srlua/build'
-"$srluadir/glue" "$srluadir/srlua" build/paisley.luac build/paisley || exit 1
-chmod +x build/paisley || exit 1
+"$srluadir/glue" "$srluadir/srlua" .paisley-build/paisley.luac .paisley-build/paisley || exit 1
+chmod +x .paisley-build/paisley || exit 1
 
 rm -f "$HOME/.local/bin/paisley"
-mv build/paisley "$HOME/.local/bin/paisley"
+mv .paisley-build/paisley "$HOME/.local/bin/paisley"
 rsync -a stdlib "$HOME/.local/bin/"
-rm build -rf
+rm .paisley-build -rf
 
 install_dependency()
 {

@@ -150,7 +150,7 @@ for _, v in ipairs(args) do
 	if not no_more_flags and v:sub(1, 1) == '-' and v ~= '-' then
 		if v == '--' then
 			no_more_flags = true
-		elseif v:sub(1, 2) == '-c' then
+		elseif v:sub(1, 2) == '-c' and v ~= '-cs' then
 			table.insert(V3, v:sub(3, #v))
 		elseif v == '--help' or v == '-h' then
 			print('Paisley ' .. VERSION)
