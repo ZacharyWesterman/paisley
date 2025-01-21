@@ -1,10 +1,8 @@
 # Paisley
 <table>
 <tr>
-<td style="width:160px">
-<img src="images/paisley-logo.png">
-</td>
 <td>
+<img src="images/paisley-logo-small.png" align="left">
 
 **Paisley** is a scripting language designed to allow for easy command-based behavior scripting. It's designed to be a simple, light-weight way to chain together more complex behavior from existing commands, while also having a "batteries included" mindset when it comes to manipulating the output of those commands.
 As such, there is a whole suite of operations and functions for quick and easy data manipulation. 
