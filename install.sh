@@ -27,11 +27,14 @@ fi
 #Make sure we're in the same dir as this script.
 DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
-#Package the program into Lua bytecode.
+#Package the program into Lua bytecode
 python3 build.py || exit 1
+python3 build.py --fetch-srlua || exit 1
 luac -o build/paisley.luac build/paisley_standalone.lua || exit 1
-echo '#!/usr/bin/env lua' > build/shebang || exit 1
-cat build/shebang build/paisley.luac > build/paisley || exit 1
+
+#Build the standalone executable
+srluadir='/tmp/paisley-build-srlua/build'
+"$srluadir/glue" "$srluadir/srlua" build/paisley.luac build/paisley || exit 1
 chmod +x build/paisley || exit 1
 
 rm -f "$HOME/.local/bin/paisley"
