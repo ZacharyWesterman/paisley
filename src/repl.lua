@@ -324,9 +324,23 @@ if curses_installed then
 					if match then printf(match, entity.comment) end
 				end
 
+				--Piping operators
+				if not _G['RESTRICT_TO_PLASMA_BUILD'] and not match then
+					match = text:match('^[^\'"%$%{%} \t#;|<>]*[|<>][^\'"%$%{%} \t#;|<>]*')
+					if match then
+						printf(match, entity.operator)
+						cmd_found = false
+					end
+				end
+
 				--Keywords, and first command param
 				if not match then
-					match = text:match('^[^\'"%$%{%} \t#;]+')
+					if not _G['RESTRICT_TO_PLASMA_BUILD'] then
+						match = text:match('^[^\'"%$%{%} \t#;|<>]+')
+					else
+						match = text:match('^[^\'"%$%{%} \t#;]+')
+					end
+
 					if match then
 						if (scope and match == 'gosub') or (not scope and (kwds[match] or match == 'define')) then
 							cmd_found = true
