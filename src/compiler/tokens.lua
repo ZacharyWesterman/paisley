@@ -142,7 +142,10 @@ TOK = {
 	object = k(),
 
 	subroutine_label = k(), --This is only a temporary token to make subroutine construction unambiguous. It does not show up in a finalized AST.
-	--[[minify-delete]] import_stmt = k(), --[[/minify-delete]]
+	--[[minify-delete]]
+	import_stmt = k(),
+	raw_sh_text = k(), --This only exists for the PC build. It basically just tells Paisley to not enclose that part of the command in quotes.
+	--[[/minify-delete]]
 
 	no_value = k(),
 }
@@ -169,6 +172,7 @@ Token = {}
 --[[minify-delete]]
 SHOW_MULTIPLE_ERRORS = false
 HIDE_ERRORS = false
+RAW_SH_TEXT_SENTINEL = string.char(255)
 --[[/minify-delete]]
 ERRORED = false
 

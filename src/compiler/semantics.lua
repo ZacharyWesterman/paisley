@@ -1768,6 +1768,21 @@ function SemanticAnalyzer(tokens, root_file)
 		--[[/minify-delete]]
 	end)
 
+	--Lastly, if using the PC build, make sure shell pipe operators do not get escaped.
+	--[[minify-delete]]
+	if not _G['RESTRICT_TO_PLASMA_BUILD'] then
+		recurse(root, { TOK.command }, function(token, file)
+			for i = 1, #token.children do
+				local c = token.children[i]
+				if c.id == TOK.text and c.value:match('[|<>]') then
+					c.id = TOK.raw_sh_text
+					c.value = _G['RAW_SH_TEXT_SENTINEL'] .. c.value:gsub('%!', '2'):gsub('%?', '1')
+				end
+			end
+		end)
+	end
+	--[[/minify-delete]]
+
 	if ERRORED then terminate() end
 
 	return root
