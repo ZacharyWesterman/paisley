@@ -860,6 +860,12 @@ function SemanticAnalyzer(tokens, root_file)
 			if ch.value ~= nil and ch.id ~= TOK.lit_null and token.id == TOK.command then
 				if not ALLOWED_COMMANDS[ch.value] and not BUILTIN_COMMANDS[ch.value] then
 					--[[minify-delete]]
+
+					--Tell user about incorrect stdout+err capture
+					if ch.value == '!?' then
+						parse_error(ch.span, 'Unknown shell command "!?" (you probably meant "?!")', file)
+					end
+
 					if _G['COERCE_SHELL_CMDS'] and not _G['RESTRICT_TO_PLASMA_BUILD'] then
 						--If bash extension is enabled, try to run a shell command
 						local bashcmd = '='

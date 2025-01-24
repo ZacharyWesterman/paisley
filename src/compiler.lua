@@ -42,11 +42,11 @@ ALLOWED_COMMANDS = V3
 require "src.shared.builtin_commands"
 
 --[[minify-delete]]
-local lfs_installed, lfs = pcall(require, 'lfs')
+local LFS_INSTALLED, LFS = pcall(require, 'LFS')
 local old_working_dir = nil
-if lfs_installed then
-	old_working_dir = lfs.currentdir()
-	lfs.chdir(_G['WORKING_DIR'])
+if LFS_INSTALLED then
+	old_working_dir = LFS.currentdir()
+	LFS.chdir(_G['WORKING_DIR'])
 end
 --[[/minify-delete]]
 
@@ -122,7 +122,7 @@ else
 end
 
 --[[minify-delete]]
-if lfs_installed then
-	lfs.chdir(old_working_dir)
+if LFS_INSTALLED then
+	LFS.chdir(old_working_dir)
 end
 --[[/minify-delete]]

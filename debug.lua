@@ -97,15 +97,15 @@ function STDLIB(filename)
 	return io.open(fname), fname .. '.paisley'
 end
 
-local lfs_installed, lfs = pcall(require, 'lfs')
+local LFS_INSTALLED, LFS = pcall(require, 'LFS')
 local zlib_installed, zlib = pcall(require, 'zlib')
 
 local old_working_dir = nil
 WORKING_DIR = ''
-if lfs_installed and dir ~= nil then
-	old_working_dir = lfs.currentdir()
+if LFS_INSTALLED and dir ~= nil then
+	old_working_dir = LFS.currentdir()
 	WORKING_DIR = old_working_dir
-	lfs.chdir(dir)
+	LFS.chdir(dir)
 end
 
 require "src.compiler"
@@ -227,6 +227,13 @@ if RUN_PROGRAM then
 
 			cmd = pipe
 
+			--Stash working dir
+			local old_dir = ''
+			if LFS_INSTALLED then
+				old_dir = LFS.currentdir()
+				LFS.chdir(WORKING_DIR)
+			end
+
 			local program = io.popen(cmd, 'r')
 			if program then
 				local chr = program:read(1)
@@ -250,12 +257,28 @@ if RUN_PROGRAM then
 				end
 				CMD_LAST_RESULT['?!'] = CMD_LAST_RESULT['?'] .. CMD_LAST_RESULT['!']
 
+				--Trim trailing newline from command capture
+				for _, i in pairs({ '?', '!', '?!' }) do
+					if CMD_LAST_RESULT[i]:sub(#CMD_LAST_RESULT[i]) == '\n' then
+						CMD_LAST_RESULT[i] = CMD_LAST_RESULT[i]:sub(1, #CMD_LAST_RESULT[i] - 1)
+					end
+				end
+
 				--Store exec result
 				CMD_LAST_RESULT['='] = program:close()
 				io.stdout:flush()
 			end
 
 			V5 = CMD_LAST_RESULT[value[1]]
+
+			--Restore working dir
+			if LFS_INSTALLED then
+				-- print(CMD_LAST_RESULT['='], value[2])
+				if CMD_LAST_RESULT['='] == true and value[2]:sub(1, 5) == '"cd" ' then
+					WORKING_DIR = WORKING_DIR .. '/' .. value[2]:sub(7):match('^[^"]+')
+				end
+				LFS.chdir(old_dir)
+			end
 		else
 			print(port, json.stringify(value))
 		end
