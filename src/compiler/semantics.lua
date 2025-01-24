@@ -876,6 +876,7 @@ function SemanticAnalyzer(tokens, root_file)
 							span = ch.span,
 							text = bashcmd,
 							value = bashcmd,
+							type = _G['TYPE_STRING'],
 						})
 					else
 						--[[/minify-delete]]
@@ -1780,9 +1781,10 @@ function SemanticAnalyzer(tokens, root_file)
 		recurse(root, { TOK.command }, function(token, file)
 			for i = 1, #token.children do
 				local c = token.children[i]
-				if c.id == TOK.text and c.value:match('[|<>]') then
+				if c.id == TOK.text and c.text:match('[|<>]') then
 					c.id = TOK.raw_sh_text
-					c.value = _G['RAW_SH_TEXT_SENTINEL'] .. c.value:gsub('%!', '2'):gsub('%?', '1')
+					c.text = _G['RAW_SH_TEXT_SENTINEL'] .. c.text:gsub('%!', '2'):gsub('%?', '1')
+					c.value = c.text
 				end
 			end
 		end)

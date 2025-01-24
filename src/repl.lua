@@ -168,7 +168,6 @@ function output(value, port)
 
 			--Store exec result
 			CMD_LAST_RESULT['='] = program:close()
-			io.stdout:flush()
 		end
 
 		V5 = CMD_LAST_RESULT[value[1]]
