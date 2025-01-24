@@ -131,16 +131,16 @@ function output(value, port)
 
 		--Stash working dir
 		local old_dir = ''
-		if LFS_INSTALLED then
-			old_dir = LFS.currentdir()
-			LFS.chdir(WORKING_DIR)
+		if _G['LFS_INSTALLED'] then
+			old_dir = _G['LFS'].currentdir()
+			_G['LFS'].chdir(WORKING_DIR)
 		end
 
 		local program = io.popen(cmd, 'r')
 		if program then
 			local chr = program:read(1)
 			while chr do
-				io.stdout:write(chr)
+				printf(chr)
 				chr = program:read(1)
 			end
 
@@ -174,12 +174,11 @@ function output(value, port)
 		V5 = CMD_LAST_RESULT[value[1]]
 
 		--Restore working dir
-		if LFS_INSTALLED then
-			-- print(CMD_LAST_RESULT['='], value[2])
+		if _G['LFS_INSTALLED'] then
 			if CMD_LAST_RESULT['='] == true and value[2]:sub(1, 5) == '"cd" ' then
 				WORKING_DIR = WORKING_DIR .. '/' .. value[2]:sub(7):match('^[^"]+')
 			end
-			LFS.chdir(old_dir)
+			_G['LFS'].chdir(old_dir)
 		end
 	else
 		print(port, json.stringify(value))
