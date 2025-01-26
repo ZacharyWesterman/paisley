@@ -9,7 +9,7 @@ NULL = {}
 -- STACK = {}
 -- VARS = {}
 
-function runtime_error(line, msg)
+local function runtime_error(line, msg)
 	if msg:sub(1, 12) == 'RUNTIME BUG' then
 		msg = msg .. '\nTHIS IS A BUG IN THE PAISLEY COMPILER, PLEASE REPORT IT!'
 	end
@@ -1009,7 +1009,7 @@ local functions = {
 
 	--FLATTEN AN ARRAY OF ANY DIMENSION TO A 1-DIMENSIONAL ARRAY
 	function()
-		function flatten(array)
+		local function flatten(array)
 			local result = std.array()
 			for i = 1, #array do
 				if type(array[i]) == 'table' then
