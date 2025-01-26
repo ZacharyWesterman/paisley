@@ -77,7 +77,7 @@ function print_bytecode(instructions, file)
 end
 
 --[[/minify-delete]]
-
+---@diagnostic disable-next-line
 function generate_bytecode(root, file)
 	SHOW_MULTIPLE_ERRORS = false
 
@@ -106,16 +106,6 @@ function generate_bytecode(root, file)
 			parse_error(Span:new(current_line, 0, current_line, 0),
 				'COMPILER BUG: Unknown bytecode instruction with id ' .. instruction_id .. '!', file)
 		end
-
-		--TEMP: print code as it's generated
-		-- if COMPILER_DEBUG then
-		-- 	if call_text == nil and instruction_id ~= bc.run_command and instruction_id ~= bc.push_cmd_result and instruction_id ~= bc.pop and instruction_id ~= bc.push_index and instruction_id ~= bc.pop_goto_index then call_text = 'null' else call_text = std.debug_str(call_text) end
-		-- 	if param2 then
-		-- 		print(current_line..': '..instr_text..' '..call_text..' '..std.debug_str(param2))
-		-- 	else
-		-- 		print(current_line..': '..instr_text..' '..call_text)
-		-- 	end
-		-- end
 
 		return #instructions
 	end

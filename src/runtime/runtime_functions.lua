@@ -55,6 +55,7 @@ local function PUSH(value)
 	end
 end
 
+--[[c=math]]
 local function mathfunc(funcname)
 	return function(line)
 		local v, p = POP(), {}
@@ -75,22 +76,28 @@ local function mathfunc(funcname)
 		PUSH(math[funcname](u(p)))
 	end
 end
+--[[/]]
 
-local function number_op(v1, v2, operator)
-	if type(v1) == 'table' or type(v2) == 'table' then
-		if type(v1) ~= 'table' then v1 = { v1 } end
-		if type(v2) ~= 'table' then v2 = { v2 } end
+--[[c=numbers]]
+local function number_op(operator)
+	return function(line)
+		local v1, v2 = POP(), POP()
 
-		local result = {}
-		for i = 1, math.min(#v1, #v2) do
-			table.insert(result, operator(std.num(v1[i]), std.num(v2[i])))
+		if type(v1) == 'table' or type(v2) == 'table' then
+			if type(v1) ~= 'table' then v1 = { v1 } end
+			if type(v2) ~= 'table' then v2 = { v2 } end
+
+			local result = {}
+			for i = 1, math.min(#v1, #v2) do
+				table.insert(result, operator(std.num(v1[i]), std.num(v2[i])))
+			end
+			PUSH(result)
+		else
+			PUSH(operator(std.num(v1), std.num(v2)))
 		end
-		return result
-	else
-		return operator(std.num(v1), std.num(v2))
 	end
 end
-
+--[[/]]
 
 local functions = {
 	--JUMP
@@ -161,39 +168,19 @@ local functions = {
 	end,
 
 	--ADD
-	function()
-		local v1, v2 = POP(), POP()
-		local result = number_op(v2, v1, function(a, b) return a + b end)
-		PUSH(result)
-	end,
+	number_op(function(a, b) return a + b end),
 
 	--SUB
-	function()
-		local v1, v2 = POP(), POP()
-		local result = number_op(v2, v1, function(a, b) return a - b end)
-		PUSH(result)
-	end,
+	number_op(function(a, b) return a - b end),
 
 	--MUL
-	function()
-		local v1, v2 = POP(), POP()
-		local result = number_op(v2, v1, function(a, b) return a * b end)
-		PUSH(result)
-	end,
+	number_op(function(a, b) return a * b end),
 
 	--DIV
-	function()
-		local v1, v2 = POP(), POP()
-		local result = number_op(v2, v1, function(a, b) return a / b end)
-		PUSH(result)
-	end,
+	number_op(function(a, b) return a / b end),
 
 	--REM
-	function()
-		local v1, v2 = POP(), POP()
-		local result = number_op(v2, v1, function(a, b) return a % b end)
-		PUSH(result)
-	end,
+	number_op(function(a, b) return a % b end),
 
 	--LENGTH
 	function()

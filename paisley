@@ -484,6 +484,7 @@ if not ENDED then
 		local bc = paisley_src
 		V1 = ''
 		require "src.compiler"
+		---@diagnostic disable-next-line
 		bytecode = json.parse(bc)
 	else
 		--Compile program
