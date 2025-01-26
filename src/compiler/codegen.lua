@@ -30,6 +30,7 @@ local function bc_get_key(code, lookup)
 end
 
 --[[minify-delete]]
+---@diagnostic disable-next-line
 function print_bytecode(instructions, file)
 	local lookup = instructions[#instructions]
 	for i = 1, #instructions - 1 do
