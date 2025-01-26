@@ -49,9 +49,7 @@ Once installed, you can check out the examples, or run `paisley --help` for usag
 ---
 ---
 
-<br>
-<br>
-<br>
+![logo](images/paisley-logo.png)
 
 # Syntax
 
