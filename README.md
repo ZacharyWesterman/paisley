@@ -44,6 +44,8 @@ To uninstall, just run `./uninstall.sh`.
 
 Once installed, you can check out the examples, or run `paisley --help` for usage info.
 
+**NOTE:** If you for whatever reason *can't* install Lua or Python on your system, there is also a standalone build available in the latest tag.
+
 ---
 ---
 
