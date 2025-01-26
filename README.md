@@ -714,4 +714,30 @@ There is one difference however, and it's that the stdout and stderr files are n
 wget https://127.0.0.1/example !>my_file.txt
 ```
 
----
+## Comments
+
+As mentioned briefly at the top, comments start with `#` and continue until the end of the line.
+Comments can also be used to annotate parts of the program and slightly modify compiler behavior.
+
+### Comment annotations
+
+Every comment annotation starts with `@`. They will look something like the following:
+```
+#Some example subroutine
+#@param n number The number to square.
+#@return number The square of the input number.
+subroutine square
+	return {@1 * @1}
+end
+```
+
+The following is a complete list of annotations and what their effects are:
+- `@brief` : Indicate a single-line description of a subroutine, separate from the full description.
+- `@param` : Indicate a subroutine parameter of a specific type. This is a type hint and is not enforced.
+- `@return` : Indicate a subroutine return value of a specific type.
+- `@mutate` : Indicate that this subroutine mutates the given variable(s) (e.g. `#@mutate var1 var2`)
+- `@export` : Don't mark this subroutine or variable as dead code. Only used when running Paisley as a language server.
+- `@plasma`: Apply the `--plasma` flag to the current compilation unit.
+- `@shell`: Apply the `--shell` flag to the current compilation unit.
+- `@commands`: Postpone "command not found" errors until run-time, and assume that they return the given types (e.g. `#@commands cmd1:type1 cmd2:type2`)
+- `@debug`: Validate command params without actually running them (e.g. `#@debug command_name` ... `#@end`)
