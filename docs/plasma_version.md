@@ -32,6 +32,7 @@ This language is meant to make complex device logic very easy to implement, whil
 
 Compiler Differences:
 - The `require` statement is not supported when compiling code inside Plasma, as there is no arbitrary file system. However, it may be used when compiling code *outside* Plasma and copying the bytecode output into Plasma.
+- Command piping (`cmd1 | cmd2 > file1 < file2`) is not supported. Any pipe operators are treated as plain text.
 
 The following commands will not work in the Plasma build, unless the commands are defined in the target device:
 - Any shell commands, `!`, `?`, `?!` or `=`.
@@ -39,3 +40,5 @@ The following commands will not work in the Plasma build, unless the commands ar
 - `stdin`
 - `stdout`
 - `stderr`
+
+Note that all commands take a little bit of time to run (at least 0.02s), whether they're built-in or not. This is to prevent "infinite loop" errors or performance drops.

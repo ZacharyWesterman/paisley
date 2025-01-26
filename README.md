@@ -55,6 +55,8 @@ Once installed, you can check out the examples, or run `paisley --help` for usag
 
 # Syntax
 
+The following is a detailed breakdown of every language feature in Paisley. For some hands-on examples of programs, check out the `examples/` or `stdlib/` directories.
+
 ## Main program structures
 
 As a general rule, white space and line endings *do not matter* in Paisley.
@@ -650,6 +652,8 @@ let x = {1:100}
 let y = {i for i in x if i % 5 = 0}
 ```
 
+## Commands
+
 ### Inline Command Evaluation
 Since commands can return values to Paisley after execution, you can also use those values in further calculations. For example:
 ```
@@ -666,8 +670,8 @@ print {${time}.clocktime()[1:3].join(":")}
 ```
 
 ### Built-in commands
-For ease of use and consistency, there are 6 built-in commands that will always be the same regardless of device.
-- `time`: Returns a number representing the in-game time. Arguments are ignored.
+For ease of use and consistency, there are 6 built-in commands that will always be the same regardless of what the target environment is.
+- `time`: Returns a number representing the clock time. If in a game engine, this is the in-game time. If on PC, this is the same as `systime`. Arguments are ignored.
 - `systime`: Returns a number representing the system time (seconds since midnight). Arguments are ignored.
 - `sysdate`: Returns a numeric array containing the system day, month, and year (in that order). Arguments are ignored.
 - `print`: Prints any params to the 'print' or 'stdout' output.
@@ -684,8 +688,30 @@ In the PC build, the following commands are also available:
 - `!`: Executes a unix command, capturing the stderr output. Run with no params to output the result of the last command.
 - `?!`: Executes a unix command, capturing both the stdout and stderr output. Run with no params to output the result of the last command.
 
-Note that all commands take a little bit of time to run (at least 0.02s), whether they're built-in or not. This is to prevent "infinite loop" errors or performance drops.
+### Shell command coersion
+If the `--shell` or `-l` flag is passed, then Paisley will assume that any undefined commands are programs available on this system.
+```
+# Plain commands will not capture stdout or stderr, so the following are equivalent:
+wget https://127.0.0.1/example
+= wget https://127.0.0.1/example
+
+# But inline command evaluation captures stdout, so the following are equivalent:
+let x = ${wget https://127.0.0.1/example}
+let x = ${? wget https://127.0.0.1/example}
+# And NOT equivalent to the following which captures the RETURN value of wget:
+let x = ${= wget https://127.0.0.1/example}
+```
+
+### Command piping
+
+Like Bash, the stdout of commands can be piped into other commands, or from and to files. This uses the same syntax as bash, for familiarity, and because the syntax is simple enough.
+```
+echo "some text" > my_file.txt
+cat my_file.txt | grep "some"
+```
+There is one difference however, and it's that the stdout and stderr files are not called `1` and `2` respectively, instead they are `?` and `!` to remain consistent with other syntax. For example, to pipe stderr into a file:
+```
+wget https://127.0.0.1/example !>my_file.txt
+```
 
 ---
-
-To get an idea of the syntax, check out the examples/ or stdlib/ directories.
