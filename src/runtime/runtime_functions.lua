@@ -244,7 +244,7 @@ local functions = {
 				if is_array then
 					if type(index[i]) ~= 'number' and not tonumber(index[i]) then
 						print('WARNING: line ' ..
-						line .. ': Attempt to index array with non-numeric value, null returned')
+							line .. ': Attempt to index array with non-numeric value, null returned')
 						PUSH(NULL)
 						return
 					end
@@ -483,7 +483,7 @@ local functions = {
 	function() PUSH(std.type(POP()[1])) end,
 
 	--BOOL
-	function() PUSH(std.bool(POP()[1])) end,
+	function() PUSH(std.bool(POP())) end,
 
 	--NUM
 	function() PUSH(std.num(POP()[1])) end,
