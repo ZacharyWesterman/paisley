@@ -525,21 +525,23 @@ if not ENDED then
 			require "src.luac"
 			text = LUAC_RUNTIME_TEXT(text)
 
-			local PYTEXT = --[[build-replace=build.py]] io.open(dir .. 'build.py'):read('*all') --[[/build-replace]]
-			PYTEXT = PYTEXT:gsub('VERSION = .+$', 'VERSION = "' .. VERSION .. '"')
+			local PYTEXT = --[[build-replace=build.py]] io.open(dir .. 'build.py'):read('*a') --[[/build-replace]]
+			PYTEXT = PYTEXT:gsub('VERSION = [^\n]+', 'VERSION = "' .. VERSION .. '"')
 			PYTEXT = PYTEXT:gsub('\\', '\\\\'):gsub(
 				'"', '\\"'):gsub('%$', '\\$'):gsub('`', '\\`'):gsub('!', '\\!') --Make sure bash doesn't parse the string
 
 			--Escape strings correctly in powershell
 			if WINDOWS then PYTEXT = PYTEXT:gsub('\\"', '`"') end
 
-			-- print('python -c "' .. PYTEXT .. '" runtime --quiet --fetch-srlua')
-			os.execute('python -c "' .. PYTEXT .. '" runtime --quiet --fetch-srlua --tempdir')
+			local build_cmd = 'python -c "' .. PYTEXT .. '" runtime --quiet --fetch-srlua --tempdir'
+			os.execute(build_cmd)
 
 			local runtime_lua = --[[build-replace=build/runtime.lua]] io.open('.paisley-build/runtime.lua', 'r'):read(
 				'*all') --[[/build-replace]]
 			if not runtime_lua then
-				error('ERROR: Unable to load Paisley runtime! Exiting.')
+				local msg = 'ERROR: Unable to load Paisley runtime! Exiting.'
+				msg = msg .. '\nTHIS IS A BUG IN THE COMPILER, NOT YOUR CODE.'
+				error(msg)
 			end
 
 			if WINDOWS then
