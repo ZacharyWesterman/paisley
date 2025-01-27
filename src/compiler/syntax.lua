@@ -287,6 +287,7 @@ local rules = {
 		id = TOK.boolean,
 		keep = { 2 },
 		text = 1,
+		not_before = { TOK.index_open },
 	},
 
 	--Postfix Exists operator
