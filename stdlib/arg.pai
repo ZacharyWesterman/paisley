@@ -145,7 +145,8 @@ subroutine arg.parse
         end
     end
 
-    print {_res.json_encode(true)}
+    delete _args _key _val _prev_key _vals _arg _conv # Clean up
+    return {_res}
 end
 
 #@private

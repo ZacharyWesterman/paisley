@@ -1,0 +1,28 @@
+# Demonstrate how to parse arguments from the command line
+# You can run this script with the following command:
+#   paisley examples/argument_parsing.pai -- --arg1 value1 -2 123 positional1 positional2 --arg3=true
+
+require arg
+
+# Parse the arguments
+let args = ${gosub arg.parse {@} {
+    'arg1' => {
+        'type' => 'string',
+        'default' => 'default value',
+        'short' => '1',
+    },
+    'arg2' => {
+        'type' => 'number',
+        'default' => 10,
+        'short' => '2',
+    },
+    'arg3' => {
+        'type' => 'boolean',
+        'required' => true, # flag is required, so no default value needed
+        'short' => '3',
+    },
+    'pos1' => true, # Positional argument, required
+    'pos2' => false, # Positional argument, optional
+}}
+
+print {args.json_encode(true)}
