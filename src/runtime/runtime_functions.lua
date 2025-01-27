@@ -79,7 +79,11 @@ end
 --[[/]]
 
 --[[c=numbers]]
-local function number_op(operator)
+---Format two parameters and perform a binary operation on them.
+---@param format_func fun(param: any): any The function to format the parameters with.
+---@param operate_func fun(param1: any, param2: any): any The operation to perform on the two parameters.
+---@return fun(line: number): nil runtime_function The function to execute the operation.
+local function operator(format_func, operate_func)
 	return function(line)
 		local v1, v2 = POP(), POP()
 
@@ -89,15 +93,29 @@ local function number_op(operator)
 
 			local result = {}
 			for i = 1, math.min(#v1, #v2) do
-				table.insert(result, operator(std.num(v1[i]), std.num(v2[i])))
+				table.insert(result, operate_func(format_func(v1[i]), format_func(v2[i])))
 			end
 			PUSH(result)
 		else
-			PUSH(operator(std.num(v1), std.num(v2)))
+			PUSH(operate_func(format_func(v1), format_func(v2)))
 		end
 	end
 end
 --[[/]]
+
+--[[c=sets]]
+---Perform operations on two sets.
+---@param func fun(a: table, b: table): table The function to perform on the two sets.
+---@return fun(line: number): nil runtime_function The function to execute the operation.
+local function set_operator(func)
+	return function(line)
+		local v = POP()
+		local a, b = v[1], v[2]
+		if type(a) ~= 'table' then a = { a } end
+		if type(b) ~= 'table' then b = { b } end
+		PUSH(func(a, b))
+	end
+end
 
 local functions = {
 	--JUMP
@@ -168,19 +186,19 @@ local functions = {
 	end,
 
 	--ADD
-	number_op(function(a, b) return a + b end),
+	operator(std.num, function(a, b) return a + b end),
 
 	--SUB
-	number_op(function(a, b) return a - b end),
+	operator(std.num, function(a, b) return a - b end),
 
 	--MUL
-	number_op(function(a, b) return a * b end),
+	operator(std.num, function(a, b) return a * b end),
 
 	--DIV
-	number_op(function(a, b) return a / b end),
+	operator(std.num, function(a, b) return a / b end),
 
 	--REM
-	number_op(function(a, b) return a % b end),
+	operator(std.num, function(a, b) return a % b end),
 
 	--LENGTH
 	function()
@@ -265,22 +283,13 @@ local functions = {
 	end,
 
 	--BOOLEAN AND
-	function()
-		local a, b = std.bool(POP()), std.bool(POP())
-		PUSH(a and b)
-	end,
+	operator(std.bool, function(a, b) return a and b end),
 
 	--BOOLEAN OR
-	function()
-		local a, b = std.bool(POP()), std.bool(POP())
-		PUSH(a or b)
-	end,
+	operator(std.bool, function(a, b) return a or b end),
 
 	--BOOLEAN XOR
-	function()
-		local a, b = std.bool(POP()), std.bool(POP())
-		PUSH((a or b) and not (a and b))
-	end,
+	operator(std.bool, function(a, b) return (a or b) and not (a and b) end),
 
 	--IN ARRAY/STRING
 	function()
@@ -302,10 +311,7 @@ local functions = {
 	end,
 
 	--STRING LIKE PATTERN
-	function()
-		local pattn, str = std.str(POP()), std.str(POP())
-		PUSH(str:match(pattn) ~= nil)
-	end,
+	operator(std.str, function(a, b) return a:match(b) ~= nil end),
 
 	--EQUAL
 	function() PUSH(POP() == POP()) end,
@@ -413,11 +419,8 @@ local functions = {
 		PUSH(total)
 	end,
 
-	--MORE MATH FUNCTIONS
-	function()
-		local b, a = std.num(POP()), std.num(POP())
-		if a == 0 then PUSH(0) else PUSH(a ^ b) end
-	end,
+	--POWER
+	operator(std.num, function(a, b) if a == 0 then return 0 else return a ^ b end end),
 
 	--MIN of arbitrary number of arguments
 	function()
@@ -505,14 +508,10 @@ local functions = {
 	end,
 
 	--LOWERCASE
-	function()
-		PUSH(std.str(POP()):lower())
-	end,
+	function() PUSH(std.str(POP()):lower()) end,
 
 	--UPPERCASE
-	function()
-		PUSH(std.str(POP()):upper())
-	end,
+	function() PUSH(std.str(POP()):upper()) end,
 
 	--CAMEL CASE
 	function()
@@ -908,67 +907,25 @@ local functions = {
 	end,
 
 	--UNION OF TWO SETS
-	function()
-		local v = POP()
-		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = { a } end
-		if type(b) ~= 'table' then b = { b } end
-		PUSH(std.union(a, b))
-	end,
+	set_operator(std.union),
 
 	--INTERSECTION OF TWO SETS
-	function()
-		local v = POP()
-		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = { a } end
-		if type(b) ~= 'table' then b = { b } end
-		PUSH(std.intersection(a, b))
-	end,
+	set_operator(std.intersection),
 
 	--DIFFERENCE OF TWO SETS
-	function()
-		local v = POP()
-		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = { a } end
-		if type(b) ~= 'table' then b = { b } end
-		PUSH(std.difference(a, b))
-	end,
+	set_operator(std.difference),
 
 	--SYMMETRIC DIFFERENCE OF TWO SETS
-	function()
-		local v = POP()
-		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = { a } end
-		if type(b) ~= 'table' then b = { b } end
-		PUSH(std.symmetric_difference(a, b))
-	end,
+	set_operator(std.symmetric_difference),
 
 	--CHECK IF TWO SETS ARE DISJOINT
-	function()
-		local v = POP()
-		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = { a } end
-		if type(b) ~= 'table' then b = { b } end
-		PUSH(std.is_disjoint(a, b))
-	end,
+	set_operator(std.is_disjoint),
 
 	--CHECK IF ONE SET IS A SUBSET OF ANOTHER
-	function()
-		local v = POP()
-		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = { a } end
-		if type(b) ~= 'table' then b = { b } end
-		PUSH(std.is_subset(a, b))
-	end,
+	set_operator(std.is_subset),
 
 	--CHECK IF ONE SET IS A SUPERSET OF ANOTHER
-	function()
-		local v = POP()
-		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = { a } end
-		if type(b) ~= 'table' then b = { b } end
-		PUSH(std.is_superset(a, b))
-	end,
+	set_operator(std.is_superset),
 
 	--COUNT OCCURRENCES OF A VALUE IN ARRAY OR SUBSTRING IN STRING
 	function()
