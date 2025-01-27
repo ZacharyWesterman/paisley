@@ -221,6 +221,12 @@ local functions = {
 		local result
 		if type(index) ~= 'table' then
 			if is_array then
+				if type(index) ~= 'number' and not tonumber(index) then
+					print('WARNING: line ' .. line .. ': Attempt to index array with non-numeric value, null returned')
+					PUSH(NULL)
+					return
+				end
+
 				index = std.num(index)
 				if index < 0 then
 					index = #data + index + 1
@@ -236,6 +242,13 @@ local functions = {
 			result = {}
 			for i = 1, #index do
 				if is_array then
+					if type(index[i]) ~= 'number' and not tonumber(index[i]) then
+						print('WARNING: line ' ..
+						line .. ': Attempt to index array with non-numeric value, null returned')
+						PUSH(NULL)
+						return
+					end
+
 					local ix = std.num(index[i])
 					if ix < 0 then
 						ix = #data + ix + 1
