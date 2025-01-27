@@ -1,0 +1,176 @@
+#@export
+#@brief Parse command line arguments.
+#
+# The config object should look like the following:
+# ```
+# {
+#     # If the key is a flag (in this case --arg1), the value should be an object that indicates its properties.
+#     'arg1' => (
+#         'type' => 'string', # One of: bool, number, string, OR an array of valid values.
+#         'required' => true, # Whether the argument is required. If not required, a default value must be provided.
+#         'default' => 'default value', # The default value if the argument is not required.
+#         'short' => 's', # The short flag for the argument.
+#     ),
+#     # If the key is a positional value (in this case arg2), the value should be an boolean indicating if it's required.
+#     'arg2' => true,
+# }
+# ```
+#
+#@param args array[string] The list of arguments to parse.
+#@param config object The configuration for the arguments.
+#@return object The parsed arguments.
+#@error If the argument is not a list, or if args don't match the expected format.
+subroutine arg.parse
+    #Parse argument config and adjust so it's easier to work with.
+    let _args = {'flags' => (=>), 'values' => (=>)}
+    for _key _val in {@2.pairs()} do
+        if {_val.type() != 'object'} then
+            let _args{'values', _key} = {_val}
+        else
+            if {_val.type and _val.type not in ('boolean', 'number', 'string') and _val.type.type() != 'array'} then
+                error "Invalid argument type \"{_val.type}\". Must be one of: bool, number, string"
+            end
+
+            if {not _val.required and not _val.default} then
+                error "Argument \"{_key}\" must have a default value if it's not required"
+            end
+
+            let _args{'flags', ('--' _key)} = {
+                'flag' => true,
+                'type' => _val.type,
+                'key' => _key,
+                'required' => true if _val.required else false,
+                'default' => _val.default,
+            }
+
+            if {_val.short} then
+                if {_val.short in _args} then
+                    error "Duplicate short argument \"{_val.short}\""
+                end
+                let _args{'flags', ('-' _val.short)} = {
+                    'flag' => true,
+                    'key' => _key,
+                    'type' => _val.type,
+                    'default' => _val.default,
+                }
+            end
+
+        end
+    end
+
+    let _res = {=>}
+    let _prev_key
+    let _vals = {_args.values.keys()}
+    for _arg in {@1} do
+        if {_prev_key} then
+            if {_val[1] == '-'} then
+                error "Missing value for flag \"{_key}\""
+            end
+
+            let _res{_prev_key} = ${gosub arg._parse_type {_args.flags['--' _prev_key].type} {_arg} {_prev_key} }
+            let _prev_key = {null}
+            continue
+        end
+
+        #Parse long flags
+        if {_arg.beginswith('--')} then
+            if {'=' not in _arg} then
+                let _prev_key = {_arg[3::]}
+                if {('--'_prev_key) not in _args.flags} then
+                    error "Unknown flag \"--{_prev_key}\""
+                end
+                let _args{'flags', _arg, 'found'} = {true}
+                continue
+            end
+
+            let _key _val = {_arg[3:(_arg.index('=')-1)], _arg[(_arg.index('=')+1)::]}
+            if {('--'_key) not in _args.flags} then
+                error "Unknown flag \"--{_key}\""
+            end
+            if {_val == ''} then
+                error "Empty value for flag \"{_key}\""
+            end
+
+            let _res{_key} = ${gosub arg._parse_type {_args.flags['--' _key].type} {_val} {'--'_key}}
+            let _args{'flags', _key, 'found'} = {true}
+            continue
+        end
+
+        #Parse short flags
+        if {_arg.beginswith('-')} then
+            if {'=' not in _arg} then
+                if {('-'_arg[2::]) not in _args.flags} then
+                    error "Unknown flag \"{_arg}\""
+                end
+                let _prev_key = {_args.flags[_arg].key}
+                let _args{'flags', ('--'_prev_key), 'found'} = {true}
+                continue
+            end
+
+            let _key _val = {_arg[2:(_arg.index('=')-1)], _arg[(_arg.index('=')+1)::]}
+            if {('-'_key) not in _args.flags} then
+                error "Unknown flag \"-{_key}\""
+            end
+            if {_val == ''} then
+                error "Empty value for flag \"{_key}\""
+            end
+
+            let _key = {_args.flags['-'_key].key}
+            print {_key, _val}
+            let _res{_key} = ${gosub arg._parse_type {_args.flags['--' _key].type} {_val} {'--'_key}}
+            let _args{'flags', ('--'_key), 'found'} = {true}
+            continue
+        end
+
+        # Parse positional values
+        let _res{_vals[1]} = {_arg}
+        let _vals = {_vals.delete(1)}
+    end
+
+    # Make sure all required flags were given.
+    for _key _val in {_args.flags.pairs()} do
+        if {_val.required and not _res[_val.key]} then
+            if {not _val.found} then
+                error "Missing required flag \"{_key}\""
+            else
+                error "Missing value for flag \"{_key}\""
+            end
+        end
+    end
+
+    # Make sure all required values were given.
+    for _key _val in {_args.values.pairs()} do
+        if {_val and not _res[_key]} then
+            error "Missing required value \"{_key}\""
+        end
+    end
+
+    print {_res.json_encode(true)}
+end
+
+#@private
+#@error If the value is not valid for the flag.
+subroutine arg._parse_type
+    match {@1} do
+        if boolean then
+            let _conv = {'true' => true, 'false' => false, '1' => true, '0' => false}
+            if {@2.lower() not in _conv.keys()} then
+                error "Invalid boolean value \"{@2}\" for flag \"{@3}\""
+            end
+            return {_conv[@2.lower()]}
+        end
+        if number then
+            if {@2 not like '^%d+$' } then
+                error "Invalid number value \"{@2}\" for flag \"{@3}\""
+            end
+            return {@2.num()}
+        end
+        if string then return {@2} end
+    end
+
+    if {@2 not in @1} then
+        error "Invalid value \"{@2}\" for flag \"{@3}\". Must be one of: {@1.json_encode()}"
+    end
+
+    return {@2}
+end
