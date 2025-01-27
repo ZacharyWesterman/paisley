@@ -128,8 +128,10 @@ require 'src.shared.stdlib'
 
 --Split up args
 local args = {}
+local stop_splitting = false
 for _, v in ipairs(arg) do
-	if v ~= '-' and
+	if not stop_splitting and
+		v ~= '-' and
 		v:sub(1, 1) == '-' and
 		v:sub(2, 2) ~= '-' and
 		v:sub(1, 3) ~= '-cs' and
@@ -140,6 +142,7 @@ for _, v in ipairs(arg) do
 		end
 	else
 		table.insert(args, v)
+		if v == '--' or v:sub(1, 1) ~= '-' then stop_splitting = true end
 	end
 end
 

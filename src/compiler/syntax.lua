@@ -63,7 +63,7 @@ local rules = {
 	{
 		match = { { TOK.comparison, TOK.array_concat }, { TOK.comparison, TOK.array_concat } },
 		id = TOK.concat,
-		not_after = { TOK.op_assign, TOK.string_close, TOK.text, TOK.op_dot, TOK.comparison, TOK.line_ending },
+		not_after = { TOK.op_assign, TOK.string_close, TOK.text, TOK.op_dot, TOK.comparison, TOK.line_ending, TOK.expr_close, TOK.comparison, TOK.expression },
 		not_before = { TOK.index_open },
 		expr_only = true,
 		text = '..',
