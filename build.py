@@ -52,6 +52,8 @@ if '--fetch-srlua' in argv:
         subprocess.call(['cmake', f'-B{dir}/paisley-build-srlua/build', f'-S{dir}/paisley-build-srlua'])
         subprocess.call(['make', '-C', f'{dir}/paisley-build-srlua/build'])
 
+REMOVE_DEBUG = '--no-remove-debug' not in argv
+
 VERSION = open('version.txt', 'r').readline().strip()
 
 
@@ -138,7 +140,7 @@ for i in ['compiler.lua', 'runtime.lua']:
     if i not in files:
         continue
 
-    text = generate_full_source(f'src/{i}', True)
+    text = generate_full_source(f'src/{i}', REMOVE_DEBUG)
     module = i.split('.')[0]
     prefix = f'--[[Paisley {module} v{VERSION}, written by SenorCluckens]]\n--[[This build has been minified to reduce file size]]\n'
 

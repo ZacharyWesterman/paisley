@@ -533,7 +533,7 @@ if not ENDED then
 			--Escape strings correctly in powershell
 			if WINDOWS then PYTEXT = PYTEXT:gsub('\\"', '`"') end
 
-			local build_cmd = 'python -c "' .. PYTEXT .. '" runtime --quiet --fetch-srlua --tempdir'
+			local build_cmd = 'python -c "' .. PYTEXT .. '" runtime --quiet --fetch-srlua --tempdir --no-remove-debug'
 			os.execute(build_cmd)
 
 			local runtime_lua = --[[build-replace=build/runtime.lua]] io.open('.paisley-build/runtime.lua', 'r'):read(
