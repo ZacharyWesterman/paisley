@@ -180,6 +180,7 @@ ERRORED = false
 ---@param span Span
 ---@param msg string
 ---@param file string?
+---@diagnostic disable-next-line
 function parse_error(span, msg, file)
 	if msg:sub(1, 12) == 'COMPILER BUG' then
 		msg = msg .. '\nTHIS IS A BUG IN THE PAISLEY COMPILER, PLEASE REPORT IT!'
@@ -192,7 +193,10 @@ function parse_error(span, msg, file)
 	if not HIDE_ERRORS then
 		if _G['LANGUAGE_SERVER'] then
 			INFO.error(span, msg, file)
-		else --[[/minify-delete]]
+		elseif span == nil then
+			print(msg)
+		else
+			--[[/minify-delete]]
 			if file ~= nil and file ~= '' then
 				print(file .. ': ' .. span.from.line .. ', ' .. span.from.col .. ': ' .. msg)
 			else
