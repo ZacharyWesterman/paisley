@@ -1228,20 +1228,16 @@ COMMANDS = {
 				local text = ''
 				for i = 1, #cmd_array do
 					local cmd_text = cmd_array[i]
-					--[[minify-delete]]
 					if cmd_text:sub(1, #_G['RAW_SH_TEXT_SENTINEL']) == _G['RAW_SH_TEXT_SENTINEL'] then
 						cmd_text = cmd_text:sub(#_G['RAW_SH_TEXT_SENTINEL'] + 1)
 						text = text .. cmd_text .. ' '
 					else
-						--[[/minify-delete]]
 						cmd_text = cmd_text:gsub('\\', '\\\\'):gsub(
 							'"', '\\"'):gsub('%$', '\\$'):gsub('`', '\\`'):gsub('!', '\\!')
 						--Escape strings correctly in powershell
 						if _G['WINDOWS'] then cmd_text = cmd_text:gsub('\\"', '`"') end
 						text = text .. '"' .. cmd_text .. '" '
-						--[[minify-delete]]
 					end
-					--[[/minify-delete]]
 				end
 				output_array({ cmd_name, text }, 9)
 				--[[/minify-delete]]

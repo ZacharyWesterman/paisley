@@ -59,16 +59,14 @@ function LUAC_STRIP(dump)
 end
 
 function LUAC_DUMP(text)
+	local switch = false
 	local function loadfn()
-		local switch = false
-		return function()
-			if switch then return nil end
-			switch = true
-			return text
-		end
+		if switch then return nil end
+		switch = true
+		return text
 	end
 
-	local fn = load(loadfn())
+	local fn = load(loadfn)
 	if not fn then
 		---@diagnostic disable-next-line
 		parse_error(nil, 'COMPILER BUG: Failed to compile Lua runtime into bytecode!')

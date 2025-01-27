@@ -10,10 +10,6 @@ debug = re.compile(
     r'--\[\[minify-delete\]\].*?--\[\[/minify-delete\]\]', re.DOTALL)
 debug2 = re.compile(
     r'(--\[\[build-replace=([^\]]+)\]\].*?--\[\[/build-replace\]\])', re.DOTALL)
-# comment = re.compile(r'(?<![\'"-])--(\[\[([^\]]|\](?!\]))*\]\]|[^\n]*)')
-# endline = re.compile(r'\n\n+')
-# spaces  = re.compile(r'[ \t]+\n')
-# indents = re.compile(r'\n[ \t]+')
 
 comment1 = re.compile(r'--.*')
 comment2 = re.compile(r'(?s)--\[\[.+?\]\]')
