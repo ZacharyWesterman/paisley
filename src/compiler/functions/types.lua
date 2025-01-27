@@ -198,7 +198,7 @@ TYPESIG = {
 		--[[/minify-delete]]
 	},
 	index = {
-		valid = { { 'array', 'array[number]' }, { 'array', 'number' }, { 'string', 'array[number]' }, { 'string', 'number' } },
+		valid = { { 'array', 'any' }, { 'string', 'string' } },
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'iter', 'value' },
