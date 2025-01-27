@@ -85,7 +85,7 @@ end
 ---@return fun(line: number): nil runtime_function The function to execute the operation.
 local function operator(format_func, operate_func)
 	return function(line)
-		local v1, v2 = POP(), POP()
+		local v2, v1 = POP(), POP()
 
 		if type(v1) == 'table' or type(v2) == 'table' then
 			if type(v1) ~= 'table' then v1 = { v1 } end
