@@ -21,7 +21,13 @@
 #@return object The parsed arguments.
 #@error If the argument is not a list, or if args don't match the expected format.
 subroutine arg.parse
+    #Parse name/description
+    if {@3.type() != 'object' or not @3.name or not @3.description} then
+        error "Third parameter to arg.parse should be an object of the form:\n{('name' => 'program_name','description' => 'program_description').json_encode(true)}"
+    end
+
     #Parse argument config and adjust so it's easier to work with.
+    #Also validates argument format.
     let _args = {'flags' => (=>), 'values' => (=>)}
     for _key _val in {@2.pairs()} do
         if {_val.type() != 'object'} then
@@ -56,6 +62,14 @@ subroutine arg.parse
             end
 
         end
+    end
+
+    # Scan for --help flag
+    # If found, show usage info and then exit
+    if {'--help' in @1 or '-h' in @1} then
+        delete _args _key _val
+        gosub arg._help_text {@2} {@3}
+        stop
     end
 
     let _res = {=>}
@@ -174,4 +188,34 @@ subroutine arg._parse_type
     end
 
     return {@2}
+end
+
+#@private
+subroutine arg._help_text
+    let flags = {i for i in @1.pairs() if i[2].type() = 'object'}
+    let values = {i for i in @1.pairs() if i[2].type() != 'object'}
+
+    print {@2.description}
+    print
+    print USAGE:
+    print "    {@2.name}{' [FLAGS]' if flags else ''} {("<{i[1]}>" if i[2] else "[{i[1]}]") for i in values}"
+
+    if {flags} then
+        print
+        print FLAGS:
+        for i in {flags} do
+            let k v = {i}
+
+            print {"-{v.short} /".lpad(' ', 5) if v.short else '     '} "--{k}" {("[{v.type}]" if v.type else '')} "{v.description}"
+        end
+    end
+
+    if {values} then
+        print
+        print ARGS:
+        for i in {values} do
+            let k v = {i}
+            print "    {k}" {'(required)' if v else ''}
+        end
+    end
 end

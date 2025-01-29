@@ -10,19 +10,25 @@ let args = ${gosub arg.parse {@} {
         'type' => 'string',
         'default' => 'default value',
         'short' => '1',
+        'description' => 'The first flag',
     },
     'arg2' => {
         'type' => 'number',
         'default' => 10,
         'short' => '2',
+        'description' => 'The second flag',
     },
     'arg3' => {
         'type' => 'boolean',
         'required' => true, # flag is required, so no default value needed
         'short' => '3',
+        'description' => 'The third flag',
     },
     'pos1' => true, # Positional argument, required
     'pos2' => false, # Positional argument, optional
+}{
+    'name' => 'test',
+    'description' => 'An example program that parses arguments',
 }}
 
 print {args.json_encode(true)}

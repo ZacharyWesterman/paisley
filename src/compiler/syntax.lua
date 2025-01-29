@@ -881,7 +881,7 @@ local rules = {
 	{
 		match = { { TOK.command, TOK.program, TOK.statement }, { TOK.command, TOK.program, TOK.statement } },
 		id = TOK.program,
-		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison },
+		not_before = { TOK.text, TOK.expression, TOK.inline_command, TOK.string, TOK.expr_open, TOK.command_open, TOK.string_open, TOK.comparison, TOK.concat },
 		not_after = { TOK.op_assign },
 		text = 'stmt_list',
 	},
