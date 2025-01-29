@@ -5,6 +5,7 @@
 require arg
 
 # Parse the arguments
+# Note that if the user passes '--help' or '-h', the program will automatically exit.
 let args = ${gosub arg.parse {@} {
     'arg1' => {
         'type' => 'string',
