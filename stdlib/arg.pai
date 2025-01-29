@@ -141,6 +141,11 @@ subroutine arg.parse
         let _vals = {_vals.delete(1)}
     end
 
+    # Use the default value if it exists
+    if {_prev_key} then
+        let _res{_prev_key} = {_args.flags['--' _prev_key].default}
+    end
+
     # Make sure all required flags were given.
     for _key _val in {_args.flags.pairs()} do
         if {_val.required and not _res[_val.key]} then
