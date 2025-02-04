@@ -523,6 +523,29 @@ function SemanticAnalyzer(tokens, root_file)
 		token.children = macro_node.children
 	end)
 
+	--Move params of all function calls to be direct children
+	--(this makes syntax like `a.func(b)` be the same as `func(a,b)`)
+	recurse(root, { TOK.func_call }, function(token, file)
+		if not token.children then
+			token.children = {}
+		elseif #token.children > 0 then
+			local kids = {}
+			for i = 1, #token.children do
+				local child = token.children[i]
+				if token.children[i].id == TOK.array_concat then
+					local k
+					for k = 1, #token.children[i].children do
+						table.insert(kids, token.children[i].children[k])
+					end
+				else
+					table.insert(kids, token.children[i])
+				end
+			end
+
+			token.children = kids
+		end
+	end)
+
 	--Replace special function calls "\sub_name(arg1,arg2)" with "${gosub sub_name {arg1} {arg2}}"
 	recurse(root, {TOK.func_call}, nil, function(token, file)
 		if token.text:sub(1,1) ~= '\\' then return end
@@ -551,26 +574,6 @@ function SemanticAnalyzer(tokens, root_file)
 
 	--Check function calls
 	recurse(root, { TOK.func_call }, function(token, file)
-		--Move all params to be direct children
-		if not token.children then
-			token.children = {}
-		elseif #token.children > 0 then
-			local kids = {}
-			for i = 1, #token.children do
-				local child = token.children[i]
-				if token.children[i].id == TOK.array_concat then
-					local k
-					for k = 1, #token.children[i].children do
-						table.insert(kids, token.children[i].children[k])
-					end
-				else
-					table.insert(kids, token.children[i])
-				end
-			end
-
-			token.children = kids
-		end
-
 		local func = BUILTIN_FUNCS[token.text]
 
 		--Function doesn't exist
