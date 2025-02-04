@@ -244,6 +244,13 @@ subroutine 4 end
 subroutine 5 end
 ```
 
+### Subroutines in Expressions:
+Inside of expressions, subroutines can be called in one of two ways:
+1. Using the inline command evaluation syntax `${...}`, in the same way as commands are used. E.g. `${gosub my_subroutine {arg1} arg2 "arg3" etc..}`
+2. Using the special function evaluation syntax `\my_subroutine(arg1,arg2,etc...)`.
+
+These both do exactly the same thing: the latter is just syntax sugar for the former, and is supplied for convenience.
+
 ### Subroutine Memoization:
 Some subroutines may take a very long time to compute values, when we only really need them to be computed once for any given input.
 For these kinds of subroutines, the `cache` keyword can be used to memoize the subroutine and only compute the results once.
