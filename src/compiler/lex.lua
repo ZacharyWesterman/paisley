@@ -437,6 +437,13 @@ function Lexer(text, file)
 						if match then tok_type = TOK.variable end
 					end
 				end
+
+				--Special identifiers (can contain special characters)
+				if not match then
+					match = text:match('^\\[^ \t\n\r"\'%(%)%[%]{};%$]+')
+					if match then tok_type = TOK.variable end
+				end
+
 			elseif curr_scope == '"' or curr_scope == '\'' then
 				--Logic for inside strings
 				local this_ix = 1

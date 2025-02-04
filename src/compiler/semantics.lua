@@ -523,6 +523,32 @@ function SemanticAnalyzer(tokens, root_file)
 		token.children = macro_node.children
 	end)
 
+	--Replace special function calls "\sub_name(arg1,arg2)" with "${gosub sub_name {arg1} {arg2}}"
+	recurse(root, {TOK.func_call}, nil, function(token, file)
+		if token.text:sub(1,1) ~= '\\' then return end
+
+		--If function name begins with backslash, it's actually a gosub.
+		-- token.text = 'gosub'
+		-- local args = token.children
+		-- if 
+		local kids = token.children
+		if kids[1].id == TOK.array_concat then kids = kids[1].children end
+		table.insert(kids, 1, {
+			id = TOK.text,
+			text = token.text:sub(2),
+			span = token.span,
+		})
+
+		token.text = '${'
+		token.id = TOK.inline_command
+		token.children = {{
+			id = TOK.gosub_stmt,
+			text = 'gosub',
+			span = token.span,
+			children = kids,
+		}}
+	end)
+
 	--Check function calls
 	recurse(root, { TOK.func_call }, function(token, file)
 		--Move all params to be direct children
