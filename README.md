@@ -16,7 +16,7 @@ As such, there is a whole suite of operations and functions for quick and easy d
 ## FAQ
 
 **Q:** *Where does the name "Paisley" come from?*<br>
-**A:** Originally it was an acronym "PAISLey" with an embarassing leftover "ey" that didn't stand for anything; but nowadays its name is just "Paisley", no acronym. If you want to assign a meaning to the name, you could say that paisleys are a simple pattern where you repeat pretty little curlies over and over all the way down. Likewise, Paisley is a simple language whose expression syntax uses curly braces all the way down. That's a potential answer at least. The real answer is that I like how paisleys look.
+**A:** Originally it was an acronym "PAISLey" with an embarrassing leftover "ey" that didn't stand for anything; but nowadays its name is just "Paisley", no acronym. If you want to assign a meaning to the name, you could say that paisleys are a simple pattern where you repeat pretty little curlies over and over all the way down. Likewise, Paisley is a simple language whose expression syntax uses curly braces all the way down. That's a potential answer at least. The real answer is that I like how paisleys look.
 
 **Q:** *What niche does Paisley fill?*<br>
 **A:** Paisley would fill a similar niche to Bash scripts, where you're chaining together other scripts/programs to make more complex logic. Similar to bash, commands can be run just by typing the command name and parameters separated by spaces. Basically, it's somewhere between Bash and Python; fitting the shell-language niche while also having batteries included.
