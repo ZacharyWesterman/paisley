@@ -31,20 +31,36 @@ As such, there is a whole suite of operations and functions for quick and easy d
 
 ## Installing Paisley
 
-Dependencies:
-- Lua
-- Python (for installing)
+Required Dependencies to run:
+- `lua5.1` or greater
 
-If you don't want to install any lua dependencies, you can just run `./paisley` and it should work fine. No Python needed in this case.
+Required dependencies to build standalone applications:
+- `lua5.1` exactly
+- `liblua5.1-dev` or equivalent Lua libraries for your OS.
+- `python3`
+- `luac`
 
+Optional dependency to enable extra features:
+- `luarocks`
+
+**If you want to keep dependencies to a minimum**, you can just install `lua` and then run `./paisley` and it should work fine. Nothing else is needed, but extra features are disabled in this case.
+
+Optional extra features include:
+- Building the Paisley compiler into a standalone application and installing it on your system.
+- Compiling Paisley scripts into standalone applications.
+- Compressing Paisley bytecode with zlib compression.
+- Advanced controls in REPL mode, along with syntax highlighting.
+
+#### If you have all the requirements to build standalone applications
 On Linux systems, just run `./install.sh` and it will install Lua rocks for all extra features, then compile Paisley into a single file and install on your system.
 On Windows, there is no build, just run Paisley locally.
-
 To uninstall, just run `./uninstall.sh`.
 
-Once installed, you can check out the examples, or run `paisley --help` for usage info.
+**NOTE:** If you for whatever reason *can't* install **ANY** dependencies on your system, there is also a standalone build available in the latest tag. Currently only a Linux build is available.
 
-**NOTE:** If you for whatever reason *can't* install Lua or Python on your system, there is also a standalone build available in the latest tag.
+---
+
+When you're ready to explore the language, be sure to check out the examples, or run `paisley --help` for usage info.
 
 ---
 ---
