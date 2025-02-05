@@ -4,9 +4,8 @@
 
 require arg
 
-# Parse the arguments
-# Note that if the user passes '--help' or '-h', the program will automatically exit.
-let args = ${gosub arg.parse {@} {
+# The list of arguments, and whether they're positional, require a value, or whatever else.
+let config = {
     'arg1' => {
         'type' => 'string',
         'default' => 'default value',
@@ -27,9 +26,21 @@ let args = ${gosub arg.parse {@} {
     },
     'pos1' => true, # Positional argument, required
     'pos2' => false, # Positional argument, optional
-}{
+}
+
+# The info to use when the `--help` flag is given.
+let info = {
     'name' => 'test',
     'description' => 'An example program that parses arguments',
-}}
+}
 
+# Parse the arguments
+# Note that if the user passes '--help' or '-h', the program will automatically exit. This cannot be caught.
+# If the arguments are invalid, an exception will be raised, which can be caught and handled.
+let args = {\arg.parse(@, config, info)}
+
+# Alternative way of doing the same thing, but more verbose:
+# let args = ${gosub arg.parse {@} {config} {info} }
+
+# Print the parsed arguments
 print {args.json_encode(true)}
