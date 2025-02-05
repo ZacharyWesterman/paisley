@@ -474,7 +474,6 @@ function generate_bytecode(root, file)
 		[TOK.comparison] = function(token, file)
 			local op = {
 				['='] = 'equal',
-				['=='] = 'equal',
 				['!='] = 'notequal',
 				['>'] = 'greater',
 				['>='] = 'greaterequal',

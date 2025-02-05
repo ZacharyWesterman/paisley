@@ -103,7 +103,7 @@ function FOLD_CONSTANTS(token, file)
 			local result = c1.value[1]
 			for i = 2, #c1.value do
 				local v = c1.value[i]
-				if operator == '==' then
+				if operator == '=' then
 					result = result == v
 				elseif operator == '<' then
 					result = std.compare(result, v, function(p1, p2) return p1 < p2 end)
@@ -146,7 +146,7 @@ function FOLD_CONSTANTS(token, file)
 			--Even if the parameter is not constant, we can still deduce the output type based on the operator
 			if std.arrfind({ '+', '-', '/', '//', '%' }, c2.text, 1) > 0 then
 				token.type = 'number'
-			elseif std.arrfind({ '==', '<', '<=', '>', '>=', '!=', 'and', 'or', 'xor' }, c2.text, 1) > 0 then
+			elseif std.arrfind({ '=', '<', '<=', '>', '>=', '!=', 'and', 'or', 'xor' }, c2.text, 1) > 0 then
 				token.type = 'boolean'
 			end
 		end
@@ -218,7 +218,7 @@ function FOLD_CONSTANTS(token, file)
 		if not c2 then return end
 
 		local result
-		if operator == '==' then
+		if operator == '=' then
 			result = c1.value == c2.value
 		elseif operator == '<' then
 			result = std.compare(c1.value, c2.value, function(p1, p2) return p1 < p2 end)
@@ -409,17 +409,7 @@ function FOLD_CONSTANTS(token, file)
 		elseif stop - start >= std.MAX_ARRAY_LEN then
 			local msg = 'Attempt to create an array of ' ..
 				(stop - start + 1) .. ' elements (max is ' .. std.MAX_ARRAY_LEN .. '). Array truncated.'
-			--[[minify-delete]]
-			if _G['LANGUAGE_SERVER'] then
-				INFO.warning(token.span, msg, file)
-			else
-				--[[/minify-delete]]
-				msg = token.span.from.line .. ', ' .. token.span.from.col .. ': ' .. msg
-				if file then msg = file .. ': ' .. msg end
-				print('WARNING: ' .. msg)
-				--[[minify-delete]]
-			end
-			--[[/minify-delete]]
+			parse_warning(token.span, msg, file)
 
 			--We KNOW the array will be to large, so truncate it.
 			token.children[2].value = std.MAX_ARRAY_LEN + start - 1

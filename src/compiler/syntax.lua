@@ -1,3 +1,5 @@
+---@param token Token
+---@param file string?
 local function _match_stmt_onmatch(token, file)
 	local if_ct = 0
 
@@ -18,6 +20,22 @@ local function _match_stmt_onmatch(token, file)
 	end
 
 	if token.children[2].id ~= TOK.kwd_match then check_nodes(token.children[2]) end
+end
+
+---@param token Token
+---@param file string?
+local function _equality_op_onmatch(token, file)
+	if token.text == '~=' then
+		token.text = '!='
+		local msg =
+		'The inequality operator `~=` is deprecated and will be removed from later versions. Use `!=` instead'
+		parse_warning(token.span, msg, file)
+	elseif token.text == '==' then
+		token.text = '='
+		local msg =
+		'The equality operator `==` is deprecated and will be removed from later versions. Use `=` instead'
+		parse_warning(token.span, msg, file)
+	end
 end
 
 local rules = {
@@ -366,12 +384,7 @@ local rules = {
 		id = TOK.comparison,
 		keep = { 1, 3 },
 		text = 2,
-		---@param token Token
-		---@param file string?
-		onmatch = function(token, file)
-			if token.text == '~=' then token.text = '!=' end
-			if token.text == '=' then token.text = '==' end
-		end,
+		onmatch = _equality_op_onmatch,
 		not_after = { TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod },
 	},
 	--Special logical comparison with only an RHS operand.
@@ -382,12 +395,7 @@ local rules = {
 		id = TOK.comparison,
 		keep = { 3 },
 		text = 2,
-		---@param token Token
-		---@param file string?
-		onmatch = function(token, file)
-			if token.text == '~=' then token.text = '!=' end
-			if token.text == '=' then token.text = '==' end
-		end,
+		onmatch = _equality_op_onmatch,
 	},
 	{
 		match = { { TOK.boolean, TOK.length } },

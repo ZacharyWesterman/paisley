@@ -253,7 +253,7 @@ for _, v in ipairs(args) do
 		if zlib_installed then
 			ZLIB_COMPRESS = true
 		else
-			print('Warning: zlib dependency is not installed, so bytecode output will not be compressed.')
+			print('WARNING: zlib dependency is not installed, so bytecode output will not be compressed.')
 		end
 		next_is_output = false
 	elseif filename_found then

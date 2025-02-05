@@ -215,6 +215,25 @@ function parse_error(span, msg, file)
 	end --[[/minify-delete]]
 end
 
+---Print a warning to the console.
+---@param span Span
+---@param msg string
+---@param file string?
+---@diagnostic disable-next-line
+function parse_warning(span, msg, file)
+	--[[minify-delete]]
+	if _G['LANGUAGE_SERVER'] then
+		INFO.warning(span, msg, file)
+	else
+		--[[/minify-delete]]
+		msg = span.from.line .. ', ' .. span.from.col .. ': ' .. msg
+		if file then msg = file .. ': ' .. msg end
+		print('WARNING: ' .. msg)
+		--[[minify-delete]]
+	end
+	--[[/minify-delete]]
+end
+
 --[[minify-delete]]
 local function lsp_msg(span, msg, loglevel, file)
 	if file == INFO.root_file or not _G['LANGUAGE_SERVER'] or not INFO.root_file then
