@@ -497,7 +497,9 @@ function SemanticAnalyzer(tokens, root_file)
 		{ TOK.macro, TOK.macro_ref, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.subroutine, TOK
 			.else_stmt, TOK.elif_stmt, TOK.match_stmt }, function(token, file)
 			if token.id ~= TOK.macro and token.id ~= TOK.macro_ref then
-				if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
+				if token.id == TOK.if_stmt and token.children[2].id == TOK.kwd_then then
+					table.insert(macros, {})
+				elseif token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
 					table.remove(macros)
 					tok_level = tok_level - 1
 				end
