@@ -4,14 +4,11 @@
 #recursive implementation is well-known for its slowness.
 
 for n in {0:100} do
-    print "fib({n}) = ${gosub fibonacci {n}}"
+    print "fib({n}) = {\fibonacci(n)}"
 end
 
 #Remove `cache` to see how slow this subroutine can be.
 cache subroutine fibonacci
     if {@1 < 2} then return {@1} end
-    return {
-        ${gosub fibonacci {@1-1}} +
-        ${gosub fibonacci {@1-2}}
-    }
+    return {\fibonacci(@1-1) + \fibonacci(@1-2)}
 end
