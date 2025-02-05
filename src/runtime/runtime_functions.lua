@@ -622,6 +622,7 @@ local functions = {
 	function()
 		local v = POP()
 		local array = std.array()
+		print(json.stringify(std.str(v[1]):gmatch("^%d+")()))
 		for i in std.str(v[1]):gmatch(std.str(v[2])) do
 			table.insert(array, i)
 		end
@@ -1083,6 +1084,12 @@ local functions = {
 		end
 
 		PUSH(result)
+	end,
+
+	--GET FIRST MATCH FROM A PATTERN ON A STRING
+	function()
+		local v = POP()
+		PUSH(std.str(v[1]):match(std.str(v[2])))
 	end,
 }
 

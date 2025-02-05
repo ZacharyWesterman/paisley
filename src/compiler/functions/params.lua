@@ -88,4 +88,5 @@ BUILTIN_FUNCS = {
 	date = 1,
 	random_elements = 2,
 	shuffle = 1,
+	match = 2,
 }

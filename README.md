@@ -544,6 +544,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Convert a number to a hexadecimal string: `hex(value) -> string`
 - Remove all characters that do not match the given pattern: `filter(text, pattern) -> string`
 - Get all substrings that match the given pattern: `matches(text, pattern) -> array[string]`
+- Get the first substring that matches the given pattern: `match(text, pattern) -> string|null`
 - Convert a "seconds since midnight" timestamp into (hour, min, sec, milli): `clocktime(value) -> array`
 - Convert a timestamp or clocktime into an ISO time string: `time(timestamp) -> string`
 - Convert a date array into an ISO date string: `date(date_array) -> string`

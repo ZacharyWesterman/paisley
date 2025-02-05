@@ -114,5 +114,5 @@ CALL_CODES = {
 	time = 110,
 	date = 111,
 	random_elements = 112,
-	shuffle = 113,
+	match = 113,
 }

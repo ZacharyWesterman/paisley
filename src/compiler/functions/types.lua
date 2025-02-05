@@ -697,6 +697,15 @@ TYPESIG = {
 		description = 'Shuffle an array\'s elements into a random order',
 		--[[/minify-delete]]
 	},
+	match = {
+		valid = { { 'string' } },
+		out = 'string?',
+		--[[minify-delete]]
+		--[[minify-delete]]
+		params = { 'text', 'pattern' },
+		description = 'Get the first substring that matches the given pattern',
+		--[[/minify-delete]]
+	},
 
 	[TOK.add] = {
 		valid = { { 'number' }, { 'array[number]' } },

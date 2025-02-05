@@ -125,7 +125,7 @@ FUNC_OPERATIONS = {
 
 		if #a ~= #b then
 			parse_error(token.span, 'Function "dist(a,b)" expected arrays of equal length, got lengths ' ..
-			#a .. ' and ' .. #b, file)
+				#a .. ' and ' .. #b, file)
 		end
 
 		local total = 0
@@ -392,5 +392,9 @@ FUNC_OPERATIONS = {
 			result = result .. ('0'):rep(2 - #val) .. val
 		end
 		return result
+	end,
+
+	match = function(text, pattern)
+		return text:match(pattern)
 	end,
 }
