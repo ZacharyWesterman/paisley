@@ -70,7 +70,18 @@ function PLASMA_RESTRICT()
 	BUILTIN_COMMANDS['?!'] = nil
 end
 
+function SHELL_RESTRICT()
+	BUILTIN_COMMANDS['='] = nil
+	BUILTIN_COMMANDS['?'] = nil
+	BUILTIN_COMMANDS['!'] = nil
+	BUILTIN_COMMANDS['?!'] = nil
+end
+
 if _G['RESTRICT_TO_PLASMA_BUILD'] then
 	PLASMA_RESTRICT()
+end
+
+if _G['SANDBOX'] then
+	SHELL_RESTRICT()
 end
 --[[/minify-delete]]
