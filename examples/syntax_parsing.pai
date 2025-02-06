@@ -1,0 +1,33 @@
+require syntax
+
+define {![0]}
+
+#We're defining operator IDs with macros so that an invalid ID is a compile error.
+#They don't have to be numbers, could be anything, but numbers are easy.
+#Also, see how macros can auto-increment themselves! `![!+1]` 
+define {
+    !digit[![!+1]]
+    !op_plus[![!+1]]
+    !op_minus[![!+1]]
+    !op_times[![!+1]]
+    !op_divide[![!+1]]
+    !lparen[![!+1]]
+    !rparen[![!+1]]
+}
+
+let scopes = {
+    '_' => (
+        '[0-9]+' => (!digit,),
+        '%+' => (!op_plus,),
+        '%-' => (!op_minus,),
+        '%*' => (!op_times,),
+        '/' => (!op_divide,),
+        '%(' => (!lparen,),
+        '%)' => (!rparen,),
+        '%s+' => (!token_discard,),
+    ),
+}
+
+let text = '123 + 456'
+
+print {\syntax.lex(scopes, text).json_encode(true)}

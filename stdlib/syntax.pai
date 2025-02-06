@@ -1,0 +1,69 @@
+define {
+    !token_discard[false]
+    !token_pop_scope[true]
+}
+
+#@export
+#@brief Split input text into an array of tokens based on a list of scoped patterns.
+#@param scopes object The list of scopes to operate on.
+#@param text string The text to parse.
+#@return array[object] An array of tokens.
+subroutine syntax.lex
+    let _config = {@1}
+
+    #Validate the syntax scope layout
+    if {type(_config) != 'object'} then
+        error "First parameter to syntax.lex (scope config) must be an object, but got {type(_config)}!"
+    end
+    if {'_' not in _config} then
+        error "Scope config does not contain a rule for the default scope! there should be a scope ('_' => ...)."
+    end
+    if {&(i for i in values(_config) if type(i) != 'object')} then
+        error "Error in scope config: all scopes must be an object with the keys being the pattern to match, and the values being an array of the form `[id:int, scope_action:string|boolean]`. scope_action will push a new scope if string, and will pop to prev scope if otherwise truey."
+    end
+
+    #Make sure input is a string
+    let _text = {@2}
+    if {type(_text) != 'string'} then
+        error "Second parameter to syntax.lex (input text) must be a string, but got {type(_text)}"
+    end
+
+    #Now let's parse this bad boy
+    let _tokens = {,}
+    let _scopes = {'_',}
+    let _i = 0
+    while {&_text} do
+        for _pattern _cfg in {pairs(@1[_scopes[-1]])} do
+
+            let _m = {_text.match("^{_pattern}")}
+            if {not _m} then continue end
+
+            let _text = {_text[(&_m+1):&_text]}
+            let _i = {_i + &_m}
+
+            if {_cfg[1] != !token_discard} then
+                let _tokens{} = {
+                    'id' => _cfg[1],
+                    'text' => _m,
+                    'span' => (_i, (_i+&_m)),
+                }
+            end
+            delete _m
+
+            if {type(_cfg[2]) = 'string'} then
+                if {_cfg[2] not in _config} then
+                    error "Unable to find scope `{_cfg[2]}` in scope config."
+                end
+            end
+
+            continue 2
+        end
+
+        # If we get to this part of the loop, it means that we didn't find a match.
+        # So we raise an error about invalid character.
+        error "Unexpected character `{_text[1]}`."
+    end
+
+    delete _config _scopes _text _pattern _cfg _i
+    return {_tokens}
+end
