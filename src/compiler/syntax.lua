@@ -391,7 +391,7 @@ local rules = {
 	--This is only for use in "match" statements,
 	--where the LHS operand is implied to be the match expression.
 	{
-		match = { { TOK.expr_open }, { TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne, TOK.op_like }, { TOK.boolean, TOK.comparison }, { TOK.expr_close } },
+		match = { { TOK.expr_open }, { TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne, TOK.op_like, TOK.op_in }, { TOK.boolean, TOK.comparison }, { TOK.expr_close } },
 		id = TOK.comparison,
 		keep = { 3 },
 		text = 2,

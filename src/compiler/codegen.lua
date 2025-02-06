@@ -480,6 +480,7 @@ function generate_bytecode(root, file)
 				['<'] = 'less',
 				['<='] = 'lessequal',
 				['like'] = 'strlike',
+				['in'] = 'inarray',
 			}
 			codegen_rules.binary_op(token, op[token.text])
 		end,
