@@ -77,7 +77,7 @@ subroutine arg.parse
     let _vals = {_args.values.keys()}
     for _arg in {@1} do
         if {_prev_key} then
-            if {_val[1] == '-'} then
+            if {_val[1] = '-'} then
                 error "Missing value for flag \"{_key}\""
             end
 
@@ -101,7 +101,7 @@ subroutine arg.parse
             if {('--'_key) not in _args.flags} then
                 error "Unknown flag \"--{_key}\""
             end
-            if {_val == ''} then
+            if {_val = ''} then
                 error "Empty value for flag \"{_key}\""
             end
 
@@ -125,7 +125,7 @@ subroutine arg.parse
             if {('-'_key) not in _args.flags} then
                 error "Unknown flag \"-{_key}\""
             end
-            if {_val == ''} then
+            if {_val = ''} then
                 error "Empty value for flag \"{_key}\""
             end
 
