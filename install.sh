@@ -21,7 +21,7 @@ fi
 [ $FAILED == 1 ] && exit 1
 
 #Make sure we're in the same dir as this script.
-DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
 
 #Package the program into Lua bytecode
 echo 'Building Paisley...'
