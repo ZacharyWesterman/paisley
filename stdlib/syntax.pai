@@ -18,8 +18,8 @@ subroutine syntax.lex
     if {'_' not in _config} then
         error "Scope config does not contain a rule for the default scope! there should be a scope ('_' => ...)."
     end
-    if {&(i for i in values(_config) if type(i) != 'object')} then
-        error "Error in scope config: all scopes must be an object with the keys being the pattern to match, and the values being an array of the form `[id:int, scope_action:string|boolean]`. scope_action will push a new scope if string, and will pop to prev scope if otherwise truey."
+    if {&(i for i in values(_config) if type(i) != 'array')} then
+        error "Error in scope config: all scopes must be an array with the values each being an array of the form `[pattern: string, id:any, scope_action:string|boolean|null]`. scope_action will push a new scope if string, and will pop to prev scope if otherwise truey."
     end
 
     #Make sure input is a string
@@ -33,7 +33,8 @@ subroutine syntax.lex
     let _scopes = {'_',}
     let _i = 0
     while {&_text} do
-        for _pattern _cfg in {pairs(@1[_scopes[-1]])} do
+        for _cfg in {@1[_scopes[-1]]} do
+            let _pattern _id _scope = {_cfg}
 
             let _m = {_text.match("^{_pattern}")}
             if {not _m} then continue end
@@ -41,18 +42,18 @@ subroutine syntax.lex
             let _text = {_text[(&_m+1):&_text]}
             let _i = {_i + &_m}
 
-            if {_cfg[1] != !token_discard} then
+            if {_id != !token_discard} then
                 let _tokens{} = {
-                    'id' => _cfg[1],
+                    'id' => _id,
                     'text' => _m,
                     'span' => (_i, (_i+&_m)),
                 }
             end
             delete _m
 
-            if {type(_cfg[2]) = 'string'} then
-                if {_cfg[2] not in _config} then
-                    error "Unable to find scope `{_cfg[2]}` in scope config."
+            if {type(_scope) = 'string'} then
+                if {_scope not in _config} then
+                    error "Unable to find scope `{_scope}` in scope config."
                 end
             end
 
@@ -64,7 +65,7 @@ subroutine syntax.lex
         error "Unexpected character `{_text[1]}`."
     end
 
-    delete _config _scopes _text _pattern _cfg _i
+    delete _config _scopes _text _pattern _cfg _i _id _scope
     return {_tokens}
 end
 
@@ -100,7 +101,7 @@ subroutine syntax.parse
     while {_matched} do
         let _matched = {false}
 
-        for _i _token in {_tokens.pairs()} do
+        for _i _token in {_tokens.pairs().reverse()} do
             for _deduces_to _rules in {_cfg.pairs()} do
                 let _possible_prevs = {,}
 
