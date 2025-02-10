@@ -555,6 +555,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Replace an element in an array: `update(array, index, value) -> array`
 - Insert an element in an array: `insert(array, index, value) -> array`
 - Delete an element from an array: `delete(array, index) -> array`
+- Replace a subset of an array (bounds inclusive): `splice(array, index1, index2, array) -> array`
 - Generate the SHA256 hash of a string: `hash(string) -> string`
 - Convert an array into an object: `object(array) -> object`, i.e. the array `(key1, val1, key2, val2)` will result in the object `(key1 => val1, key2 => val2)`
 - Convert an object into an array: `array(object) -> array`, i.e. the object `(key1 => val1, key2 => val2)` will result in the array `(key1, val1, key2, val2)`

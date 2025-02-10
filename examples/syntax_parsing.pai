@@ -1,0 +1,69 @@
+require syntax
+
+define {![0]}
+
+#We're defining operator IDs with macros so that an invalid ID is a compile error.
+#They don't have to be numbers, could be anything, but numbers are easy.
+#Also, see how macros can auto-increment themselves! `![!+1]` 
+define {
+    !digit[![!+1]]
+    !op_plus[![!+1]]
+    !op_minus[![!+1]]
+    !op_times[![!+1]]
+    !op_divide[![!+1]]
+    !lparen[![!+1]]
+    !rparen[![!+1]]
+}
+
+#Define the scopes for the lexer.
+#Most languages only have 1 lexical scope, but for context-sensitive lexers (like Bash), you might have more.
+let scopes = {
+    '_' => (
+        '[0-9]+' => (!digit,),
+        '%+' => (!op_plus,),
+        '%-' => (!op_minus,),
+        '%*' => (!op_times,),
+        '/' => (!op_divide,),
+        '%(' => (!lparen,),
+        '%)' => (!rparen,),
+        '%s+' => (!token_discard,),
+    ),
+}
+
+#Define the text to parse.
+let text = '(1+2)*3-4'
+
+#Split the text into tokens.
+#The lexer will return an array of objects, each with an 'id', 'span', and 'text' field.
+let tokens = {\syntax.lex(scopes, text)}
+
+#Define the rules for the parser.
+let rules = {
+    'expr' => (
+        ('expr', !op_plus, 'term',),
+        ('expr', !op_minus, 'term',),
+        ('term',),
+    ),
+    'term' => (
+        ('term', !op_times, 'factor',),
+        ('term', !op_divide, 'factor',),
+        ('factor',),
+    ),
+    'factor' => (
+        (!digit,),
+        (
+            # This is a special rule that only keeps SOME of the child nodes.
+            'rule' => (!lparen, 'expr', !rparen,),
+            'keep' => (2,), #Keep the child node at index 2.
+
+            #By default, if "keep" contains only 1 token index, the parser will discard the extra node in favor of the child node.
+            #If you want to keep the extra node, you can set "nodiscard" to true.
+        ),
+    ),
+}
+
+#Parse the tokens into an AST.
+let ast = {\syntax.parse(rules, tokens)}
+
+#Print the AST in a human-readable format.
+gosub syntax.print_ast {ast}

@@ -115,4 +115,5 @@ CALL_CODES = {
 	date = 111,
 	random_elements = 112,
 	match = 113,
+	splice = 114,
 }

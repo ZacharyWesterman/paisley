@@ -104,7 +104,7 @@ function FOLD_CONSTANTS(token, file)
 			for i = 2, #c1.value do
 				local v = c1.value[i]
 				if operator == '=' then
-					result = result == v
+					result = std.equal(result, v)
 				elseif operator == '<' then
 					result = std.compare(result, v, function(p1, p2) return p1 < p2 end)
 				elseif operator == '<=' then
@@ -114,7 +114,7 @@ function FOLD_CONSTANTS(token, file)
 				elseif operator == '>=' then
 					result = std.compare(result, v, function(p1, p2) return p1 >= p2 end)
 				elseif operator == '!=' then
-					result = result ~= v
+					result = not std.equal(result, v)
 				elseif operator == '+' then
 					result = std.num(result) + std.num(v)
 				elseif operator == '-' then

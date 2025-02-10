@@ -701,9 +701,16 @@ TYPESIG = {
 		valid = { { 'string' } },
 		out = 'string?',
 		--[[minify-delete]]
-		--[[minify-delete]]
 		params = { 'text', 'pattern' },
 		description = 'Get the first substring that matches the given pattern',
+		--[[/minify-delete]]
+	},
+	splice = {
+		valid = { { 'array', 'number', 'number', 'array' } },
+		out = 'array',
+		--[[minify-delete]]
+		params = { 'list', 'start', 'end', 'replacement' },
+		description = 'Remove or replace elements from an array',
 		--[[/minify-delete]]
 	},
 

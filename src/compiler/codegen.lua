@@ -480,6 +480,7 @@ function generate_bytecode(root, file)
 				['<'] = 'less',
 				['<='] = 'lessequal',
 				['like'] = 'strlike',
+				['in'] = 'inarray',
 			}
 			codegen_rules.binary_op(token, op[token.text])
 		end,
@@ -729,11 +730,17 @@ function generate_bytecode(root, file)
 
 		--BREAK STATEMENT
 		[TOK.break_stmt] = function(token, file)
+			for i = 2, token.children[1].value do
+				emit(bc.pop_until_null)
+			end
 			emit(bc.call, 'jump', loop_term_labels[#loop_term_labels - token.children[1].value + 1])
 		end,
 
 		--CONTINUE STATEMENT
 		[TOK.continue_stmt] = function(token, file)
+			for i = 2, token.children[1].value do
+				emit(bc.pop_until_null)
+			end
 			emit(bc.call, 'jump', loop_begn_labels[#loop_begn_labels - token.children[1].value + 1])
 		end,
 

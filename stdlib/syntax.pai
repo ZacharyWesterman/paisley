@@ -1,0 +1,203 @@
+define {
+    !token_discard[false]
+    !token_pop_scope[true]
+}
+
+#@export
+#@brief Split input text into an array of tokens based on a list of scoped patterns.
+#@param scopes object The list of scopes to operate on.
+#@param text string The text to parse.
+#@return array[object] An array of tokens.
+subroutine syntax.lex
+    let _config = {@1}
+
+    #Validate the syntax scope layout
+    if {type(_config) != 'object'} then
+        error "First parameter to syntax.lex (scope config) must be an object, but got {type(_config)}!"
+    end
+    if {'_' not in _config} then
+        error "Scope config does not contain a rule for the default scope! there should be a scope ('_' => ...)."
+    end
+    if {&(i for i in values(_config) if type(i) != 'object')} then
+        error "Error in scope config: all scopes must be an object with the keys being the pattern to match, and the values being an array of the form `[id:int, scope_action:string|boolean]`. scope_action will push a new scope if string, and will pop to prev scope if otherwise truey."
+    end
+
+    #Make sure input is a string
+    let _text = {@2}
+    if {type(_text) != 'string'} then
+        error "Second parameter to syntax.lex (input text) must be a string, but got {type(_text)}!"
+    end
+
+    #Now let's parse this bad boy
+    let _tokens = {,}
+    let _scopes = {'_',}
+    let _i = 0
+    while {&_text} do
+        for _pattern _cfg in {pairs(@1[_scopes[-1]])} do
+
+            let _m = {_text.match("^{_pattern}")}
+            if {not _m} then continue end
+
+            let _text = {_text[(&_m+1):&_text]}
+            let _i = {_i + &_m}
+
+            if {_cfg[1] != !token_discard} then
+                let _tokens{} = {
+                    'id' => _cfg[1],
+                    'text' => _m,
+                    'span' => (_i, (_i+&_m)),
+                }
+            end
+            delete _m
+
+            if {type(_cfg[2]) = 'string'} then
+                if {_cfg[2] not in _config} then
+                    error "Unable to find scope `{_cfg[2]}` in scope config."
+                end
+            end
+
+            continue 2
+        end
+
+        # If we get to this part of the loop, it means that we didn't find a match.
+        # So we raise an error about invalid character.
+        error "Unexpected character `{_text[1]}`."
+    end
+
+    delete _config _scopes _text _pattern _cfg _i
+    return {_tokens}
+end
+
+#@export
+#@brief Parse a list of tokens into an AST, based on a list of rules.
+#@param rules object The list of rules to operate on.
+#@param tokens array[object] The list of tokens to parse.
+#@return object The AST.
+subroutine syntax.parse
+    let _cfg = {@1}
+    let _tokens = {@2}
+
+    #Validate the syntax rule layout
+    if {type(_cfg) != 'object'} then
+        error "First parameter to syntax.parse (rule config) must be an object, but got {type(_cfg)}!"
+    end
+    if {type(_tokens) != 'array'} then
+        error "Second parameter to syntax.parse (tokens) must be an array, but got {type(_tokens)}!"
+    end
+    for _i in {values(_cfg)} do
+        if {i for i in _i if type(i) not in ('array', 'object')} then
+            error "Error in rule config: all rules must be an array of arrays or objects with the keys 'rule' and 'keep'."
+        end
+
+        if {i for i in _i if type(i) = 'object' and not ('rule' in i and 'keep' in i)} then
+            error "Error in rule config: all objects must have the keys 'rule' and 'keep'."
+        end
+    end
+
+    #Now let's parse the tokens into an AST based on the rules.
+    let _ast = {,}
+    let _matched = {true}
+    while {_matched} do
+        let _matched = {false}
+
+        for _i _token in {_tokens.pairs()} do
+            for _deduces_to _rules in {_cfg.pairs()} do
+                let _possible_prevs = {,}
+
+                for _rule in {_rules} do
+                    if {type(_rule) = 'object'} then
+                        let _keep = {_rule.keep if type(_rule.keep) = 'array' else (_rule.keep,)}
+                        let _nodiscard = {_rule.nodiscard}
+                        let _rule = {_rule.rule}
+                    else
+                        let _keep = {1:&_rule}
+                        let _nodiscard = {false}
+                    end
+
+                    if {\syntax._rule_matches(_rule, _tokens, _i)} then
+                        if {_i > 1 and &_possible_prevs} then
+                            for _prev in {_possible_prevs} do
+                                if {_prev[&_prev - 1] = _tokens[_i - 1].id} then
+                                    break 3
+                                end
+                            end
+                        end
+
+                        let _matched = {true}
+
+                        if {not _nodiscard and &_rule = 1} then
+                            let _tokens{_i, 'meta_id'} = {_deduces_to}
+                            break 2
+                        end
+
+                        let _new_token = {
+                            'id' => _deduces_to,
+                            'span' => (_tokens[_i].span[1], _tokens[_i+&_rule-1].span[2]),
+                            'children' => {,},
+                        }
+                        for _j in {_keep} do
+                            let _new_token{'children'} = {append(_new_token.children, _tokens[_j + _i - 1])}
+                        end
+
+                        let _tokens = {_tokens.splice(_i, &_rule - 1 + _i, (_new_token,))}
+                        delete _new_token
+
+                        if {not _nodiscard and &_keep = 1} then
+                            let _tokens{_i} = {_tokens[_i].children[1]}
+                            let _tokens{_i, 'meta_id'} = {_deduces_to}
+                        end
+
+                        break 2
+                    elif {&_rule > 1} then
+                        let _possible_prevs = {append(_possible_prevs, _rule)}
+                    end
+                end
+            end
+        end
+    end
+
+    if {&_tokens != 1} then
+        error "Failed to parse the input text into an AST."
+    end
+
+    let _ast = {_tokens}
+
+    delete _cfg _tokens _matched _i _token _deduces_to _rules _possible_prevs _rule _new_token _j _keep _nodiscard
+    return {_ast}
+end
+
+#@export
+#@brief Print a human-readable representation of an AST.
+#@param ast object The AST to print.
+subroutine syntax.print_ast
+    for _node in {@1} do
+        print "{''.lpad(' ', num(@2))} {_node.id}{(' : ' _node.text) if 'text' in _node else ''}"
+        if {_node.children} then
+            gosub syntax.print_ast {_node.children} {num(@2) + 2}
+        end
+    end
+end
+
+#@private
+subroutine syntax._rule_matches
+    let __rule = {@1}
+    let __tokens = {@2}
+    let __i = {@3}
+
+    if {&__rule + __i - 1 > &__tokens} then
+        delete __rule __tokens __i
+        return {false}
+    end
+
+    for __j __id in {__rule.pairs()} do
+        let __tok = {__tokens[__i+__j-1]}
+        let __tok_id = {__tok.meta_id if 'meta_id' in __tok else __tok.id}
+        if {__tok_id != __id} then
+            delete __rule __tokens __i __j __id __tok __tok_id
+            return {false}
+        end
+    end
+
+    delete __rule __tokens __i __j __id __tok __tok_id
+    return {true}
+end
