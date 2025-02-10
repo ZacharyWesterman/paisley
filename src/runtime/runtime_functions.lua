@@ -327,10 +327,10 @@ local functions = {
 	operator(std.str, function(a, b) return a:match(b) ~= nil end),
 
 	--EQUAL
-	function() PUSH(POP() == POP()) end,
+	function() PUSH(std.equal(POP(), POP())) end,
 
 	--NOT EQUAL
-	function() PUSH(POP() ~= POP()) end,
+	function() PUSH(not std.equal(POP(), POP())) end,
 
 	--GREATER THAN
 	function() PUSH(std.compare(POP(), POP(), function(p1, p2) return p1 < p2 end)) end,

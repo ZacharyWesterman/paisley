@@ -516,5 +516,32 @@ std = {
 		return result
 	end,
 
+	---@brief Check if two values are strictly equal.
+	---@note This function will compare arrays and objects recursively.
+	---@param data1 any
+	---@param data2 any
+	---@return boolean True if the values are equal, false otherwise.
+	equal = function(data1, data2)
+		if std.type(data1) ~= std.type(data2) then return false end
+
+		if std.type(data1) == 'array' then
+			if #data1 ~= #data2 then return false end
+			for i = 1, #data1 do
+				if not std.equal(data1[i], data2[i]) then return false end
+			end
+			return true
+		elseif std.type(data1) == 'object' then
+			for key, value in pairs(data1) do
+				if not std.equal(data2[key], value) then return false end
+			end
+			for key, value in pairs(data2) do
+				if not std.equal(data1[key], value) then return false end
+			end
+			return true
+		else
+			return data1 == data2
+		end
+	end,
+
 	MAX_ARRAY_LEN = 32768, --Any larger than this and performance tanks
 }
