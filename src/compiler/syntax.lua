@@ -259,7 +259,7 @@ local rules = {
 		id = TOK.array_concat,
 		keep = { 1, 3 },
 		text = 2,
-		not_before = { TOK.index_open, TOK.op_arrow, TOK.op_dot, TOK.kwd_if_expr, TOK.kwd_for_expr, TOK.op_plus, TOK.op_minus, TOK.op_count },
+		not_before = { TOK.index_open, TOK.op_arrow, TOK.op_dot, TOK.kwd_if_expr, TOK.kwd_for_expr, TOK.op_plus, TOK.op_minus, TOK.op_count, TOK.add, TOK.multiply },
 		not_after = { TOK.op_dot, TOK.op_arrow, TOK.op_in, TOK.kwd_else_expr, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_plus, TOK.op_minus, TOK.op_exponent },
 	},
 	{
@@ -272,7 +272,7 @@ local rules = {
 		id = TOK.array_concat,
 		keep = { 1 },
 		text = 2,
-		not_before = { TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.string_open, TOK.command_open, TOK.expr_open, TOK.array_slice, TOK.array_concat, TOK.comparison, TOK.paren_open, TOK.index_open, TOK.parentheses, TOK.variable, TOK.func_call, TOK.index, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_idiv, TOK.op_div, TOK.op_mod, TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne, TOK.op_arrow, TOK.key_value_pair, TOK.op_count },
+		not_before = { TOK.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.string_open, TOK.command_open, TOK.expr_open, TOK.array_slice, TOK.array_concat, TOK.comparison, TOK.paren_open, TOK.index_open, TOK.parentheses, TOK.variable, TOK.func_call, TOK.index, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_idiv, TOK.op_div, TOK.op_mod, TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne, TOK.op_arrow, TOK.key_value_pair, TOK.op_count, TOK.add, TOK.multiply },
 		not_after = { TOK.op_arrow, TOK.op_dot, TOK.op_in, TOK.kwd_else_expr, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_plus, TOK.op_minus, TOK.op_exponent, TOK.op_plus, TOK.op_minus },
 	},
 	{
