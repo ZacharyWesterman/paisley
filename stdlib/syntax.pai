@@ -163,7 +163,7 @@ subroutine syntax.parse
     let _ast = {_tokens}
 
     delete _cfg _tokens _matched _i _token _deduces_to _rules _possible_prevs _rule _new_token _j _keep _nodiscard
-    return {_ast}
+    return {_ast[1]}
 end
 
 #@export
@@ -201,3 +201,5 @@ subroutine syntax._rule_matches
     delete __rule __tokens __i __j __id __tok __tok_id
     return {true}
 end
+
+#@TODO: Add single-token lookahead to make sure that we don't greedily match tokens.

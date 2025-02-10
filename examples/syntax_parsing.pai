@@ -1,10 +1,21 @@
 require syntax
+require arg
 
-define {![0]}
+# Get expression text from first argument.
+let config = {
+    'expression' => true, #Positional argument, required
+}
+let info = {
+    'name' => 'paisley syntax_parsing.pai --',
+    'description' => 'An example program that parses a simple arithmetic expression.',
+}
+let args = {\arg.parse(@, config, info)}
 
+# Define the operator IDs.
 #We're defining operator IDs with macros so that an invalid ID is a compile error.
 #They don't have to be numbers, could be anything, but numbers are easy.
 #Also, see how macros can auto-increment themselves! `![!+1]` 
+define {![0]}
 define {
     !digit[![!+1]]
     !op_plus[![!+1]]
@@ -30,12 +41,9 @@ let scopes = {
     ),
 }
 
-#Define the text to parse.
-let text = '(1+2)*3-4'
-
 #Split the text into tokens.
 #The lexer will return an array of objects, each with an 'id', 'span', and 'text' field.
-let tokens = {\syntax.lex(scopes, text)}
+let tokens = {\syntax.lex(scopes, args.expression)}
 
 #Define the rules for the parser.
 let rules = {
@@ -65,5 +73,24 @@ let rules = {
 #Parse the tokens into an AST.
 let ast = {\syntax.parse(rules, tokens)}
 
-#Print the AST in a human-readable format.
-gosub syntax.print_ast {ast}
+#Now that we have a valid AST, we can evaluate it.
+#For simplicity, we'll define a subroutine for each node type.
+
+print {\evaluate(ast)}
+
+subroutine evaluate
+    if {@1.id in ('expr', 'term')} then
+        match {@1.children[2].text} do
+            if + then return {\evaluate(@1.children[1]) + \evaluate(@1.children[3])} end
+            if - then return {\evaluate(@1.children[1]) - \evaluate(@1.children[3])} end
+            if * then return {\evaluate(@1.children[1]) * \evaluate(@1.children[3])} end
+            if / then return {\evaluate(@1.children[1]) / \evaluate(@1.children[3])} end
+        else
+            error "Unknown operator '{@1.children[3].text}'"
+        end
+    elif {@1.id = !digit} then
+        return {num(@1.text)}
+    else
+        error "Unknown node type '{@1.id}'"
+    end
+end
