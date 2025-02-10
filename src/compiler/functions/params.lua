@@ -89,4 +89,5 @@ BUILTIN_FUNCS = {
 	random_elements = 2,
 	shuffle = 1,
 	match = 2,
+	splice = 4,
 }

@@ -397,4 +397,12 @@ FUNC_OPERATIONS = {
 	match = function(text, pattern)
 		return text:match(pattern)
 	end,
+
+	splice = function(array1, index1, index2, array2)
+		local result = std.array()
+		for i = 1, index1 - 1 do table.insert(result, array1[i]) end
+		for i = 1, #array2 do table.insert(result, array2[i]) end
+		for i = index2 + 1, #array1 do table.insert(result, array1[i]) end
+		return result
+	end,
 }
