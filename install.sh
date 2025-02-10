@@ -1,25 +1,21 @@
 #!/usr/bin/env bash
 FAILED=0
 
-if ! which lua &>/dev/null
-then
-	>&2 echo 'ERROR: Lua is not installed! Please install it and try again.'
+if ! which lua &>/dev/null; then
+	echo >&2 'ERROR: Lua is not installed! Please install it and try again.'
 	FAILED=1
-elif ! which luac &>/dev/null
-then
-	>&2 echo 'ERROR: Lua is installed, but `luac` is not! Please install it and try again.'
+elif ! which luac &>/dev/null; then
+	echo >&2 'ERROR: Lua is installed, but `luac` is not! Please install it and try again.'
 	FAILED=1
 fi
 
-if ! which python3 &>/dev/null
-then
-	>&2 echo 'ERROR: Python 3 is not installed! Please install it and try again.'
+if ! which python3 &>/dev/null; then
+	echo >&2 'ERROR: Python 3 is not installed! Please install it and try again.'
 	FAILED=1
 fi
 
-if ! which luarocks &>/dev/null
-then
-	>&2 echo 'WARNING: `luarocks` is not installed, so dependencies cannot be installed either. Some features may be missing from this build.'
+if ! which luarocks &>/dev/null; then
+	echo >&2 'WARNING: `luarocks` is not installed, so dependencies cannot be installed either. Some features may be missing from this build.'
 fi
 
 [ $FAILED == 1 ] && exit 1
@@ -42,13 +38,11 @@ mv .paisley-build/paisley "$HOME/.local/bin/paisley"
 rsync -a stdlib "$HOME/.local/bin/"
 rm .paisley-build -rf
 
-install_dependency()
-{
+install_dependency() {
 	sudo luarocks install "$1" &>/dev/null
 }
 
-wait_on_process()
-{
+wait_on_process() {
 	local pid=$1
 	local dep=$2
 	local item=$3
@@ -56,9 +50,8 @@ wait_on_process()
 
 	local spin='-\|/'
 	local i=0
-	while kill -0 $pid 2>/dev/null
-	do
-		i=$(((i+1)%4))
+	while kill -0 $pid 2>/dev/null; do
+		i=$(((i + 1) % 4))
 		printf "\r[%d/%d] Installing dependency \`%s\`... %s" $item $total "$dep" "${spin:$i:1}"
 		sleep .1
 	done
@@ -67,26 +60,22 @@ wait_on_process()
 
 echo 'Requesting permission to install dependencies...'
 
-total="$(<requires.txt wc -l)"
-item=0
-while read rock name
-do
-	item=$((item + 1))
+#Prompt once for password
+if ! sudo echo -n; then
+	echo >&2 'WARNING: Failed to install dependencies: user permission denied.'
+	echo >&2 '         It will still work, but some features may be missing.'
+else
+	total="$(wc <requires.txt -l)"
+	item=0
+	while read rock name; do
+		item=$((item + 1))
 
-	#Check if rock is already installed. If not, install it.
-	if [ "$(lua <<< "x, _ = pcall(require, '$name') print(x)")" != true ]
-	then
-		#Prompt once for password
-		if ! sudo echo -n
-		then
-			>&2 echo 'WARNING: Failed to install dependencies: user permission denied.'
-			>&2 echo '         It will still work, but some features may be missing.'
-			break
+		#Check if rock is already installed. If not, install it.
+		if [ "$(lua <<<"x, _ = pcall(require, '$name') print(x)")" != true ]; then
+			(install_dependency "$rock") &
+			wait_on_process $! "$rock" $item $total
 		fi
-
-		( install_dependency "$rock" ) &
-		wait_on_process $! "$rock" $item $total
-	fi
-done < requires.txt
+	done <requires.txt
+fi
 
 echo 'Paisley is now installed.'
