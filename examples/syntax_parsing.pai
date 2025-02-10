@@ -15,6 +15,8 @@ define {
     !rparen[![!+1]]
 }
 
+#Define the scopes for the lexer.
+#Most languages only have 1 lexical scope, but for context-sensitive lexers (like Bash), you might have more.
 let scopes = {
     '_' => (
         '[0-9]+' => (!digit,),
@@ -28,6 +30,40 @@ let scopes = {
     ),
 }
 
-let text = '123 + 456'
+#Define the text to parse.
+let text = '(1+2)*3-4'
 
-print {\syntax.lex(scopes, text).json_encode(true)}
+#Split the text into tokens.
+#The lexer will return an array of objects, each with an 'id', 'span', and 'text' field.
+let tokens = {\syntax.lex(scopes, text)}
+
+#Define the rules for the parser.
+let rules = {
+    'expr' => (
+        ('expr', !op_plus, 'term',),
+        ('expr', !op_minus, 'term',),
+        ('term',),
+    ),
+    'term' => (
+        ('term', !op_times, 'factor',),
+        ('term', !op_divide, 'factor',),
+        ('factor',),
+    ),
+    'factor' => (
+        (!digit,),
+        (
+            # This is a special rule that only keeps SOME of the child nodes.
+            'rule' => (!lparen, 'expr', !rparen,),
+            'keep' => (2,), #Keep the child node at index 2.
+
+            #By default, if "keep" contains only 1 token index, the parser will discard the extra node in favor of the child node.
+            #If you want to keep the extra node, you can set "nodiscard" to true.
+        ),
+    ),
+}
+
+#Parse the tokens into an AST.
+let ast = {\syntax.parse(rules, tokens)}
+
+#Print the AST in a human-readable format.
+gosub syntax.print_ast {ast}
