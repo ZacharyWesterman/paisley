@@ -174,7 +174,7 @@ local rules = {
 		id = TOK.negate,
 		keep = { 2 },
 		text = 1,
-		not_after = { TOK.lit_number, TOK.lit_boolean, TOK.lit_null, TOK.negate, TOK.command_close, TOK.expr_close, TOK.string_close, TOK.string_open, TOK.paren_close, TOK.inline_command, TOK.expression, TOK.parentheses, TOK.variable, TOK.func_call, TOK.index_close, TOK.index },
+		not_after = { TOK.lit_number, TOK.lit_boolean, TOK.lit_null, TOK.negate, TOK.command_close, TOK.expr_close, TOK.string_close, TOK.string_open, TOK.paren_close, TOK.inline_command, TOK.expression, TOK.parentheses, TOK.variable, TOK.func_call, TOK.index_close, TOK.index, TOK.op_plus, TOK.add },
 		not_before = { TOK.op_dot },
 	},
 
@@ -220,7 +220,7 @@ local rules = {
 		match = { { TOK.exponent, TOK.multiply, TOK.add, TOK.comparison }, { TOK.op_plus, TOK.op_minus }, { TOK.exponent, TOK.multiply, TOK.add, TOK.comparison } },
 		id = TOK.add,
 		not_before = { TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_dot, TOK.op_exponent, TOK.op_slice },
-		not_after = { TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_dot, TOK.op_exponent, TOK.op_slice },
+		not_after = { TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_dot, TOK.op_exponent, TOK.op_slice, TOK.op_count },
 		keep = { 1, 3 },
 		text = 2,
 	},
@@ -361,6 +361,7 @@ local rules = {
 		keep = { 1, 3, 5 },
 		text = 2,
 		not_before = { TOK.kwd_if_expr, TOK.op_dot },
+		not_after = { TOK.op_dot, TOK.index_close, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le },
 	},
 	{
 		match = { { TOK.comparison }, { TOK.kwd_for_expr }, { TOK.variable }, { TOK.op_in }, { TOK.comparison }, { TOK.kwd_if_expr }, { TOK.comparison } },
@@ -368,6 +369,7 @@ local rules = {
 		keep = { 1, 3, 5, 7 },
 		text = 2,
 		not_before = { TOK.kwd_else_expr, TOK.op_dot, TOK.index_open, TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le },
+		not_after = { TOK.op_dot, TOK.index_close, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_eq, TOK.op_ne, TOK.op_gt, TOK.op_ge, TOK.op_lt, TOK.op_le },
 	},
 
 	--If no other boolean op was detected, just promote the value to bool status.
