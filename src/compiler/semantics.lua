@@ -1046,7 +1046,7 @@ function SemanticAnalyzer(tokens, root_file)
 					end
 
 					for i = 1, #token.children do
-						table.insert(got_types, TYPE_TEXT(token.children[i].type))
+						table.insert(got_types, TYPE_TEXT(token.children[i].type or _G['TYPE_ANY']))
 					end
 
 					local msg

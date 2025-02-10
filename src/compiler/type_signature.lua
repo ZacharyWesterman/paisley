@@ -54,7 +54,7 @@ function SIGNATURE(signature, ignore_errors)
 				if i == 5 then
 					--Equate "?" operator to mean "|null".
 					table.insert(tokens, { text = '|', kind = 2 }) --Insert bar
-					m, i = 'null', 1              --Change type to "null"
+					m, i = 'null', 1                --Change type to "null"
 				end
 
 				table.insert(tokens, { text = m, kind = i })
@@ -97,7 +97,7 @@ function SIGNATURE(signature, ignore_errors)
 					end
 
 					if opt[t.text] then
-						do_error('Redundant use of type "' .. t.text .. '"')
+						-- do_error('Redundant use of type "' .. t.text .. '"')
 					elseif opt.any then
 						do_error('Cannot mix "any" with other types')
 					end
