@@ -75,7 +75,6 @@ let rules = {
 let ast = {\syntax.parse(rules, tokens)}
 
 #Now that we have a valid AST, we can evaluate it.
-#For simplicity, we'll define a subroutine for each node type.
 
 print {\evaluate(ast)}
 
