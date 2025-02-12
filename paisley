@@ -39,12 +39,15 @@ local options = {
 	{ description = "The input file, or `-` to read from stdin",                     name = "input",               type = "string" },
 }
 
---DELETE THIS WHEN MINIFYING
+--DELETE THIS WHEN MINIFYING (not needed in single-file version)
 --Set the Lua search path so that we can load the rest of our code.
 package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])')) .. '/?.lua'
 
 require 'src.argparse'
 local flags, args = ARG.parse_and_validate(options, config)
+
+V2 = table.remove(args, 1)     --input file
+V3 = flags.external_cmds or {} --non-builtin commands
 
 if flags.introspect then
 	require 'src.introspection'
@@ -58,23 +61,12 @@ if flags.introspect then
 	os.exit(0)
 end
 
-error()  --TEMP
-
-V2 = nil --filename
-V3 = {}  --non-builtin commands
-
 local PRINT_BYTECODE = false
 local PRETTY_PRINT = false
 local ZLIB_COMPRESS = false
 local DRY_RUN = false
-local INTROSPECTION = false
-local INTROSPECT_CMDS = {}
-local INTROSPECT_FUNCS = {}
-local INTROSPECT_FUNCLIST = false
-local INTROSPECT_CMDLIST = false
 local STANDALONE_OUTPUT = false
 local STANDALONE_COMPRESS = false
-REPL = false
 LANGUAGE_SERVER = false
 RESTRICT_TO_PLASMA_BUILD = false
 SUPPRESS_AST_ERRORS = false
@@ -93,250 +85,22 @@ local ENDED = false
 
 local OUTPUT_FILE = nil
 
-WINDOWS = package.config:sub(1, 1) == '\\'
-
---Override default "error" behavior; just print the error, not a stack trace.
-function error(text)
-	if text then print(text) end
+error = function(msg)
+	io.stderr:write(msg .. '\n')
 	os.exit(1)
 end
 
-local function script_real_path()
-	local path = arg[0]
-
-	if WINDOWS then
-		local ffi_installed, ffi = pcall(require, 'ffi')
-
-		if not ffi_installed then return '' end
-
-		ffi.cdef [[
-            typedef unsigned long DWORD;
-            typedef char CHAR;
-            typedef DWORD ( __stdcall *GetFullPathNameA_t )(const CHAR*, DWORD, CHAR*, CHAR**);
-        ]]
-		local kernel32 = ffi.load("kernel32")
-		local MAX_PATH = 260
-		local buf = ffi.new("char[?]", MAX_PATH)
-		local getFullPathName = ffi.cast("GetFullPathNameA_t", kernel32.GetFullPathNameA)
-		local length = getFullPathName(path, MAX_PATH, buf, nil)
-		if length == 0 then
-			return '' -- Failed to get path
-		else
-			return ffi.string(buf, length)
-		end
-	else
-		-- If on Linux, resolve symbolic links
-		local resolvedPath = io.popen("readlink -f " .. path):read("*a")
-		if resolvedPath then
-			return resolvedPath:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
-		else
-			return ''                             -- Failed to get path
-		end
-	end
+if flags.compress and not FS.rocks.zlib then
+	error('Error: `zlib` dependency is not installed. Cannot output compressed bytecode.')
 end
 
----@param text string
-local function is_zlib_compressed(text)
-	local header = text:sub(1, 2)
-
-	if #header < 2 then return false end
-
-	-- Convert the two bytes to integer values
-	local byte1, byte2 = header:byte(1, 2)
-
-	-- Check the zlib header
-	-- The first byte (CMF - Compression Method and Flags)
-	-- The second byte (FLG - Additional Flags)
-	return (byte1 == 0x78) and (byte2 == 0x01 or byte2 == 0x9C or byte2 == 0xDA)
-end
-
---@param text string
-local function is_paisley_bytecode(text)
-	if text:sub(1, 2) ~= '[[' or text:sub(#text - 1, #text) ~= ']]' then return false end
-	return json.verify(text)
-end
-
-local dir = script_real_path():match('(.*[/\\])')
-if dir == nil then dir = '' end
-
-function STDLIB(filename)
-	if dir == nil then return nil, filename end
-
-	local fname = dir .. 'stdlib/' .. filename:gsub('%.', '/')
-	local fp = io.open(fname .. '.pai')
-	if fp then
-		return fp, fname .. '.pai'
-	end
-	return io.open(fname), fname .. '.paisley'
-end
-
-LFS_INSTALLED, LFS = pcall(require, 'lfs')
-local zlib_installed, zlib = pcall(require, 'zlib')
-
-VERSION = --[[build-replace=version.txt]] io.open(dir .. 'version.txt'):read() --[[/build-replace]]
-local HELPTEXT = --[[build-replace=docs/helptext.txt]] io.open(dir .. 'docs/helptext.txt'):read('*all'):gsub('[\r\n]+$',
-	''):gsub(
-	'^[\r\n]+', '') --[[/build-replace]]
-
-local old_working_dir = nil
-if LFS_INSTALLED and dir ~= nil then
-	old_working_dir = LFS.currentdir()
-	WORKING_DIR = old_working_dir
-	LFS.chdir(dir)
-end
-
-require 'src.shared.json'
-require 'src.shared.stdlib'
-
-
-error() --TEMP
-
---If we're printing introspection data, ignore any other flags or inputs, and just print info about the Paisley language itself.
-if INTROSPECTION then
-	local function text_table(data)
-
-	end
-
-
-	ALLOWED_COMMANDS = V3
-	require 'src.compiler.type_signature'
-	require 'src.shared.builtin_commands'
-
-	if INTROSPECT_CMDLIST then
-		--Just list the commands
-		for key, val in pairs(BUILTIN_COMMANDS) do
-			print(key)
-		end
-		for key, val in pairs(ALLOWED_COMMANDS) do
-			print(key)
-		end
-	elseif #INTROSPECT_CMDS > 0 then
-		for i = 1, #INTROSPECT_CMDS do
-			local key = INTROSPECT_CMDS[i]
-			if key == 'ALL' then
-				INTROSPECT_CMDS = {}
-				for k, v in pairs(BUILTIN_COMMANDS) do table.insert(INTROSPECT_CMDS, k) end
-				for k, v in pairs(ALLOWED_COMMANDS) do table.insert(INTROSPECT_CMDS, k) end
-				break
-			end
-			if not BUILTIN_COMMANDS[key] and not ALLOWED_COMMANDS[key] then
-				error('ERROR: `' .. key .. '` is not a built-in or user-defined command.')
-			end
-		end
-
-		for i = 1, #INTROSPECT_CMDS do
-			local key = INTROSPECT_CMDS[i]
-			print(key)
-			if BUILTIN_COMMANDS[key] then
-				print('  Returns: ' .. TYPE_TEXT(BUILTIN_COMMANDS[key]))
-			else
-				print(
-					'  Returns: ' .. TYPE_TEXT(ALLOWED_COMMANDS[key]))
-			end
-			if BUILTIN_COMMANDS[key] then
-				print('  Desc: ' .. CMD_DESCRIPTION[key])
-			else
-				print(
-					'  Desc: User-defined command.')
-			end
-		end
-	elseif not INTROSPECT_FUNCLIST and #INTROSPECT_FUNCS == 0 then
-		--Generate table of commands
-		local t = {}
-		table.insert(t, { 'COMMAND', 'RETURN TYPE' })
-		for key, val in pairs(BUILTIN_COMMANDS) do
-			---@diagnostic disable-next-line
-			table.insert(t, { key, TYPE_TEXT(val) })
-		end
-		for key, val in pairs(ALLOWED_COMMANDS) do
-			table.insert(t, { key, TYPE_TEXT(val) })
-		end
-
-		print('COMMAND LIST:')
-		print(text_table(t))
-	end
-
-	require 'src.compiler.tokens'
-	require 'src.compiler.semantics'
-	local funcs = {}
-	for key, _ in pairs(BUILTIN_FUNCS) do table.insert(funcs, key) end
-	table.sort(funcs)
-
-	if INTROSPECT_FUNCLIST then
-		--Just list the functions
-		for i = 1, #funcs do
-			print(funcs[i])
-		end
-	elseif #INTROSPECT_FUNCS > 0 then
-		for i = 1, #INTROSPECT_FUNCS do
-			local key = INTROSPECT_FUNCS[i]
-			if key == 'ALL' then
-				INTROSPECT_FUNCS = funcs
-				break
-			end
-
-			if not BUILTIN_FUNCS[key] then
-				error('ERROR: `' .. key .. '` is not a built-in function.')
-			end
-		end
-
-		for i = 1, #INTROSPECT_FUNCS do
-			local key = INTROSPECT_FUNCS[i]
-			local funcsig = '???'
-			if key == 'reduce' then
-				funcsig = key .. '(' .. FUNCSIG(key) .. ') -> bool|number'
-			elseif TYPESIG[key].out == 1 then
-				--Return type is the same as 1st param
-				local types = {}
-				for i, k in ipairs(TYPESIG[key].valid) do
-					table.insert(types, k[1])
-				end
-				funcsig = key .. '(' .. FUNCSIG(key) .. ') -> ' .. std.join(types, '|', TYPE_TEXT)
-			else
-				funcsig = key .. '(' .. FUNCSIG(key) .. ') -> ' .. TYPE_TEXT(TYPESIG[key].out)
-			end
-			print(key)
-			print('  Signature: ' .. funcsig)
-			print('  Desc: ' .. TYPESIG[key].description)
-		end
-	elseif not INTROSPECT_CMDLIST and #INTROSPECT_CMDS == 0 then
-		--Generate table of functions
-		local t = {}
-		table.insert(t, { 'FUNCTION SIGNATURE' })
-		for i = 1, #funcs do
-			local key = funcs[i]
-			if key == 'reduce' then
-				table.insert(t, { key .. '(' .. FUNCSIG(key) .. ') -> bool|number' })
-			elseif TYPESIG[key].out == 1 then
-				--Return type is the same as 1st param
-				local types = {}
-				for i, k in ipairs(TYPESIG[key].valid) do
-					table.insert(types, k[1])
-				end
-				table.insert(t, { key .. '(' .. FUNCSIG(key) .. ') -> ' .. std.join(types, '|', TYPE_TEXT) })
-			else
-				table.insert(t, { key .. '(' .. FUNCSIG(key) .. ') -> ' .. TYPE_TEXT(TYPESIG[key].out) })
-			end
-		end
-
-		print('\nFUNCTION LIST:')
-		print(text_table(t))
-	end
-
-	os.exit(0)
-elseif INTROSPECT_CMDLIST or #INTROSPECT_CMDS > 0 or INTROSPECT_FUNCLIST or #INTROSPECT_FUNCS > 0 then
-	error('ERROR: Introspection flags can only be used with `--introspect`.')
-end
-
-
-if ZLIB_COMPRESS and not zlib_installed then
-	error('ERROR: zlib dependency is not installed. Cannot output compressed bytecode.')
-end
-
-if not ENDED and REPL then
+if flags.repl then
+	VERSION = config.version
 	require "src.repl"
-	ENDED = true
+	os.exit(0)
 end
+
+error('') --TEMP
 
 if not ENDED then
 	if V2 == nil then

@@ -12,6 +12,7 @@ FS = {
 	rocks = {
 		lfs = soft_require('lfs'),
 		zlib = soft_require('zlib'),
+		curses = soft_require('curses'),
 	},
 
 	script_real_path = function()
@@ -57,6 +58,41 @@ FS = {
 		else
 			return io.open(FS.working_dir .. filename, "r")
 		end
+	end,
+
+	is_paisley_bytecode = function(text)
+		require 'src.shared.json'
+
+		if text:sub(1, 2) ~= '[[' or text:sub(#text - 1, #text) ~= ']]' then return false end
+		return json.verify(text)
+	end,
+
+	is_zlib_compressed = function(text)
+		if not FS.rocks.zlib then return false end
+
+		local header = text:sub(1, 2)
+		if #header < 2 then return false end
+
+		-- Convert the two bytes to integer values
+		local byte1, byte2 = header:byte(1, 2)
+
+		-- Check the zlib header
+		-- The first byte (CMF - Compression Method and Flags)
+		-- The second byte (FLG - Additional Flags)
+		return (byte1 == 0x78) and (byte2 == 0x01 or byte2 == 0x9C or byte2 == 0xDA)
+	end,
+
+	stdlib = function(require_path)
+		if FS.exec_dir == nil then return nil, require_path end
+
+		local fname = 'stdlib/' .. require_path:gsub('%.', '/') .. '.pai'
+		local fp = FS.open(fname, true)
+		if not fp then
+			fname = fname .. 'sley'
+			fp = FS.open(fname, true)
+		end
+
+		return fp, fname
 	end,
 }
 
