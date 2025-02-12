@@ -1,4 +1,62 @@
 #!/usr/bin/env lua
+
+local config = {
+	description = "This is the Paisley compiler and runtime engine.\nhttps://github.com/ZacharyWesterman/paisley",
+	name = "Paisley",
+	exe = "paisley",
+	version = "1.13.8",
+}
+
+local options = {
+	{ description = "Prints help information",                                                                         long = "help",                short = "h" },
+	{ description = "Prints version information",                                                                      long = "version",             short = "V" },
+	{ description = "The next parameter is the output file",                                                           long = "output",              short = "o",     type = "string" },
+	{ description = "Start the Paisley runtime as an interactive REPL",                                                long = "repl",                short = "r" },
+	{ description = "Output bytecode instead of running the script",                                                   long = "bytecode",            short = "b" },
+	{ description = "Pretty-print bytecode output",                                                                    long = "pretty",              short = "p" },
+	{ description = "Compress bytecode output with zlib compression",                                                  long = "compress",            short = "z" },
+	{ description = "Validate the program, but don't run it",                                                          long = "dry-run" },
+	{ description = "Output detailed info in an easy-to-parse format",                                                 long = "language-server" },
+	{ description = "Pretend that stdin input has the given filename",                                                 long = "stdin",               type = "string", arg = "[FILE]" },
+	{ description = "Don't report errors in the syntax tree",                                                          long = "no-ast-errors" },
+	{ description = "Don't remove 'dead code' that will never get run",                                                long = "no-prune-dead-code" },
+	{ description = "Don't allow `and` and `or` expressions to shortcut",                                              long = "no-shortcut" },
+	{ description = "Print all generated tokens and then exit",                                                        long = "tokens" },
+	{ description = "Print the abstract syntax tree and then exit",                                                    long = "ast" },
+	{ description = "Print the AST after semantic analysis and then exit",                                             long = "ast-sem" },
+	{ description = "Restrict to only features available in the Plasma build",                                         long = "plasma" },
+	{ description = "Print introspective data about the Paisley language",                                             long = "introspect" },
+	{ description = "If introspecting, list all functions",                                                            long = "functions" },
+	{ description = "If introspecting, list all commands",                                                             long = "commands" },
+	{ description = "Define an existing command on the target device",                                                 short = "c",                  type = "array",  name = "commands",        composite = true, arg = "[CMD]" },
+	{ description = "If introspecting, output details about the function",                                             short = "if",                 type = "array",  name = "introspect_func", composite = true, arg = "[FUNC_NAME]" },
+	{ description = "If introspecting, output details about the command",                                              short = "ic",                 type = "array",  name = "introspect_cmds", composite = true, arg = "[CMD_NAME]" },
+	{ description = "Output a standalone program that can be run on systems that don't have Paisley or Lua installed", long = "standalone",          short = "s" },
+	{ description = "Compress the above standalone program if possible",                                               long = "compress-standalone", short = "cs" },
+	{ description = "Allow unrecognized commands to coerce to shell exec",                                             long = "shell",               short = "l" },
+	{ description = "Disable features/cmds that could affect the system (e.g. `?`)",                                   long = "sandbox" },
+	{ description = "List the recommended Lua packages to be installed",                                               long = "rocks" },
+	{ description = "The input file",                                                                                  name = "input",               type = "string" },
+}
+
+require 'src.argparse'
+local flags, args = ARG.parse(options)
+if flags.help then
+	ARG.help(options, config)
+	os.exit(0)
+end
+
+if not args then
+	ARG.error('Error: No input file given. Use `-` to read from stdin, or re-run with `--help` to see all options.')
+end
+
+if flags.version then
+	print(config.version)
+	os.exit(0)
+end
+
+error()  --TEMP
+
 V2 = nil --filename
 V3 = {}  --non-builtin commands
 
@@ -127,142 +185,8 @@ end
 require 'src.shared.json'
 require 'src.shared.stdlib'
 
---Split up args
-local args = {}
-local stop_splitting = false
-for _, v in ipairs(arg) do
-	if not stop_splitting and
-		v ~= '-' and
-		v:sub(1, 1) == '-' and
-		v:sub(2, 2) ~= '-' and
-		v:sub(1, 3) ~= '-cs' and
-		v:sub(1, 3) ~= '-if' and
-		v:sub(1, 3) ~= '-ic' then
-		for i = 2, #v do
-			table.insert(args, '-' .. v:sub(i, i))
-		end
-	else
-		table.insert(args, v)
-		if v == '--' or v:sub(1, 1) ~= '-' then stop_splitting = true end
-	end
-end
 
-local filename_found = false
-local no_more_flags = false
-local next_is_output = false
-for _, v in ipairs(args) do
-	if not no_more_flags and v:sub(1, 1) == '-' and v ~= '-' then
-		if v == '--' then
-			no_more_flags = true
-		elseif v:sub(1, 2) == '-c' and v ~= '-cs' then
-			table.insert(V3, v:sub(3, #v))
-		elseif v == '--help' or v == '-h' then
-			print('Paisley ' .. VERSION)
-			print('\n' .. HELPTEXT)
-			ENDED = true
-		elseif v == '--version' or v == '-V' then
-			print('Paisley ' .. VERSION)
-			ENDED = true
-		elseif v == '--bytecode' or v == '-b' then
-			PRINT_BYTECODE = true
-			PRETTY_PRINT = false
-			ZLIB_COMPRESS = false
-		elseif v == '--standalone' or v == '-s' then
-			STANDALONE_OUTPUT = true
-			PRINT_BYTECODE = true
-			PRETTY_PRINT = false
-			ZLIB_COMPRESS = false
-		elseif v == '--compress-standalone' or v == '-cs' then
-			STANDALONE_OUTPUT = true
-			STANDALONE_COMPRESS = true
-			PRINT_BYTECODE = true
-			PRETTY_PRINT = false
-			ZLIB_COMPRESS = false
-		elseif v == '--pretty' or v == '-p' then
-			PRINT_BYTECODE = true
-			PRETTY_PRINT = true
-			ZLIB_COMPRESS = false
-		elseif v == '--compress' or v == '-z' then
-			PRINT_BYTECODE = true
-			PRETTY_PRINT = false
-			ZLIB_COMPRESS = true
-		elseif v == '--dry-run' then
-			DRY_RUN = true
-		elseif v == '--language-server' then
-			LANGUAGE_SERVER = true
-		elseif v == '--plasma' then
-			RESTRICT_TO_PLASMA_BUILD = true
-		elseif v == '--no-ast-errors' then
-			SUPPRESS_AST_ERRORS = true
-		elseif v == '--tokens' then
-			PRINT_TOKENS = true
-		elseif v == '--ast' then
-			PRINT_AST = true
-		elseif v == '--ast-sem' then
-			PRINT_AST = true
-			AST_AFTER_SEMANTIC = true
-		elseif v == '--introspect' then
-			INTROSPECTION = true
-		elseif v == '--functions' then
-			INTROSPECT_FUNCLIST = true
-		elseif v == '--commands' then
-			INTROSPECT_CMDLIST = true
-		elseif v:sub(1, 3) == '-if' then
-			table.insert(INTROSPECT_FUNCS, v:sub(4, #v))
-		elseif v:sub(1, 3) == '-ic' then
-			table.insert(INTROSPECT_CMDS, v:sub(4, #v))
-		elseif v == '--repl' or v == '-r' then
-			REPL = true
-		elseif v:sub(1, 8) == '--stdin=' then
-			LSP_FILENAME = v:sub(9, #v)
-		elseif v == '--no-prune-dead-code' then
-			KEEP_DEAD_CODE = true
-		elseif v == '--no-shortcut' then
-			NO_SHORTCUT = true
-		elseif v == '--shell' or v == '-l' then
-			COERCE_SHELL_CMDS = true
-		elseif v == '--sandbox' then
-			SANDBOX = true
-		elseif v == '--rocks' then
-			io.stderr:write('For best results, install the following Lua rocks:\n')
-
-			local text = --[[build-replace=requires.txt]] io.open(dir .. 'requires.txt'):read('*all') --[[/build-replace]]
-			local args = ''
-			for l in text:gmatch('[^\n]+') do
-				local i = l:match('^[^ ]+')
-				print(i)
-				args = args .. ' ' .. i
-			end
-
-			io.stderr:write('\nNone of these are required for the Paisley compiler to work,\n')
-			io.stderr:write('but some extra features will be disabled if they\'re not installed.\n')
-			io.stderr:write('\nYou can use the following command to install them all:\n')
-			io.stderr:write('  luarocks install' .. args .. '\n')
-			io.stderr:write('Or, if you\'re on Linux, you can just run `./install.sh`\n')
-			os.exit(0)
-		elseif v == '-o' or v == '--output' then
-			next_is_output = true
-		elseif filename_found then
-			table.insert(PGM_ARGS, v)
-		else
-			error('Unknown flag `' .. v .. '`. Try running with `--help` to see all options.')
-		end
-	elseif next_is_output then
-		OUTPUT_FILE = v
-		PRINT_BYTECODE = true
-		if zlib_installed then
-			ZLIB_COMPRESS = true
-		else
-			print('WARNING: zlib dependency is not installed, so bytecode output will not be compressed.')
-		end
-		next_is_output = false
-	elseif filename_found then
-		table.insert(PGM_ARGS, v)
-	else
-		V2 = v --input filename
-		filename_found = true
-	end
-end
+error() --TEMP
 
 --If we're printing introspection data, ignore any other flags or inputs, and just print info about the Paisley language itself.
 if INTROSPECTION then
