@@ -13,6 +13,7 @@ FS = {
 		lfs = soft_require('lfs'),
 		zlib = soft_require('zlib'),
 		curses = soft_require('curses'),
+		socket = soft_require('socket'),
 	},
 
 	script_real_path = function()
@@ -63,6 +64,9 @@ FS = {
 	is_paisley_bytecode = function(text)
 		require 'src.shared.json'
 
+		--Trim whitespace
+		text = text:gsub('^%s*(.-)%s*$', '%1')
+
 		if text:sub(1, 2) ~= '[[' or text:sub(#text - 1, #text) ~= ']]' then return false end
 		return json.verify(text)
 	end,
@@ -93,6 +97,19 @@ FS = {
 		end
 
 		return fp, fname
+	end,
+
+	cd = function(path)
+		if FS.rocks.lfs then
+			FS.rocks.lfs.chdir(path)
+			FS.working_dir = FS.rocks.lfs.currentdir()
+		end
+	end,
+
+	pwd = function(path)
+		if FS.rocks.lfs then
+			return FS.rocks.lfs.currentdir()
+		end
 	end,
 }
 
