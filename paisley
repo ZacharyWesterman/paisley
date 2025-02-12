@@ -8,50 +8,53 @@ local config = {
 }
 
 local options = {
-	{ description = "Prints help information",                                                                         long = "help",                short = "h" },
-	{ description = "Prints version information",                                                                      long = "version",             short = "V" },
-	{ description = "The next parameter is the output file",                                                           long = "output",              short = "o",     type = "string" },
-	{ description = "Start the Paisley runtime as an interactive REPL",                                                long = "repl",                short = "r" },
-	{ description = "Output bytecode instead of running the script",                                                   long = "bytecode",            short = "b" },
-	{ description = "Pretty-print bytecode output",                                                                    long = "pretty",              short = "p" },
-	{ description = "Compress bytecode output with zlib compression",                                                  long = "compress",            short = "z" },
-	{ description = "Validate the program, but don't run it",                                                          long = "dry-run" },
-	{ description = "Output detailed info in an easy-to-parse format",                                                 long = "language-server" },
-	{ description = "Pretend that stdin input has the given filename",                                                 long = "stdin",               type = "string", arg = "[FILE]" },
-	{ description = "Don't report errors in the syntax tree",                                                          long = "no-ast-errors" },
-	{ description = "Don't remove 'dead code' that will never get run",                                                long = "no-prune-dead-code" },
-	{ description = "Don't allow `and` and `or` expressions to shortcut",                                              long = "no-shortcut" },
-	{ description = "Print all generated tokens and then exit",                                                        long = "tokens" },
-	{ description = "Print the abstract syntax tree and then exit",                                                    long = "ast" },
-	{ description = "Print the AST after semantic analysis and then exit",                                             long = "ast-sem" },
-	{ description = "Restrict to only features available in the Plasma build",                                         long = "plasma" },
-	{ description = "Print introspective data about the Paisley language",                                             long = "introspect" },
-	{ description = "If introspecting, list all functions",                                                            long = "functions" },
-	{ description = "If introspecting, list all commands",                                                             long = "commands" },
-	{ description = "Define an existing command on the target device",                                                 short = "c",                  type = "array",  name = "commands",        composite = true, arg = "[CMD]" },
-	{ description = "If introspecting, output details about the function",                                             short = "if",                 type = "array",  name = "introspect_func", composite = true, arg = "[FUNC_NAME]" },
-	{ description = "If introspecting, output details about the command",                                              short = "ic",                 type = "array",  name = "introspect_cmds", composite = true, arg = "[CMD_NAME]" },
-	{ description = "Output a standalone program that can be run on systems that don't have Paisley or Lua installed", long = "standalone",          short = "s" },
-	{ description = "Compress the above standalone program if possible",                                               long = "compress-standalone", short = "cs" },
-	{ description = "Allow unrecognized commands to coerce to shell exec",                                             long = "shell",               short = "l" },
-	{ description = "Disable features/cmds that could affect the system (e.g. `?`)",                                   long = "sandbox" },
-	{ description = "List the recommended Lua packages to be installed",                                               long = "rocks" },
-	{ description = "The input file",                                                                                  name = "input",               type = "string" },
+	{ description = "Prints help information",                                       long = "help",                short = "h" },
+	{ description = "Prints version information",                                    long = "version",             short = "V" },
+	{ description = "The next parameter is the output file",                         long = "output",              short = "o",     type = "string" },
+	{ description = "Start the Paisley runtime as an interactive REPL",              long = "repl",                short = "r" },
+	{ description = "Output bytecode instead of running the script",                 long = "bytecode",            short = "b" },
+	{ description = "Pretty-print bytecode output",                                  long = "pretty",              short = "p" },
+	{ description = "Compress bytecode output with zlib compression",                long = "compress",            short = "z" },
+	{ description = "Validate the program, but don't run it",                        long = "dry-run" },
+	{ description = "Output detailed info in an easy-to-parse format",               long = "language-server" },
+	{ description = "Pretend that stdin input has the given filename",               long = "stdin",               type = "string", arg = "[FILE]" },
+	{ description = "Don't report errors in the syntax tree",                        long = "no-ast-errors" },
+	{ description = "Don't remove 'dead code' that will never get run",              long = "no-prune-dead-code" },
+	{ description = "Don't allow `and` and `or` expressions to shortcut",            long = "no-shortcut" },
+	{ description = "Print all generated tokens and then exit",                      long = "tokens" },
+	{ description = "Print the abstract syntax tree and then exit",                  long = "ast" },
+	{ description = "Print the AST after semantic analysis and then exit",           long = "ast-sem" },
+	{ description = "Restrict to only features available in the Plasma build",       long = "plasma" },
+	{ description = "Print introspective data about the Paisley language",           long = "introspect" },
+	{ description = "If introspecting, list all functions",                          long = "functions" },
+	{ description = "If introspecting, list all commands",                           long = "commands" },
+	{ description = "Define an existing command on the target device",               short = "c",                  type = "array",  name = "external_cmds",   composite = true, arg = "[CMD]" },
+	{ description = "If introspecting, output details about the function",           short = "if",                 type = "array",  name = "introspect_func", composite = true, arg = "[FUNC_NAME]" },
+	{ description = "If introspecting, output details about the command",            short = "ic",                 type = "array",  name = "introspect_cmds", composite = true, arg = "[CMD_NAME]" },
+	{ description = "Output a standalone binary (or Lua script if no output file)",  long = "standalone",          short = "s" },
+	{ description = "Compress the above standalone program if possible",             long = "compress-standalone", short = "cs" },
+	{ description = "Allow unrecognized commands to coerce to shell exec",           long = "shell",               short = "l" },
+	{ description = "Disable features/cmds that could affect the system (e.g. `?`)", long = "sandbox" },
+	{ description = "List the recommended Lua packages to be installed",             long = "rocks" },
+	{ description = "The input file, or `-` to read from stdin",                     name = "input",               type = "string" },
 }
 
+--DELETE THIS WHEN MINIFYING
+--Set the Lua search path so that we can load the rest of our code.
+package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])')) .. '/?.lua'
+
 require 'src.argparse'
-local flags, args = ARG.parse(options)
-if flags.help then
-	ARG.help(options, config)
-	os.exit(0)
-end
+local flags, args = ARG.parse_and_validate(options, config)
 
-if not args then
-	ARG.error('Error: No input file given. Use `-` to read from stdin, or re-run with `--help` to see all options.')
-end
+if flags.introspect then
+	require 'src.introspection'
+	if flags.commands or flags.introspect_cmds then
+		INTROSPECT.commands(flags.introspect_cmds)
+	end
+	if flags.functions or flags.introspect_func then
+		INTROSPECT.functions(flags.introspect_func)
+	end
 
-if flags.version then
-	print(config.version)
 	os.exit(0)
 end
 
@@ -191,36 +194,7 @@ error() --TEMP
 --If we're printing introspection data, ignore any other flags or inputs, and just print info about the Paisley language itself.
 if INTROSPECTION then
 	local function text_table(data)
-		local widths, text = {}, ''
 
-		--Calculate the width of each column
-		for i, row in ipairs(data) do
-			for k, cell in ipairs(row) do
-				if widths[k] == nil then widths[k] = 0 end
-				widths[k] = math.max(widths[k], #std.str(cell))
-			end
-		end
-
-		local function delim()
-			local text = '+'
-			for i = 1, #widths do
-				text = text .. ('-'):rep(widths[i] + 2) .. '+'
-			end
-
-			return text
-		end
-
-		--Generate text
-		for i = 1, #data do
-			if i > 2 then text = text .. '|' else text = text .. delim() .. '\n|' end
-			for k = 1, #data[i] do
-				text = text .. ' ' .. std.str(data[i][k]) .. (' '):rep(widths[k] - #std.str(data[i][k])) .. ' |'
-			end
-			text = text .. '\n'
-		end
-		text = text .. delim()
-
-		return text
 	end
 
 

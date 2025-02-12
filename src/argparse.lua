@@ -1,3 +1,5 @@
+require 'src.filesystem'
+
 ARG = {
 	error = function(msg)
 		io.stderr:write("Error: " .. msg .. "\n")
@@ -108,8 +110,10 @@ ARG = {
 					local option = long_with_arg[ar:match('^[^=]*')]
 					if not option then ARG.error("Unknown flag `" .. ar .. "`") end
 					flag_args[option.id] = ar:match('=.*$'):sub(2)
+				else
+					ARG.error("Unknown flag `" .. ar .. "`")
 				end
-			elseif ar:sub(1, 1) == '-' then
+			elseif ar:sub(1, 1) == '-' and ar ~= '-' then
 				local is_prefix = false
 				for prefix, option in pairs(prefixes) do
 					if ar:sub(1, #prefix) == prefix then
@@ -158,5 +162,71 @@ ARG = {
 		if hold_arg then ARG.error("Expected argument for flag `" .. hold_arg .. "`") end
 
 		return flag_args, positional_args
+	end,
+
+	--This is specific to the Paisley application. The logic is not generic.
+	parse_and_validate = function(options, config)
+		local flags, positional = ARG.parse(options)
+
+		if flags.help then
+			ARG.help(options, config)
+			os.exit(0)
+		end
+
+		if flags.version then
+			io.write(config.version .. "\n")
+			os.exit(0)
+		end
+
+		if flags.rocks then
+			io.stderr:write('For best results, install the following Lua rocks:\n')
+
+			local text = --[[build-replace=requires.txt]] FS.open('requires.txt', true):read('*all') --[[/build-replace]]
+			local args = ''
+			for l in text:gmatch('[^\n]+') do
+				local i = l:match('^[^ ]+')
+				print(i)
+				args = args .. ' ' .. i
+			end
+
+			io.stderr:write('\nNone of these are required for the Paisley compiler to work,\n')
+			io.stderr:write('but some extra features will be disabled if they\'re not installed.\n')
+			io.stderr:write('\nYou can use the following command to install them all:\n')
+			io.stderr:write('  luarocks install' .. args .. '\n')
+			io.stderr:write('Or, if you\'re on Linux, you can just run `./install.sh`\n')
+			os.exit(0)
+		end
+
+		if flags.introspect or flags.repl then
+			return flags, positional
+		end
+
+		if not flags.introspect and (flags.introspect_func or flags.introspect_cmds or flags.functions or flags.commands) then
+			ARG.error('Introspection flags can only be used with `--introspect`.')
+		end
+
+		if #positional < 1 then
+			ARG.error(
+				'No input file given. Use `-` to read from stdin, or re-run with `--help` to see all options.'
+			)
+		end
+
+		return flags, positional
+	end,
+
+	print = function(flags, positional)
+		io.write("Flags:\n")
+		for k, v in pairs(flags) do
+			if type(v) == 'table' then
+				io.write("  " .. k .. ": {" .. table.concat(v, ', ') .. "}\n")
+			else
+				io.write("  " .. k .. ": " .. tostring(v) .. "\n")
+			end
+		end
+
+		io.write("\nPositional:\n")
+		for _, v in ipairs(positional) do
+			io.write("  " .. v .. "\n")
+		end
 	end
 }
