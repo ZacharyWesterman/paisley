@@ -102,7 +102,7 @@ FS = {
 	cd = function(path)
 		if FS.rocks.lfs then
 			FS.rocks.lfs.chdir(path)
-			FS.working_dir = FS.rocks.lfs.currentdir()
+			FS.working_dir = FS.rocks.lfs.currentdir() .. '/'
 		end
 	end,
 
@@ -116,4 +116,4 @@ FS = {
 --Setup filesystem constants
 FS.exec_dir = FS.script_real_path():match("(.*[/\\])") or ""
 FS.working_dir = FS.exec_dir
-if FS.rocks.lfs then FS.working_dir = FS.rocks.lfs.currentdir() end
+if FS.rocks.lfs then FS.working_dir = FS.rocks.lfs.currentdir() .. '/' end
