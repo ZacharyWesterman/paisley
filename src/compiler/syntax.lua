@@ -1020,7 +1020,7 @@ local rules = {
 					if fp == nil then
 						local fname
 						---@diagnostic disable-next-line
-						fp, fname = _G['STDLIB'](orig_filename)
+						fp, fname = _G['FS'].stdlib(orig_filename)
 						if fp then filename = fname end
 					end
 
@@ -1029,6 +1029,7 @@ local rules = {
 							'": file does not exist or is unreadable', file)
 					else
 						table.insert(token.value, filename)
+						fp:close()
 					end
 				end
 			end
