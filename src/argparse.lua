@@ -211,6 +211,10 @@ ARG = {
 			)
 		end
 
+		if flags.compress and flags.standalone then flags.compress_standalone = true end
+		if flags.compress_standalone then flags.standalone = true end
+		if flags.sandbox then flags.shell = false end
+
 		return flags, positional
 	end,
 
