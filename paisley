@@ -43,14 +43,14 @@ local options = {
 --Set the Lua search path so that we can load the rest of our code.
 package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])')) .. '/?.lua'
 
-require 'src.argparse'
+require 'src.util.argparse'
 local flags, args = ARG.parse_and_validate(options, config)
 
 V2 = table.remove(args, 1)     --input file
 V3 = flags.external_cmds or {} --non-builtin commands
 
 if flags.introspect then
-	require 'src.introspection'
+	require 'src.util.introspection'
 	if flags.commands or flags.introspect_cmds then
 		INTROSPECT.commands(flags.introspect_cmds)
 	end
@@ -88,7 +88,7 @@ end
 
 if flags.repl then
 	VERSION = config.version
-	require "src.repl"
+	require "src.util.repl"
 	os.exit(0)
 end
 
@@ -185,7 +185,7 @@ if not flags.standalone and not flags.output then
 		require "src.runtime"
 		ALLOWED_COMMANDS = tmp
 
-		require "src.output_pc"
+		require "src.util.output_pc"
 
 		while not ENDED do
 			RUN()
