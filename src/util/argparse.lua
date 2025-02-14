@@ -197,7 +197,7 @@ ARG = {
 			os.exit(0)
 		end
 
-		if flags.introspect or flags.repl then
+		if flags.introspect or flags.repl or flags.install then
 			return flags, positional
 		end
 

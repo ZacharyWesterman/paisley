@@ -114,6 +114,19 @@ FS = {
 }
 
 --Setup filesystem constants
+
+--[[no-install]]
 FS.exec_dir = FS.script_real_path():match("(.*[/\\])") or ""
+if false then
+	--[[/no-install]]
+	if FS.os.windows then
+		FS.exec_dir = os.getenv('APPDATA') .. '\\paisley\\'
+	else
+		FS.exec_dir = '/usr/local/share/paisley/'
+	end
+	--[[no-install]]
+end
+--[[/no-install]]
+
 FS.working_dir = FS.exec_dir
 if FS.rocks.lfs then FS.working_dir = FS.rocks.lfs.currentdir() .. '/' end

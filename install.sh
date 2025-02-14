@@ -23,20 +23,34 @@ fi
 #Make sure we're in the same dir as this script.
 cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
 
+#Make sure user is running as root
+if [ "$EUID" -ne 0 ]; then
+	echo >&2 'ERROR: This script must be run as root. Aborting install.'
+	exit 1
+fi
+
 #Package the program into Lua bytecode
-echo 'Building Paisley...'
-python3 build.py --fetch-srlua --tempdir --quiet || exit 1
-luac -o .paisley-build/paisley.luac .paisley-build/paisley_standalone.lua || exit 1
+./paisley --install
+luac -o /usr/local/bin/paisley.luac /usr/local/bin/paisley || exit 1
+rm /usr/local/bin/paisley
 
-#Build the standalone executable
+#Download and build srlua
+if [ ! -e /tmp/paisley-build-srlua ]; then
+	git clone https://github.com/LuaDist/srlua.git /tmp/paisley-build-srlua || exit 1
+fi
+mkdir -p /tmp/paisley-build-srlua/build || exit 1
+if [ ! -e /tmp/paisley-build-srlua/build/CMakeCache.txt ]; then
+	cmake -B/tmp/paisley-build-srlua/build -S/tmp/paisley-build-srlua || exit 1
+fi
+if [ ! -e /tmp/paisley-build-srlua/build/Makefile ]; then
+	cmake --build /tmp/paisley-build-srlua/build || exit 1
+fi
+
+#Compile the standalone binary
 srluadir='/tmp/paisley-build-srlua/build'
-"$srluadir/glue" "$srluadir/srlua" .paisley-build/paisley.luac .paisley-build/paisley || exit 1
-chmod +x .paisley-build/paisley || exit 1
-
-rm -f "$HOME/.local/bin/paisley"
-mv .paisley-build/paisley "$HOME/.local/bin/paisley"
-rsync -a stdlib "$HOME/.local/bin/"
-rm .paisley-build -rf
+"$srluadir/glue" "$srluadir/srlua" /usr/local/bin/paisley.luac /usr/local/bin/paisley || exit 1
+chmod +x /usr/local/bin/paisley || exit 1
+rm /usr/local/bin/paisley.luac
 
 install_dependency() {
 	sudo luarocks install "$1" &>/dev/null
@@ -50,9 +64,9 @@ wait_on_process() {
 
 	local spin='-\|/'
 	local i=0
-	while kill -0 $pid 2>/dev/null; do
+	while kill -0 "$pid" 2>/dev/null; do
 		i=$(((i + 1) % 4))
-		printf "\r[%d/%d] Installing dependency \`%s\`... %s" $item $total "$dep" "${spin:$i:1}"
+		printf "\r[%d/%d] Installing dependency \`%s\`... %s" "$item" "$total" "$dep" "${spin:$i:1}"
 		sleep .1
 	done
 	printf '\r\e[K'
@@ -67,13 +81,13 @@ if ! sudo echo -n; then
 else
 	total="$(wc <requires.txt -l)"
 	item=0
-	while read rock name; do
+	while read -r rock name; do
 		item=$((item + 1))
 
 		#Check if rock is already installed. If not, install it.
 		if [ "$(lua <<<"x, _ = pcall(require, '$name') print(x)")" != true ]; then
 			(install_dependency "$rock") &
-			wait_on_process $! "$rock" $item $total
+			wait_on_process $! "$rock" "$item" "$total"
 		fi
 	done <requires.txt
 fi

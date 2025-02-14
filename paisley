@@ -37,14 +37,59 @@ local options = {
 	{ description = "Disable features/cmds that could affect the system (e.g. `?`)", long = "sandbox" },
 	{ description = "List the recommended Lua packages to be installed",             long = "rocks" },
 	{ description = "The input file, or `-` to read from stdin",                     name = "input",               type = "string" },
+	--[[no-install]] { description = "Compile the Paisley application into a standalone executable", long = "install" }, --[[/no-install]]
 }
 
 --DELETE THIS WHEN MINIFYING (not needed in single-file version)
 --Set the Lua search path so that we can load the rest of our code.
-package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])')) .. '/?.lua'
+package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])') or '.') .. '/?.lua'
 
 require 'src.util.argparse'
 local flags, args = ARG.parse_and_validate(options, config)
+
+--[[no-install]]
+if flags.install then
+	require 'src.util.filesystem'
+	require 'src.meta.lua'
+
+	local fp = FS.open('paisley', true)
+	if not fp then
+		error('Error: Failed to open `paisley` for reading.')
+	end
+
+	local text = fp:read('*all')
+	fp:close()
+
+	if FS.os.windows then
+		error('Error: Standalone executables are not yet supported on Windows.')
+	end
+
+	io.stderr:write('Concatenating Lua files...\n')
+	text = LUA.minify(text, true)
+
+	io.stderr:write('Installing Paisley...\n')
+
+	if FS.os.windows then
+		-- local fp = io.open(os.getenv('APPDATA') .. '\\paisley\\paisley.lua', 'wb')
+	else
+		--Write the minified Lua code to the installation directory
+		local fp = io.open('/usr/local/bin/paisley', 'wb')
+		if not fp then
+			error('Error: Failed to open `/usr/local/bin/paisley` for writing. Try running with `sudo`.')
+		end
+		fp:write('#!/usr/bin/env lua\n' .. text)
+
+		--Make the file executable
+		os.execute('chmod +x /usr/local/bin/paisley')
+
+		--Create stdlib directory and copy the files over.
+		os.execute('mkdir -p /usr/local/share/paisley')
+		os.execute('cp -r stdlib /usr/local/share/paisley/')
+	end
+
+	os.exit(0)
+end
+--[[/no-install]]
 
 V2 = table.remove(args, 1)     --input file
 V3 = flags.external_cmds or {} --non-builtin commands
