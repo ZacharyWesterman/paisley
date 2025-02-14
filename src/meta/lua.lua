@@ -243,15 +243,3 @@ LUA = {
 		end,
 	},
 }
-
-local minified = LUA.minify([[
-print('BEGIN')
-require('test1')
-require('test2')
-print('END')
-]], true, true)
--- tokens = LUA.tokens.replace_requires(tokens)
--- tokens = LUA.tokens.strip(tokens)
--- -- LUA.tokens.print(tokens)
--- print(LUA.tokens.join(tokens))
-print(minified)
