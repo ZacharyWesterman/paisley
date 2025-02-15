@@ -3,7 +3,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
 
 #Make sure user is running as root
 if [ "$EUID" -ne 0 ]; then
-	echo >&2 'ERROR: This script must be run as root. Aborting install.'
+	echo >&2 'ERROR: This script must be run as root. Aborting uninstall.'
 	exit 1
 fi
 

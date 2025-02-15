@@ -107,7 +107,7 @@ INTROSPECT = {
 
 			for i = 1, #func_list do
 				local key = func_list[i]
-				local funcsig = '???'
+				local funcsig = ''
 				if key == 'reduce' then
 					funcsig = key .. '(' .. FUNCSIG(key) .. ') -> bool|number'
 				elseif TYPESIG[key].out == 1 then

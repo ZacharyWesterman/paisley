@@ -38,11 +38,31 @@ STANDALONE.lua = {
 		local c_code = [[
 		#define LUA_IMPL
 		#include "minilua.h"
-		int main() {
+		int main(int argc, char **argv) {
+			//Create state and load program.
 			lua_State *L = luaL_newstate();
+			if (L == NULL) return -1;
 			luaL_openlibs(L);
-			luaL_loadstring(L, "]] .. program_text:gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n') .. [[");
-			lua_pcall(L, 0, 0, 0);
+			int script = luaL_loadstring(L, "]] ..
+			program_text:gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n') .. [[");
+
+			//Set up arg table.
+			int i, narg;
+			narg = argc - (script + 1);  /* number of positive indices */
+			lua_createtable(L, narg, script + 1);
+			for (i = 0; i < argc; i++) {
+				lua_pushstring(L, argv[i]);
+				lua_rawseti(L, -2, i - script);
+			}
+			lua_setglobal(L, "arg");
+
+			//Run program.
+			int status = lua_pcall(L, 0, 0, 0);
+			if (status != 0) {
+				fprintf(stderr, "Error: %s\n", lua_tostring(L, -1));
+				lua_close(L);
+				return -1;
+			}
 			lua_close(L);
 			return 0;
 		}

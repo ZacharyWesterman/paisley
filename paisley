@@ -93,6 +93,7 @@ end
 if flags.install then
 	require 'src.util.filesystem'
 	require 'src.meta.lua'
+	require 'src.runtime.standalone.all'
 
 	local fp = FS.open('paisley', true)
 	if not fp then
@@ -102,30 +103,40 @@ if flags.install then
 	local text = fp:read('*all')
 	fp:close()
 
+	local target_file = '/usr/local/bin/paisley'
 	if FS.os.windows then
 		error('Error: Standalone executables are not yet supported on Windows.')
 	end
 
+	local fp = io.open(target_file, 'wb')
+	if not fp then
+		error('Error: Failed to open `' .. target_file .. '` for writing. Try running with `sudo`.')
+	end
+	fp:close()
+
 	io.stderr:write('Concatenating Lua files...\n')
 	text = LUA.minify(text, true)
 
-	io.stderr:write('Compiling Lua into bytecode...\n')
-	text = LUA.compile(text)
+	-- io.stderr:write('Compiling Lua into bytecode...\n')
+	-- text = LUA.compile(text)
 
-	io.stderr:write('Installing Paisley...\n')
+	io.stderr:write('Compiling Lua into an executable...\n')
+	local compiler = _G['STANDALONE'].lua
+	local result = compiler.compile(text, target_file)
+
+	if not result then
+		io.stderr:write('\nError: Failed to compile `' .. target_file .. '`!\n')
+		os.exit(1)
+	end
+
+	io.stderr:write('Installing libraries and stdlib...\n')
 
 	if FS.os.windows then
+		error('Compiling standalone executables is not yet supported on Windows.')
 		-- local fp = io.open(os.getenv('APPDATA') .. '\\paisley\\paisley.lua', 'wb')
 	else
-		--Write the minified Lua code to the installation directory
-		local fp = io.open('/usr/local/bin/paisley', 'wb')
-		if not fp then
-			error('Error: Failed to open `/usr/local/bin/paisley` for writing. Try running with `sudo`.')
-		end
-		fp:write('#!/usr/bin/env lua\n' .. text)
-
 		--Make the file executable
-		os.execute('chmod +x /usr/local/bin/paisley')
+		os.execute('chmod +x ' .. target_file)
 
 		--Create stdlib directory and copy the files over.
 		os.execute('mkdir -p /usr/local/share/paisley')
@@ -135,6 +146,8 @@ if flags.install then
 		os.execute('mkdir -p /usr/local/lib/paisley')
 		os.execute('cp -r src/libs /usr/local/lib/paisley/')
 	end
+
+	print('Standalone Paisley executable has been installed.')
 
 	os.exit(0)
 end
@@ -289,15 +302,14 @@ if not flags.standalone and not flags.output then
 	os.exit(0)
 end
 
---TEMP: generating runtime is not supported yet.
---I want it to be bigger and better (with multiple different targets!), so for now, lock that functionality off.
+--Generate standalone executable to run the bytecode.
 if flags.standalone then
 	require 'src.runtime.standalone.all'
 
 	local target = flags.target or 'lua'
 	local compiler = _G['STANDALONE'][target]
 	if not compiler then
-		error('Error: Unsupported target `' .. target .. '`.')
+		error('Error: Compilation to target `' .. target .. '` has not been implemented.')
 	end
 
 	io.stderr:write('Generating code for target `' .. target .. '`...\n')

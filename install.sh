@@ -29,24 +29,8 @@ if [ "$EUID" -ne 0 ]; then
 	exit 1
 fi
 
-#Package the program into Lua bytecode
+#Package the program into an executable and install it.
 ./paisley --install
-luac -o /usr/local/bin/paisley.luac /usr/local/bin/paisley || exit 1
-rm /usr/local/bin/paisley
-
-#Download and build srlua
-if [ ! -e /tmp/paisley-build-srlua ]; then
-	git clone https://github.com/LuaDist/srlua.git /tmp/paisley-build-srlua || exit 1
-fi
-mkdir -p /tmp/paisley-build-srlua/build || exit 1
-cmake -B/tmp/paisley-build-srlua/build -S/tmp/paisley-build-srlua || exit 1
-make -C /tmp/paisley-build-srlua/build || exit 1
-
-#Compile the standalone binary
-srluadir='/tmp/paisley-build-srlua/build'
-"$srluadir/glue" "$srluadir/srlua" /usr/local/bin/paisley.luac /usr/local/bin/paisley || exit 1
-chmod +x /usr/local/bin/paisley || exit 1
-rm /usr/local/bin/paisley.luac
 
 install_dependency() {
 	sudo luarocks install "$1" &>/dev/null
@@ -89,4 +73,4 @@ else
 fi
 
 echo
-echo 'Paisley is now installed.'
+echo 'Paisley is now installed and ready to use.'
