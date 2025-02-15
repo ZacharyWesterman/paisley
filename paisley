@@ -130,6 +130,10 @@ if flags.install then
 		--Create stdlib directory and copy the files over.
 		os.execute('mkdir -p /usr/local/share/paisley')
 		os.execute('cp -r stdlib /usr/local/share/paisley/')
+
+		--Create library directory and copy the files over.
+		os.execute('mkdir -p /usr/local/lib/paisley')
+		os.execute('cp -r src/libs /usr/local/lib/paisley/')
 	end
 
 	os.exit(0)
@@ -305,13 +309,12 @@ if flags.standalone then
 	end
 
 	io.stderr:write('Compiling to `' .. flags.output .. '`...\n')
-	text = compiler.compile(text)
+	local result = compiler.compile(text, flags.output)
 
-	local fp = io.open(flags.output, 'wb')
-	if not fp then
-		error('Error: Failed to write to file `' .. flags.output .. '`.')
+	if not result then
+		io.stderr:write('\nError: Failed to compile `' .. flags.output .. '`!\n')
+		os.exit(1)
 	end
-	fp:write(text)
 
 	os.exit(0)
 end

@@ -32,8 +32,39 @@ STANDALONE.lua = {
 
 	--- Compile a standalone Lua program into a binary executable.
 	--- @param program_text string The Lua program text.
-	--- @return string binary The compiled binary.
-	compile = function(program_text)
-		error('COMPILER ERROR: Lua binary compilation is not implemented!')
+	--- @param output_file string The output file path.
+	--- @return boolean success Whether the compilation was successful.
+	compile = function(program_text, output_file)
+		local c_code = [[
+		#define LUA_IMPL
+		#include "minilua.h"
+		int main() {
+			lua_State *L = luaL_newstate();
+			luaL_openlibs(L);
+			luaL_loadstring(L, "]] .. program_text:gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n') .. [[");
+			lua_pcall(L, 0, 0, 0);
+			lua_close(L);
+			return 0;
+		}
+		]]
+
+		local c_file = FS.open_lib('main.c', 'wb')
+		if not c_file then
+			error('Failed to open file for writing.')
+		end
+
+		c_file:write(c_code)
+		c_file:close()
+
+		local cc = 'gcc'
+		local command = cc .. ' -o ' .. output_file .. ' ' .. FS.libs_dir .. 'main.c -lm'
+
+		io.stderr:write(command .. '\n')
+
+		local result = os.execute(command)
+
+		os.remove(FS.libs_dir .. 'main.c')
+
+		return result == 0
 	end,
 }

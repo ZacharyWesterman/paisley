@@ -48,6 +48,7 @@ FS = {
 
 	exec_dir = "-UNDEF-",
 	working_dir = "",
+	libs_dir = "-UNDEF-",
 
 	open = function(filename, exec_dir)
 		if exec_dir then
@@ -55,6 +56,10 @@ FS = {
 		else
 			return io.open(FS.working_dir .. filename, "r")
 		end
+	end,
+
+	open_lib = function(filename, mode)
+		return io.open(FS.libs_dir .. filename, mode)
 	end,
 
 	is_paisley_bytecode = function(text)
@@ -113,12 +118,15 @@ FS = {
 
 --[[no-install]]
 FS.exec_dir = FS.script_real_path():match("(.*[/\\])") or ""
+FS.libs_dir = FS.exec_dir .. 'src/libs/'
 if false then
 	--[[/no-install]]
 	if FS.os.windows then
 		FS.exec_dir = os.getenv('APPDATA') .. '\\paisley\\'
+		FS.libs_dir = FS.exec_dir .. 'libs\\'
 	else
 		FS.exec_dir = '/usr/local/share/paisley/'
+		FS.libs_dir = '/usr/local/lib/paisley/'
 	end
 	--[[no-install]]
 end

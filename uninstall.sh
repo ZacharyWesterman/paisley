@@ -7,7 +7,7 @@ if [ "$EUID" -ne 0 ]; then
 	exit 1
 fi
 
-rm -rf /usr/local/bin/paisley /usr/local/share/paisley
+rm -rf /usr/local/bin/paisley /usr/local/share/paisley /usr/local/lib/paisley
 
 uninstall_dependency() {
 	sudo luarocks remove "$1" &>/dev/null
