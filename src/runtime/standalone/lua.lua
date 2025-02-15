@@ -68,7 +68,8 @@ STANDALONE.lua = {
 
 		local c_file = FS.open_lib('main.c', 'wb')
 		if not c_file then
-			error('Failed to open file for writing.')
+			error(
+				'Failed to open file for writing.\n1. Does the directory exist with the right permissions?\n2. Is the `lfs` Lua rock installed?')
 		end
 
 		c_file:write(c_code)
