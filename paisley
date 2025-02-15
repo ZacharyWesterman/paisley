@@ -53,6 +53,7 @@ local flags, args = ARG.parse_and_validate(options, config)
 if flags.plasma_build then
 	require 'src.util.filesystem'
 	require 'src.meta.lua'
+	require 'src.shared.stdlib'
 
 	local fp = FS.open('src/' .. flags.plasma_build .. '.lua', true)
 	if not fp then
@@ -69,6 +70,12 @@ if flags.plasma_build then
 		print(text)
 		os.exit(0)
 	end
+
+	local prefix = '--[[Paisley ' ..
+		flags.plasma_build .. ' v' .. config.version ..
+		', written by ' .. std.b64_decode('U2Vub3JDbHVja2Vucw==') .. ']]\n'
+	prefix = prefix .. '--[[This build has been minified to reduce file size]]\n'
+	text = prefix .. text
 
 	-- io.stderr:write('Compiling Lua into bytecode...\n')
 	-- text = LUA.compile(text)
