@@ -856,7 +856,7 @@ function SemanticAnalyzer(tokens, root_file)
 	local current_sub = nil
 	--[[minify-delete]]
 	local in_cmd_eval = false
-	--[[minify-delete]]
+	--[[/minify-delete]]
 
 	local function type_precheck(token, file)
 		if token.id == TOK.subroutine then current_sub = token.text end
