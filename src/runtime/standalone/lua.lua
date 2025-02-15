@@ -47,12 +47,10 @@ STANDALONE.lua = {
 			program_text:gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n') .. [[");
 
 			//Set up arg table.
-			int i, narg;
-			narg = argc - (script + 1);  /* number of positive indices */
-			lua_createtable(L, narg, script + 1);
-			for (i = 0; i < argc; i++) {
+			lua_createtable(L, argc + 1, script);
+			for (int i = 1; i < argc; i++) {
 				lua_pushstring(L, argv[i]);
-				lua_rawseti(L, -2, i - script);
+				lua_rawseti(L, -2, i);
 			}
 			lua_setglobal(L, "arg");
 
