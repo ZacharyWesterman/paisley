@@ -25,12 +25,13 @@ local options = {
 	{ description = "Print the abstract syntax tree and then exit",                  long = "ast" },
 	{ description = "Print the AST after semantic analysis and then exit",           long = "ast-sem" },
 	{ description = "Restrict to only features available in the Plasma build",       long = "plasma" },
+	{ description = "Generate runtime or compiler text for the Plasma build",        long = "plasma-build",        type = "string", arg = "[TYPE]",           options = { "compiler", "runtime" } },
 	{ description = "Print introspective data about the Paisley language",           long = "introspect" },
 	{ description = "If introspecting, list all functions",                          long = "functions" },
 	{ description = "If introspecting, list all commands",                           long = "commands" },
-	{ description = "Define an existing command on the target device",               short = "c",                  type = "array",  name = "external_cmds",   composite = true,          arg = "[CMD]" },
-	{ description = "If introspecting, output details about the function",           short = "if",                 type = "array",  name = "introspect_func", composite = true,          arg = "[FUNC_NAME]" },
-	{ description = "If introspecting, output details about the command",            short = "ic",                 type = "array",  name = "introspect_cmds", composite = true,          arg = "[CMD_NAME]" },
+	{ description = "Define an existing command on the target device",               short = "c",                  type = "array",  name = "external_cmds",   composite = true,                   arg = "[CMD]" },
+	{ description = "If introspecting, output details about the function",           short = "if",                 type = "array",  name = "introspect_func", composite = true,                   arg = "[FUNC_NAME]" },
+	{ description = "If introspecting, output details about the command",            short = "ic",                 type = "array",  name = "introspect_cmds", composite = true,                   arg = "[CMD_NAME]" },
 	{ description = "Output a standalone binary (or Lua script if no output file)",  long = "standalone",          short = "s" },
 	{ description = "Compress the above standalone program if possible",             long = "compress-standalone", short = "cs" },
 	{ description = "Choose a specific language to compile the standalone binary",   long = "target",              type = "string", arg = "[TARGET]",         options = { "lua", "cpp" } },
@@ -47,6 +48,39 @@ package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])') or '.') .. '/?.
 
 require 'src.util.argparse'
 local flags, args = ARG.parse_and_validate(options, config)
+
+--Generate compiler or runtime text for the Plasma build
+if flags.plasma_build then
+	require 'src.util.filesystem'
+	require 'src.meta.lua'
+
+	local fp = FS.open('src/' .. flags.plasma_build .. '.lua', true)
+	if not fp then
+		error('Error: Failed to open `src/' .. flags.plasma_build .. '.lua` for reading.')
+	end
+
+	local text = fp:read('*all')
+	fp:close()
+
+	io.stderr:write('Concatenating Lua files...\n')
+	text = LUA.minify(text, true, true)
+
+	if not flags.output or flags.output == '-' then
+		print(text)
+		os.exit(0)
+	end
+
+	-- io.stderr:write('Compiling Lua into bytecode...\n')
+	-- text = LUA.compile(text)
+	local fp = io.open(flags.output, 'wb')
+	if not fp then
+		error('Error: Failed to write to file `' .. flags.output .. '`.')
+	end
+	fp:write(text)
+	fp:close()
+
+	os.exit(0)
+end
 
 --[[no-install]]
 if flags.install then
@@ -250,7 +284,7 @@ if flags.standalone then
 	require 'src.runtime.standalone.all'
 
 	local target = flags.target or 'lua'
-	local compiler = STANDALONE[target]
+	local compiler = _G['STANDALONE'][target]
 	if not compiler then
 		error('Error: Unsupported target `' .. target .. '`.')
 	end

@@ -166,7 +166,7 @@ ARG = {
 
 		if hold_arg then
 			local msg = "Expected argument for flag `" .. hold_arg .. "`"
-			local option = long_with_arg['--' .. hold_arg]
+			local option = long_with_arg['--' .. hold_arg:gsub('_', '-')]
 			if option.options then
 				msg = msg ..
 					" (can be one of `" .. table.concat(option.options, '`, `') .. '`)'
@@ -229,7 +229,7 @@ ARG = {
 			os.exit(0)
 		end
 
-		if flags.introspect or flags.repl or flags.install then
+		if flags.introspect or flags.repl or flags.install or flags.plasma_build then
 			return flags, positional
 		end
 
