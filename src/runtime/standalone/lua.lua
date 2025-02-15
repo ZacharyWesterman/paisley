@@ -14,8 +14,8 @@ STANDALONE.lua = {
 		V1 = "]] .. json.stringify(bytecode):
 		gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n') .. '"'
 
-		local prefix = FS.open('src/util/output_pc.lua', true):read('*all')
-		local text = FS.open('src/runtime.lua', true):read('*all')
+		local prefix = --[[build-replace=src/util/output_pc.lua]] FS.open('src/util/output_pc.lua', true):read('*all') --[[/build-replace]]
+		local text = --[[build-replace=src/runtime.lua]] FS.open('src/runtime.lua', true):read('*all') --[[/build-replace]]
 		local postfix = [[
 		while true do
 			RUN()

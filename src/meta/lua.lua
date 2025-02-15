@@ -29,12 +29,25 @@ LUA = {
 				local token = text:match(pattern[1])
 				if token then
 					if token == '"' or token == '\'' then
-						local i = 2
-						while text:sub(i, i) ~= token do
-							if text:sub(i, i) == '\\' then
-								i = i + 1
+						local i = 1
+						while true do
+							local ix = text:find(token, i + 1, true)
+							if not ix then
+								error('ERROR When parsing Lua code: Unclosed string.')
 							end
-							i = i + 1
+
+							i = ix
+							--Ignore escaped quotes with an odd number of backslashes
+							local backslashes = 0
+							local b = i
+							while text:sub(b - 1, b - 1) == '\\' do
+								backslashes = backslashes + 1
+								b = b - 1
+							end
+
+							if backslashes % 2 == 0 then
+								break
+							end
 						end
 						token = text:sub(1, i)
 					end
@@ -58,8 +71,8 @@ LUA = {
 	end,
 
 	--- Minify a string of Lua code.
-	--- @param text string
-	--- @return string
+	--- @param text string The Lua code.
+	--- @return string new_code The minified Lua code.
 	minify = function(text, standalone, remove_delete_blocks)
 		local tokens = LUA.tokenize(text)
 
@@ -77,9 +90,28 @@ LUA = {
 		return LUA.tokens.join(tokens)
 	end,
 
+	--- Resolve all require statements in a string of Lua code, and replace special comment blocks.
+	--- @param text string The Lua code.
+	--- @return string new_code The resolved Lua code.
+	glue = function(text, standalone, remove_delete_blocks)
+		local tokens = LUA.tokenize(text)
+
+		if standalone then
+			tokens = LUA.tokens.replace_requires(tokens)
+		end
+
+		if remove_delete_blocks then
+			tokens = LUA.tokens.remove_delete_blocks(tokens)
+		end
+
+		tokens = LUA.tokens.remove_noinstall_blocks(tokens)
+		tokens = LUA.tokens.replace_build_replace_blocks(tokens)
+		return LUA.tokens.join(tokens)
+	end,
+
 	--- Compile a string of Lua code into Lua bytecode.
-	--- @param text string
-	--- @return string
+	--- @param text string The Lua code.
+	--- @return string bytecode The Lua bytecode.
 	compile = function(text)
 		local switch = false
 		local function loadfn()
@@ -159,7 +191,7 @@ LUA = {
 
 	tokens = {
 		--- Print a table of tokens.
-		--- @param tokens LUA.Token[]
+		--- @param tokens LUA.Token[] The tokens to print.
 		--- @return nil
 		print = function(tokens)
 			for _, token in ipairs(tokens) do
@@ -168,8 +200,8 @@ LUA = {
 		end,
 
 		--- Remove whitespace and comments from a table of tokens.
-		--- @param tokens LUA.Token[]
-		--- @return LUA.Token[]
+		--- @param tokens LUA.Token[] The tokens to process.
+		--- @return LUA.Token[] stripped The processed tokens.
 		strip = function(tokens)
 			local stripped = {}
 			for _, token in ipairs(tokens) do
@@ -181,8 +213,8 @@ LUA = {
 		end,
 
 		--- Join a table of tokens into a string.
-		--- @param tokens LUA.Token[]
-		--- @return string
+		--- @param tokens LUA.Token[] The tokens to join.
+		--- @return string text The joined text.
 		join = function(tokens)
 			local text = ''
 			local prev = {
@@ -203,8 +235,8 @@ LUA = {
 		_rqid = 0,
 
 		--- Recursively parse require statements and split into a function call and the rest of the program.
-		--- @param tokens LUA.Token[]
-		--- @return LUA.Token[]
+		--- @param tokens LUA.Token[] The tokens to process.
+		--- @return LUA.Token[] new_tokens The processed tokens.
 		_extract_requires = function(tokens)
 			local function match_types(tokens, i, group)
 				for j = 1, #group do
@@ -291,8 +323,8 @@ LUA = {
 		end,
 
 		--- Replace all require calls with the appropriate file contents.
-		--- @param tokens LUA.Token[]
-		--- @return LUA.Token[]
+		--- @param tokens LUA.Token[] The tokens to process.
+		--- @return LUA.Token[] new_tokens The processed tokens.
 		replace_requires = function(tokens)
 			LUA.tokens._requires_cache = {}
 
@@ -317,8 +349,8 @@ LUA = {
 		end,
 
 		--- Remove any blocks of code that are wrapped in `--[[minify-delete]]` ... `--[[/minify-delete]]` comments.
-		--- @param tokens LUA.Token[]
-		--- @return LUA.Token[]
+		--- @param tokens LUA.Token[] The tokens to process.
+		--- @return LUA.Token[] new_tokens The processed tokens.
 		remove_delete_blocks = function(tokens)
 			local new_tokens = {}
 			local i = 1
@@ -349,8 +381,8 @@ LUA = {
 		end,
 
 		--- Remove any blocks of code that are wrapped in `--[[no-=install]]` ... `--[[/no-install]]` comments.
-		--- @param tokens LUA.Token[]
-		--- @return LUA.Token[]
+		--- @param tokens LUA.Token[] The tokens to process.
+		--- @return LUA.Token[] new_tokens The processed tokens.
 		remove_noinstall_blocks = function(tokens)
 			local new_tokens = {}
 			local i = 1
@@ -369,8 +401,8 @@ LUA = {
 
 
 		--- Replace all blocks of code that are wrapped in `--[[build-replace=...]]` ... `--[[/build-replace]]` comments with the specified file contents.
-		--- @param tokens LUA.Token[]
-		--- @return LUA.Token[]
+		--- @param tokens LUA.Token[] The tokens to process.
+		--- @return LUA.Token[] new_tokens The processed tokens.
 		replace_build_replace_blocks = function(tokens)
 			local new_tokens = {}
 			local i = 1
@@ -384,10 +416,18 @@ LUA = {
 					local text = fp:read('*a')
 					fp:close()
 
+					--Minify any Lua code
+					if file:match('%.lua$') then
+						text = LUA.minify(text, false, false)
+					end
+
 					--Escape the text so it can be used in a Lua string
 					text = text:gsub('\\', '\\\\'):gsub('\n', '\\n'):gsub('"', '\\"')
+
+					--Append the text to the new tokens
 					table.insert(new_tokens, { text = '"' .. text .. '"', type = 'string' })
 
+					--Skip to the end of the block
 					while tokens[i].type ~= 'comment' or tokens[i].text ~= '--[[/build-replace]]' do
 						i = i + 1
 					end

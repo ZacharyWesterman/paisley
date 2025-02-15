@@ -42,9 +42,10 @@ local options = {
 	--[[no-install]] { description = "Compile the Paisley application into a standalone executable", long = "install" }, --[[/no-install]]
 }
 
---DELETE THIS WHEN MINIFYING (not needed in single-file version)
 --Set the Lua search path so that we can load the rest of our code.
+--[[no-install]]
 package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])') or '.') .. '/?.lua'
+--[[/no-install]]
 
 require 'src.util.argparse'
 local flags, args = ARG.parse_and_validate(options, config)
@@ -55,6 +56,7 @@ if flags.plasma_build then
 	require 'src.meta.lua'
 	require 'src.shared.stdlib'
 
+	--[[no-install]]
 	local fp = FS.open('src/' .. flags.plasma_build .. '.lua', true)
 	if not fp then
 		error('Error: Failed to open `src/' .. flags.plasma_build .. '.lua` for reading.')
@@ -62,6 +64,18 @@ if flags.plasma_build then
 
 	local text = fp:read('*all')
 	fp:close()
+
+	if false then
+		--[[/no-install]]
+		local text = ''
+		if flags.plasma_build == 'compiler' then
+			text = --[[build-replace=src/compiler.lua]] '' --[[/build-replace]]
+		elseif flags.plasma_build == 'runtime' then
+			text = --[[build-replace=src/runtime.lua]] '' --[[/build-replace]]
+		end
+		--[[no-install]]
+	end
+	--[[/no-install]]
 
 	io.stderr:write('Concatenating Lua files...\n')
 	text = LUA.minify(text, true, true)
@@ -102,6 +116,10 @@ if flags.install then
 
 	local text = fp:read('*all')
 	fp:close()
+
+	--Remove shebang from the beginning of the file.
+	local m = text:match('^#![^\n]*\n')
+	if m then text = text:sub(#m + 1) end
 
 	local target_file = '/usr/local/bin/paisley'
 	if FS.os.windows then
@@ -147,7 +165,7 @@ if flags.install then
 		os.execute('cp -r src/libs /usr/local/lib/paisley/')
 	end
 
-	print('Standalone Paisley executable has been installed.')
+	io.stderr:write('Standalone Paisley executable has been installed.\n')
 
 	os.exit(0)
 end

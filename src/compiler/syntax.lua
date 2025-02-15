@@ -174,7 +174,7 @@ local rules = {
 		id = TOK.negate,
 		keep = { 2 },
 		text = 1,
-		not_after = { TOK.lit_number, TOK.lit_boolean, TOK.lit_null, TOK.negate, TOK.command_close, TOK.expr_close, TOK.string_close, TOK.string_open, TOK.paren_close, TOK.inline_command, TOK.expression, TOK.parentheses, TOK.variable, TOK.func_call, TOK.index_close, TOK.index, TOK.op_plus, TOK.add, TOK.op_count, TOK.op_comma, TOK.comparison, TOK.text, },
+		not_after = { TOK.lit_number, TOK.lit_boolean, TOK.lit_null, TOK.negate, TOK.command_close, TOK.expr_close, TOK.string_close, TOK.string_open, TOK.paren_close, TOK.inline_command, TOK.expression, TOK.parentheses, TOK.variable, TOK.func_call, TOK.index_close, TOK.index, TOK.op_plus, TOK.add, TOK.op_count, TOK.comparison, TOK.text, },
 		not_before = { TOK.op_dot },
 		-- onmatch = function() error() end,
 	},
