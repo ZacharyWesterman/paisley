@@ -24,11 +24,7 @@ FS = {
 
 			if not ffi_installed then return '' end
 
-			ffi.cdef [[
-				typedef unsigned long DWORD;
-				typedef char CHAR;
-				typedef DWORD ( __stdcall *GetFullPathNameA_t )(const CHAR*, DWORD, CHAR*, CHAR**);
-			]]
+			ffi.cdef [[typedef unsigned long DWORD;typedef DWORD(__stdcall *GetFullPathNameA_t)(const char*, DWORD, char*, char**);]]
 			local kernel32 = ffi.load("kernel32")
 			local MAX_PATH = 260
 			local buf = ffi.new("char[?]", MAX_PATH)
