@@ -39,12 +39,8 @@ if [ ! -e /tmp/paisley-build-srlua ]; then
 	git clone https://github.com/LuaDist/srlua.git /tmp/paisley-build-srlua || exit 1
 fi
 mkdir -p /tmp/paisley-build-srlua/build || exit 1
-if [ ! -e /tmp/paisley-build-srlua/build/CMakeCache.txt ]; then
-	cmake -B/tmp/paisley-build-srlua/build -S/tmp/paisley-build-srlua || exit 1
-fi
-if [ ! -e /tmp/paisley-build-srlua/build/Makefile ]; then
-	cmake --build /tmp/paisley-build-srlua/build || exit 1
-fi
+cmake -B/tmp/paisley-build-srlua/build -S/tmp/paisley-build-srlua || exit 1
+make -C /tmp/paisley-build-srlua/build || exit 1
 
 #Compile the standalone binary
 srluadir='/tmp/paisley-build-srlua/build'
@@ -92,4 +88,5 @@ else
 	done <requires.txt
 fi
 
+echo
 echo 'Paisley is now installed.'

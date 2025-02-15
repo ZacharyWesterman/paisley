@@ -28,11 +28,12 @@ local options = {
 	{ description = "Print introspective data about the Paisley language",           long = "introspect" },
 	{ description = "If introspecting, list all functions",                          long = "functions" },
 	{ description = "If introspecting, list all commands",                           long = "commands" },
-	{ description = "Define an existing command on the target device",               short = "c",                  type = "array",  name = "external_cmds",   composite = true, arg = "[CMD]" },
-	{ description = "If introspecting, output details about the function",           short = "if",                 type = "array",  name = "introspect_func", composite = true, arg = "[FUNC_NAME]" },
-	{ description = "If introspecting, output details about the command",            short = "ic",                 type = "array",  name = "introspect_cmds", composite = true, arg = "[CMD_NAME]" },
+	{ description = "Define an existing command on the target device",               short = "c",                  type = "array",  name = "external_cmds",   composite = true,          arg = "[CMD]" },
+	{ description = "If introspecting, output details about the function",           short = "if",                 type = "array",  name = "introspect_func", composite = true,          arg = "[FUNC_NAME]" },
+	{ description = "If introspecting, output details about the command",            short = "ic",                 type = "array",  name = "introspect_cmds", composite = true,          arg = "[CMD_NAME]" },
 	{ description = "Output a standalone binary (or Lua script if no output file)",  long = "standalone",          short = "s" },
 	{ description = "Compress the above standalone program if possible",             long = "compress-standalone", short = "cs" },
+	{ description = "Choose a specific language to compile the standalone binary",   long = "target",              type = "string", arg = "[TARGET]",         options = { "lua", "cpp" } },
 	{ description = "Allow unrecognized commands to coerce to shell exec",           long = "shell",               short = "l" },
 	{ description = "Disable features/cmds that could affect the system (e.g. `?`)", long = "sandbox" },
 	{ description = "List the recommended Lua packages to be installed",             long = "rocks" },
@@ -66,6 +67,9 @@ if flags.install then
 
 	io.stderr:write('Concatenating Lua files...\n')
 	text = LUA.minify(text, true)
+
+	io.stderr:write('Compiling Lua into bytecode...\n')
+	text = LUA.compile(text)
 
 	io.stderr:write('Installing Paisley...\n')
 
@@ -243,7 +247,32 @@ end
 --TEMP: generating runtime is not supported yet.
 --I want it to be bigger and better (with multiple different targets!), so for now, lock that functionality off.
 if flags.standalone then
-	error('Error: Generating standalone executables is not supported yet.')
+	require 'src.runtime.standalone.all'
+
+	local target = flags.target or 'lua'
+	local compiler = STANDALONE[target]
+	if not compiler then
+		error('Error: Unsupported target `' .. target .. '`.')
+	end
+
+	io.stderr:write('Generating code for target `' .. target .. '`...\n')
+	local text = compiler.generate(bytecode)
+
+	if not flags.output or flags.output == '-' then
+		print(text)
+		os.exit(0)
+	end
+
+	io.stderr:write('Compiling to `' .. flags.output .. '`...\n')
+	text = compiler.compile(text)
+
+	local fp = io.open(flags.output, 'wb')
+	if not fp then
+		error('Error: Failed to write to file `' .. flags.output .. '`.')
+	end
+	fp:write(text)
+
+	os.exit(0)
 end
 
 --After this point, bytecode is outputted and the program is done.
@@ -268,6 +297,11 @@ if flags.output ~= '-' then
 	end
 	fp:write(text)
 	fp:close()
+
+	if not FS.os.windows then
+		-- Make the file executable
+		os.execute('chmod +x ' .. flags.output)
+	end
 else
 	print(text)
 end

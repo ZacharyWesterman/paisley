@@ -120,7 +120,12 @@ ARG = {
 						if option.type then
 							local text = ar:sub(#prefix + 1)
 							if text == "" then
-								ARG.error("Expected argument for flag `" .. prefix .. "`")
+								local msg = "Expected argument for flag `" .. prefix .. "`"
+								if option.options then
+									msg = msg ..
+										" (can be one of `" .. table.concat(option.options, '`, `') .. '`)'
+								end
+								ARG.error(msg)
 							end
 
 							if option.type == 'array' then
@@ -159,7 +164,34 @@ ARG = {
 			end
 		end
 
-		if hold_arg then ARG.error("Expected argument for flag `" .. hold_arg .. "`") end
+		if hold_arg then
+			local msg = "Expected argument for flag `" .. hold_arg .. "`"
+			local option = long_with_arg['--' .. hold_arg]
+			if option.options then
+				msg = msg ..
+					" (can be one of `" .. table.concat(option.options, '`, `') .. '`)'
+			end
+			ARG.error(msg)
+		end
+
+		--Make sure any flag args that have an array of options were actually given a valid option.
+		for _, option in pairs(long_with_arg) do
+			if option.options and flag_args[option.id] then
+				local valid = false
+				for _, v in ipairs(option.options) do
+					if v == flag_args[option.id] then
+						valid = true
+						break
+					end
+				end
+
+				if not valid then
+					local msg = "Invalid option `" .. flag_args[option.id] .. "` for flag `--" .. option.long .. "`"
+					msg = msg .. " (can be one of `" .. table.concat(option.options, '`, `') .. '`)'
+					ARG.error(msg)
+				end
+			end
+		end
 
 		return flag_args, positional_args
 	end,
