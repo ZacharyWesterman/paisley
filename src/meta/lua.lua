@@ -324,8 +324,21 @@ LUA = {
 			local i = 1
 			while i <= #tokens do
 				if tokens[i].type == 'comment' and tokens[i].text == '--[[minify-delete]]' then
+					local beg = i
 					while tokens[i].type ~= 'comment' or tokens[i].text ~= '--[[/minify-delete]]' do
 						i = i + 1
+						--Check for minification errors
+						if tokens[i].type == 'comment' and tokens[i].text == '--[[minify-delete]]' then
+							local msg = 'ERROR: Unexpected `--[[minify-delete]]` inside a `--[[minify-delete]]` block.'
+							msg = msg .. '\nCONTEXT:\n'
+							for j = beg - 1, i do
+								if tokens[j] then
+									msg = msg .. tokens[j].text
+								end
+							end
+							io.stderr:write(msg .. '\n')
+							os.exit(1)
+						end
 					end
 				else
 					table.insert(new_tokens, tokens[i])
