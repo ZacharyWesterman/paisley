@@ -42,7 +42,7 @@ STANDALONE.lua = {
 
 		local c_code = [[
 		#define LUA_IMPL
-		#include "lua/]] .. version .. [[/minilua.h"
+		#include <minilua.h>
 		int main(int argc, char **argv) {
 			//Create state and load program.
 			lua_State *L = luaL_newstate();
@@ -50,8 +50,8 @@ STANDALONE.lua = {
 			luaL_openlibs(L);
 
 			// Set up LuaRocks paths.
-			luaL_dostring(L, "package.path = \"]] .. package.initial.path .. [[\"");
-			luaL_dostring(L, "package.cpath = \"]] .. package.initial.cpath .. [[\"");
+			luaL_dostring(L, "package.path = \"]] .. package --[[no-install]].initial --[[/no-install]].path .. [[\"");
+			luaL_dostring(L, "package.cpath = \"]] .. package --[[no-install]].initial --[[/no-install]].cpath .. [[\"");
 
 			int script = luaL_loadstring(L, "]] ..
 			program_text:gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n') .. [[");
@@ -76,25 +76,26 @@ STANDALONE.lua = {
 		}
 		]]
 
-		local c_file = FS.open_lib('main.c', 'wb')
+		local c_filename = os.tmpname() .. '.c'
+		local c_file = io.open(c_filename, 'wb')
 		if not c_file then
 			error(
-				'Failed to open file for writing.\n1. Does the directory exist with the right permissions?\n2. Is the `lfs` Lua rock installed?')
+				'ERROR: Failed to open temporary C file for writing!. THIS IS MOST LIKELY A BUG IN THE COMPILER.')
 		end
 
 		c_file:write(c_code)
 		c_file:close()
 
 		local cc = 'gcc'
-		local command = cc ..
-			' -o ' .. output_file .. ' ' .. FS.libs_dir .. 'main.c -lm  -Wl,-E'
+		local command = cc .. ' -I' .. FS.libs_dir .. 'lua/' .. version ..
+			' -o ' .. output_file .. ' ' .. c_filename .. ' -lm  -Wl,-E'
 
 		io.stderr:write('[Compiling for Lua ' .. version .. ']\n')
 		io.stderr:write(command .. '\n')
 
 		local result = os.execute(command)
 
-		os.remove(FS.libs_dir .. 'main.c')
+		os.remove(c_filename)
 
 		return result == 0 or result == true
 	end,

@@ -28,7 +28,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 #Package the program into an executable and install it.
-./paisley --install
+./paisley --install || exit 1
 
 install_dependency() {
 	sudo luarocks install "$1" &>/dev/null
@@ -50,7 +50,8 @@ wait_on_process() {
 	printf '\r\e[K'
 }
 
-echo 'Requesting permission to install dependencies...'
+echo
+echo 'Installing Lua rocks...'
 
 #Prompt once for password
 if ! sudo echo -n; then

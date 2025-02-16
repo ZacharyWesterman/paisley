@@ -140,9 +140,6 @@ if flags.install then
 	io.stderr:write('Concatenating Lua files...\n')
 	text = LUA.minify(text, true)
 
-	-- io.stderr:write('Compiling Lua into bytecode...\n')
-	-- text = LUA.compile(text)
-
 	io.stderr:write('Compiling Lua into an executable...\n')
 	local compiler = _G['STANDALONE'].lua
 	local result = compiler.compile(text, target_file)
@@ -167,7 +164,7 @@ if flags.install then
 
 		--Create library directory and copy the files over.
 		os.execute('mkdir -p /usr/local/lib/paisley')
-		os.execute('cp -r src/libs /usr/local/lib/paisley/')
+		os.execute('cp -r src/libs/* /usr/local/lib/paisley/')
 	end
 
 	io.stderr:write('Standalone Paisley executable has been installed.\n')
