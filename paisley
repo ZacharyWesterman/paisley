@@ -44,6 +44,11 @@ local options = {
 
 --Set the Lua search path so that we can load the rest of our code.
 --[[no-install]]
+package.initial = {
+	path = package.path,
+	cpath = package.cpath,
+}
+
 package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])') or '.') .. '/?.lua'
 --[[/no-install]]
 

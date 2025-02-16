@@ -35,14 +35,24 @@ STANDALONE.lua = {
 	--- @param output_file string The output file path.
 	--- @return boolean success Whether the compilation was successful.
 	compile = function(program_text, output_file)
+		local version = _VERSION:match('[%d%.]+$')
+		if version:sub(1, 2) ~= '5.' or tonumber(version:sub(3)) < 3 then
+			version = '5.3' --Force version to 5.3 if not 5.3 or higher.
+		end
+
 		local c_code = [[
 		#define LUA_IMPL
-		#include "minilua.h"
+		#include "lua/]] .. version .. [[/minilua.h"
 		int main(int argc, char **argv) {
 			//Create state and load program.
 			lua_State *L = luaL_newstate();
 			if (L == NULL) return -1;
 			luaL_openlibs(L);
+
+			// Set up LuaRocks paths.
+			luaL_dostring(L, "package.path = \"]] .. package.initial.path .. [[\"");
+			luaL_dostring(L, "package.cpath = \"]] .. package.initial.cpath .. [[\"");
+
 			int script = luaL_loadstring(L, "]] ..
 			program_text:gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n') .. [[");
 
@@ -76,14 +86,16 @@ STANDALONE.lua = {
 		c_file:close()
 
 		local cc = 'gcc'
-		local command = cc .. ' -o ' .. output_file .. ' ' .. FS.libs_dir .. 'main.c -lm'
+		local command = cc ..
+			' -o ' .. output_file .. ' ' .. FS.libs_dir .. 'main.c -lm  -Wl,-E'
 
+		io.stderr:write('[Compiling for Lua ' .. version .. ']\n')
 		io.stderr:write(command .. '\n')
 
 		local result = os.execute(command)
 
 		os.remove(FS.libs_dir .. 'main.c')
 
-		return result == 0
+		return result == 0 or result == true
 	end,
 }

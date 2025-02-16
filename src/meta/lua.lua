@@ -270,7 +270,7 @@ LUA = {
 			local new_tokens = {}
 			local i = 1
 			while i <= #tokens do
-				if tokens[i].text == 'require' and match_types(tokens, i + 1, { 'lparen', 'string', 'rparen' }) then
+				--[[if tokens[i].text == 'require' and match_types(tokens, i + 1, { 'lparen', 'string', 'rparen' }) then
 					local file = get_next_value(tokens, i, 'string'):sub(2, -2):gsub('%.', '/') .. '.lua'
 
 					local fp = io.open(file)
@@ -292,7 +292,8 @@ LUA = {
 
 					i = get_next_index(tokens, i, 'rparen')
 					fp:close()
-				elseif tokens[i].text == 'require' and match_types(tokens, i + 1, { 'string' }) then
+				else--]]
+				if tokens[i].text == 'require' and match_types(tokens, i + 1, { 'string' }) then
 					local file = get_next_value(tokens, i, 'string'):sub(2, -2):gsub('%.', '/') .. '.lua'
 					local fp = io.open(file)
 					if not fp then

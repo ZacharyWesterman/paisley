@@ -4,18 +4,16 @@ FAILED=0
 if ! which lua &>/dev/null; then
 	echo >&2 'ERROR: Lua is not installed! Please install it and try again.'
 	FAILED=1
-elif ! which luac &>/dev/null; then
-	echo >&2 'ERROR: Lua is installed, but `luac` is not! Please install it and try again.'
-	FAILED=1
 fi
 
-if ! which python3 &>/dev/null; then
-	echo >&2 'ERROR: Python 3 is not installed! Please install it and try again.'
+#Make sure Lua version is at least 5.3
+if ! which lua5.3 &>/dev/null && ! which lua53 &>/dev/null && ! which lua5.4 &>/dev/null && ! which lua54 &>/dev/null; then
+	echo >&2 'ERROR: Lua version 5.3 or higher is required to install Paisley.'
 	FAILED=1
 fi
 
 if ! which luarocks &>/dev/null; then
-	echo >&2 'WARNING: `luarocks` is not installed, so dependencies cannot be installed either. Some features may be missing from this build.'
+	echo >&2 'WARNING: luarocks is not installed, so dependencies cannot be installed either. Some features may be missing from this build.'
 fi
 
 [ $FAILED == 1 ] && exit 1
