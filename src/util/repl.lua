@@ -1,3 +1,5 @@
+REPL = true
+
 function error(text)
 	if text then print(text) end
 	ERRORED = true

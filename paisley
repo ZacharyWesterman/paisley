@@ -1,799 +1,385 @@
 #!/usr/bin/env lua
-V2 = nil --filename
-V3 = {}  --non-builtin commands
 
-local PRINT_BYTECODE = false
-local PRETTY_PRINT = false
-local ZLIB_COMPRESS = false
-local DRY_RUN = false
-local INTROSPECTION = false
-local INTROSPECT_CMDS = {}
-local INTROSPECT_FUNCS = {}
-local INTROSPECT_FUNCLIST = false
-local INTROSPECT_CMDLIST = false
-local STANDALONE_OUTPUT = false
-local STANDALONE_COMPRESS = false
-REPL = false
-LANGUAGE_SERVER = false
-RESTRICT_TO_PLASMA_BUILD = false
-SUPPRESS_AST_ERRORS = false
-PRINT_TOKENS = false
-PRINT_AST = false
-AST_AFTER_SEMANTIC = false
-WORKING_DIR = ''
-LSP_FILENAME = ''
-KEEP_DEAD_CODE = false
-NO_SHORTCUT = false
-COERCE_SHELL_CMDS = false
-PGM_ARGS = {}
-SANDBOX = false
+local config = {
+	description = "This is the Paisley compiler and runtime engine.\nhttps://github.com/ZacharyWesterman/paisley",
+	name = "Paisley",
+	exe = "paisley",
+	version = "1.14.0",
+}
 
-local ENDED = false
+local options = {
+	{ description = "Prints help information",                                       long = "help",                short = "h" },
+	{ description = "Prints version information",                                    long = "version",             short = "V" },
+	{ description = "The next parameter is the output file (use `-` for stdout)",    long = "output",              short = "o",     type = "string" },
+	{ description = "Start the Paisley runtime as an interactive REPL",              long = "repl",                short = "r" },
+	{ description = "Output bytecode instead of running the script",                 long = "bytecode",            short = "b" },
+	{ description = "Pretty-print bytecode output",                                  long = "pretty",              short = "p" },
+	{ description = "Compress bytecode output with zlib compression",                long = "compress",            short = "z" },
+	{ description = "Validate the program, but don't run it",                        long = "dry-run" },
+	{ description = "Output detailed info in an easy-to-parse format",               long = "language-server" },
+	{ description = "Pretend that stdin input has the given filename",               long = "stdin",               type = "string", arg = "[FILE]" },
+	{ description = "Don't report errors in the syntax tree",                        long = "no-ast-errors" },
+	{ description = "Don't remove 'dead code' that will never get run",              long = "no-prune-dead-code" },
+	{ description = "Don't allow `and` and `or` expressions to shortcut",            long = "no-shortcut" },
+	{ description = "Print all generated tokens and then exit",                      long = "tokens" },
+	{ description = "Print the abstract syntax tree and then exit",                  long = "ast" },
+	{ description = "Print the AST after semantic analysis and then exit",           long = "ast-sem" },
+	{ description = "Restrict to only features available in the Plasma build",       long = "plasma" },
+	{ description = "Generate runtime or compiler text for the Plasma build",        long = "plasma-build",        type = "string", arg = "[TYPE]",           options = { "compiler", "runtime" } },
+	{ description = "Print introspective data about the Paisley language",           long = "introspect" },
+	{ description = "If introspecting, list all functions",                          long = "functions" },
+	{ description = "If introspecting, list all commands",                           long = "commands" },
+	{ description = "Define an existing command on the target device",               short = "c",                  type = "array",  name = "external_cmds",   composite = true,                   arg = "[CMD]" },
+	{ description = "If introspecting, output details about the function",           short = "if",                 type = "array",  name = "introspect_func", composite = true,                   arg = "[FUNC_NAME]" },
+	{ description = "If introspecting, output details about the command",            short = "ic",                 type = "array",  name = "introspect_cmds", composite = true,                   arg = "[CMD_NAME]" },
+	{ description = "Output a standalone binary (or source code if no output file)", long = "standalone",          short = "s" },
+	{ description = "Compress the above standalone program if possible",             long = "compress-standalone", short = "cs" },
+	{ description = "Choose a specific language to compile the standalone binary",   long = "target",              type = "string", arg = "[TARGET]",         options = { "lua", "cpp" } },
+	{ description = "Allow unrecognized commands to coerce to shell exec",           long = "shell",               short = "l" },
+	{ description = "Disable features/cmds that could affect the system (e.g. `?`)", long = "sandbox" },
+	{ description = "List the recommended Lua packages to be installed",             long = "rocks" },
+	{ description = "The input file, or `-` to read from stdin",                     name = "input",               type = "string" },
+	--[[no-install]] { description = "Compile the Paisley application into a standalone executable", long = "install" }, --[[/no-install]]
+}
 
-local OUTPUT_FILE = nil
+--Set the Lua search path so that we can load the rest of our code.
+--[[no-install]]
+package.initial = {
+	path = package.path,
+	cpath = package.cpath,
+}
 
-WINDOWS = package.config:sub(1, 1) == '\\'
+package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])') or '.') .. '/?.lua'
+--[[/no-install]]
 
---Override default "error" behavior; just print the error, not a stack trace.
-function error(text)
-	if text then print(text) end
-	os.exit(1)
+require 'src.util.argparse'
+local flags, args = ARG.parse_and_validate(options, config)
+
+--Generate compiler or runtime text for the Plasma build
+if flags.plasma_build then
+	require 'src.util.filesystem'
+	require 'src.meta.lua'
+	require 'src.shared.stdlib'
+
+	--[[no-install]]
+	local fp = FS.open('src/' .. flags.plasma_build .. '.lua', true)
+	if not fp then
+		error('Error: Failed to open `src/' .. flags.plasma_build .. '.lua` for reading.')
+	end
+
+	local text = fp:read('*all')
+	fp:close()
+
+	if false then
+		--[[/no-install]]
+		local text = ''
+		if flags.plasma_build == 'compiler' then
+			text = --[[build-replace=src/compiler.lua]] '' --[[/build-replace]]
+		elseif flags.plasma_build == 'runtime' then
+			text = --[[build-replace=src/runtime.lua]] '' --[[/build-replace]]
+		end
+		--[[no-install]]
+	end
+	--[[/no-install]]
+
+	io.stderr:write('Concatenating Lua files...\n')
+	text = LUA.minify(text, true, true)
+
+	if not flags.output or flags.output == '-' then
+		print(text)
+		os.exit(0)
+	end
+
+	local prefix = '--[[Paisley ' ..
+		flags.plasma_build .. ' v' .. config.version ..
+		', written by ' .. std.b64_decode('U2Vub3JDbHVja2Vucw==') .. ']]\n'
+	prefix = prefix .. '--[[This build has been minified to reduce file size]]\n'
+	text = prefix .. text
+
+	-- io.stderr:write('Compiling Lua into bytecode...\n')
+	-- text = LUA.compile(text)
+	local fp = io.open(flags.output, 'wb')
+	if not fp then
+		error('Error: Failed to write to file `' .. flags.output .. '`.')
+	end
+	fp:write(text)
+	fp:close()
+
+	os.exit(0)
 end
 
-local function script_real_path()
-	local path = arg[0]
+--[[no-install]]
+if flags.install then
+	require 'src.util.filesystem'
+	require 'src.meta.lua'
+	require 'src.runtime.standalone.all'
 
-	if WINDOWS then
-		local ffi_installed, ffi = pcall(require, 'ffi')
+	local fp = FS.open('paisley', true)
+	if not fp then
+		error('Error: Failed to open `paisley` for reading.')
+	end
 
-		if not ffi_installed then return '' end
+	local text = fp:read('*all')
+	fp:close()
 
-		ffi.cdef [[
-            typedef unsigned long DWORD;
-            typedef char CHAR;
-            typedef DWORD ( __stdcall *GetFullPathNameA_t )(const CHAR*, DWORD, CHAR*, CHAR**);
-        ]]
-		local kernel32 = ffi.load("kernel32")
-		local MAX_PATH = 260
-		local buf = ffi.new("char[?]", MAX_PATH)
-		local getFullPathName = ffi.cast("GetFullPathNameA_t", kernel32.GetFullPathNameA)
-		local length = getFullPathName(path, MAX_PATH, buf, nil)
-		if length == 0 then
-			return '' -- Failed to get path
-		else
-			return ffi.string(buf, length)
-		end
+	--Remove shebang from the beginning of the file.
+	local m = text:match('^#![^\n]*\n')
+	if m then text = text:sub(#m + 1) end
+
+	local target_file = '/usr/local/bin/paisley'
+	if FS.os.windows then
+		error('Error: Standalone executables are not yet supported on Windows.')
+	end
+
+	local fp = io.open(target_file, 'wb')
+	if not fp then
+		error('Error: Failed to open `' .. target_file .. '` for writing. Try running with `sudo`.')
+	end
+	fp:close()
+
+	io.stderr:write('Concatenating Lua files...\n')
+	text = LUA.minify(text, true)
+
+	io.stderr:write('Compiling Lua into an executable...\n')
+	local compiler = _G['STANDALONE'].lua
+	local result = compiler.compile(text, target_file)
+
+	if not result then
+		io.stderr:write('\nError: Failed to compile `' .. target_file .. '`!\n')
+		os.exit(1)
+	end
+
+	io.stderr:write('Installing libraries and stdlib...\n')
+
+	if FS.os.windows then
+		error('Compiling standalone executables is not yet supported on Windows.')
+		-- local fp = io.open(os.getenv('APPDATA') .. '\\paisley\\paisley.lua', 'wb')
 	else
-		-- If on Linux, resolve symbolic links
-		local resolvedPath = io.popen("readlink -f " .. path):read("*a")
-		if resolvedPath then
-			return resolvedPath:gsub("^%s*(.-)%s*$", "%1") -- Trim whitespace
-		else
-			return ''                             -- Failed to get path
-		end
-	end
-end
+		--Make the file executable
+		os.execute('chmod +x ' .. target_file)
 
----@param text string
-local function is_zlib_compressed(text)
-	local header = text:sub(1, 2)
+		--Create stdlib directory and copy the files over.
+		os.execute('mkdir -p /usr/local/share/paisley')
+		os.execute('cp -r stdlib /usr/local/share/paisley/')
 
-	if #header < 2 then return false end
-
-	-- Convert the two bytes to integer values
-	local byte1, byte2 = header:byte(1, 2)
-
-	-- Check the zlib header
-	-- The first byte (CMF - Compression Method and Flags)
-	-- The second byte (FLG - Additional Flags)
-	return (byte1 == 0x78) and (byte2 == 0x01 or byte2 == 0x9C or byte2 == 0xDA)
-end
-
---@param text string
-local function is_paisley_bytecode(text)
-	if text:sub(1, 2) ~= '[[' or text:sub(#text - 1, #text) ~= ']]' then return false end
-	return json.verify(text)
-end
-
-local dir = script_real_path():match('(.*[/\\])')
-if dir == nil then dir = '' end
-
-function STDLIB(filename)
-	if dir == nil then return nil, filename end
-
-	local fname = dir .. 'stdlib/' .. filename:gsub('%.', '/')
-	local fp = io.open(fname .. '.pai')
-	if fp then
-		return fp, fname .. '.pai'
-	end
-	return io.open(fname), fname .. '.paisley'
-end
-
-LFS_INSTALLED, LFS = pcall(require, 'lfs')
-local zlib_installed, zlib = pcall(require, 'zlib')
-
-VERSION = --[[build-replace=version.txt]] io.open(dir .. 'version.txt'):read() --[[/build-replace]]
-local HELPTEXT = --[[build-replace=docs/helptext.txt]] io.open(dir .. 'docs/helptext.txt'):read('*all'):gsub('[\r\n]+$',
-	''):gsub(
-	'^[\r\n]+', '') --[[/build-replace]]
-
-local old_working_dir = nil
-if LFS_INSTALLED and dir ~= nil then
-	old_working_dir = LFS.currentdir()
-	WORKING_DIR = old_working_dir
-	LFS.chdir(dir)
-end
-
-require 'src.shared.json'
-require 'src.shared.stdlib'
-
---Split up args
-local args = {}
-local stop_splitting = false
-for _, v in ipairs(arg) do
-	if not stop_splitting and
-		v ~= '-' and
-		v:sub(1, 1) == '-' and
-		v:sub(2, 2) ~= '-' and
-		v:sub(1, 3) ~= '-cs' and
-		v:sub(1, 3) ~= '-if' and
-		v:sub(1, 3) ~= '-ic' then
-		for i = 2, #v do
-			table.insert(args, '-' .. v:sub(i, i))
-		end
-	else
-		table.insert(args, v)
-		if v == '--' or v:sub(1, 1) ~= '-' then stop_splitting = true end
-	end
-end
-
-local filename_found = false
-local no_more_flags = false
-local next_is_output = false
-for _, v in ipairs(args) do
-	if not no_more_flags and v:sub(1, 1) == '-' and v ~= '-' then
-		if v == '--' then
-			no_more_flags = true
-		elseif v:sub(1, 2) == '-c' and v ~= '-cs' then
-			table.insert(V3, v:sub(3, #v))
-		elseif v == '--help' or v == '-h' then
-			print('Paisley ' .. VERSION)
-			print('\n' .. HELPTEXT)
-			ENDED = true
-		elseif v == '--version' or v == '-V' then
-			print('Paisley ' .. VERSION)
-			ENDED = true
-		elseif v == '--bytecode' or v == '-b' then
-			PRINT_BYTECODE = true
-			PRETTY_PRINT = false
-			ZLIB_COMPRESS = false
-		elseif v == '--standalone' or v == '-s' then
-			STANDALONE_OUTPUT = true
-			PRINT_BYTECODE = true
-			PRETTY_PRINT = false
-			ZLIB_COMPRESS = false
-		elseif v == '--compress-standalone' or v == '-cs' then
-			STANDALONE_OUTPUT = true
-			STANDALONE_COMPRESS = true
-			PRINT_BYTECODE = true
-			PRETTY_PRINT = false
-			ZLIB_COMPRESS = false
-		elseif v == '--pretty' or v == '-p' then
-			PRINT_BYTECODE = true
-			PRETTY_PRINT = true
-			ZLIB_COMPRESS = false
-		elseif v == '--compress' or v == '-z' then
-			PRINT_BYTECODE = true
-			PRETTY_PRINT = false
-			ZLIB_COMPRESS = true
-		elseif v == '--dry-run' then
-			DRY_RUN = true
-		elseif v == '--language-server' then
-			LANGUAGE_SERVER = true
-		elseif v == '--plasma' then
-			RESTRICT_TO_PLASMA_BUILD = true
-		elseif v == '--no-ast-errors' then
-			SUPPRESS_AST_ERRORS = true
-		elseif v == '--tokens' then
-			PRINT_TOKENS = true
-		elseif v == '--ast' then
-			PRINT_AST = true
-		elseif v == '--ast-sem' then
-			PRINT_AST = true
-			AST_AFTER_SEMANTIC = true
-		elseif v == '--introspect' then
-			INTROSPECTION = true
-		elseif v == '--functions' then
-			INTROSPECT_FUNCLIST = true
-		elseif v == '--commands' then
-			INTROSPECT_CMDLIST = true
-		elseif v:sub(1, 3) == '-if' then
-			table.insert(INTROSPECT_FUNCS, v:sub(4, #v))
-		elseif v:sub(1, 3) == '-ic' then
-			table.insert(INTROSPECT_CMDS, v:sub(4, #v))
-		elseif v == '--repl' or v == '-r' then
-			REPL = true
-		elseif v:sub(1, 8) == '--stdin=' then
-			LSP_FILENAME = v:sub(9, #v)
-		elseif v == '--no-prune-dead-code' then
-			KEEP_DEAD_CODE = true
-		elseif v == '--no-shortcut' then
-			NO_SHORTCUT = true
-		elseif v == '--shell' or v == '-l' then
-			COERCE_SHELL_CMDS = true
-		elseif v == '--sandbox' then
-			SANDBOX = true
-		elseif v == '--rocks' then
-			io.stderr:write('For best results, install the following Lua rocks:\n')
-
-			local text = --[[build-replace=requires.txt]] io.open(dir .. 'requires.txt'):read('*all') --[[/build-replace]]
-			local args = ''
-			for l in text:gmatch('[^\n]+') do
-				local i = l:match('^[^ ]+')
-				print(i)
-				args = args .. ' ' .. i
-			end
-
-			io.stderr:write('\nNone of these are required for the Paisley compiler to work,\n')
-			io.stderr:write('but some extra features will be disabled if they\'re not installed.\n')
-			io.stderr:write('\nYou can use the following command to install them all:\n')
-			io.stderr:write('  luarocks install' .. args .. '\n')
-			io.stderr:write('Or, if you\'re on Linux, you can just run `./install.sh`\n')
-			os.exit(0)
-		elseif v == '-o' or v == '--output' then
-			next_is_output = true
-		elseif filename_found then
-			table.insert(PGM_ARGS, v)
-		else
-			error('Unknown flag `' .. v .. '`. Try running with `--help` to see all options.')
-		end
-	elseif next_is_output then
-		OUTPUT_FILE = v
-		PRINT_BYTECODE = true
-		if zlib_installed then
-			ZLIB_COMPRESS = true
-		else
-			print('WARNING: zlib dependency is not installed, so bytecode output will not be compressed.')
-		end
-		next_is_output = false
-	elseif filename_found then
-		table.insert(PGM_ARGS, v)
-	else
-		V2 = v --input filename
-		filename_found = true
-	end
-end
-
---If we're printing introspection data, ignore any other flags or inputs, and just print info about the Paisley language itself.
-if INTROSPECTION then
-	local function text_table(data)
-		local widths, text = {}, ''
-
-		--Calculate the width of each column
-		for i, row in ipairs(data) do
-			for k, cell in ipairs(row) do
-				if widths[k] == nil then widths[k] = 0 end
-				widths[k] = math.max(widths[k], #std.str(cell))
-			end
-		end
-
-		local function delim()
-			local text = '+'
-			for i = 1, #widths do
-				text = text .. ('-'):rep(widths[i] + 2) .. '+'
-			end
-
-			return text
-		end
-
-		--Generate text
-		for i = 1, #data do
-			if i > 2 then text = text .. '|' else text = text .. delim() .. '\n|' end
-			for k = 1, #data[i] do
-				text = text .. ' ' .. std.str(data[i][k]) .. (' '):rep(widths[k] - #std.str(data[i][k])) .. ' |'
-			end
-			text = text .. '\n'
-		end
-		text = text .. delim()
-
-		return text
+		--Create library directory and copy the files over.
+		os.execute('mkdir -p /usr/local/lib/paisley')
+		os.execute('cp -r src/libs/* /usr/local/lib/paisley/')
 	end
 
+	io.stderr:write('Standalone Paisley executable has been installed.\n')
 
-	ALLOWED_COMMANDS = V3
-	require 'src.compiler.type_signature'
-	require 'src.shared.builtin_commands'
+	os.exit(0)
+end
+--[[/no-install]]
 
-	if INTROSPECT_CMDLIST then
-		--Just list the commands
-		for key, val in pairs(BUILTIN_COMMANDS) do
-			print(key)
-		end
-		for key, val in pairs(ALLOWED_COMMANDS) do
-			print(key)
-		end
-	elseif #INTROSPECT_CMDS > 0 then
-		for i = 1, #INTROSPECT_CMDS do
-			local key = INTROSPECT_CMDS[i]
-			if key == 'ALL' then
-				INTROSPECT_CMDS = {}
-				for k, v in pairs(BUILTIN_COMMANDS) do table.insert(INTROSPECT_CMDS, k) end
-				for k, v in pairs(ALLOWED_COMMANDS) do table.insert(INTROSPECT_CMDS, k) end
-				break
-			end
-			if not BUILTIN_COMMANDS[key] and not ALLOWED_COMMANDS[key] then
-				error('ERROR: `' .. key .. '` is not a built-in or user-defined command.')
-			end
-		end
+V2 = table.remove(args, 1)     --input file
+V3 = flags.external_cmds or {} --non-builtin commands
 
-		for i = 1, #INTROSPECT_CMDS do
-			local key = INTROSPECT_CMDS[i]
-			print(key)
-			if BUILTIN_COMMANDS[key] then
-				print('  Returns: ' .. TYPE_TEXT(BUILTIN_COMMANDS[key]))
-			else
-				print(
-					'  Returns: ' .. TYPE_TEXT(ALLOWED_COMMANDS[key]))
-			end
-			if BUILTIN_COMMANDS[key] then
-				print('  Desc: ' .. CMD_DESCRIPTION[key])
-			else
-				print(
-					'  Desc: User-defined command.')
-			end
-		end
-	elseif not INTROSPECT_FUNCLIST and #INTROSPECT_FUNCS == 0 then
-		--Generate table of commands
-		local t = {}
-		table.insert(t, { 'COMMAND', 'RETURN TYPE' })
-		for key, val in pairs(BUILTIN_COMMANDS) do
-			---@diagnostic disable-next-line
-			table.insert(t, { key, TYPE_TEXT(val) })
-		end
-		for key, val in pairs(ALLOWED_COMMANDS) do
-			table.insert(t, { key, TYPE_TEXT(val) })
-		end
-
-		print('COMMAND LIST:')
-		print(text_table(t))
+if flags.introspect then
+	require 'src.util.introspection'
+	if flags.commands or flags.introspect_cmds then
+		INTROSPECT.commands(flags.introspect_cmds)
 	end
-
-	require 'src.compiler.tokens'
-	require 'src.compiler.semantics'
-	local funcs = {}
-	for key, _ in pairs(BUILTIN_FUNCS) do table.insert(funcs, key) end
-	table.sort(funcs)
-
-	if INTROSPECT_FUNCLIST then
-		--Just list the functions
-		for i = 1, #funcs do
-			print(funcs[i])
-		end
-	elseif #INTROSPECT_FUNCS > 0 then
-		for i = 1, #INTROSPECT_FUNCS do
-			local key = INTROSPECT_FUNCS[i]
-			if key == 'ALL' then
-				INTROSPECT_FUNCS = funcs
-				break
-			end
-
-			if not BUILTIN_FUNCS[key] then
-				error('ERROR: `' .. key .. '` is not a built-in function.')
-			end
-		end
-
-		for i = 1, #INTROSPECT_FUNCS do
-			local key = INTROSPECT_FUNCS[i]
-			local funcsig = '???'
-			if key == 'reduce' then
-				funcsig = key .. '(' .. FUNCSIG(key) .. ') -> bool|number'
-			elseif TYPESIG[key].out == 1 then
-				--Return type is the same as 1st param
-				local types = {}
-				for i, k in ipairs(TYPESIG[key].valid) do
-					table.insert(types, k[1])
-				end
-				funcsig = key .. '(' .. FUNCSIG(key) .. ') -> ' .. std.join(types, '|', TYPE_TEXT)
-			else
-				funcsig = key .. '(' .. FUNCSIG(key) .. ') -> ' .. TYPE_TEXT(TYPESIG[key].out)
-			end
-			print(key)
-			print('  Signature: ' .. funcsig)
-			print('  Desc: ' .. TYPESIG[key].description)
-		end
-	elseif not INTROSPECT_CMDLIST and #INTROSPECT_CMDS == 0 then
-		--Generate table of functions
-		local t = {}
-		table.insert(t, { 'FUNCTION SIGNATURE' })
-		for i = 1, #funcs do
-			local key = funcs[i]
-			if key == 'reduce' then
-				table.insert(t, { key .. '(' .. FUNCSIG(key) .. ') -> bool|number' })
-			elseif TYPESIG[key].out == 1 then
-				--Return type is the same as 1st param
-				local types = {}
-				for i, k in ipairs(TYPESIG[key].valid) do
-					table.insert(types, k[1])
-				end
-				table.insert(t, { key .. '(' .. FUNCSIG(key) .. ') -> ' .. std.join(types, '|', TYPE_TEXT) })
-			else
-				table.insert(t, { key .. '(' .. FUNCSIG(key) .. ') -> ' .. TYPE_TEXT(TYPESIG[key].out) })
-			end
-		end
-
-		print('\nFUNCTION LIST:')
-		print(text_table(t))
+	if flags.functions or flags.introspect_func then
+		INTROSPECT.functions(flags.introspect_func)
 	end
 
 	os.exit(0)
-elseif INTROSPECT_CMDLIST or #INTROSPECT_CMDS > 0 or INTROSPECT_FUNCLIST or #INTROSPECT_FUNCS > 0 then
-	error('ERROR: Introspection flags can only be used with `--introspect`.')
 end
 
+LANGUAGE_SERVER = flags.language_server
+RESTRICT_TO_PLASMA_BUILD = flags.plasma
+SUPPRESS_AST_ERRORS = flags.no_ast_errors
+PRINT_TOKENS = flags.tokens
+PRINT_AST = flags.ast
+AST_AFTER_SEMANTIC = flags.ast_sem
+WORKING_DIR = ''
+LSP_FILENAME = flags.stdin or ''
+KEEP_DEAD_CODE = flags.no_prune_dead_code
+NO_SHORTCUT = flags.no_shortcut
+COERCE_SHELL_CMDS = flags.shell
+PGM_ARGS = args --program arguments
+SANDBOX = flags.sandbox
 
-if ZLIB_COMPRESS and not zlib_installed then
-	error('ERROR: zlib dependency is not installed. Cannot output compressed bytecode.')
+ENDED = false
+
+error = function(msg)
+	io.stderr:write(msg .. '\n')
+	os.exit(1)
 end
 
-if not ENDED and REPL then
-	require "src.repl"
-	ENDED = true
+if flags.compress and not FS.rocks.zlib then
+	error('Error: `zlib` dependency is not installed. Cannot output compressed bytecode.')
 end
 
-if not ENDED then
-	if V2 == nil then
-		error('Error: No input file given. Use `-` to read from stdin, or re-run with `--help` to see all options.')
-	end
+if flags.repl then
+	VERSION = config.version
+	require "src.util.repl"
+	os.exit(0)
+end
 
-	if LFS_INSTALLED and dir ~= nil then LFS.chdir(old_working_dir) end
+---@diagnostic disable-next-line
+bytecode = { {} }
+function output() end
 
-	if V2 == '-' then
-		V2 = nil
-		V1 = io.read('*all') --program text
+--Read input file
+if V2 == '-' then
+	V2 = nil
+	V1 = io.read('*all') --program text
+else
+	--Read from file
+	local file = io.open(V2, 'rb')
+
+	if file then
+		V1 = file:read('*all')
 	else
-		--Read from file
-		local file = io.open(V2, 'rb')
+		error('Error: Cannot open file `' .. V2 .. '`.')
+	end
+end
 
-		if file then
-			V1 = file:read('*all')
-		else
-			error('Error: Cannot open file `' .. V2 .. '`.')
-		end
+--Remove the shebang from the beginning of the input file if there is one.
+local m = V1:match('^#![^\n]*\n')
+local paisley_src = V1
+if m then paisley_src = V1:sub(#m + 1) end
+
+--Check if we were given compressed bytecode
+if FS.is_zlib_compressed(paisley_src) then
+	if not FS.rocks.zlib then
+		error('Error: Cannot read compressed bytecode, zlib dependency is not installed.')
 	end
 
-	function output() end
-
-	if LFS_INSTALLED and dir ~= nil then LFS.chdir(dir) end
-
-	--Remove the shebang from the beginning of the input file if there is one.
-	local m = V1:match('^#![^\n]*\n')
-	local paisley_src = V1
-	if m then paisley_src = V1:sub(#m + 1) end
-
-	--Check if we were given compressed bytecode
-	if is_zlib_compressed(paisley_src) then
-		if not zlib_installed then
-			error('Error: Cannot read compressed bytecode, zlib dependency is not installed.')
-		end
-
-		local inflated, err = zlib.inflate()(paisley_src)
-		if inflated then
-			V1 = ''
-			require "src.compiler" --include important stuff, but don't actually compile anything.
-
-			--We'll instead be running raw bytecode.
-			bytecode = json.parse(inflated)
-		else
-			error('Error during decompression: ' .. err)
-		end
-	elseif is_paisley_bytecode(paisley_src) then
-		local bc = paisley_src
+	local inflated, err = FS.rocks.zlib.inflate()(paisley_src)
+	if inflated then
 		V1 = ''
-		require "src.compiler"
-		---@diagnostic disable-next-line
-		bytecode = json.parse(bc)
+		require "src.compiler" --include important stuff, but don't actually compile anything.
+
+		--We'll instead be running raw bytecode.
+		bytecode = json.parse(inflated)
 	else
-		--Compile program
-		require "src.compiler"
+		error('Error during decompression: ' .. err)
 	end
-
-	if PRINT_AST or PRINT_TOKENS then ENDED = true end
-
-	if PRINT_BYTECODE then
-		if old_working_dir then
-			LFS.chdir(old_working_dir)
-		end
-
-		local text = ''
-		if PRETTY_PRINT then
-			text = text .. '[\n'
-			for i = 1, #bytecode do
-				local comma = ''
-				if i < #bytecode then comma = ',\n' end
-				text = text .. '  '
-				if i < #bytecode then
-					text = text .. json.stringify(bytecode[i]) .. ',\n'
-				else
-					text = text .. '[\n'
-					for k = 1, #bytecode[i] do
-						text = text .. '    ' .. json.stringify(bytecode[i][k])
-						if k == #bytecode[i] then text = text .. '\n' else text = text .. ',\n' end
-					end
-					text = text .. '  ]'
-				end
-			end
-			text = text .. '\n]'
-		else
-			text = json.stringify(bytecode)
-		end
-
-		if STANDALONE_OUTPUT then
-			require "src.luac"
-			text = LUAC_RUNTIME_TEXT(text)
-
-			local PYTEXT = --[[build-replace=build.py]] io.open(dir .. 'build.py'):read('*a') --[[/build-replace]]
-			PYTEXT = PYTEXT:gsub('VERSION = [^\n]+', 'VERSION = "' .. VERSION .. '"')
-			PYTEXT = PYTEXT:gsub('\\', '\\\\'):gsub(
-				'"', '\\"'):gsub('%$', '\\$'):gsub('`', '\\`'):gsub('!', '\\!') --Make sure bash doesn't parse the string
-
-			--Escape strings correctly in powershell
-			if WINDOWS then PYTEXT = PYTEXT:gsub('\\"', '`"') end
-
-			local build_cmd = 'python -c "' .. PYTEXT .. '" runtime --quiet --fetch-srlua --tempdir --no-remove-debug'
-			os.execute(build_cmd)
-
-			local runtime_lua = --[[build-replace=build/runtime.lua]] io.open('.paisley-build/runtime.lua', 'r'):read(
-				'*all') --[[/build-replace]]
-			if not runtime_lua then
-				local msg = 'ERROR: Unable to load Paisley runtime! Exiting.'
-				msg = msg .. '\nTHIS IS A BUG IN THE COMPILER, NOT YOUR CODE.'
-				error(msg)
-			end
-
-			if WINDOWS then
-				os.execute('rmdir \\s .paisley-build')
-			else
-				os.execute('rm -rf .paisley-build')
-			end
-
-			--Do we want to add the shebang? No, don't think so since this will get compiled into exe.
-			--text = '#!/usr/bin/env lua\n' .. text
-
-			text = text .. runtime_lua .. LUAC_EXEC_TEXT()
-		elseif ZLIB_COMPRESS then
-			local deflated, err = zlib.deflate()(text, 'finish')
-			if deflated then
-				text = deflated
-			else
-				error('Error during compression: ' .. err)
-			end
-		end
-
-		if OUTPUT_FILE then
-			local fp = io.open(OUTPUT_FILE, 'wb')
-			if not fp then
-				error('Failed to write to file: ' .. OUTPUT_FILE)
-			end
-
-			if not STANDALONE_OUTPUT then
-				text = '#!/usr/bin/env paisley\n' .. text
-
-				fp:write(text)
-				fp:close()
-			else
-				fp:close()
-
-				--If standalone, compile lua source into bytecode
-				--Strip out debug info to reduce file size
-				text = LUAC_STRIP(LUAC_DUMP(text))
-
-				--At this point, srlua exists and can be used.
-				--So package this text into an executable
-				local srluadir = '/tmp/paisley-build-srlua/build'
-				local fp2 = io.open(srluadir .. '/luac.out', 'wb')
-				if not fp2 then
-					error(
-						'ERROR: srlua is not installed, so the program cannot be compiled into a standalone executable. Exiting.')
-				end
-				fp2:write(text)
-				fp2:close()
-
-				os.execute(srluadir .. '/glue ' .. srluadir .. '/srlua ' .. srluadir .. '/luac.out ' .. OUTPUT_FILE)
-
-				if not WINDOWS then
-					os.execute('chmod +x ' .. OUTPUT_FILE) --Make executable
-
-					if STANDALONE_COMPRESS then
-						os.execute('gzexe ' .. OUTPUT_FILE) --Decrease the size of the executable
-						os.execute('rm -f ' .. OUTPUT_FILE .. '~')
-					end
-				end
-			end
-		elseif ZLIB_COMPRESS and not STANDALONE_OUTPUT then
-			io.write(text)
-		else
-			print(text)
-		end
-
-		ENDED = true
-	end
+elseif FS.is_paisley_bytecode(paisley_src) then
+	local bc = paisley_src
+	V1 = ''
+	require "src.compiler"
+	bytecode = json.parse(bc)
+else
+	--Compile program
+	require "src.compiler"
 end
 
-if DRY_RUN then ENDED = true end
+if flags.language_server then os.exit(0) end
+
+--Print the generated bytecode instead of running it
+if flags.bytecode then
+	local text = ''
+	if flags.pretty then
+		text = text .. '[\n'
+		for i = 1, #bytecode do
+			text = text .. '  '
+			if i < #bytecode then
+				text = text .. json.stringify(bytecode[i]) .. ',\n'
+			else
+				text = text .. '[\n'
+				for k = 1, #bytecode[i] do
+					text = text .. '    ' .. json.stringify(bytecode[i][k])
+					if k == #bytecode[i] then text = text .. '\n' else text = text .. ',\n' end
+				end
+				text = text .. '  ]'
+			end
+		end
+		text = text .. '\n]'
+	else
+		text = json.stringify(bytecode)
+	end
+	print(text)
+end
+
+if flags.bytecode or flags.ast or flags.tokens or flags.ast_sem or flags.dry_run then
+	os.exit(0)
+end
 
 --Run the generated bytecode
-if not ENDED and not LANGUAGE_SERVER and bytecode ~= nil then
-	local tmp = ALLOWED_COMMANDS
+if not flags.standalone and not flags.output then
+	if bytecode then
+		local tmp = ALLOWED_COMMANDS
 
-	V1 = json.stringify(bytecode)
-	V4 = os.time()
-	V5 = nil
+		V1 = json.stringify(bytecode)
+		V4 = os.time()
+		V5 = nil
 
-	require "src.runtime"
-	ALLOWED_COMMANDS = tmp
+		require "src.runtime"
+		ALLOWED_COMMANDS = tmp
 
-	local socket_installed, socket = pcall(require, 'socket')
+		require "src.util.output_pc"
 
-	local line_no = 0
-	local CMD_LAST_RESULT = {
-		['='] = nil, --result of execution
-		['?'] = '', --stdout of command
-		['!'] = '', --stderr of command
-		['?!'] = '', --stdout and stderr of command
-	}
-
-	local TMP1 = '.paisley.program.tmp.stdout'
-	local TMP2 = '.paisley.program.tmp.stderr'
-
-	function output(value, port)
-		if port == 1 then
-			--continue program
-			-- os.execute('sleep 0.01') --emulate behavior in Plasma where program execution pauses periodicaly to avoid lag.
-		elseif port == 2 then
-			--run a non-builtin command (currently not supported outside of Plasma)
-			error('Error on line ' .. line_no .. ': Cannot run program `' .. std.str(value) .. '`')
-		elseif port == 3 then
-			ENDED = true --program successfully completed
-		elseif port == 4 then
-			--delay execution for an amount of time
-			local exit_code = os.execute('sleep ' .. value)
-			if exit_code ~= 0 and exit_code ~= true then ENDED = true end
-
-			V5 = nil
-		elseif port == 5 then
-			--get current time (seconds since midnight)
-			local date = os.date('*t', os.time())
-			local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
-
-			if socket_installed then
-				sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
-			end
-
-			V5 = sec_since_midnight --command return value
-		elseif port == 6 then
-			if value == 2 then
-				--get system date (day, month, year)
-				local date = os.date('*t', os.time())
-				V5 = { date.day, date.month, date.year } --command return value
-			elseif value == 1 then
-				--get system time (seconds since midnight)
-				local date = os.date('*t', os.time())
-				local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
-
-				if socket_installed then
-					sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
-				end
-
-				V5 = sec_since_midnight --command return value
-			end
-		elseif port == 7 then
-			V5 = nil
-			--Print text or error
-			local cmd = value[1]
-			table.remove(value, 1)
-			local args = std.str(value)
-			if cmd == 'stdout' then
-				io.write(args)
-			elseif cmd == 'stderr' then
-				io.write(io.stderr, args)
-			elseif cmd == 'stdin' then
-				V5 = io.read('*l')
-			elseif cmd == 'clear' then
-				os.execute('clear')
-			else
-				print(args)
-			end
-			io.flush()
-		elseif port == 8 then
-			--value is current line number
-		elseif port == 9 then
-			--Get the output of the last run unix command
-			if value[2] == '' then
-				V5 = CMD_LAST_RESULT[value[1]]
-				return
-			end
-
-			--Run new unix command
-			CMD_LAST_RESULT = {
-				['='] = nil, --result of execution
-				['?'] = '', --stdout of command
-				['!'] = '', --stderr of command
-				['?!'] = '', --stdout and stderr of command
-			}
-
-			local cmd = value[2]
-
-			--By default (both captured), both stdout and stderr will just go to temp files and not be streamed.
-			local pipe = cmd .. '2>' .. TMP2 .. ' 1>' .. TMP1
-			--If capturing stderr, then stderr will be in file, stdout will be streamed.
-			if value[1] == '!' then pipe = cmd .. '2>' .. TMP2 .. ' | tee ' .. TMP1 end
-			--If capturing stdout, then stdout will be in file, stderr will be streamed.
-			if value[1] == '?' then pipe = cmd .. '1>' .. TMP1 .. ' 2>&1 | tee ' .. TMP2 end
-			--If capturing neither, then both will be streamed.
-			if value[1] == '=' then pipe = '{ { ' .. cmd .. '; } | tee ' .. TMP1 .. '; } 2>&1 | tee ' .. TMP2 end
-
-			cmd = pipe
-
-			--Stash working dir
-			local old_dir = ''
-			if LFS_INSTALLED then
-				old_dir = LFS.currentdir()
-				LFS.chdir(WORKING_DIR)
-			end
-
-			local program = io.popen(cmd, 'r')
-			if program then
-				local chr = program:read(1)
-				while chr do
-					io.stdout:write(chr)
-					chr = program:read(1)
-				end
-
-				--Read stream results from files
-				local stdout = io.open(TMP1, 'r')
-				local stderr = io.open(TMP2, 'r')
-				if stdout then
-					CMD_LAST_RESULT['?'] = stdout:read('*all')
-					stdout:close()
-					os.remove(TMP1)
-				end
-				if stderr then
-					CMD_LAST_RESULT['!'] = stderr:read('*all')
-					stderr:close()
-					os.remove(TMP2)
-				end
-				CMD_LAST_RESULT['?!'] = CMD_LAST_RESULT['?'] .. CMD_LAST_RESULT['!']
-
-				--Trim trailing newline from command capture
-				for _, i in pairs({ '?', '!', '?!' }) do
-					if CMD_LAST_RESULT[i]:sub(#CMD_LAST_RESULT[i]) == '\n' then
-						CMD_LAST_RESULT[i] = CMD_LAST_RESULT[i]:sub(1, #CMD_LAST_RESULT[i] - 1)
-					end
-				end
-
-				--Store exec result
-				CMD_LAST_RESULT['='] = program:close()
-				io.stdout:flush()
-			end
-
-			V5 = CMD_LAST_RESULT[value[1]]
-
-			--Restore working dir
-			if LFS_INSTALLED then
-				-- print(CMD_LAST_RESULT['='], value[2])
-				if CMD_LAST_RESULT['='] == true and value[2]:sub(1, 5) == '"cd" ' then
-					WORKING_DIR = WORKING_DIR .. '/' .. value[2]:sub(7):match('^[^"]+')
-				end
-				LFS.chdir(old_dir)
-			end
-		else
-			print(port, json.stringify(value))
+		while not ENDED do
+			RUN()
 		end
 	end
 
-	function output_array(value, port) output(value, port) end
+	os.exit(0)
+end
 
-	while not ENDED do
-		RUN()
+--Generate standalone executable to run the bytecode.
+if flags.standalone then
+	require 'src.runtime.standalone.all'
+
+	local target = flags.target or 'lua'
+	local compiler = _G['STANDALONE'][target]
+	if not compiler then
+		error('Error: Compilation to target `' .. target .. '` has not been implemented.')
+	end
+
+	io.stderr:write('Generating code for target `' .. target .. '`...\n')
+	local text = compiler.generate(bytecode)
+
+	if not flags.output or flags.output == '-' then
+		print(text)
+		os.exit(0)
+	end
+
+	io.stderr:write('Compiling to `' .. flags.output .. '`...\n')
+	local result = compiler.compile(text, flags.output)
+
+	if not result then
+		io.stderr:write('\nError: Failed to compile `' .. flags.output .. '`!\n')
+		os.exit(1)
+	end
+
+	os.exit(0)
+end
+
+--After this point, bytecode is outputted and the program is done.
+local text = json.stringify(bytecode)
+
+--Compress bytecode if requested.
+if flags.compress then
+	local deflated, err = FS.rocks.zlib.deflate()(text, 'finish')
+	if deflated then
+		text = deflated
+	else
+		error('Error during compression: ' .. err)
 	end
 end
+
+--Output bytecode, not an entire standalone.
+if flags.output ~= '-' then
+	text = '#!/usr/bin/env paisley\n' .. text
+	local fp = io.open(flags.output, 'wb')
+	if not fp then
+		error('Error: Failed to write to file: ' .. flags.output)
+	end
+	fp:write(text)
+	fp:close()
+
+	if not FS.os.windows then
+		-- Make the file executable
+		os.execute('chmod +x ' .. flags.output)
+	end
+else
+	print(text)
+end
+
+os.exit(0)
