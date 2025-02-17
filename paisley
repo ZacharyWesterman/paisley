@@ -32,7 +32,7 @@ local options = {
 	{ description = "Define an existing command on the target device",               short = "c",                  type = "array",  name = "external_cmds",   composite = true,                   arg = "[CMD]" },
 	{ description = "If introspecting, output details about the function",           short = "if",                 type = "array",  name = "introspect_func", composite = true,                   arg = "[FUNC_NAME]" },
 	{ description = "If introspecting, output details about the command",            short = "ic",                 type = "array",  name = "introspect_cmds", composite = true,                   arg = "[CMD_NAME]" },
-	{ description = "Output a standalone binary (or Lua script if no output file)",  long = "standalone",          short = "s" },
+	{ description = "Output a standalone binary (or source code if no output file)", long = "standalone",          short = "s" },
 	{ description = "Compress the above standalone program if possible",             long = "compress-standalone", short = "cs" },
 	{ description = "Choose a specific language to compile the standalone binary",   long = "target",              type = "string", arg = "[TARGET]",         options = { "lua", "cpp" } },
 	{ description = "Allow unrecognized commands to coerce to shell exec",           long = "shell",               short = "l" },
