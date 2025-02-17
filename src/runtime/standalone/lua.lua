@@ -40,6 +40,13 @@ STANDALONE.lua = {
 			version = '5.3' --Force version to 5.3 if not 5.3 or higher.
 		end
 
+		local pkg = package
+		--[[no-install]]
+		if package['initial'] then
+			pkg = package['initial']
+		end
+		--[[/no-install]]
+
 		local c_code = [[
 		#define LUA_IMPL
 		#include <minilua.h>
@@ -50,8 +57,8 @@ STANDALONE.lua = {
 			luaL_openlibs(L);
 
 			// Set up LuaRocks paths.
-			luaL_dostring(L, "package.path = \"]] .. package --[[no-install]].initial --[[/no-install]].path .. [[\"");
-			luaL_dostring(L, "package.cpath = \"]] .. package --[[no-install]].initial --[[/no-install]].cpath .. [[\"");
+			luaL_dostring(L, "package.path = \"]] .. pkg.path .. [[\"");
+			luaL_dostring(L, "package.cpath = \"]] .. pkg.cpath .. [[\"");
 
 			int script = luaL_loadstring(L, "]] ..
 			program_text:gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n') .. [[");
@@ -86,7 +93,7 @@ STANDALONE.lua = {
 		c_file:write(c_code)
 		c_file:close()
 
-		local cc = 'gcc'
+		local cc = STANDALONE.require_c_compiler()
 		local command = cc .. ' -I' .. FS.libs_dir .. 'lua/' .. version ..
 			' -o ' .. output_file .. ' ' .. c_filename .. ' -lm  -Wl,-E'
 
