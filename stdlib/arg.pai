@@ -28,10 +28,16 @@ subroutine arg.parse
 
     #Parse argument config and adjust so it's easier to work with.
     #Also validates argument format.
-    let _args = {'flags' => (=>), 'values' => (=>)}
+    let _args = {'flags' => (=>), 'values' => (,)}
     for _key _val in {@2.pairs()} do
-        if {_val.type() != 'object'} then
-            let _args{'values', _key} = {_val}
+        if {_key = '-'} then
+            for _v in {_val} do
+                if {_v[2].type() != 'boolean'} then
+                    error "Invalid positional argument format. Must be a boolean"
+                end
+                let _args{'values'} = {_args.values.append(_v)}
+            end
+            delete _v
         else
             if {_val.type and _val.type not in ('boolean', 'number', 'string') and _val.type.type() != 'array'} then
                 error "Invalid argument type \"{_val.type}\". Must be one of: bool, number, string"
@@ -74,7 +80,7 @@ subroutine arg.parse
 
     let _res = {=>}
     let _prev_key
-    let _vals = {_args.values.keys()}
+    let _vals = {_args.values}
     for _arg in {@1} do
         if {_prev_key} then
             if {_val[1] = '-'} then
@@ -130,14 +136,13 @@ subroutine arg.parse
             end
 
             let _key = {_args.flags['-'_key].key}
-            print {_key, _val}
             let _res{_key} = ${gosub arg._parse_type {_args.flags['--' _key].type} {_val} {'--'_key}}
             let _args{'flags', ('--'_key), 'found'} = {true}
             continue
         end
 
         # Parse positional values
-        let _res{_vals[1]} = {_arg}
+        let _res{_vals[1][1]} = {_arg}
         let _vals = {_vals.delete(1)}
     end
 
@@ -158,9 +163,9 @@ subroutine arg.parse
     end
 
     # Make sure all required values were given.
-    for _key _val in {_args.values.pairs()} do
-        if {_val and not _res[_key]} then
-            error "Missing required value \"{_key}\""
+    for _val in {_args.values} do
+        if {_val[2] and not _res[_val[1]]} then
+            error "Missing value for required positional \"{_val[1]}\""
         end
     end
 

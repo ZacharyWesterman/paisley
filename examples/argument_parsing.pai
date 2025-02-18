@@ -24,8 +24,10 @@ let config = {
         'short' => '3',
         'description' => 'The third flag',
     },
-    'pos1' => true, # Positional argument, required
-    'pos2' => false, # Positional argument, optional
+    '-' => (
+        ('pos1', true), # Positional argument, required
+        ('pos2', false), # Positional argument, optional
+    ),
 }
 
 # The info to use when the `--help` flag is given.
