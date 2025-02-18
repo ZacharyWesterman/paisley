@@ -25,8 +25,8 @@ let config = {
         'description' => 'The third flag',
     },
     '-' => (
-        ('pos1', true), # Positional argument, required
-        ('pos2', false), # Positional argument, optional
+        ('pos1', true, 'The first positional argument'), # Positional argument, required
+        ('pos2', false, 'The second positional argument'), # Positional argument, optional
     ),
 }
 

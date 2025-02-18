@@ -227,8 +227,8 @@ subroutine arg._help_text
         print
         print ARGS:
         for i in {values} do
-            let k v = {i}
-            print "    {k}" {'(required)' if v else ''}
+            let k v desc = {i}
+            print "    {k}" {'(required)' if v else ''} {desc}
         end
     end
 end
