@@ -237,6 +237,10 @@ ARG = {
 			ARG.error('Introspection flags can only be used with `--introspect`.')
 		end
 
+		if not flags.standalone and flags.target then
+			ARG.error('The `--target` flag doesn\'t make sense without `--standalone`.')
+		end
+
 		if #positional < 1 then
 			ARG.error(
 				'No input file given. Use `-` to read from stdin, or re-run with `--help` to see all options.'
