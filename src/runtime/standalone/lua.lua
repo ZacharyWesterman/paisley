@@ -47,9 +47,13 @@ STANDALONE.lua = {
 		end
 		--[[/no-install]]
 
+		local bytecode = { LUA.compile(program_text):byte(1, -1) }
+		local pgm_buffer = '{' .. table.concat(bytecode, ',') .. '}'
+
 		local c_code = [[
 		#define LUA_IMPL
 		#include <minilua.h>
+		const char pgm[] = ]] .. pgm_buffer .. [[;
 		int main(int argc, char **argv) {
 			//Create state and load program.
 			lua_State *L = luaL_newstate();
@@ -60,8 +64,7 @@ STANDALONE.lua = {
 			luaL_dostring(L, "package.path = \"]] .. pkg.path .. [[\"");
 			luaL_dostring(L, "package.cpath = \"]] .. pkg.cpath .. [[\"");
 
-			int script = luaL_loadstring(L, "]] ..
-			program_text:gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n') .. [[");
+			int script = luaL_loadbufferx(L, pgm, ]] .. #pgm_buffer .. [[, "]] .. output_file .. [[", "b");
 
 			//Set up arg table.
 			lua_createtable(L, argc + 1, script);

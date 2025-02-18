@@ -186,7 +186,7 @@ LUA = {
 			return stripped, offset
 		end
 
-		return dump:sub(1, 12) .. strip_function(dump:sub(13, -1))
+		return dump -- dump:sub(1, 12) .. strip_function(dump:sub(13, -1))
 	end,
 
 	tokens = {
