@@ -8,16 +8,15 @@ local config = {
 }
 
 local options = {
-	{ description = "Prints help information",                                       long = "help",                short = "h" },
-	{ description = "Prints version information",                                    long = "version",             short = "V" },
-	{ description = "The next parameter is the output file (use `-` for stdout)",    long = "output",              short = "o",     type = "string" },
-	{ description = "Start the Paisley runtime as an interactive REPL",              long = "repl",                short = "r" },
-	{ description = "Output bytecode instead of running the script",                 long = "bytecode",            short = "b" },
-	{ description = "Pretty-print bytecode output",                                  long = "pretty",              short = "p" },
-	{ description = "Compress bytecode output with zlib compression",                long = "compress",            short = "z" },
+	{ description = "Prints help information",                                       long = "help",              short = "h" },
+	{ description = "Prints version information",                                    long = "version",           short = "V" },
+	{ description = "The next parameter is the output file (use `-` for stdout)",    long = "output",            short = "o",     type = "string" },
+	{ description = "Start the Paisley runtime as an interactive REPL",              long = "repl",              short = "r" },
+	{ description = "Output bytecode instead of running the script",                 long = "bytecode",          short = "b" },
+	{ description = "Pretty-print bytecode output",                                  long = "pretty",            short = "p" },
 	{ description = "Validate the program, but don't run it",                        long = "dry-run" },
 	{ description = "Output detailed info in an easy-to-parse format",               long = "language-server" },
-	{ description = "Pretend that stdin input has the given filename",               long = "stdin",               type = "string", arg = "[FILE]" },
+	{ description = "Pretend that stdin input has the given filename",               long = "stdin",             type = "string", arg = "[FILE]" },
 	{ description = "Don't report errors in the syntax tree",                        long = "no-ast-errors" },
 	{ description = "Don't remove 'dead code' that will never get run",              long = "no-prune-dead-code" },
 	{ description = "Don't allow `and` and `or` expressions to shortcut",            long = "no-shortcut" },
@@ -25,20 +24,20 @@ local options = {
 	{ description = "Print the abstract syntax tree and then exit",                  long = "ast" },
 	{ description = "Print the AST after semantic analysis and then exit",           long = "ast-sem" },
 	{ description = "Restrict to only features available in the Plasma build",       long = "plasma" },
-	{ description = "Generate runtime or compiler text for the Plasma build",        long = "plasma-build",        type = "string", arg = "[TYPE]",           options = { "compiler", "runtime" } },
+	{ description = "Generate runtime or compiler text for the Plasma build",        long = "plasma-build",      type = "string", arg = "[TYPE]",           options = { "compiler", "runtime" } },
 	{ description = "Print introspective data about the Paisley language",           long = "introspect" },
 	{ description = "If introspecting, list all functions",                          long = "functions" },
 	{ description = "If introspecting, list all commands",                           long = "commands" },
-	{ description = "Define an existing command on the target device",               short = "c",                  type = "array",  name = "external_cmds",   composite = true,                   arg = "[CMD]" },
-	{ description = "If introspecting, output details about the function",           short = "if",                 type = "array",  name = "introspect_func", composite = true,                   arg = "[FUNC_NAME]" },
-	{ description = "If introspecting, output details about the command",            short = "ic",                 type = "array",  name = "introspect_cmds", composite = true,                   arg = "[CMD_NAME]" },
-	{ description = "Output a standalone binary (or source code if no output file)", long = "standalone",          short = "s" },
-	{ description = "Compress the above standalone program if possible",             long = "compress-standalone", short = "cs" },
-	{ description = "Choose a specific language to compile the standalone binary",   long = "target",              type = "string", arg = "[TARGET]",         options = { "lua", "cpp" } },
-	{ description = "Allow unrecognized commands to coerce to shell exec",           long = "shell",               short = "l" },
+	{ description = "Define an existing command on the target device",               short = "c",                type = "array",  name = "external_cmds",   composite = true,                   arg = "[CMD]" },
+	{ description = "If introspecting, output details about the function",           short = "if",               type = "array",  name = "introspect_func", composite = true,                   arg = "[FUNC_NAME]" },
+	{ description = "If introspecting, output details about the command",            short = "ic",               type = "array",  name = "introspect_cmds", composite = true,                   arg = "[CMD_NAME]" },
+	{ description = "Output a standalone binary (or source code if no output file)", long = "standalone",        short = "s" },
+	{ description = "Compress bytecode or standalone output with zlib compression",  long = "compress",          short = "z" },
+	{ description = "Choose a specific language to compile the standalone binary",   long = "target",            type = "string", arg = "[TARGET]",         options = { "lua", "cpp" } },
+	{ description = "Allow unrecognized commands to coerce to shell exec",           long = "shell",             short = "l" },
 	{ description = "Disable features/cmds that could affect the system (e.g. `?`)", long = "sandbox" },
 	{ description = "List the recommended Lua packages to be installed",             long = "rocks" },
-	{ description = "The input file, or `-` to read from stdin",                     name = "input",               type = "string" },
+	{ description = "The input file, or `-` to read from stdin",                     name = "input",             type = "string" },
 	--[[no-install]] { description = "Compile the Paisley application into a standalone executable", long = "install" }, --[[/no-install]]
 }
 
@@ -148,6 +147,8 @@ if flags.install then
 		io.stderr:write('\nError: Failed to compile `' .. target_file .. '`!\n')
 		os.exit(1)
 	end
+
+	if flags.compress then STANDALONE.compress_executable(target_file) end
 
 	io.stderr:write('Installing libraries and stdlib...\n')
 
@@ -351,6 +352,8 @@ if flags.standalone then
 		io.stderr:write('\nError: Failed to compile `' .. flags.output .. '`!\n')
 		os.exit(1)
 	end
+
+	if flags.compress then STANDALONE.compress_executable(flags.output) end
 
 	os.exit(0)
 end

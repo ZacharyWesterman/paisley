@@ -32,6 +32,23 @@ STANDALONE = {
 
 		return cc
 	end,
+
+	compress_executable = function(executable)
+		if FS.os.windows then
+			error('Error: Compression of standalone binaries is not supported on Windows (requires gzexe).')
+		end
+
+		--Move the file to a temporary location so that we can compress it.
+		--(gzexe sometimes fails on file names like `test`)
+		local tempfile = os.tmpname()
+		os.execute('mv ' .. executable .. ' ' .. tempfile)
+		if os.execute('gzexe ' .. tempfile) then
+			os.execute('rm -f ' .. tempfile .. '~')
+			os.execute('mv ' .. tempfile .. ' ' .. executable)
+		else
+			os.execute('rm -f ' .. tempfile .. ' ' .. executable)
+		end
+	end,
 }
 
 require 'src.runtime.standalone.lua'
