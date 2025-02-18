@@ -373,7 +373,7 @@ end
 
 --Output bytecode, not an entire standalone.
 if flags.output ~= '-' then
-	text = '#!/usr/bin/env paisley\n' .. text
+	text = '#!/usr/bin/env -S paisley --\n' .. text
 	local fp = io.open(flags.output, 'wb')
 	if not fp then
 		error('Error: Failed to write to file: ' .. flags.output)
