@@ -203,7 +203,10 @@ end
 #@private
 subroutine arg._help_text
     let flags = {i for i in @1.pairs() if i[2].type() = 'object'}
-    let values = {i for i in @1.pairs() if i[2].type() != 'object'}
+    let values = {@1['-']}
+    if {not values} then
+        let values = {,}
+    end
 
     print {@2.description}
     print
