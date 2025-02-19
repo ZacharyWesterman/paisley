@@ -1,5 +1,5 @@
 
-CXX = g++
+CXX = c++
 CXXFLAGS = -Wall -Wextra --pedantic -Werror -std=c++17 -O3 -I./
 
 EXE = standalone_binary
