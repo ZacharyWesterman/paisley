@@ -26,7 +26,7 @@ functions.hpp: $(FUNC)
 	@echo '$(FTXT)' |  awk '{print $$1 " " $$2 }' >> $@
 	@echo '\ntypedef void (*Function)(Context &);' >> $@
 	@echo 'const Function FUNCTIONS[] = {' >> $@
-	@echo '$(FNAM)' | tr ' ' '\n' | awk '{print "\t" $$1 ","}' >> $@
+	@grep ',$$' ../../compiler/functions/codes.lua | awk '{print "\t" $$1 ","}' | sed -E 's/\b(bool|delete|union|char)\b/_\1/g' >> $@
 	@echo '};' >> $@
 	@echo 'const int FUNCTION_COUNT = sizeof(FUNCTIONS) / sizeof(Function);' >> $@
 

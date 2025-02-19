@@ -1,5 +1,5 @@
 #pragma once
- 
+
 #include "functions/acos.hpp"
 #include "functions/add.hpp"
 #include "functions/arrayindex.hpp"
@@ -23,71 +23,153 @@
 #include "functions/greater.hpp"
 #include "functions/implode.hpp"
 #include "functions/inarray.hpp"
+#include "functions/join.hpp"
 #include "functions/jump.hpp"
 #include "functions/jumpiffalse.hpp"
 #include "functions/jumpifnil.hpp"
 #include "functions/length.hpp"
 #include "functions/lessequal.hpp"
 #include "functions/less.hpp"
+#include "functions/max.hpp"
+#include "functions/min.hpp"
 #include "functions/mul.hpp"
+#include "functions/mult.hpp"
 #include "functions/notequal.hpp"
+#include "functions/pow.hpp"
 #include "functions/random_float.hpp"
 #include "functions/random_int.hpp"
 #include "functions/rem.hpp"
 #include "functions/round.hpp"
 #include "functions/sin.hpp"
+#include "functions/split.hpp"
 #include "functions/sqrt.hpp"
 #include "functions/strlike.hpp"
 #include "functions/sub.hpp"
+#include "functions/sum.hpp"
 #include "functions/superimplode.hpp"
 #include "functions/tan.hpp"
+#include "functions/type.hpp"
 #include "functions/varexists.hpp"
 #include "functions/word_diff.hpp"
 
+/*
 typedef void (*Function)(Context &);
 const Function FUNCTIONS[] = {
-	acos,
+	jump,
+	jumpifnil,
+	jumpiffalse,
+	explode,
+	implode,
+	superimplode,
 	add,
+	sub,
+	mul,
+	div,
+	rem,
+	length,
 	arrayindex,
 	arrayslice,
-	asin,
-	atan2,
-	atan,
+	concat,
 	booland,
-	boolnot,
 	boolor,
 	boolxor,
-	ceil,
-	concat,
-	cos,
-	dist,
-	div,
-	equal,
-	explode,
-	floor,
-	greaterequal,
-	greater,
-	implode,
 	inarray,
-	jump,
-	jumpiffalse,
-	jumpifnil,
-	length,
-	lessequal,
-	less,
-	mul,
-	notequal,
-	random_float,
-	random_int,
-	rem,
-	round,
-	sin,
-	sqrt,
 	strlike,
-	sub,
-	superimplode,
-	tan,
+	equal,
+	notequal,
+	greater,
+	greaterequal,
+	less,
+	lessequal,
+	boolnot,
 	varexists,
+	random_int,
+	random_float,
 	word_diff,
+	dist,
+	sin,
+	cos,
+	tan,
+	asin,
+	acos,
+	atan,
+	atan2,
+	sqrt,
+	sum,
+	mult,
+	pow,
+	min,
+	max,
+	split,
+	join,
+	type,
+	_bool,
+	num,
+	str,
+	floor,
+	ceil,
+	round,
+	abs,
+	append,
+	index,
+	lower,
+	upper,
+	camel,
+	replace,
+	json_encode,
+	json_decode,
+	json_valid,
+	b64_encode,
+	b64_decode,
+	lpad,
+	rpad,
+	hex,
+	filter,
+	matches,
+	clocktime,
+	reverse,
+	sort,
+	bytes,
+	frombytes,
+	merge,
+	update,
+	insert,
+	_delete,
+	lerp,
+	random_element,
+	hash,
+	object,
+	array,
+	keys,
+	values,
+	pairs,
+	interleave,
+	unique,
+	_union,
+	intersection,
+	difference,
+	symmetric_difference,
+	is_disjoint,
+	is_subset,
+	is_superset,
+	count,
+	find,
+	flatten,
+	smoothstep,
+	sinh,
+	cosh,
+	tanh,
+	sign,
+	ascii,
+	_char,
+	beginswith,
+	endswith,
+	numeric_string,
+	time,
+	date,
+	random_elements,
+	match,
+	splice,
 };
 const int FUNCTION_COUNT = sizeof(FUNCTIONS) / sizeof(Function);
+*/
