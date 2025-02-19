@@ -19,6 +19,9 @@ const Function functions[] = {
 	div,
 	rem,
 	length,
+	arrayindex,
+	arrayslice,
+	concat,
 	// More functions WIP
 };
 const int function_count = sizeof(functions) / sizeof(Function);
@@ -28,18 +31,11 @@ int main(int argc, char *argv[])
 	(void)argc;
 	(void)argv;
 
-	Stack stack = {{1, 2, 3, 4, "abc", "def", "ghi"}};
-	Context context = {stack, 0, {0, 0}};
+	Stack stack = {0, 9};
+	Context context = {stack, 0, {0, 0}, 0};
 	context.stack.print();
 
-	context.stack.push("TEST");
-	context.stack.print();
-
-	length(context);
-	context.stack.print();
-	context.stack.pop();
-
-	length(context);
+	arrayslice(context);
 	context.stack.print();
 
 	return 0;

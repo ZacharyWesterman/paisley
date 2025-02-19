@@ -12,4 +12,8 @@ struct Context
 		int x;
 		int y;
 	} arg;
+
+	int line_number;
+
+	void warn(const std::string &message) const noexcept;
 };

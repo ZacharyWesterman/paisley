@@ -1,6 +1,9 @@
 #pragma once
 #include "functions/add.hpp"
+#include "functions/arrayindex.hpp"
+#include "functions/arrayslice.hpp"
 #include "functions/ceil.hpp"
+#include "functions/concat.hpp"
 #include "functions/div.hpp"
 #include "functions/explode.hpp"
 #include "functions/floor.hpp"

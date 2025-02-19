@@ -57,7 +57,9 @@ std::string Value::to_string() const noexcept
 	}
 	else if (std::holds_alternative<double>(*this))
 	{
-		return std::to_string(std::get<double>(*this));
+		std::stringstream ss;
+		ss << std::get<double>(*this);
+		return ss.str();
 	}
 	else if (std::holds_alternative<bool>(*this))
 	{
@@ -75,6 +77,7 @@ std::string Value::to_string() const noexcept
 				result += " ";
 			}
 			result += value.to_string();
+			first = false;
 		}
 		return result;
 	}
@@ -90,6 +93,7 @@ std::string Value::to_string() const noexcept
 				result += " ";
 			}
 			result += pair.first + " " + pair.second.to_string();
+			first = false;
 		}
 		return result;
 	}
