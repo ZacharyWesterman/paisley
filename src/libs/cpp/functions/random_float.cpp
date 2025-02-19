@@ -2,8 +2,9 @@
 
 void random_float(Context &context) noexcept
 {
-	double max = context.stack.pop().to_number();
-	double min = context.stack.pop().to_number();
+	auto params = std::get<std::vector<Value>>(context.stack.pop());
+	double max = params[0].to_number();
+	double min = params[1].to_number();
 
 	auto value = context.rng() / (context.rng.max() + 1.0) * (max - min) + min;
 	context.stack.push(value);

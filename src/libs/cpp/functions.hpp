@@ -9,6 +9,7 @@
 #include "functions/boolxor.hpp"
 #include "functions/ceil.hpp"
 #include "functions/concat.hpp"
+#include "functions/dist.hpp"
 #include "functions/div.hpp"
 #include "functions/equal.hpp"
 #include "functions/explode.hpp"
@@ -33,6 +34,7 @@
 #include "functions/sub.hpp"
 #include "functions/superimplode.hpp"
 #include "functions/varexists.hpp"
+#include "functions/word_diff.hpp"
 
 typedef void (*Function)(Context &);
 const Function FUNCTIONS[] = {
@@ -45,6 +47,7 @@ const Function FUNCTIONS[] = {
 	boolxor,
 	ceil,
 	concat,
+	dist,
 	div,
 	equal,
 	explode,
@@ -69,5 +72,6 @@ const Function FUNCTIONS[] = {
 	sub,
 	superimplode,
 	varexists,
+	word_diff,
 };
 const int FUNCTION_COUNT = sizeof(FUNCTIONS) / sizeof(Function);

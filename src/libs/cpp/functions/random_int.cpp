@@ -2,8 +2,9 @@
 
 void random_int(Context &context) noexcept
 {
-	long max = context.stack.pop().to_number();
-	long min = context.stack.pop().to_number();
+	auto params = std::get<std::vector<Value>>(context.stack.pop());
+	long max = params[0].to_number();
+	long min = params[1].to_number();
 
 	auto value = context.rng() % (max - min + 1) + min;
 	context.stack.push(value);

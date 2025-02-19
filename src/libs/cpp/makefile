@@ -13,9 +13,6 @@ FNAM := $(patsubst functions/%.hpp,%,$(wildcard $(addsuffix *.hpp, functions/)))
 
 .PHONY: all clean
 
-test:
-	@echo $(FNAM)
-
 all: $(EXE)
 
 clean:
