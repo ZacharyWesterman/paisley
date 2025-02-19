@@ -22,6 +22,9 @@ const Function functions[] = {
 	arrayindex,
 	arrayslice,
 	concat,
+	booland,
+	boolor,
+	boolxor,
 	// More functions WIP
 };
 const int function_count = sizeof(functions) / sizeof(Function);
@@ -31,11 +34,11 @@ int main(int argc, char *argv[])
 	(void)argc;
 	(void)argv;
 
-	Stack stack = {0, 9};
+	Stack stack = {"", "this is a test"};
 	Context context = {stack, 0, {0, 0}, 0};
 	context.stack.print();
 
-	arrayslice(context);
+	inarray(context);
 	context.stack.print();
 
 	return 0;

@@ -25,4 +25,7 @@ public:
 	std::vector<std::string> to_string_array() const noexcept;
 
 	std::string pretty_print() const noexcept;
+
+	bool operator==(const Value &rhs) const noexcept;
+	bool operator!=(const Value &rhs) const noexcept;
 };

@@ -196,3 +196,39 @@ std::string Value::pretty_print() const noexcept
 
 	return "null";
 }
+
+bool Value::operator==(const Value &rhs) const noexcept
+{
+	if (index() != rhs.index())
+	{
+		return false;
+	}
+
+	if (std::holds_alternative<std::string>(*this))
+	{
+		return std::get<std::string>(*this) == std::get<std::string>(rhs);
+	}
+	else if (std::holds_alternative<double>(*this))
+	{
+		return std::get<double>(*this) == std::get<double>(rhs);
+	}
+	else if (std::holds_alternative<bool>(*this))
+	{
+		return std::get<bool>(*this) == std::get<bool>(rhs);
+	}
+	else if (std::holds_alternative<std::vector<Value>>(*this))
+	{
+		return std::get<std::vector<Value>>(*this) == std::get<std::vector<Value>>(rhs);
+	}
+	else if (std::holds_alternative<std::map<std::string, Value>>(*this))
+	{
+		return std::get<std::map<std::string, Value>>(*this) == std::get<std::map<std::string, Value>>(rhs);
+	}
+
+	return true;
+}
+
+bool Value::operator!=(const Value &rhs) const noexcept
+{
+	return !(*this == rhs);
+}
