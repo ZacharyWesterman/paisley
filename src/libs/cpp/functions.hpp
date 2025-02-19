@@ -1,3 +1,4 @@
+#pragma once
 #include "functions/add.hpp"
 #include "functions/ceil.hpp"
 #include "functions/div.hpp"
