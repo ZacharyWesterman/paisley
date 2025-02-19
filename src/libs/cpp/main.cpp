@@ -25,6 +25,8 @@ const Function functions[] = {
 	booland,
 	boolor,
 	boolxor,
+	inarray,
+	strlike,
 	// More functions WIP
 };
 const int function_count = sizeof(functions) / sizeof(Function);
@@ -34,11 +36,11 @@ int main(int argc, char *argv[])
 	(void)argc;
 	(void)argv;
 
-	Stack stack = {"", "this is a test"};
+	Stack stack = {{1, 2, 3}, {1, 2, 3}};
 	Context context = {stack, 0, {0, 0}, 0};
 	context.stack.print();
 
-	inarray(context);
+	equal(context);
 	context.stack.print();
 
 	return 0;

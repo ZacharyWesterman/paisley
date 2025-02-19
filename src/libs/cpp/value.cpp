@@ -232,3 +232,29 @@ bool Value::operator!=(const Value &rhs) const noexcept
 {
 	return !(*this == rhs);
 }
+
+void make_comparable(Value &lhs, Value &rhs) noexcept
+{
+	// Anything that's not a number or a string is cast to a string
+	if (!std::holds_alternative<std::string>(lhs) && !std::holds_alternative<double>(lhs))
+	{
+		lhs = lhs.to_string();
+	}
+	if (!std::holds_alternative<std::string>(rhs) && !std::holds_alternative<double>(rhs))
+	{
+		rhs = rhs.to_string();
+	}
+
+	// If one of the two is a string, the other is cast to a string
+	if (lhs.index() != rhs.index())
+	{
+		if (std::holds_alternative<std::string>(lhs))
+		{
+			rhs = rhs.to_string();
+		}
+		else
+		{
+			lhs = lhs.to_string();
+		}
+	}
+}

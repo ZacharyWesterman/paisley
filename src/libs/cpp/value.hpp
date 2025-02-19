@@ -29,3 +29,5 @@ public:
 	bool operator==(const Value &rhs) const noexcept;
 	bool operator!=(const Value &rhs) const noexcept;
 };
+
+void make_comparable(Value &lhs, Value &rhs) noexcept;

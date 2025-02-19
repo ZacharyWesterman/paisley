@@ -60,6 +60,8 @@
 		"istream": "cpp",
 		"sstream": "cpp",
 		"ctime": "cpp",
-		"iomanip": "cpp"
+		"iomanip": "cpp",
+		"bitset": "cpp",
+		"regex": "cpp"
 	}
 }
