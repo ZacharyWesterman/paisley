@@ -2,4 +2,4 @@
 
 #include "../context.hpp"
 
-void sub(Context &) noexcept;
+void mod(Context &) noexcept;

@@ -7,19 +7,12 @@ int main(int argc, char *argv[])
 	(void)argc;
 	(void)argv;
 
-	Stack stack = {1, {2, 3, 4}, 3};
-	stack.print();
-
-	stack.pop();
-	stack.print();
-
+	Stack stack = {6, 2};
 	Context context = {stack, 0, {0, 0}};
-	explode(context);
-	stack.print();
+	context.stack.print();
 
-	context.arg.x = 4; // Join 4 elements
-	implode(context);
-	stack.print();
+	mod(context);
+	context.stack.print();
 
 	return 0;
 }

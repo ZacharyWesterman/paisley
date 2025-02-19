@@ -6,6 +6,7 @@
 #include "functions/floor.hpp"
 #include "functions/implode.hpp"
 #include "functions/jump.hpp"
+#include "functions/mod.hpp"
 #include "functions/mult.hpp"
 #include "functions/round.hpp"
 #include "functions/sub.hpp"

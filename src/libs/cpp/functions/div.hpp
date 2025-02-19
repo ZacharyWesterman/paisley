@@ -1,5 +1,5 @@
 #pragma once
 
-#include "../stack.hpp"
+#include "../context.hpp"
 
-void div(Stack &stack) noexcept;
+void div(Context &) noexcept;

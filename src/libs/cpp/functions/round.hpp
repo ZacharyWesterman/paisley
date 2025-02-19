@@ -1,5 +1,5 @@
 #pragma once
 
-#include "../stack.hpp"
+#include "../context.hpp"
 
-void round(Stack &stack) noexcept;
+void round(Context &) noexcept;

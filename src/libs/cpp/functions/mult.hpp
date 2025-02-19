@@ -1,5 +1,5 @@
 #pragma once
 
-#include "../stack.hpp"
+#include "../context.hpp"
 
-void mult(Stack &stack) noexcept;
+void mult(Context &) noexcept;

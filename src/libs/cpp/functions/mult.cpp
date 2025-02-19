@@ -1,8 +1,8 @@
 #include "mult.hpp"
 
-void mult(Stack &stack) noexcept
+void mult(Context &context) noexcept
 {
-	auto b = stack.pop();
-	auto a = stack.pop();
-	stack.push(a.to_number() * b.to_number());
+	auto b = context.stack.pop();
+	auto a = context.stack.pop();
+	context.stack.push(a.to_number() * b.to_number());
 }

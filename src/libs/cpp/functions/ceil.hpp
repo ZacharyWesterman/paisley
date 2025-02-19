@@ -1,5 +1,5 @@
 #pragma once
 
-#include "../stack.hpp"
+#include "../context.hpp"
 
-void ceil(Stack &stack) noexcept;
+void ceil(Context &) noexcept;
