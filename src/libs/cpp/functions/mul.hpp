@@ -2,4 +2,4 @@
 
 #include "../context.hpp"
 
-void mult(Context &) noexcept;
+void mul(Context &) noexcept;

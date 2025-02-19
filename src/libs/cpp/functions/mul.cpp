@@ -1,6 +1,6 @@
-#include "mult.hpp"
+#include "mul.hpp"
 
-void mult(Context &context) noexcept
+void mul(Context &context) noexcept
 {
 	auto b = context.stack.pop();
 	auto a = context.stack.pop();
