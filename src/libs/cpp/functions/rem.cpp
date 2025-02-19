@@ -1,6 +1,6 @@
-#include "mod.hpp"
+#include "rem.hpp"
 
-void mod(Context &context) noexcept
+void rem(Context &context) noexcept
 {
 	auto b = context.stack.pop().to_number();
 	auto a = context.stack.pop().to_number();

@@ -1,4 +1,5 @@
 #include "implode.hpp"
+#include <algorithm>
 
 void implode(Context &context) noexcept
 {
@@ -7,5 +8,7 @@ void implode(Context &context) noexcept
 	{
 		items.push_back(context.stack.pop());
 	}
+
+	std::reverse(items.begin(), items.end());
 	context.stack.push(items);
 }
