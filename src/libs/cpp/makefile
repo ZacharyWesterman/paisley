@@ -9,8 +9,12 @@ SRCS := $(wildcard $(addsuffix *.cpp, $(DIRS)))
 OBJS := $(patsubst %.cpp,%.o,$(SRCS))
 FUNC := $(wildcard $(addsuffix *.hpp, functions/))
 FTXT := $(patsubst %,\n#include "%",$(wildcard $(addsuffix *.hpp, functions/)))
+FNAM := $(patsubst functions/%.hpp,%,$(wildcard $(addsuffix *.hpp, functions/)))
 
 .PHONY: all clean
+
+test:
+	@echo $(FNAM)
 
 all: $(EXE)
 
@@ -21,7 +25,13 @@ $(EXE): functions.hpp $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS)
 
 functions.hpp: $(FUNC)
-	@echo '#pragma once $(FTXT)' | awk '{print $$1 " " $$2}' > $@
+	@echo '#pragma once' > $@
+	@echo '$(FTXT)' |  awk '{print $$1 " " $$2 }' >> $@
+	@echo '\ntypedef void (*Function)(Context &);' >> $@
+	@echo 'const Function FUNCTIONS[] = {' >> $@
+	@echo '$(FNAM)' | tr ' ' '\n' | awk '{print "\t" $$1 ","}' >> $@
+	@echo '};' >> $@
+	@echo 'const int FUNCTION_COUNT = sizeof(FUNCTIONS) / sizeof(Function);' >> $@
 
 main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@

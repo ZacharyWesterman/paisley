@@ -1,4 +1,5 @@
 #pragma once
+ 
 #include "functions/add.hpp"
 #include "functions/arrayindex.hpp"
 #include "functions/arrayslice.hpp"
@@ -32,3 +33,41 @@
 #include "functions/sub.hpp"
 #include "functions/superimplode.hpp"
 #include "functions/varexists.hpp"
+
+typedef void (*Function)(Context &);
+const Function FUNCTIONS[] = {
+	add,
+	arrayindex,
+	arrayslice,
+	booland,
+	boolnot,
+	boolor,
+	boolxor,
+	ceil,
+	concat,
+	div,
+	equal,
+	explode,
+	floor,
+	greaterequal,
+	greater,
+	implode,
+	inarray,
+	jump,
+	jumpiffalse,
+	jumpifnil,
+	length,
+	lessequal,
+	less,
+	mul,
+	notequal,
+	random_float,
+	random_int,
+	rem,
+	round,
+	strlike,
+	sub,
+	superimplode,
+	varexists,
+};
+const int FUNCTION_COUNT = sizeof(FUNCTIONS) / sizeof(Function);
