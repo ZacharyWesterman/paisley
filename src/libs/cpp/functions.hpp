@@ -9,7 +9,7 @@
 #include "functions/jumpiffalse.hpp"
 #include "functions/jumpifnil.hpp"
 #include "functions/length.hpp"
-#include "functions/mult.hpp"
+#include "functions/mul.hpp"
 #include "functions/rem.hpp"
 #include "functions/round.hpp"
 #include "functions/sub.hpp"
