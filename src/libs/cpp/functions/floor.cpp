@@ -3,8 +3,6 @@
 
 void floor(Context &context) noexcept
 {
-	auto params = context.stack.pop().to_array();
-	auto value = params[0].to_number();
-
+	auto value = std::get<std::vector<Value>>(context.stack.pop())[0].to_number();
 	context.stack.push(std::floor(value));
 }
