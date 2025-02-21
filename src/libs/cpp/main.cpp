@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 
 	// auto obj = std::map<std::string, Value>{{"a", 1}, {"b", 2}, {"d", Value({1, 2, 3})}, {"c", 3}};
 
-	Stack stack = {{"test", "-", 10}};
+	Stack stack = {{{3, 1, 4, 2, 5}}};
 	Variables variables;
 	std::mt19937_64 rng;
 	rng.seed(std::random_device()());
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 	Context context = {stack, variables, rng, 0, {0, 0}, 0};
 
 	context.stack.print();
-	rpad(context);
+	sort(context);
 	context.stack.print();
 
 	return 0;

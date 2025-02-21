@@ -104,9 +104,9 @@ std::string Value::to_string() const noexcept
 
 std::vector<Value> Value::to_array() const noexcept
 {
+	std::vector<Value> result;
 	if (std::holds_alternative<std::map<std::string, Value>>(*this))
 	{
-		std::vector<Value> result;
 		for (const auto &pair : std::get<std::map<std::string, Value>>(*this))
 		{
 			result.push_back(pair.first);
@@ -118,21 +118,13 @@ std::vector<Value> Value::to_array() const noexcept
 	{
 		return std::get<std::vector<Value>>(*this);
 	}
-	else if (std::holds_alternative<std::string>(*this))
+	else if (!std::holds_alternative<Null>(*this))
 	{
-		return {std::get<std::string>(*this)};
-	}
-	else if (std::holds_alternative<double>(*this))
-	{
-		return {std::get<double>(*this)};
-	}
-	else if (std::holds_alternative<bool>(*this))
-	{
-		return {std::get<bool>(*this)};
+		result.push_back(*this);
 	}
 
 	// null is an empty array
-	return {};
+	return result;
 }
 
 std::vector<std::string> Value::to_string_array() const noexcept
@@ -257,4 +249,27 @@ void make_comparable(Value &lhs, Value &rhs) noexcept
 			lhs = lhs.to_string();
 		}
 	}
+}
+
+bool Value::operator<(const Value &rhs) const noexcept
+{
+	// Arrays, objects, and null cannot be compared.
+	if (std::holds_alternative<std::vector<Value>>(*this) || std::holds_alternative<std::vector<Value>>(rhs))
+	{
+		return false;
+	}
+	else if (std::holds_alternative<std::map<std::string, Value>>(*this) || std::holds_alternative<std::map<std::string, Value>>(rhs))
+	{
+		return false;
+	}
+	else if (std::holds_alternative<Null>(*this) || std::holds_alternative<Null>(rhs))
+	{
+		return false;
+	}
+
+	if (std::holds_alternative<std::string>(*this) || std::holds_alternative<std::string>(rhs))
+	{
+		return to_string() < rhs.to_string();
+	}
+	return to_number() < rhs.to_number();
 }
