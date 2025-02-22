@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 	(void)argc;
 	(void)argv;
 
-	Stack stack = {{{1, 2, 3}, {3, 4, 5, 2}}};
+	Stack stack = {{"this is a test", "[a-z]"}};
 	Variables variables;
 	std::mt19937_64 rng;
 	rng.seed(std::random_device()());
@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	Context context = {stack, variables, rng, 0, {0, 0}, 0};
 
 	context.stack.print();
-	intersection(context);
+	filter(context);
 	context.stack.print();
 
 	return 0;

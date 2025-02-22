@@ -24,11 +24,11 @@ $(EXE): functions.hpp $(OBJS)
 functions.hpp: $(FUNC)
 	@echo '#pragma once' > $@
 	@echo '$(FTXT)' |  awk '{print $$1 " " $$2 }' | sed 's/^ $$//g' >> $@
-	@echo '\n/*\ntypedef void (*Function)(Context &);' >> $@
+	@echo '\ntypedef void (*Function)(Context &);' >> $@
 	@echo 'const Function FUNCTIONS[] = {' >> $@
 	@grep ',$$' ../../compiler/functions/codes.lua | awk '{print "\t" $$1 ","}' | sed -E 's/\b(bool|delete|union|char)\b/_\1/g' >> $@
 	@echo '};' >> $@
-	@echo 'const int FUNCTION_COUNT = sizeof(FUNCTIONS) / sizeof(Function);\n*/' >> $@
+	@echo 'const int FUNCTION_COUNT = sizeof(FUNCTIONS) / sizeof(Function);\n' >> $@
 
 main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@

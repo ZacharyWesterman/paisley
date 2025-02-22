@@ -13,6 +13,7 @@
 #include "functions/atan.hpp"
 #include "functions/b64_decode.hpp"
 #include "functions/b64_encode.hpp"
+#include "functions/beginswith.hpp"
 #include "functions/booland.hpp"
 #include "functions/bool.hpp"
 #include "functions/boolnot.hpp"
@@ -27,12 +28,15 @@
 #include "functions/cosh.hpp"
 #include "functions/cos.hpp"
 #include "functions/count.hpp"
+#include "functions/date.hpp"
 #include "functions/delete.hpp"
 #include "functions/difference.hpp"
 #include "functions/dist.hpp"
 #include "functions/div.hpp"
+#include "functions/endswith.hpp"
 #include "functions/equal.hpp"
 #include "functions/explode.hpp"
+#include "functions/filter.hpp"
 #include "functions/find.hpp"
 #include "functions/flatten.hpp"
 #include "functions/floor.hpp"
@@ -72,6 +76,7 @@
 #include "functions/mul.hpp"
 #include "functions/mult.hpp"
 #include "functions/notequal.hpp"
+#include "functions/numeric_string.hpp"
 #include "functions/num.hpp"
 #include "functions/object.hpp"
 #include "functions/pairs.hpp"
@@ -90,6 +95,7 @@
 #include "functions/sin.hpp"
 #include "functions/smoothstep.hpp"
 #include "functions/sort.hpp"
+#include "functions/splice.hpp"
 #include "functions/split.hpp"
 #include "functions/sqrt.hpp"
 #include "functions/str.hpp"
@@ -100,6 +106,7 @@
 #include "functions/symmetric_difference.hpp"
 #include "functions/tanh.hpp"
 #include "functions/tan.hpp"
+#include "functions/time.hpp"
 #include "functions/type.hpp"
 #include "functions/union.hpp"
 #include "functions/unique.hpp"
@@ -109,7 +116,6 @@
 #include "functions/varexists.hpp"
 #include "functions/word_diff.hpp"
 
-/*
 typedef void (*Function)(Context &);
 const Function FUNCTIONS[] = {
 	jump,
@@ -229,4 +235,4 @@ const Function FUNCTIONS[] = {
 	splice,
 };
 const int FUNCTION_COUNT = sizeof(FUNCTIONS) / sizeof(Function);
-*/
+

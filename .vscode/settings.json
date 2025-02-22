@@ -64,6 +64,7 @@
 		"bitset": "cpp",
 		"regex": "cpp",
 		"complex": "cpp",
-		"cstring": "cpp"
+		"cstring": "cpp",
+		"cinttypes": "cpp"
 	}
 }
