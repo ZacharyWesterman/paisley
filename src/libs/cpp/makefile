@@ -19,7 +19,7 @@ clean:
 	rm -f $(OBJS) $(EXE)
 
 $(EXE): functions.hpp $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) -lcrypto
 
 functions.hpp: $(FUNC)
 	@echo '#pragma once' > $@

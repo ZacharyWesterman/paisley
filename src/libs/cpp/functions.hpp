@@ -31,6 +31,7 @@
 #include "functions/frombytes.hpp"
 #include "functions/greaterequal.hpp"
 #include "functions/greater.hpp"
+#include "functions/hash.hpp"
 #include "functions/hex.hpp"
 #include "functions/implode.hpp"
 #include "functions/inarray.hpp"
