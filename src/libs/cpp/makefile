@@ -33,7 +33,7 @@ functions.hpp: $(FUNC)
 main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-functions/sort.o: functions/sort.cpp functions/sort.hpp
+functions/%.o: functions/%.cpp functions/%.hpp
 	$(CXX) $(CXXFLAGS) -Wno-maybe-uninitialized -c $< -o $@
 
 %.o: %.cpp %.hpp
