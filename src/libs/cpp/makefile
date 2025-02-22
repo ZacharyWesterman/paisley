@@ -1,6 +1,6 @@
 
 CXX = c++
-CXXFLAGS = -Wall -Wextra --pedantic -Werror -std=c++17 -O3 -I./
+CXXFLAGS = -Wall -Wextra --pedantic -Werror -std=c++17 -Ofast -I./
 
 EXE = standalone_binary
 
