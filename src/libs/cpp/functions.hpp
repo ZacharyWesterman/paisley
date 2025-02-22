@@ -59,6 +59,8 @@
 #include "functions/notequal.hpp"
 #include "functions/num.hpp"
 #include "functions/pow.hpp"
+#include "functions/random_element.hpp"
+#include "functions/random_elements.hpp"
 #include "functions/random_float.hpp"
 #include "functions/random_int.hpp"
 #include "functions/rem.hpp"
