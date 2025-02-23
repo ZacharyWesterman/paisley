@@ -13,13 +13,9 @@ struct Context
 	// Random number generator
 	std::mt19937_64 &rng;
 
-	int instruction_index;
+	size_t instruction_index;
 
-	struct
-	{
-		int x;
-		int y;
-	} arg;
+	int arg;
 
 	int line_number;
 

@@ -4,7 +4,7 @@
 void implode(Context &context) noexcept
 {
 	std::vector<Value> items;
-	for (int i = 0; i < context.arg.x; i++)
+	for (int i = 0; i < context.arg; i++)
 	{
 		items.push_back(context.stack.pop());
 	}

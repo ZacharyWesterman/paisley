@@ -4,7 +4,7 @@
 void superimplode(Context &context) noexcept
 {
 	std::vector<Value> items;
-	for (int i = 0; i < context.arg.x; i++)
+	for (int i = 0; i < context.arg; i++)
 	{
 		auto item = context.stack.pop();
 		if (std::holds_alternative<std::vector<Value>>(item))
