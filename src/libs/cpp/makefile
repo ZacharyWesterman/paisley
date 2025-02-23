@@ -18,17 +18,12 @@ all: $(EXE)
 clean:
 	rm -f $(OBJS) $(EXE)
 
-$(EXE): functions.hpp $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) -lcrypto
+$(EXE): PAISLEY_BYTECODE.o $(OBJS)
+	@echo Linking...
+	@$(CXX) $(CXXFLAGS) -o $@ $^ -lcrypto
 
-# functions.hpp: $(FUNC)
-# 	@echo '#pragma once' > $@
-# 	@echo '$(FTXT)' |  awk '{print $$1 " " $$2 }' | sed 's/^ $$//g' >> $@
-# 	@echo '\ntypedef void (*Function)(Context &);' >> $@
-# 	@echo 'const Function FUNCTIONS[] = {' >> $@
-# 	@grep ',$$' ../../compiler/functions/codes.lua | awk '{print "\t" $$1 ","}' | sed -E 's/\b(bool|delete|union|char)\b/_\1/g' >> $@
-# 	@echo '};' >> $@
-# 	@echo 'const int FUNCTION_COUNT = sizeof(FUNCTIONS) / sizeof(Function);\n' >> $@
+PAISLEY_BYTECODE.o : PAISLEY_BYTECODE.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@

@@ -33,6 +33,19 @@ STANDALONE = {
 		return cc
 	end,
 
+	--- Get the installed version of Make.
+	--- If no Make is found, an error is thrown.
+	--- @return string make The Make program to use.
+	require_make = function()
+		local make = find_compiler({ 'make' })
+
+		if not make then
+			error('ERROR: No Make program found. Please install Make to compile the standalone program.')
+		end
+
+		return make
+	end,
+
 	compress_executable = function(executable)
 		if FS.os.windows then
 			error('Error: Compression of standalone binaries is not supported on Windows (requires gzexe).')
@@ -52,3 +65,4 @@ STANDALONE = {
 }
 
 require 'src.runtime.standalone.lua'
+require 'src.runtime.standalone.cpp'

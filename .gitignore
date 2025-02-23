@@ -42,3 +42,5 @@ luac.out
 build/
 main.c
 standalone_binary
+
+PAISLEY_BYTECODE.*
