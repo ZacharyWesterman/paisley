@@ -2,5 +2,5 @@
 
 void jump(Context &context) noexcept
 {
-	context.instruction_index = context.arg;
+	context.instruction_index = context.arg - 1;
 }

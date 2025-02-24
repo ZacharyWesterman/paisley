@@ -17,7 +17,7 @@ struct ExceptStackInfo
 {
 	size_t goto_index;
 	size_t stack_size;
-	size_t instruction_index;
+	size_t return_stack_size;
 };
 
 struct VirtualMachine

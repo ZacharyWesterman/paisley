@@ -22,4 +22,5 @@ void call(VirtualMachine &vm) noexcept
 	}
 
 	FUNCTIONS[instruction.operand[0]](context);
+	vm.instruction_index = context.instruction_index;
 }

@@ -43,4 +43,4 @@ build/
 main.c
 standalone_binary
 
-PAISLEY_BYTECODE.*
+PAISLEY_BYTECODE.cpp

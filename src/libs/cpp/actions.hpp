@@ -17,7 +17,8 @@
 #include "actions/set_cache.hpp"
 #include "actions/delete_cache.hpp"
 #include "actions/push_catch_loc.hpp"
+#include "actions/pop_catch_or_throw.hpp"
 
-typedef void (*Operation)(VirtualMachine &) noexcept;
+typedef void (*Operation)(VirtualMachine &);
 extern const Operation OPERATIONS[];
 extern const size_t OPERATION_COUNT;

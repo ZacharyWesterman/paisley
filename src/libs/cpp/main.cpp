@@ -54,15 +54,16 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		// std::cout << "Instruction: " << vm.instruction_index << std::endl;
-		// std::cout << "Opcode: " << (int)instruction.opcode << std::endl;
-		// std::cout << "Line number: " << instruction.line_no << std::endl;
-		// std::cout << "Operand 0: " << instruction.operand[0] << std::endl;
-		// std::cout << "Operand 1: " << instruction.operand[1] << std::endl;
-		// vm.stack.print();
-		// std::cout << std::endl;
+		try
+		{
+			OPERATIONS[opcode](vm);
+		}
+		catch (const std::exception &e)
+		{
+			vm.stack.push(e.what());
+			OPERATIONS[OPERATION_COUNT](vm);
+		}
 
-		OPERATIONS[opcode](vm);
 		vm.instruction_index++;
 	}
 

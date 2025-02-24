@@ -2,7 +2,12 @@
 
 void concat(Context &context) noexcept
 {
-	auto b = context.stack.pop();
-	auto a = context.stack.pop();
-	context.stack.push(a.to_string() + b.to_string());
+	std::string result;
+
+	for (size_t i = context.stack.size() - context.arg; i < context.stack.size(); i++)
+	{
+		result += context.stack[i].to_string();
+	}
+	context.stack.resize(context.stack.size() - context.arg);
+	context.stack.push(result);
 }

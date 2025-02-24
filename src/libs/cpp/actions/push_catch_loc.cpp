@@ -7,7 +7,7 @@ void push_catch_loc(VirtualMachine &vm) noexcept
 	const ExceptStackInfo info = {
 		(size_t)instruction.operand[0],
 		vm.stack.size(),
-		vm.instruction_index,
+		vm.return_indices.size(),
 	};
 	vm.except_stack.push_back(info);
 }

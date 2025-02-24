@@ -18,5 +18,7 @@ const Operation OPERATIONS[] = {
 	set_cache,
 	delete_cache,
 	push_catch_loc,
+
+	pop_catch_or_throw, // This operation is not in the original code, but is called when an exception is thrown
 };
 const size_t OPERATION_COUNT = 17;

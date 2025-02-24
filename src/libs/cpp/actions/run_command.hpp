@@ -2,4 +2,4 @@
 
 #include "../virtual_machine.hpp"
 
-void run_command(VirtualMachine &) noexcept;
+void run_command(VirtualMachine &);

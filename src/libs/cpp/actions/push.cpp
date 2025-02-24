@@ -3,5 +3,7 @@
 void push(VirtualMachine &vm) noexcept
 {
 	auto &instruction = vm.instructions[vm.instruction_index];
-	vm.stack.push(vm.get_const(instruction.operand[0]));
+
+	const auto &constant = vm.get_const(instruction.operand[0]);
+	vm.stack.push(constant);
 }

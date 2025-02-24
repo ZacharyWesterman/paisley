@@ -5,7 +5,7 @@ void pop_goto_index(VirtualMachine &vm) noexcept
 	const auto info = vm.return_indices.back();
 	vm.return_indices.pop_back();
 
-	vm.instruction_index = info.index;
+	vm.instruction_index = info.index + 1;
 
 	auto &instruction = vm.instructions[vm.instruction_index];
 	if (!instruction.operand[0])
@@ -14,6 +14,6 @@ void pop_goto_index(VirtualMachine &vm) noexcept
 		vm.last_cmd_result = vm.stack.pop();
 
 		// Shrink the stack to the size it was before the subroutine call
-		vm.stack.resize(info.stack_size);
+		vm.stack.resize(info.stack_size - 1);
 	}
 }

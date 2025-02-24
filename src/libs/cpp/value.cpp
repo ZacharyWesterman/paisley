@@ -38,7 +38,14 @@ double Value::to_number() const noexcept
 	}
 	else if (std::holds_alternative<std::string>(*this))
 	{
-		return std::stod(std::get<std::string>(*this));
+		try
+		{
+			return std::stod(std::get<std::string>(*this));
+		}
+		catch (const std::invalid_argument &)
+		{
+			return 0;
+		}
 	}
 	else if (std::holds_alternative<bool>(*this))
 	{
@@ -132,7 +139,31 @@ std::vector<std::string> Value::to_string_array() const noexcept
 	std::vector<std::string> result;
 	for (const Value &value : to_array())
 	{
-		result.push_back(value.to_string());
+		if (std::holds_alternative<std::vector<Value>>(value))
+		{
+			for (const auto &sub_value : std::get<std::vector<Value>>(value))
+			{
+				for (const auto &sub_sub_value : sub_value.to_string_array())
+				{
+					result.push_back(sub_sub_value);
+				}
+			}
+		}
+		else if (std::holds_alternative<std::map<std::string, Value>>(value))
+		{
+			for (const auto &pair : std::get<std::map<std::string, Value>>(value))
+			{
+				result.push_back(pair.first);
+				for (const auto &sub_value : pair.second.to_string_array())
+				{
+					result.push_back(sub_value);
+				}
+			}
+		}
+		else
+		{
+			result.push_back(value.to_string());
+		}
 	}
 	return result;
 }
