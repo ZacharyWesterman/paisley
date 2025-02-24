@@ -3,8 +3,8 @@
 void explode(Context &context) noexcept
 {
 	auto params = context.stack.pop().to_array();
-	for (auto &param : params)
+	for (size_t i = params.size(); i > 0; i--)
 	{
-		context.stack.push(param);
+		context.stack.push(params[i - 1]);
 	}
 }
