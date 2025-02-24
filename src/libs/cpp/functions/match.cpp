@@ -13,7 +13,7 @@ void match(Context &context) noexcept
 
 	if (value.empty())
 	{
-		context.stack.push(Value());
+		context.stack.push(Null());
 		return;
 	}
 

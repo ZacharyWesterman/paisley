@@ -307,7 +307,7 @@ Value json_decode_recursive(std::string::const_iterator &it, const std::string::
 	if (std::string_view(&*it, 4) == "null")
 	{
 		it += 4;
-		return Value();
+		return Null();
 	}
 
 	throw JsonError("Unexpected character", line_no);

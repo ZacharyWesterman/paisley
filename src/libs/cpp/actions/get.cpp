@@ -8,7 +8,7 @@ void get(VirtualMachine &vm) noexcept
 
 	if (vm.variables.find(var_name) == vm.variables.end())
 	{
-		vm.stack.push(Value());
+		vm.stack.push(Null());
 	}
 	else
 	{

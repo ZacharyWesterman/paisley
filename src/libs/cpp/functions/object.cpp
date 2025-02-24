@@ -22,7 +22,7 @@ void object(Context &context) noexcept
 		if (i + 1 >= array.size())
 		{
 			// If the array has an odd number of elements, the last element will be null.
-			object[key] = Value();
+			object[key] = Null();
 			break;
 		}
 

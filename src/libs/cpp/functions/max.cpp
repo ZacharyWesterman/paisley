@@ -30,6 +30,6 @@ void max(Context &context) noexcept
 	else
 	{
 		// If there's no value in the params, push null.
-		context.stack.push(Value());
+		context.stack.push(Null());
 	}
 }

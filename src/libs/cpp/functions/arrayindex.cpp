@@ -68,7 +68,7 @@ Value get_at_index(const Context &context, const Value &data, const Value &index
 			return "";
 		}
 	}
-	return Value();
+	return Null();
 }
 
 void arrayindex(Context &context) noexcept

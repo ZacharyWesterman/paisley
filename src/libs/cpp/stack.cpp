@@ -6,7 +6,7 @@ Value Stack::pop() noexcept
 {
 	if (empty())
 	{
-		return Value();
+		return Null();
 	}
 
 	Value value = std::move(back());

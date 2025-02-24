@@ -2,9 +2,10 @@
 
 void jumpifnil(Context &context) noexcept
 {
-	const Value &top = context.stack[context.stack.size() - 1];
-	if (std::holds_alternative<Null>(top))
+	const Value &top = context.stack.back();
+
+	if (top.index() + 1 < 2) // Hack to correctly check for null variant
 	{
-		context.instruction_index = context.arg;
+		context.instruction_index = context.arg - 1;
 	}
 }

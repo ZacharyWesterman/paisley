@@ -4,7 +4,7 @@ Value Variables::get(const std::string &key) const noexcept
 {
 	if (!has(key))
 	{
-		return Value();
+		return Null();
 	}
 	return at(key);
 }

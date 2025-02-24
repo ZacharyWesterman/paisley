@@ -17,6 +17,7 @@ public:
 	Value(int value) noexcept : std::variant<Null, bool, double, std::string, std::vector<Value>, std::map<std::string, Value>>(static_cast<double>(value)) {}
 	Value(std::initializer_list<Value> values) noexcept : std::variant<Null, bool, double, std::string, std::vector<Value>, std::map<std::string, Value>>(std::vector<Value>(values)) {}
 
+	bool is_null() const noexcept;
 	bool to_bool() const noexcept;
 	double to_number() const noexcept;
 	std::string to_string() const noexcept;

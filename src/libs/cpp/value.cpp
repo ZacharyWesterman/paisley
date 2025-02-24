@@ -1,6 +1,11 @@
 #include "value.hpp"
 #include <sstream>
 
+bool Value::is_null() const noexcept
+{
+	return index() + 1 < 2; // Hack to correctly check for null variant
+}
+
 bool Value::to_bool() const noexcept
 {
 	// Empty strings, empty arrays, empty objects, and null are false

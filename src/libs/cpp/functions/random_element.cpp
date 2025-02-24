@@ -7,7 +7,7 @@ void random_element(Context &context) noexcept
 
 	if (list.empty())
 	{
-		context.stack.push(Value());
+		context.stack.push(Null());
 		return;
 	}
 
