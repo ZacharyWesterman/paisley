@@ -11,7 +11,7 @@ STANDALONE = {
 	--- If no C compiler is found, an error is thrown.
 	--- @return string cc The C compiler to use.
 	require_c_compiler = function()
-		local cc = find_compiler({ 'cc', 'gcc', 'clang', 'cl' })
+		local cc = find_compiler({ 'cc', 'gcc', 'clang', 'mingw32-gcc' })
 
 		if not cc then
 			error('ERROR: No C compiler found. Please install a C compiler to compile the standalone program.')
@@ -24,13 +24,26 @@ STANDALONE = {
 	--- If no C++ compiler is found, an error is thrown.
 	--- @return string cc The C++ compiler to use.
 	require_cpp_compiler = function()
-		local cc = find_compiler({ 'c++', 'g++', 'clang++', 'cl' })
+		local cc = find_compiler({ 'c++', 'g++', 'clang++', 'mingw32-g++' })
 
 		if not cc then
 			error('ERROR: No C++ compiler found. Please install a C++ compiler to compile the standalone program.')
 		end
 
 		return cc
+	end,
+
+	--- Get the installed version of Make.
+	--- If no Make is found, an error is thrown.
+	--- @return string make The Make program to use.
+	require_make = function()
+		local make = find_compiler({ 'make' })
+
+		if not make then
+			error('ERROR: No Make program found. Please install Make to compile the standalone program.')
+		end
+
+		return make
 	end,
 
 	compress_executable = function(executable)
@@ -52,3 +65,4 @@ STANDALONE = {
 }
 
 require 'src.runtime.standalone.lua'
+require 'src.runtime.standalone.cpp'
