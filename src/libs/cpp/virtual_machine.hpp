@@ -30,7 +30,7 @@ struct VirtualMachine
 	std::vector<Value> const_lookup;
 
 	Value last_cmd_result;
-	std::map<size_t, std::map<Value, Value>> cache;
+	std::map<size_t, std::map<std::string, Value>> cache;
 	std::vector<ReturnInfo> return_indices;
 	std::vector<ExceptStackInfo> except_stack;
 

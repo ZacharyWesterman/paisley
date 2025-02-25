@@ -1,6 +1,8 @@
 #include "run_command.hpp"
 
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 void run_command(VirtualMachine &vm)
 {
@@ -45,6 +47,11 @@ void run_command(VirtualMachine &vm)
 	else if (command == "sysdate")
 	{
 		vm.last_cmd_result = {1, 2, 3}; // TEMP
+	}
+	else if (command == "sleep")
+	{
+		std::this_thread::sleep_for(std::chrono::milliseconds((int)(std::stod(value[1]) * 1000.0)));
+		vm.last_cmd_result = Null();
 	}
 	else
 	{
