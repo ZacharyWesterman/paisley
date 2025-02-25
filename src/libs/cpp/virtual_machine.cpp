@@ -9,10 +9,10 @@ void VirtualMachine::error(const std::string &message) const noexcept
 
 Value &VirtualMachine::get_const(size_t id) noexcept
 {
-	if (id > const_lookup.size())
+	if (id >= const_lookup.size())
 	{
 		error("Invalid constant index");
 	}
 
-	return const_lookup[id - 1];
+	return const_lookup[id];
 }

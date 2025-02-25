@@ -29,11 +29,11 @@ STANDALONE.cpp = {
 			elseif tp == 'boolean' then
 				return value and 'true' or 'false'
 			elseif tp == 'array' then
-				local text = '{'
+				local text = 'std::vector<Value>({'
 				for i = 1, #value do
 					text = text .. value_to_cpp(value[i]) .. ','
 				end
-				text = text .. '}'
+				text = text .. '})'
 				return text
 			elseif tp == 'object' then
 				local text = 'std::map<std::string, Value>({'
@@ -47,7 +47,7 @@ STANDALONE.cpp = {
 			return 'Value()' --nil
 		end
 
-		text = text .. '};\n\nconst std::vector<Value> CONSTANTS = {\n'
+		text = text .. '};\n\nconst std::vector<Value> CONSTANTS = {\nNull(),\n'
 		for i = 1, #bytecode[#bytecode] do
 			local value = bytecode[#bytecode][i]
 			text = text .. '\t' .. value_to_cpp(value) .. ',\n'
