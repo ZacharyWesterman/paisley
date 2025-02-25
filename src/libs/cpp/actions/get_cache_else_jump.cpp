@@ -7,7 +7,7 @@ void get_cache_else_jump(VirtualMachine &vm) noexcept
 	// If the cache for this subroutine does not exist, jump to the specified index.
 	if (vm.cache.find(instruction.operand[0]) == vm.cache.end())
 	{
-		vm.instruction_index = instruction.operand[1];
+		vm.instruction_index = instruction.operand[1] - 1;
 		return;
 	}
 
@@ -18,7 +18,7 @@ void get_cache_else_jump(VirtualMachine &vm) noexcept
 	const auto &cache = vm.cache[instruction.operand[0]];
 	if (cache.find(params) == cache.end())
 	{
-		vm.instruction_index = instruction.operand[1];
+		vm.instruction_index = instruction.operand[1] - 1;
 		return;
 	}
 

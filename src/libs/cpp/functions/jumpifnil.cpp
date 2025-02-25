@@ -6,6 +6,6 @@ void jumpifnil(Context &context) noexcept
 
 	if (top.index() + 1 < 2) // Hack to correctly check for null variant
 	{
-		context.instruction_index = context.arg - 1;
+		context.instruction_index = context.arg;
 	}
 }

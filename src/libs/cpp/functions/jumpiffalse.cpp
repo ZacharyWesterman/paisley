@@ -5,6 +5,6 @@ void jumpiffalse(Context &context) noexcept
 	const Value &top = context.stack[context.stack.size() - 1];
 	if (!top.to_bool())
 	{
-		context.instruction_index = context.arg - 1;
+		context.instruction_index = context.arg;
 	}
 }

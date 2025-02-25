@@ -2,5 +2,12 @@
 
 void jump(Context &context) noexcept
 {
-	context.instruction_index = context.arg - 1;
+	if (context.arg)
+	{
+		context.instruction_index = context.arg;
+	}
+	else
+	{
+		context.instruction_index = context.stack.pop().to_number();
+	}
 }
