@@ -160,12 +160,17 @@ if flags.install then
 		os.execute('chmod +x ' .. target_file)
 
 		--Create stdlib directory and copy the files over.
+		os.execute('rm -rf /usr/local/share/paisley')
 		os.execute('mkdir -p /usr/local/share/paisley')
 		os.execute('cp -r stdlib /usr/local/share/paisley/')
 
 		--Create library directory and copy the files over.
+		os.execute('rm -rf /usr/local/lib/paisley')
 		os.execute('mkdir -p /usr/local/lib/paisley')
-		os.execute('cp -r src/libs/* /usr/local/lib/paisley/')
+		os.execute('rsync -a src/libs/* /usr/local/lib/paisley/ --exclude \'*.o\'')
+		--Make specific library files writable so that they can be updated.
+		os.execute('touch /usr/local/lib/paisley/cpp/PAISLEY_BYTECODE.cpp')
+		os.execute('chmod 775 /usr/local/lib/paisley/cpp -R')
 	end
 
 	io.stderr:write('Standalone Paisley executable has been installed.\n')

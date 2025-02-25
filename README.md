@@ -43,6 +43,10 @@ Optional dependencies to enable extra features:
 - `luarocks` which likely will require:
 - `liblua5.3-dev` or greater (Or whatever Lua development libraries for your OS). **NOTE** This needs to be the same as your Lua version!
 
+Dependencies required for creating standalone applications:
+- Some C compiler (`cc`, `gcc`, `clang` or `mingw32-gcc`). This is only for `--target=lua`
+- Some C++ compiler (`c++`, `g++`, `clang++` or `mingw32-c++`) as well as `make`. This is only for `--target=cpp`
+
 **If you want to keep dependencies to a minimum**, you can just install `lua` and then run `paisley` (via `lua paisley` or `lua54 paisley`/`lua5.4 paisley`; whatever your specific version of Lua is) and it should work fine. Nothing else is needed, but extra features are disabled in this case.
 
 Optional extra features include:
@@ -73,7 +77,7 @@ lua paisley --help
 
 There are lots of options available to play around with, so be sure and run `paisley --help` for a rundown of all of them.
 
-When you're ready to explore the language, be sure to check out the examples.
+When you're ready to explore the language, be sure to check out the examples. I recommend `examples/fibonacci.pai`.
 
 ---
 ---

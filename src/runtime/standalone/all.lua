@@ -11,7 +11,7 @@ STANDALONE = {
 	--- If no C compiler is found, an error is thrown.
 	--- @return string cc The C compiler to use.
 	require_c_compiler = function()
-		local cc = find_compiler({ 'cc', 'gcc', 'clang', 'cl' })
+		local cc = find_compiler({ 'cc', 'gcc', 'clang', 'mingw32-gcc' })
 
 		if not cc then
 			error('ERROR: No C compiler found. Please install a C compiler to compile the standalone program.')
@@ -24,7 +24,7 @@ STANDALONE = {
 	--- If no C++ compiler is found, an error is thrown.
 	--- @return string cc The C++ compiler to use.
 	require_cpp_compiler = function()
-		local cc = find_compiler({ 'c++', 'g++', 'clang++', 'cl' })
+		local cc = find_compiler({ 'c++', 'g++', 'clang++', 'mingw32-g++' })
 
 		if not cc then
 			error('ERROR: No C++ compiler found. Please install a C++ compiler to compile the standalone program.')
