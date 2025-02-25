@@ -3,7 +3,7 @@
 #results are generated very quickly, even though the
 #recursive implementation is well-known for its slowness.
 
-for n in {0:100} do
+for n in {0:25} do
     print "fib({n}) = {\fibonacci(n)}"
 end
 
@@ -12,3 +12,14 @@ cache subroutine fibonacci
     if {@1 < 2} then return {@1} end
     return {\fibonacci(@1-1) + \fibonacci(@1-2)}
 end
+
+#As an extra bit of homework, try comparing the speed of various compilation methods, after removing the `cache` keyword.
+# 1. Interpreted: `time paisley examples/fibonacci.pai`
+#   This is the slowest, by a small margin.
+# 2. Compiled to a Lua VM running Paisley bytecode: `paisley examples/fibonacci.pai --standalone --target=lua --output=test_pgm && time ./test_pgm`
+#   This is faster than the first, but still slow,
+#   because it's a C program that's running a Lua program that's running a Paisley program.
+#   The compilation step is however very fast.
+# 3. Compiled to a C++ VM running the bytecode: `paisley examples/fibonacci.pai --standalone --target=cpp --output=test_pgm && time ./test_pgm`
+#   This is the fastest, by a large margin.
+#   The initial compilation step is the slowest (only the first time), but the resulting program is very fast by comparison.
