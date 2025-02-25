@@ -47,7 +47,7 @@ STANDALONE.cpp = {
 			return 'Value()' --nil
 		end
 
-		text = text .. '};\n\nconst std::vector<Value> CONSTANTS = {\nNull(),\n'
+		text = text .. '};\n\nconst std::vector<Value> CONSTANTS = {\n\tNull(),\n'
 		for i = 1, #bytecode[#bytecode] do
 			local value = bytecode[#bytecode][i]
 			text = text .. '\t' .. value_to_cpp(value) .. ',\n'
