@@ -277,6 +277,9 @@ subroutine 4 end
 subroutine 5 end
 ```
 
+As an aside, note how in the above, the subroutine call happened *before* their definitions.
+This is totally valid; as long as the subroutine is defined *somewhere*, the compiler doesn't care where it's defined.
+
 ### Subroutines in Expressions:
 Inside of expressions, subroutines can be called in one of two ways:
 1. Using the inline command evaluation syntax `${...}`, in the same way as commands are used. E.g. `${gosub my_subroutine {arg1} arg2 "arg3" etc..}`

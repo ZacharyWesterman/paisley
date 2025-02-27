@@ -1,7 +1,7 @@
-# The `match` block is a powerful tool for elegant pattern matching in Paisley.
-# It is similar to the `switch` statement in other languages, but with a more specific use case.
-# In particular, unlike `switch`, logic does not "fall through" from one case to the next.
-# Additionally, unlike `switch`, `match` can check for more than just equality; any boolean operation can be used.
+# The `match` block is a simple way to perform (somewhat) elegant pattern matching in Paisley.
+# It's similar to the `switch` statement in other languages, but with two key differences:
+# 1. Logic does not "fall through" from one case to the next.
+# 2. It can check for more than just equality; any boolean operation can be used.
 
 # Here's an example that's most similar to a `switch` statement:
 let day = {random_int(1,7)}

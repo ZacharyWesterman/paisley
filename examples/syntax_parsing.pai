@@ -2,6 +2,7 @@ require syntax
 require arg
 
 # Get expression text from first argument.
+# To run this program, use e.g. `paisley syntax_parsing.pai -- "1 + 2 * 3"`
 let config = {
     'expression' => true, #Positional argument, required
 }
@@ -27,7 +28,7 @@ define {
 }
 
 #Define the scopes for the lexer.
-#Most languages only have 1 lexical scope, but for context-sensitive lexers (like Bash), you might have more.
+#Most languages only have 1 lexical scope, but for context-sensitive lexers (like Bash or Paisley), you might have more.
 let scopes = {
     '_' => (
         ('[0-9]*%.[0-9]+', !number),
