@@ -1137,7 +1137,7 @@ function generate_bytecode(root, file)
 		end
 
 		--Output constants to lookup table
-		if (instr[1] == bc.set or instr[1] == bc.get or instr[1] == bc.push) and instr[3] ~= nil then
+		if (instr[1] == bc.set or instr[1] == bc.get or instr[1] == bc.push or instr[1] == bc.delete) and instr[3] ~= nil then
 			local text = json.stringify(instr[3])
 			if constants[text] == nil then
 				const_len = const_len + 1
