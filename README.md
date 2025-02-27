@@ -487,7 +487,7 @@ Expressions also give access to a full suite of operators and functions, listed 
 - array listing, `,` (e.g. `1,2,3` is an array with 3 elements, `(1,)` is an array with 1 element, `(,)` has 0 elements, etc). You can combine this with slicing, e.g. `1,3:5,9` gives `(1,3,4,5,9)`.
 - pattern matching, `like`, checks whether a string matches a given pattern (e.g. `"123" like "%d+"` gives `true`).
 - array searching `in` (e.g. `3 in (1,2,4,5,6)` gives `false`)
-- string concatenation: There is no string concatenation operator. Seriously, two values next to each other, without an operator between them, results in string concatenation.
+- implicit string concatenation: There is no string concatenation operator. Seriously, two values next to each other, without an operator between them, results in string concatenation.
 - ternary operator, `val1 if expression else val2`. Like Python's ternary syntax, this will result in `val1` if `expression` evaluates to true, otherwise it will result in `val2`.
 - Indexing, `[]`. Like most languages, this lets you get an element from a string, array, or object (e.g. `"string"[2]` gives "t", `('a','b','c')[3]` gives "c", and `('a'=>'v1', 'b'=>'v2')['a']` gives "v1"), however Paisley also lets you select multiple items at once in a single index expression. E.g. `"abcde"[2,5,5]` gives "bee", `"abcde"[1:3]` gives "abc", `(6,7,8,9,0)[3,1,5]` gives `(8,6,0)`.
 
