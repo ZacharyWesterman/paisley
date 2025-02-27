@@ -713,6 +713,13 @@ TYPESIG = {
 		description = 'Remove or replace elements from an array',
 		--[[/minify-delete]]
 	},
+	uuid = {
+		value = {},
+		out = 'string',
+		--[[minify-delete]]
+		description = 'Generate a universally unique identifier (UUID)',
+		--[[/minify-delete]]
+	},
 
 	[TOK.add] = {
 		valid = { { 'number' }, { 'array[number]' } },

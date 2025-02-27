@@ -112,6 +112,7 @@
 #include "functions/unique.hpp"
 #include "functions/update.hpp"
 #include "functions/upper.hpp"
+#include "functions/uuid.hpp"
 #include "functions/values.hpp"
 #include "functions/varexists.hpp"
 #include "functions/word_diff.hpp"
@@ -232,5 +233,6 @@ const Function FUNCTIONS[] = {
 	random_elements,
 	match,
 	splice,
+	uuid,
 };
-const int FUNCTION_COUNT = 115;
+const int FUNCTION_COUNT = 116;

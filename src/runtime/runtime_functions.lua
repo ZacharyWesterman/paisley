@@ -1106,6 +1106,19 @@ local functions = {
 		for i = index2 + 1, #array1 do table.insert(result, array1[i]) end
 		PUSH(result)
 	end,
+
+	--GENERATE UUID
+	function()
+		POP()
+
+		local template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+		local uuid = string.gsub(template, '[xy]', function(c)
+			local v = (c == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
+			return string.format('%x', v)
+		end)
+
+		PUSH(uuid)
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT

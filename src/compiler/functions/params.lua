@@ -90,4 +90,5 @@ BUILTIN_FUNCS = {
 	shuffle = 1,
 	match = 2,
 	splice = 4,
+	uuid = 0,
 }

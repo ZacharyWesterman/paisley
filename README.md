@@ -559,6 +559,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Check if a JSON string is formatted correctly: `json_valid(text) -> boolean`
 - Convert a string to base64: `b64_encode(text) -> string`
 - Convert base64 text to a string: `b64_decode(text) -> string`
+- Generate a universally unique identifier (UUID): `uuid() -> string`
 - Left-pad a string with a given character: `lpad(string, character, to_width) -> string`
 - Right-pad a string with a given character: `rpad(string, character, to_width) -> string`
 - Convert a number to a hexadecimal string: `hex(value) -> string`

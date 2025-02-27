@@ -116,4 +116,5 @@ CALL_CODES = {
 	random_elements = 112,
 	match = 113,
 	splice = 114,
+	uuid = 115,
 }
