@@ -4,6 +4,8 @@
 V2 = nil --filename
 V3 = nil --non-builtin commands
 
+require 'src.util.filesystem'
+
 DEBUG_EXTRA = false
 RUN_PROGRAM = false
 STEP_PROGRAM = false
