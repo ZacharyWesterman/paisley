@@ -34,6 +34,8 @@ struct VirtualMachine
 	std::vector<ReturnInfo> return_indices;
 	std::vector<ExceptStackInfo> except_stack;
 
+	std::vector<Value> argv;
+
 	void error(const std::string &message) const noexcept;
 	Value &get_const(size_t id) noexcept;
 };

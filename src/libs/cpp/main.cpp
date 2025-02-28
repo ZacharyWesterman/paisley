@@ -323,7 +323,17 @@ int main(int argc, char *argv[])
 
 		// Exception stack
 		{},
+
+		// Command-line arguments
+		{},
 	};
+
+	// Fill in command-line arguments
+	vm.argv.reserve(argc - 1);
+	for (int i = 1; i < argc; i++)
+	{
+		vm.argv.push_back(argv[i]);
+	}
 
 	vm.rng.seed(std::random_device()());
 

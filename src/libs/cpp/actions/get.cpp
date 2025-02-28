@@ -8,8 +8,16 @@ void get(VirtualMachine &vm) noexcept
 
 	if (var_name == "@")
 	{
-		// Get all subroutine arguments
-		vm.stack.push(vm.return_indices.back().params);
+		if (!vm.return_indices.empty())
+		{
+			// If inside a subroutine, get all subroutine arguments
+			vm.stack.push(vm.return_indices.back().params);
+		}
+		else
+		{
+			// Otherwise, get command-line arguments
+			vm.stack.push(vm.argv);
+		}
 		return;
 	}
 	else if (var_name == "$")
