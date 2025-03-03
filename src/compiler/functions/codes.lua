@@ -118,4 +118,5 @@ CALL_CODES = {
 	splice = 114,
 	uuid = 115,
 	glob = 116,
+	file_glob = 117,
 }

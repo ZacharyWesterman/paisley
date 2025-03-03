@@ -36,6 +36,7 @@
 #include "functions/endswith.hpp"
 #include "functions/equal.hpp"
 #include "functions/explode.hpp"
+#include "functions/file_glob.hpp"
 #include "functions/filter.hpp"
 #include "functions/find.hpp"
 #include "functions/flatten.hpp"
@@ -236,5 +237,6 @@ const Function FUNCTIONS[] = {
 	splice,
 	uuid,
 	glob,
+	file_glob,
 };
-const int FUNCTION_COUNT = 117;
+const int FUNCTION_COUNT = 118;

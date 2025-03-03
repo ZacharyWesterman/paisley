@@ -1140,6 +1140,16 @@ local functions = {
 
 		PUSH(result)
 	end,
+
+	--LIST ALL FILES THAT MATCH A GLOB PATTERN
+	function()
+		local pattern = POP()[1]
+		local result = std.array()
+
+		error('FILE_GLOB IS NOT IMPLEMENTED')
+
+		PUSH(result)
+	end,
 }
 
 --[[ INSTRUCTION LAYOUT

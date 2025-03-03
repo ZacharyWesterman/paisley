@@ -92,4 +92,5 @@ BUILTIN_FUNCS = {
 	splice = 4,
 	uuid = 0,
 	glob = -1,
+	file_glob = 1,
 }
