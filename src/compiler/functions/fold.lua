@@ -405,4 +405,23 @@ FUNC_OPERATIONS = {
 		for i = index2 + 1, #array1 do table.insert(result, array1[i]) end
 		return result
 	end,
+
+	glob = function(values)
+		local pattern = values[1]
+		local result = std.array()
+
+		for i = 2, #values do
+			if std.type(values[i]) == 'array' then
+				for k = 1, #values[i] do
+					local val = pattern:gsub("%*", std.str(values[i][k]))
+					table.insert(result, val)
+				end
+			else
+				local val = pattern:gsub("%*", std.str(values[i]))
+				table.insert(result, val)
+			end
+		end
+
+		return result
+	end,
 }

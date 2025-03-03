@@ -91,4 +91,5 @@ BUILTIN_FUNCS = {
 	match = 2,
 	splice = 4,
 	uuid = 0,
+	glob = -1,
 }

@@ -593,6 +593,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Check if the first set is a subset of the second: `is_subset(array1, array2) -> boolean`
 - Check if the first set is a superset of the second: `is_superset(array1, array2) -> boolean`
 - Flatten an array of any dimension into a 1D array: `flatten(array) -> array`
+- Concatenate a string into multiple similar strings, similar to [globbing](https://en.wikipedia.org/wiki/Glob_(programming)): `glob(pattern, option1, option2, ...) -> array[string]`. E.g. `glob('a/b/*', 'c', 'd', 'e')` gives `('a/b/c', 'a/b/d', 'a/b/e')`.
 
 Note that functions can be called in one of two ways:
 1. The usual syntax, e.g. `split(var, delim)`

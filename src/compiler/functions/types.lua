@@ -720,6 +720,14 @@ TYPESIG = {
 		description = 'Generate a universally unique identifier (UUID)',
 		--[[/minify-delete]]
 	},
+	glob = {
+		valid = { { 'string', 'any' } },
+		out = 'array[string]',
+		--[[minify-delete]]
+		params = { 'glob_pattern', '...' },
+		description = 'Convert a glob pattern into a list of strings',
+		--[[/minify-delete]]
+	},
 
 	[TOK.add] = {
 		valid = { { 'number' }, { 'array[number]' } },

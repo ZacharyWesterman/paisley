@@ -117,4 +117,5 @@ CALL_CODES = {
 	match = 113,
 	splice = 114,
 	uuid = 115,
+	glob = 116,
 }

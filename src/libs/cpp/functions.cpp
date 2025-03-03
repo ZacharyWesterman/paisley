@@ -41,6 +41,7 @@
 #include "functions/flatten.hpp"
 #include "functions/floor.hpp"
 #include "functions/frombytes.hpp"
+#include "functions/glob.hpp"
 #include "functions/greaterequal.hpp"
 #include "functions/greater.hpp"
 #include "functions/hash.hpp"
@@ -234,5 +235,6 @@ const Function FUNCTIONS[] = {
 	match,
 	splice,
 	uuid,
+	glob,
 };
-const int FUNCTION_COUNT = 116;
+const int FUNCTION_COUNT = 117;
