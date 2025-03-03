@@ -1,0 +1,27 @@
+# This example compares globbing in Paisley vs Bash.
+
+# In bash, you might do something like this:
+# for i in some/dir/{a,b,c}.txt; do
+#   echo $i
+# done
+
+# In Paisley, you can do the same thing with the `glob` function:
+for i in {'some/dir/*.txt'.glob('a', 'b', 'c')} do
+  print {i}
+end
+# It's a little more verbose, but it uses the same syntax as the rest of the language, rather than anything special.
+
+# If you want to filter globs based on existing files, you can enable the shell extension.
+#@shell
+# And then perform regular filtering via list comprehension:
+for i in {i for i in ${ls some/dir/}.split('\n') if i.endswith('.txt')} do
+	print {i}
+end
+
+# The above would print all files in `some/dir/` that end with `.txt`.
+# It does the same thing as the following bash command:
+# for i in $(ls some/dir/*.txt); do
+#   echo $i
+# done
+
+# Unfortunately quite verbose, but it works (and may be made more concise in future Paisley versions).
