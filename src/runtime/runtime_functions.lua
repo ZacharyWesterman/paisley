@@ -1143,12 +1143,15 @@ local functions = {
 
 	--LIST ALL FILES THAT MATCH A GLOB PATTERN
 	function()
-		local pattern = POP()[1]
-		local result = std.array()
+		local pattern = std.str(POP()[1])
 
-		error('FILE_GLOB IS NOT IMPLEMENTED')
+		local lfs = _G['FS'].rocks.lfs
+		if not lfs then
+			error('Error in file_glob(): Lua lfs module not installed!')
+			return
+		end
 
-		PUSH(result)
+		PUSH(_G['FS'].glob_files(pattern))
 	end,
 }
 
