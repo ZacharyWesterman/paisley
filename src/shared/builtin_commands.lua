@@ -64,10 +64,7 @@ function PLASMA_RESTRICT()
 	BUILTIN_COMMANDS['stdin'] = nil
 	BUILTIN_COMMANDS['stdout'] = nil
 	BUILTIN_COMMANDS['stderr'] = nil
-	BUILTIN_COMMANDS['='] = nil
-	BUILTIN_COMMANDS['?'] = nil
-	BUILTIN_COMMANDS['!'] = nil
-	BUILTIN_COMMANDS['?!'] = nil
+	SHELL_RESTRICT()
 end
 
 function SHELL_RESTRICT()

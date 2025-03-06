@@ -112,6 +112,43 @@ FS = {
 			return FS.rocks.lfs.currentdir()
 		end
 	end,
+
+	glob_files = function(pattern)
+		local function split_path(path)
+			local dir, pattern = path:match("(.-)/([^/]*)$")
+			if not dir then
+				return "./", path -- Handle cases like "*.txt"
+			end
+			return dir or "./", pattern or "*"
+		end
+
+		local function match_pattern(filename, pattern)
+			local lua_pattern = "^" .. pattern:gsub("%.", "%%.")
+				:gsub("%*", ".*")
+				:gsub("%?", ".") .. "$"
+			return filename:match(lua_pattern) ~= nil
+		end
+
+		local function glob(pattern)
+			local dir, file_pattern = split_path(pattern)
+			local matches = {}
+
+			for file in FS.rocks.lfs.dir(dir) do
+				if file ~= "." and file ~= ".." and match_pattern(file, file_pattern) then
+					local path = (dir .. "/" .. file):gsub("//", "/")
+					if pattern:sub(1, 2) ~= './' and path:sub(1, 2) == './' then
+						path = path:sub(3)
+					end
+					table.insert(matches, path)
+				end
+			end
+
+			return matches
+		end
+
+		if not FS.rocks.lfs then return {} end
+		return glob(pattern)
+	end,
 }
 
 --Setup filesystem constants

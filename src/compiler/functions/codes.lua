@@ -118,4 +118,7 @@ CALL_CODES = {
 	splice = 114,
 	uuid = 115,
 	glob = 116,
+	--[[minify-delete]]
+	file_glob = 117,
+	--[[/minify-delete]]
 }

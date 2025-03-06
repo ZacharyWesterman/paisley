@@ -177,6 +177,11 @@ function Lexer(text, file)
 					elseif text:upper():match('^#+[ \t]*@PLASMA[^%w_]') then
 						--Allow script to specify that it's meant for the Plasma build
 						PLASMA_RESTRICT()
+						FUNC_SANDBOX_RESTRICT()
+					elseif text:upper():match('^#+[ \t]*@SANDBOX[^%w_]') then
+						--Allow script to specify that no file system access is allowed
+						SHELL_RESTRICT()
+						FUNC_SANDBOX_RESTRICT()
 					elseif _G['LANGUAGE_SERVER'] then
 						for i in text:upper():gmatch('@[%w_]+') do
 							if i == '@EXPORT' then EXPORT_NEXT_TOKEN = true end
@@ -443,7 +448,6 @@ function Lexer(text, file)
 					match = text:match('^\\[^ \t\n\r"\'%(%)%[%]{};%$]+')
 					if match then tok_type = TOK.variable end
 				end
-
 			elseif curr_scope == '"' or curr_scope == '\'' then
 				--Logic for inside strings
 				local this_ix = 1

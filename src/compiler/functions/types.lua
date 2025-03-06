@@ -728,6 +728,14 @@ TYPESIG = {
 		description = 'Convert a glob pattern into a list of strings',
 		--[[/minify-delete]]
 	},
+	--[[minify-delete]]
+	file_glob = {
+		valid = { { 'string' } },
+		out = 'array[string]',
+		params = { 'glob_pattern' },
+		description = 'List all files that match a glob pattern',
+	},
+	--[[/minify-delete]]
 
 	[TOK.add] = {
 		valid = { { 'number' }, { 'array[number]' } },

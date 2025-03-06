@@ -92,4 +92,17 @@ BUILTIN_FUNCS = {
 	splice = 4,
 	uuid = 0,
 	glob = -1,
+	--[[minify-delete]]
+	file_glob = 1,
+	--[[/minify-delete]]
 }
+
+--[[minify-delete]]
+function FUNC_SANDBOX_RESTRICT()
+	BUILTIN_FUNCS['file_glob'] = nil
+end
+
+if _G['RESTRICT_TO_PLASMA_BUILD'] or _G['SANDBOX'] then
+	FUNC_SANDBOX_RESTRICT()
+end
+--[[/minify-delete]]

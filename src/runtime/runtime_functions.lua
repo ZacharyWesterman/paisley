@@ -1140,6 +1140,21 @@ local functions = {
 
 		PUSH(result)
 	end,
+
+	--[[minify-delete]]
+	--LIST ALL FILES THAT MATCH A GLOB PATTERN
+	function()
+		local pattern = std.str(POP()[1])
+
+		local lfs = _G['FS'].rocks.lfs
+		if not lfs then
+			error('Error in file_glob(): Lua lfs module not installed!')
+			return
+		end
+
+		PUSH(_G['FS'].glob_files(pattern))
+	end,
+	--[[/minify-delete]]
 }
 
 --[[ INSTRUCTION LAYOUT
