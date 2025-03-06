@@ -50,6 +50,9 @@ local function _explode(cmdlist)
 		local c = std.split(cmdlist[i], ':')
 		if not c[2] then c[2] = 'any' end
 		cmds[c[1]] = SIGNATURE(c[2])
+		--[[minify-delete]]
+		if c[3] and not CMD_DESCRIPTION[c[1]] then CMD_DESCRIPTION[c[1]] = c[3] end
+		--[[/minify-delete]]
 	end
 	return cmds
 end
