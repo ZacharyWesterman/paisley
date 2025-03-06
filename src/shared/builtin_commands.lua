@@ -24,7 +24,7 @@ CMD_DESCRIPTION = {
 	systime = 'Returns a number representing the system time (seconds since midnight).',
 	sysdate = 'Returns a numeric array containing the system day, month, and year.',
 	print = 'Send all arguments to the "print" output.',
-	error = 'Send all arguments to the "error" output.',
+	error = 'Raise an exception with the given text.',
 	sleep = 'Pause script execution for the given amount of seconds.',
 	--The following commands are only available in the CLI version of Paisley
 	clear = 'Clear the screen if the terminal supports it.',
