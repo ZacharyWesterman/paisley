@@ -55,19 +55,9 @@ INTROSPECT = {
 
 			for i = 1, #cmd_list do
 				local key = cmd_list[i]
-				print(key)
-				if BUILTIN_COMMANDS[key] then
-					print('  Returns: ' .. TYPE_TEXT(BUILTIN_COMMANDS[key]))
-				else
-					print(
-						'  Returns: ' .. TYPE_TEXT(ALLOWED_COMMANDS[key]))
-				end
-				if BUILTIN_COMMANDS[key] then
-					print('  Desc: ' .. CMD_DESCRIPTION[key])
-				else
-					print(
-						'  Desc: User-defined command.')
-				end
+				print(key .. ' -> ' .. TYPE_TEXT(BUILTIN_COMMANDS[key] or ALLOWED_COMMANDS[key]))
+				print('    ' .. (CMD_DESCRIPTION[key] or 'User-defined command.'))
+				print()
 			end
 		else
 			--Just list the commands
@@ -107,22 +97,22 @@ INTROSPECT = {
 
 			for i = 1, #func_list do
 				local key = func_list[i]
-				local funcsig = ''
+				local funcsig = key .. '(' .. FUNCSIG(key) .. ') -> '
 				if key == 'reduce' then
-					funcsig = key .. '(' .. FUNCSIG(key) .. ') -> bool|number'
+					funcsig = funcsig .. 'bool|number'
 				elseif TYPESIG[key].out == 1 then
 					--Return type is the same as 1st param
 					local types = {}
 					for i, k in ipairs(TYPESIG[key].valid) do
 						table.insert(types, k[1])
 					end
-					funcsig = key .. '(' .. FUNCSIG(key) .. ') -> ' .. std.join(types, '|', TYPE_TEXT)
+					funcsig = funcsig .. std.join(types, '|', TYPE_TEXT)
 				else
-					funcsig = key .. '(' .. FUNCSIG(key) .. ') -> ' .. TYPE_TEXT(TYPESIG[key].out)
+					funcsig = funcsig .. TYPE_TEXT(TYPESIG[key].out)
 				end
-				print(key)
-				print('  Signature: ' .. funcsig)
-				print('  Desc: ' .. TYPESIG[key].description)
+				print(funcsig)
+				print('    ' .. TYPESIG[key].description)
+				print()
 			end
 		else
 			--Just list the functions
