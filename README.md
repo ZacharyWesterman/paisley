@@ -785,5 +785,6 @@ The following is a complete list of annotations and what their effects are:
 - `@export` : Don't mark this subroutine or variable as dead code. Only used when running Paisley as a language server.
 - `@plasma`: Apply the `--plasma` flag to the current compilation unit.
 - `@shell`: Apply the `--shell` flag to the current compilation unit.
+- `@sandbox`: Apply the `--sandbox` flag to the current compilation unit.
 - `@commands`: Postpone "command not found" errors until run-time, and assume that they return the given types (e.g. `#@commands cmd1:type1 cmd2:type2`)
 - `@debug`: Validate command params without actually running them (e.g. `#@debug command_name` ... `#@end`)
