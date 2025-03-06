@@ -1141,6 +1141,7 @@ local functions = {
 		PUSH(result)
 	end,
 
+	--[[minify-delete]]
 	--LIST ALL FILES THAT MATCH A GLOB PATTERN
 	function()
 		local pattern = std.str(POP()[1])
@@ -1153,6 +1154,7 @@ local functions = {
 
 		PUSH(_G['FS'].glob_files(pattern))
 	end,
+	--[[/minify-delete]]
 }
 
 --[[ INSTRUCTION LAYOUT
