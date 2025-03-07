@@ -550,11 +550,11 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Append value to an array: `append(array, value) -> array`
 - Convert string to lowercase: `lower(text) -> string`
 - Convert string to uppercase: `upper(text) -> string`
-- Capitalize the first letter of every word: `camel(text) -> string`
+- Capitalize the first letter, and lowercase everything else: `camel(text) -> string`
 - Replace all occurrences of a substring: `replace(text, search, replace) -> string`
 - Check if a string begins with a given substring: `beginswith(search, substring) -> boolean`
 - Check if a string ends with a given substring: `endswith(search, substring) -> boolean`
-- Serialize data to a JSON string: `json_encode(data) -> string`
+- Serialize data to a JSON string: `json_encode(data, pretty_print) -> string`. The second parameter is optional, and defaults to false.
 - Deserialize data from a JSON string: `json_decode(text) -> any`
 - Check if a JSON string is formatted correctly: `json_valid(text) -> boolean`
 - Convert a string to base64: `b64_encode(text) -> string`
@@ -566,7 +566,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Remove all characters that do not match the given pattern: `filter(text, pattern) -> string`
 - Get all substrings that match the given pattern: `matches(text, pattern) -> array[string]`
 - Get the first substring that matches the given pattern: `match(text, pattern) -> string|null`
-- Convert a "seconds since midnight" timestamp into (hour, min, sec, milli): `clocktime(value) -> array`
+- Convert a "seconds since midnight" timestamp into (hour, min, sec, milli): `clocktime(value) -> array[number]`
 - Convert a timestamp or clocktime into an ISO time string: `time(timestamp) -> string`
 - Convert a date array into an ISO date string: `date(date_array) -> string`
 - Reduce an array to a single element: `reduce(array, operator) -> any`, e.g. `reduce(1:9, +)` sums the numbers from 1 to 9, resulting in 45. *This works for any boolean or arithmetic operator!*
@@ -576,14 +576,14 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Replace an element in an array: `update(array, index, value) -> array`
 - Insert an element in an array: `insert(array, index, value) -> array`
 - Delete an element from an array: `delete(array, index) -> array`
-- Replace a subset of an array (bounds inclusive): `splice(array, index1, index2, array) -> array`
+- Replace a subset of an array (bounds inclusive): `splice(array, index1, index2, array_to_insert) -> array`
 - Generate the SHA256 hash of a string: `hash(string) -> string`
 - Convert an array into an object: `object(array) -> object`, i.e. the array `(key1, val1, key2, val2)` will result in the object `(key1 => val1, key2 => val2)`
 - Convert an object into an array: `array(object) -> array`, i.e. the object `(key1 => val1, key2 => val2)` will result in the array `(key1, val1, key2, val2)`
 - List an object's keys: `keys(object) -> array`
 - List an object's values: `values(object) -> array`
 - Get a list of key-value pairs for an object or array: `pairs(object/array) -> array`, i.e. the object `(key1 => val1, key2 => val2)` will result in `((key1, value1), (key2, value2))`; and the array `(val1, val2)` will result in `((1, val1), (2, val2))`
-- Interleave the values of two arrays: `interleave(array) -> array`, i.e. the arrays `(1,2,3)` and `(4,5,6)` will result in `(1,4,2,5,3,6)`
+- Interleave the values of two arrays: `interleave(array1, array2) -> array`, i.e. the arrays `(1,2,3)` and `(4,5,6)` will result in `(1,4,2,5,3,6)`
 - Make sure an array has no repeated elements: `unique(array) -> array`
 - Get the union of two sets: `union(array1, array2) -> array`
 - Get the intersection of two sets: `intersection(array1, array2) -> array`
@@ -594,7 +594,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Check if the first set is a superset of the second: `is_superset(array1, array2) -> boolean`
 - Flatten an array of any dimension into a 1D array: `flatten(array) -> array`
 - Concatenate a string into multiple similar strings, similar to [globbing](https://en.wikipedia.org/wiki/Glob_(programming)): `glob(pattern, option1, option2, ...) -> array[string]`. E.g. `glob('a/b/*', 'c', 'd', 'e')` gives `('a/b/c', 'a/b/d', 'a/b/e')`.
-- List all files that match a glob pattern: `file_glob(pattern) -> array[string]`
+- List all files that match a glob pattern: `file_glob(pattern) -> array[string]`. Any array parameters are flattened.
 
 Note that functions can be called in one of two ways:
 1. The usual syntax, e.g. `split(var, delim)`
@@ -673,7 +673,7 @@ Often you need to take an array and mutate every element in some way. While you 
 let x = {1,2,3}
 let y = {,}
 for i in {x} do
-	let y = {append(y, x * 2)}
+	let y{} = {i * 2}
 end
 ```
 The above could be written much more succinctly as the following:
@@ -688,7 +688,7 @@ let x = {1:100}
 let y = {,}
 for i in {x} do
 	if {i % 5 = 0} then
-		let y = {append(y, x)}
+		let y{} = {i}
 	end
 end
 ```
