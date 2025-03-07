@@ -12,9 +12,7 @@ end
 print
 # It's a little more verbose, but it uses the same syntax as the rest of the language, rather than anything special.
 
-# If you want to filter globs based on existing files, you can enable the shell extension.
-#@shell
-# And then perform globbing with the `file_glob` function:
+# If you want to filter globs based on existing files, you can use `file_glob`:
 for i in {'examples/*.pai'.file_glob()} do
 	print {i}
 end
@@ -25,3 +23,6 @@ print
 # for i in $(ls some/dir/*.txt); do
 #   echo $i
 # done
+
+# Note that file_glob does not work if the @plasma or @sandbox annotations
+# (or their respective compiler flags) are used, since file_glob interacts with the filesystem.
