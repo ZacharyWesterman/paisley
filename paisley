@@ -211,7 +211,7 @@ SANDBOX = flags.sandbox
 ENDED = false
 
 error = function(msg)
-	io.stderr:write(msg .. '\n')
+	if msg then io.stderr:write(msg .. '\n') end
 	os.exit(1)
 end
 

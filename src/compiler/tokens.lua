@@ -198,11 +198,19 @@ function parse_error(span, msg, file)
 		else
 			--[[/minify-delete]]
 			if file ~= nil and file ~= '' then
-				print(file .. ': ' .. span.from.line .. ', ' .. span.from.col .. ': ' .. msg)
+				msg = (file .. ': ' .. span.from.line .. ', ' .. span.from.col .. ': ' .. msg)
 			else
-				print(span.from.line .. ', ' .. span.from.col .. ': ' .. msg)
+				msg = (span.from.line .. ', ' .. span.from.col .. ': ' .. msg)
 			end
+
 			--[[minify-delete]]
+			if true then
+				print(string.char(27) .. '[0;31m' .. 'ERROR:' .. string.char(27) .. '[0m ' .. msg)
+			else
+				--[[/minify-delete]]
+				print(msg)
+				--[[minify-delete]]
+			end
 		end
 	end
 	--[[/minify-delete]]
@@ -228,6 +236,13 @@ function parse_warning(span, msg, file)
 		--[[/minify-delete]]
 		msg = span.from.line .. ', ' .. span.from.col .. ': ' .. msg
 		if file then msg = file .. ': ' .. msg end
+
+		--[[minify-delete]]
+		if true then
+			print(string.char(27) .. '[0;33m' .. 'WARNING:' .. string.char(27) .. '[0m ' .. msg)
+			return
+		end
+		--[[/minify-delete]]
 		print('WARNING: ' .. msg)
 		--[[minify-delete]]
 	end
@@ -254,7 +269,7 @@ INFO = {
 
 function terminate()
 	--[[minify-delete]]
-	if _G['LANGUAGE_SERVER'] or _G['REPL'] then
+	if true then
 		error()
 	else --[[/minify-delete]]
 		error('ERROR in user-supplied Paisley script.')
