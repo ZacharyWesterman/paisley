@@ -217,20 +217,47 @@ function generate_bytecode(root, file)
 			--4. AND we are not running as a REPL
 			--Then don't generate the (dead) code for it.
 			--[[minify-delete]]
-			if not _G['REPL'] then
+			if not _G['REPL'] and not _G['KEEP_DEAD_CODE'] then
 				--[[/minify-delete]]
 				local v1 = token.children[1]
-				if v1.ignore and not v1.is_referenced then
+				if v1.ignore then
 					local not_used, multivars = true, v1.children
+					local unused_vars = {}
+
+					if not v1.is_referenced and v1.text:sub(1, 1) ~= '_' then
+						table.insert(unused_vars, v1.text)
+					else
+						not_used = false
+					end
+
 					if multivars then
 						for i = 1, #multivars do
-							if multivars[i].is_referenced then
+							if not multivars[i].is_referenced and multivars[i].text:sub(1, 1) ~= '_' then
+								table.insert(unused_vars, multivars[i].text)
+							else
 								not_used = false
-								break
 							end
 						end
 					end
 
+					if #unused_vars > 0 then
+						local msg, plural, verb, pronoun = 'The value', '', 'is', { 'it', 'it' }
+						if #unused_vars > 1 then
+							plural = 's'
+							verb = 'are'
+							pronoun = { 'they', 'them' }
+						end
+
+						msg = msg .. plural .. ' of `' .. table.concat(unused_vars, '`, `') .. '` ' .. verb ..
+							' never used, so ' .. pronoun[1] .. ' will be deleted from the program.'
+						msg = msg ..
+							'\nTo keep the variable' .. plural .. ', prefix ' .. pronoun[2] .. ' with an underscore `_`.'
+
+						parse_warning(v1.span, msg, file)
+						return
+					end
+
+					--None of the variables are used, so don't generate the code for them.
 					if not_used then return end
 				end
 				--[[minify-delete]]
