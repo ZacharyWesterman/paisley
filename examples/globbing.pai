@@ -18,9 +18,9 @@ for i in {'examples/*.pai'.file_glob()} do
 end
 print
 
-# The above would print all files in `some/dir/` that end with `.txt`.
+# The above would print all files in `examples/` that end with `.pai`.
 # It does the same thing as the following bash command:
-# for i in $(ls some/dir/*.txt); do
+# for i in examples/*.txt; do
 #   echo $i
 # done
 
