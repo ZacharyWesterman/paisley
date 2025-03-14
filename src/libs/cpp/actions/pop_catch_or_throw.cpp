@@ -30,8 +30,10 @@ void pop_catch_or_throw(VirtualMachine &vm) noexcept
 	}
 	call_stack.push_back(line_no);
 
-	line_no = vm.instructions[vm.return_indices[info.return_stack_size].index].line_no;
-
+	if (info.return_stack_size)
+	{
+		line_no = vm.instructions[vm.return_indices[info.return_stack_size].index].line_no;
+	}
 	vm.return_indices.resize(info.return_stack_size);
 
 	vm.stack.push(std::map<std::string, Value>{

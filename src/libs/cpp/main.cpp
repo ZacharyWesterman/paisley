@@ -283,6 +283,12 @@ std::string func_text(int code)
 		return "match";
 	case 115:
 		return "splice";
+	case 116:
+		return "uuid";
+	case 117:
+		return "glob";
+	case 118:
+		return "file_glob";
 	default:
 		return "unknown";
 	}
