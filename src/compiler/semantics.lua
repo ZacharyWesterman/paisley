@@ -553,8 +553,8 @@ function SemanticAnalyzer(tokens, root_file)
 
 		--If function name begins with backslash, it's actually a gosub.
 		---@type Token[]
-		local kids = token.children
-		if kids[1].id == TOK.array_concat then kids = kids[1].children or {} end
+		local kids = token.children or {}
+		if kids[1] and kids[1].id == TOK.array_concat then kids = kids[1].children or {} end
 		table.insert(kids, 1, {
 			id = TOK.text,
 			text = token.text:sub(2),
