@@ -1298,6 +1298,7 @@ COMMANDS = {
 					err.line = table.remove(err.stack, 1)
 
 					PUSH(err)
+					return false --Don't output the error
 				else
 					--If exception is not caught, end the program immediately and output the error
 					CURRENT_INSTRUCTION = #INSTRUCTIONS + 1
