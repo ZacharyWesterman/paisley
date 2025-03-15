@@ -40,7 +40,12 @@ json = {
 
 				local result = ''
 				if is_array then
-					if indent ~= nil then result = '[\n' else result = '[' end
+					if indent ~= nil and #data > 0 then
+						result = '[\n'
+					else
+						result = '['
+					end
+
 					for key = 1, #data do
 						local str = __stringify(data[key], indent, next_indent)
 						if key ~= #data then str = str .. ',' end
@@ -50,9 +55,19 @@ json = {
 							result = result .. str
 						end
 					end
-					if indent ~= nil then return result .. (' '):rep(__indent) .. ']' else return result .. ']' end
+
+					if indent ~= nil and #data > 0 then
+						return result .. (' '):rep(__indent) .. ']'
+					else
+						return result .. ']'
+					end
 				else
-					if indent ~= nil then result = '{\n' else result = '{' end
+					if indent ~= nil and next(data) ~= nil then
+						result = '{\n'
+					else
+						result = '{'
+					end
+
 					local colon = ':'
 					if indent ~= nil then colon = ': ' end
 					local ct = 0
@@ -68,7 +83,12 @@ json = {
 						end
 						ct = ct + 1
 					end
-					if indent ~= nil then return result .. '\n' .. (' '):rep(__indent) .. '}' else return result .. '}' end
+
+					if indent ~= nil and next(data) ~= nil then
+						return result .. '\n' .. (' '):rep(__indent) .. '}'
+					else
+						return result .. '}'
+					end
 				end
 			elseif tp == 'string' then
 				local repl_chars = {
