@@ -1188,15 +1188,8 @@ COMMANDS = {
 				PUSH(INSTR_STACK[#INSTR_STACK])
 			else
 				--If no params, then get argv
-				--[[minify-delete]]
-				if _G['PGM_ARGS'] then
-					--[[/minify-delete]]
-					PUSH(_G['PGM_ARGS'])
-					--[[minify-delete]]
-				else
-					PUSH({})
-				end
-				--[[/minify-delete]]
+				---@diagnostic disable-next-line
+				PUSH(PGM_ARGS or {})
 			end
 		elseif p1 == '$' then
 			--List-of-commands variable
@@ -1302,8 +1295,14 @@ COMMANDS = {
 				else
 					--If exception is not caught, end the program immediately and output the error
 					CURRENT_INSTRUCTION = #INSTRUCTIONS + 1
-					msg = '[line ' .. line .. '] ' .. msg .. '\nError not caught, program terminated.'
-					output_array({ "error", 'ERROR: ' .. msg }, 7)
+
+					---@diagnostic disable-next-line
+					if FILE and #FILE > 0 then
+						msg = '["' .. FILE .. '": ' .. line .. '] ' .. msg
+					else
+						msg = '[line ' .. line .. '] ' .. msg
+					end
+					output_array({ "error", 'ERROR: ' .. msg .. '\nError not caught, program terminated.' }, 7)
 				end
 
 				--[[minify-delete]]
