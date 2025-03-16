@@ -12,7 +12,7 @@ require "src.runtime.runtime_functions"
 FILE = V2
 
 ---@diagnostic disable-next-line
-RUMTIME_ARGS = V6 or {}
+PGM_ARGS = V6 or {}
 
 --[[
 	Command format is a string array, each element formatted as follows:
