@@ -229,7 +229,21 @@ ARG = {
 			os.exit(0)
 		end
 
-		if flags.introspect or flags.repl or flags.install or flags.plasma_build then
+		--[[no-install]]
+		if flags.compile_self then
+			if flags.install then
+				ARG.error('Cannot use `--compile-self` and `--install` together; it must be one or the other.')
+			end
+
+			if not flags.output then
+				ARG.error('Must specify an output file with `--output` when using `--compile-self`.')
+			end
+
+			return flags, positional
+		end
+		--[[/no-install]]
+
+		if flags.introspect or flags.repl --[[no-install]] or flags.install --[[/no-install]] or flags.plasma_build then
 			return flags, positional
 		end
 

@@ -33,8 +33,9 @@ STANDALONE.lua = {
 	--- Compile a standalone Lua program into a binary executable.
 	--- @param program_text string The Lua program text.
 	--- @param output_file string The output file path.
+	--- @param compiler string? The C compiler to use. If not provided, the default system compiler will be used.
 	--- @return boolean success Whether the compilation was successful.
-	compile = function(program_text, output_file)
+	compile = function(program_text, output_file, compiler)
 		local version = _VERSION:match('[%d%.]+$')
 		if version:sub(1, 2) ~= '5.' or tonumber(version:sub(3)) < 3 then
 			version = '5.3' --Force version to 5.3 if not 5.3 or higher.
@@ -96,9 +97,17 @@ STANDALONE.lua = {
 		c_file:write(c_code)
 		c_file:close()
 
-		local cc = STANDALONE.require_c_compiler()
-		local command = cc .. ' -I' .. FS.libs_dir .. 'lua/' .. version ..
-			' -o ' .. output_file .. ' ' .. c_filename .. ' -lm  -Wl,-E'
+		if not compiler then
+			compiler = STANDALONE.require_c_compiler()
+		end
+
+		local export_flag = '-Wl,-E'
+		if FS.os.windows or compiler:find('mingw') then
+			export_flag = '-Wl,--export-all-symbols'
+		end
+
+		local command = compiler .. ' -I' .. FS.libs_dir .. 'lua/' .. version ..
+			' -o ' .. output_file .. ' ' .. c_filename .. ' -lm  ' .. export_flag
 
 		io.stderr:write('[Compiling for Lua ' .. version .. ']\n')
 		io.stderr:write(command .. '\n')

@@ -4,7 +4,7 @@ local config = {
 	description = "This is the Paisley compiler and runtime engine.\nhttps://github.com/ZacharyWesterman/paisley",
 	name = "Paisley",
 	exe = "paisley",
-	version = "1.15.7",
+	version = "1.15.8",
 }
 
 local options = {
@@ -38,7 +38,10 @@ local options = {
 	{ description = "Disable features/cmds that could affect the system (e.g. `?`)", long = "sandbox" },
 	{ description = "List the recommended Lua packages to be installed",             long = "rocks" },
 	{ description = "The input file, or `-` to read from stdin",                     name = "input",             type = "string" },
-	--[[no-install]] { description = "Compile the Paisley application into a standalone executable", long = "install" }, --[[/no-install]]
+	--[[no-install]]
+	{ description = "Compile the Paisley application into a standalone executable",  long = "install" },
+	{ description = "Compile the main executable with the given compiler",           long = "compile-self",      type = "string", arg = "[PGM]" },
+	--[[/no-install]]
 }
 
 --Set the Lua search path so that we can load the rest of our code.
@@ -108,11 +111,11 @@ if flags.plasma_build then
 end
 
 --[[no-install]]
-if flags.install then
-	require 'src.util.filesystem'
-	require 'src.meta.lua'
-	require 'src.runtime.standalone.all'
+require 'src.util.filesystem'
+require 'src.meta.lua'
+require 'src.runtime.standalone.all'
 
+local function compile_self_to(output_file, compiler_name)
 	local fp = FS.open('paisley', true)
 	if not fp then
 		error('Error: Failed to open `paisley` for reading.')
@@ -125,14 +128,13 @@ if flags.install then
 	local m = text:match('^#![^\n]*\n')
 	if m then text = text:sub(#m + 1) end
 
-	local target_file = '/usr/local/bin/paisley'
 	if FS.os.windows then
 		error('Error: Standalone executables are not yet supported on Windows.')
 	end
 
-	local fp = io.open(target_file, 'wb')
+	local fp = io.open(output_file, 'wb')
 	if not fp then
-		error('Error: Failed to open `' .. target_file .. '` for writing. Try running with `sudo`.')
+		error('Error: Failed to open `' .. output_file .. '` for writing. Try running with `sudo`.')
 	end
 	fp:close()
 
@@ -141,12 +143,17 @@ if flags.install then
 
 	io.stderr:write('Compiling Lua into an executable...\n')
 	local compiler = _G['STANDALONE'].lua
-	local result = compiler.compile(text, target_file)
+	local result = compiler.compile(text, output_file, compiler_name)
 
 	if not result then
-		io.stderr:write('\nError: Failed to compile `' .. target_file .. '`!\n')
+		io.stderr:write('\nError: Failed to compile `' .. output_file .. '`!\n')
 		os.exit(1)
 	end
+end
+
+if flags.install then
+	local target_file = '/usr/local/bin/paisley'
+	compile_self_to(target_file, nil) --Use the default compiler
 
 	if flags.compress then STANDALONE.compress_executable(target_file) end
 
@@ -175,6 +182,11 @@ if flags.install then
 
 	io.stderr:write('Standalone Paisley executable has been installed.\n')
 
+	os.exit(0)
+end
+
+if flags.compile_self then
+	compile_self_to(flags.output, flags.compile_self)
 	os.exit(0)
 end
 --[[/no-install]]
