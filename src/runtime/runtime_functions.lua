@@ -1190,11 +1190,11 @@ COMMANDS = {
 				--If no params, then get argv
 				--[[minify-delete]]
 				if _G['PGM_ARGS'] then
-					PUSH(_G['PGM_ARGS'])
-				else
 					--[[/minify-delete]]
-					PUSH({})
+					PUSH(_G['PGM_ARGS'])
 					--[[minify-delete]]
+				else
+					PUSH({})
 				end
 				--[[/minify-delete]]
 			end
