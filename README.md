@@ -557,6 +557,8 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Serialize data to a JSON string: `json_encode(data, pretty_print) -> string`. The second parameter is optional, and defaults to false.
 - Deserialize data from a JSON string: `json_decode(text) -> any`
 - Check if a JSON string is formatted correctly: `json_valid(text) -> boolean`
+- Serialize data to an XML string: `xml_encode(data) -> string`
+- Deserialize data from an XML string: `xml_decode(text) -> array[object]`. Note that since XML data doesn't assume there to be a single root node, the result will always be an array.
 - Convert a string to base64: `b64_encode(text) -> string`
 - Convert base64 text to a string: `b64_decode(text) -> string`
 - Generate a universally unique identifier (UUID): `uuid() -> string`

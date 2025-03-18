@@ -95,6 +95,8 @@ BUILTIN_FUNCS = {
 	--[[minify-delete]]
 	file_glob = 1,
 	--[[/minify-delete]]
+	xml_encode = 1,
+	xml_decode = 1,
 }
 
 --[[minify-delete]]

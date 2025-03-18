@@ -6,6 +6,7 @@
 require "src.shared.stdlib"
 require "src.shared.closest_word"
 require "src.shared.json"
+require "src.shared.xml"
 require "src.runtime.runtime_functions"
 
 

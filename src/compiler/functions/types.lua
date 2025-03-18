@@ -736,6 +736,22 @@ TYPESIG = {
 		description = 'List all files that match a glob pattern',
 	},
 	--[[/minify-delete]]
+	xml_encode = {
+		valid = { { 'array[object]' } },
+		out = 'string',
+		--[[minify-delete]]
+		params = { 'data' },
+		description = 'Serialize data to an XML string',
+		--[[/minify-delete]]
+	},
+	xml_decode = {
+		valid = { { 'string' } },
+		out = 'array[object]',
+		--[[minify-delete]]
+		params = { 'text' },
+		description = 'Deserialize data from an XML string',
+		--[[/minify-delete]]
+	},
 
 	[TOK.add] = {
 		valid = { { 'number' }, { 'array[number]' } },
