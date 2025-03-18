@@ -139,6 +139,16 @@ std::vector<Value> Value::to_array() const noexcept
 	return result;
 }
 
+std::map<std::string, Value> Value::to_object() const noexcept
+{
+	if (std::holds_alternative<std::map<std::string, Value>>(*this))
+	{
+		return std::get<std::map<std::string, Value>>(*this);
+	}
+
+	return {};
+}
+
 std::vector<std::string> Value::to_string_array() const noexcept
 {
 	std::vector<std::string> result;

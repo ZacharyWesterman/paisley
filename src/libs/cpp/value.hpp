@@ -22,6 +22,7 @@ public:
 	double to_number() const noexcept;
 	std::string to_string() const noexcept;
 	std::vector<Value> to_array() const noexcept;
+	std::map<std::string, Value> to_object() const noexcept;
 
 	std::vector<std::string> to_string_array() const noexcept;
 
