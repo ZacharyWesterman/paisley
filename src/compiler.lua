@@ -5,6 +5,7 @@
 
 require "src.shared.stdlib"
 require "src.shared.json"
+require "src.shared.xml"
 require "src.shared.closest_word"
 
 require "src.compiler.type_signature"

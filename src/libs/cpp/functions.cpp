@@ -118,6 +118,8 @@
 #include "functions/values.hpp"
 #include "functions/varexists.hpp"
 #include "functions/word_diff.hpp"
+#include "functions/xml_decode.hpp"
+#include "functions/xml_encode.hpp"
 
 const Function FUNCTIONS[] = {
 	jump,
@@ -238,5 +240,7 @@ const Function FUNCTIONS[] = {
 	uuid,
 	glob,
 	file_glob,
+	xml_encode,
+	xml_decode,
 };
-const int FUNCTION_COUNT = 118;
+const int FUNCTION_COUNT = 120;

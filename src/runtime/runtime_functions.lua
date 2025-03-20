@@ -1155,6 +1155,12 @@ local functions = {
 		PUSH(_G['FS'].glob_files(pattern))
 	end,
 	--[[/minify-delete]]
+
+	--SERIALIZE DATA TO XML
+	function() PUSH(XML.stringify(POP()[1])) end,
+
+	--DESERIALIZE DATA FROM XML
+	function() PUSH(XML.parse(std.str(POP()[1]))) end
 }
 
 --[[ INSTRUCTION LAYOUT

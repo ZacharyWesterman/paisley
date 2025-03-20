@@ -181,16 +181,10 @@ FUNC_OPERATIONS = {
 
 		return result
 	end,
-	json_valid = function(data)
-		return json.verify(data)
-	end,
 
-	b64_encode = function(text)
-		return std.b64_encode(text)
-	end,
-	b64_decode = function(text)
-		return std.b64_decode(text)
-	end,
+	json_valid = json.verify,
+	b64_encode = std.b64_encode,
+	b64_decode = std.b64_decode,
 
 	lpad = function(text, character, width)
 		local c = character:sub(1, 1)
@@ -424,4 +418,7 @@ FUNC_OPERATIONS = {
 
 		return result
 	end,
+
+	xml_encode = XML.stringify,
+	xml_decode = XML.parse,
 }

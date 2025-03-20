@@ -121,4 +121,6 @@ CALL_CODES = {
 	--[[minify-delete]]
 	file_glob = 117,
 	--[[/minify-delete]]
+	xml_encode = 118,
+	xml_decode = 119,
 }
