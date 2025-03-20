@@ -202,7 +202,7 @@ XML = {
 					if meta.id == tok.tag_type then
 						tag.type = meta.text
 					elseif meta.text == 'type' or meta.text == 'children' or meta.text == 'attributes' then
-						tag.attributes[meta.text] = meta.text
+						tag.attributes[meta.text] = t.value or ""
 					else
 						tag[meta.text] = t.value or ""
 					end
@@ -229,14 +229,17 @@ XML = {
 		--Build the tree from the stack
 		local function pop_until(tag_type)
 			local result = setmetatable({}, { is_array = true })
+			local tag;
 
 			while #stack > 0 do
 				local t = table.remove(stack)
 				local meta = getmetatable(t) or {}
 
 				if meta.close then
-					t.children = pop_until(t.type)
+					local children, t = pop_until(t.type)
+					t.children = children
 				elseif meta.open and t.type == tag_type then
+					tag = t;
 					break
 				end
 
@@ -248,7 +251,7 @@ XML = {
 				result[i], result[#result - i + 1] = result[#result - i + 1], result[i]
 			end
 
-			return result
+			return result, tag
 		end
 		local ast = pop_until()
 

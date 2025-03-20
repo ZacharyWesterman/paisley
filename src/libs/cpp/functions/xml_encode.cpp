@@ -1,5 +1,6 @@
 #include "xml_encode.hpp"
 #include <algorithm>
+#include "../replace.hpp"
 
 Value get(const std::map<std::string, Value> &map, const std::string &key)
 {
@@ -9,17 +10,6 @@ Value get(const std::map<std::string, Value> &map, const std::string &key)
 		return Value();
 	}
 	return iter->second;
-}
-
-std::string replace(std::string str, std::string from, std::string to)
-{
-	size_t start_pos = 0;
-	while ((start_pos = str.find(from, start_pos)) != std::string::npos)
-	{
-		str.replace(start_pos, from.length(), to);
-		start_pos += to.length();
-	}
-	return str;
 }
 
 const std::vector<std::string> no_end_tag = {
@@ -38,7 +28,8 @@ const std::vector<std::string> no_end_tag = {
 	"param",
 	"source",
 	"track",
-	"wbr"};
+	"wbr",
+};
 
 std::string stringify_recursive(const Value &obj, int indent)
 {
@@ -111,7 +102,7 @@ std::string stringify_recursive(const Value &obj, int indent)
 
 void xml_encode(Context &context) noexcept
 {
-	auto ast = context.stack.pop().to_array();
+	auto ast = std::get<std::vector<Value>>(context.stack.pop())[0].to_array();
 
 	std::string result = "";
 	bool first = true;
