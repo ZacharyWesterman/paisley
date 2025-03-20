@@ -47,7 +47,19 @@ std::unordered_map<std::string, bool> no_end_tag = {
 	{"img", true},
 	{"input", true},
 	{"meta", true},
-	{"link", true}};
+	{"link", true},
+	{"hr", true},
+	{"base", true},
+	{"col", true},
+	{"embed", true},
+	{"param", true},
+	{"source", true},
+	{"track", true},
+	{"wbr", true},
+	{"area", true},
+	{"keygen", true},
+	{"command", true},
+};
 
 // Tokenize function
 std::function<std::tuple<int, std::string>()> tokenize(std::string text)
