@@ -1060,6 +1060,13 @@ function SemanticAnalyzer(tokens, root_file)
 				end
 			end
 
+			if type(signature.out) == 'number' then
+				--Return type matches that of the nth param
+				token.type = token.children[signature.out].type
+			else
+				token.type = signature.out
+			end
+		else
 			token.type = signature.out
 		end
 	end

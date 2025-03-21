@@ -174,10 +174,10 @@ XML = {
 		for id, text in tokenize(text) do
 			if id == tok.text then
 				--Push the text onto the stack
-				table.insert(stack, {
+				table.insert(stack, setmetatable({
 					type = "text",
 					value = text,
-				})
+				}, { is_array = false }))
 			elseif id == tok.tag_value then
 				--Set the value of the last tag on the stack
 				local t = stack[#stack]
@@ -188,7 +188,7 @@ XML = {
 					attributes = setmetatable({}, { is_array = false }),
 					children = setmetatable({}, { is_array = true }),
 				}
-				local tag_meta = {}
+				local tag_meta = { is_array = false }
 
 				while #stack > 0 do
 					local t = table.remove(stack)

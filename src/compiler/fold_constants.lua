@@ -145,9 +145,9 @@ function FOLD_CONSTANTS(token, file)
 		else
 			--Even if the parameter is not constant, we can still deduce the output type based on the operator
 			if std.arrfind({ '+', '-', '/', '//', '%' }, c2.text, 1) > 0 then
-				token.type = 'number'
+				token.type = _G['TYPE_NUMBER']
 			elseif std.arrfind({ '=', '<', '<=', '>', '>=', '!=', 'and', 'or', 'xor' }, c2.text, 1) > 0 then
-				token.type = 'boolean'
+				token.type = _G['TYPE_BOOLEAN']
 			end
 		end
 		return
