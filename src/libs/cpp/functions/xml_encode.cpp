@@ -86,8 +86,7 @@ std::string stringify_recursive(const Value &obj, int indent)
 	{
 		for (const auto &child : children)
 		{
-			str += "\n" + std::string(indent + 2, ' ');
-			str += stringify_recursive(child, indent + 2);
+			str += "\n" + stringify_recursive(child, indent + 2);
 		}
 		if (children.size() > 0)
 		{

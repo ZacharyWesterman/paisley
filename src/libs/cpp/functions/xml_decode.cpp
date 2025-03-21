@@ -6,6 +6,8 @@
 #include <stack>
 #include <unordered_map>
 
+#include <iostream>
+
 #include "../replace.hpp"
 
 // Token types
@@ -229,7 +231,7 @@ std::vector<Entity> parseTokens(std::function<std::tuple<int, std::string>()> to
 		if (id == TEXT)
 		{
 			// Push the text onto the stack
-			stack.push_back({id, text, ""});
+			entities.push_back({"text", text, {}, {}, {}, false, false});
 		}
 		else if (id == TAG_VALUE)
 		{
@@ -330,6 +332,10 @@ Value entity_to_object(const Entity &entity)
 	std::map<std::string, Value> obj;
 
 	obj["type"] = entity.type;
+	if (entity.value != "")
+	{
+		obj["value"] = entity.value;
+	}
 
 	std::map<std::string, Value> attributes;
 	for (const auto &[key, value] : entity.attributes)

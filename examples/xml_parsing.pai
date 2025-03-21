@@ -1,4 +1,4 @@
 
-let text = <a><b>hello</b><br><c>world</c></a>
+let text = '<a><b>hello</b><br><c>world</c></a>'
 
 print {text.xml_decode().xml_encode()}

@@ -236,8 +236,9 @@ XML = {
 				local meta = getmetatable(t) or {}
 
 				if meta.close then
-					local children, t = pop_until(t.type)
-					t.children = children
+					local children, open_tag = pop_until(t.type)
+					open_tag.children = children
+					t = open_tag
 				elseif meta.open and t.type == tag_type then
 					tag = t;
 					break
