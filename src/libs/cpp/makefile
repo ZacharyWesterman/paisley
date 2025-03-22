@@ -31,6 +31,9 @@ main.o: main.cpp
 functions/%.o: functions/%.cpp functions/%.hpp
 	$(CXX) $(CXXFLAGS) -Wno-maybe-uninitialized -c $< -o $@
 
+functions/pairs.o: functions/pairs.cpp functions/pairs.hpp
+	$(CXX) $(CXXFLAGS) -Wno-maybe-uninitialized -Wno-array-bounds -c $< -o $@
+
 actions/pop_catch_or_throw.o: actions/pop_catch_or_throw.cpp actions/pop_catch_or_throw.hpp
 	$(CXX) $(CXXFLAGS) -Wno-maybe-uninitialized -c $< -o $@
 
