@@ -1,6 +1,6 @@
 
 CXX = c++
-CXXFLAGS = -Wall -Wextra --pedantic -Werror -std=c++17 -Ofast -I./
+CXXFLAGS = -Wall -Wextra --pedantic -Werror -Wno-psabi -std=c++17 -Ofast -I./
 
 EXE = standalone_binary
 
@@ -29,10 +29,10 @@ main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 functions/%.o: functions/%.cpp functions/%.hpp
-	$(CXX) $(CXXFLAGS) -Wno-maybe-uninitialized -Wno-psabi -c $< -o $@
+	$(CXX) $(CXXFLAGS) -Wno-maybe-uninitialized -c $< -o $@
 
 actions/pop_catch_or_throw.o: actions/pop_catch_or_throw.cpp actions/pop_catch_or_throw.hpp
-	$(CXX) $(CXXFLAGS) -Wno-maybe-uninitialized -Wno-psabi -c $< -o $@
+	$(CXX) $(CXXFLAGS) -Wno-maybe-uninitialized -c $< -o $@
 
 %.o: %.cpp %.hpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
