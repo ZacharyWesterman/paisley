@@ -4,7 +4,10 @@ require arg
 # Get expression text from first argument.
 # To run this program, use e.g. `paisley syntax_parsing.pai -- "1 + 2 * 3"`
 let config = {
-    'expression' => true, #Positional argument, required
+    '-' => (
+         #Positional argument, required
+        ('expression', true, 'A basic algebra expression to evaluate.'),
+    ),
 }
 let info = {
     'name' => 'paisley syntax_parsing.pai --',
