@@ -97,7 +97,7 @@ FS = {
 			fp = FS.open(fname, true)
 		end
 
-		return fp, fname
+		return fp, FS.exec_dir .. fname
 	end,
 
 	cd = function(path)
