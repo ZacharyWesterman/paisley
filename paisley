@@ -177,7 +177,7 @@ if flags.install then
 		os.execute('rsync -a src/libs/* /usr/local/lib/paisley/ --exclude \'*.o\'')
 		--Make specific library files writable so that they can be updated.
 		os.execute('touch /usr/local/lib/paisley/cpp/PAISLEY_BYTECODE.cpp')
-		os.execute('chmod 775 /usr/local/lib/paisley/cpp -R')
+		os.execute('chmod 666 /usr/local/lib/paisley/ -R')
 	end
 
 	io.stderr:write('Standalone Paisley executable has been installed.\n')
