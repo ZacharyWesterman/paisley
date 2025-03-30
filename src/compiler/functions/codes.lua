@@ -118,9 +118,9 @@ CALL_CODES = {
 	splice = 114,
 	uuid = 115,
 	glob = 116,
+	xml_encode = 117,
+	xml_decode = 118,
 	--[[minify-delete]]
-	file_glob = 117,
+	file_glob = 119,
 	--[[/minify-delete]]
-	xml_encode = 118,
-	xml_decode = 119,
 }

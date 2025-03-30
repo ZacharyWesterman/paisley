@@ -239,8 +239,8 @@ const Function FUNCTIONS[] = {
 	splice,
 	uuid,
 	glob,
-	file_glob,
 	xml_encode,
 	xml_decode,
+	file_glob,
 };
 const int FUNCTION_COUNT = 120;
