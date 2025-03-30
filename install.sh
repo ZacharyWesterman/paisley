@@ -31,7 +31,9 @@ fi
 ./paisley --install || exit 1
 
 install_dependency() {
-	sudo luarocks install "$1" &>/dev/null
+	#Try to install both versions, 5.3 and 5.4, in case one fails.
+	sudo luarocks --lua-version 5.3 install "$1" &>/dev/null
+	sudo luarocks --lua-version 5.4 install "$1" &>/dev/null
 }
 
 wait_on_process() {
