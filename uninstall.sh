@@ -10,7 +10,8 @@ fi
 rm -rf /usr/local/bin/paisley /usr/local/share/paisley /usr/local/lib/paisley
 
 uninstall_dependency() {
-	sudo luarocks remove "$1" &>/dev/null
+	sudo luarocks --lua-version 5.3 remove "$1" &>/dev/null
+	sudo luarocks --lua-version 5.4 remove "$1" &>/dev/null
 }
 
 wait_on_process() {
