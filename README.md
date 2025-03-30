@@ -57,10 +57,9 @@ Optional extra features include:
 
 #### If you have all the requirements to build standalone applications
 On Linux systems, just run `./install.sh` and it will install Lua rocks for all extra features, then compile Paisley into a single file and install on your system.
-On Windows, there is no build, just run Paisley locally.
 To uninstall, just run `./uninstall.sh`.
 
-**NOTE:** If you for whatever reason *can't* install **ANY** dependencies on your system, there is also a standalone build available in the latest tag. Currently only a Linux build is available.
+**NOTE:** If you for whatever reason *can't* install **ANY** dependencies on your system, there is also a standalone build available in the latest tag. This build is available for both Linux and Windows.
 
 ## Running Paisley
 
