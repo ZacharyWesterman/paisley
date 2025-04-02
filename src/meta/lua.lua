@@ -72,12 +72,15 @@ LUA = {
 
 	--- Minify a string of Lua code.
 	--- @param text string The Lua code.
+	--- @param standalone boolean? Whether to resolve require statements.
+	--- @param remove_delete_blocks boolean? Whether to remove blocks of code that are unused in the Plasma build.
+	--- @param print_progress boolean? Whether to print progress messages.
 	--- @return string new_code The minified Lua code.
-	minify = function(text, standalone, remove_delete_blocks)
+	minify = function(text, standalone, remove_delete_blocks, print_progress)
 		local tokens = LUA.tokenize(text)
 
 		if standalone then
-			tokens = LUA.tokens.replace_requires(tokens)
+			tokens = LUA.tokens.replace_requires(tokens, print_progress)
 		end
 
 		if remove_delete_blocks then
@@ -85,9 +88,17 @@ LUA = {
 		end
 
 		tokens = LUA.tokens.remove_noinstall_blocks(tokens)
-		tokens = LUA.tokens.replace_build_replace_blocks(tokens)
+
+		if print_progress then io.stderr:write('\nInserting helper files...') end
+		tokens = LUA.tokens.replace_build_replace_blocks(tokens, print_progress)
+
 		tokens = LUA.tokens.strip(tokens)
-		return LUA.tokens.join(tokens)
+
+		if print_progress then io.stderr:write('\n') end
+		local result = LUA.tokens.join(tokens, print_progress)
+		if print_progress then io.stderr:write('\n') end
+
+		return result
 	end,
 
 	--- Resolve all require statements in a string of Lua code, and replace special comment blocks.
@@ -204,7 +215,7 @@ LUA = {
 		--- @return LUA.Token[] stripped The processed tokens.
 		strip = function(tokens)
 			local stripped = {}
-			for _, token in ipairs(tokens) do
+			for i, token in ipairs(tokens) do
 				if token.type ~= 'space' and token.type ~= 'comment' then
 					table.insert(stripped, token)
 				end
@@ -214,19 +225,24 @@ LUA = {
 
 		--- Join a table of tokens into a string.
 		--- @param tokens LUA.Token[] The tokens to join.
+		--- @param print_progress boolean? Whether to print progress messages.
 		--- @return string text The joined text.
-		join = function(tokens)
+		join = function(tokens, print_progress)
 			local text = ''
 			local prev = {
 				type = 'space',
 				text = '',
 			}
-			for _, token in ipairs(tokens) do
+			for i, token in ipairs(tokens) do
 				if prev.type == 'word' and token.type == 'word' then
 					text = text .. ' '
 				end
 				text = text .. token.text
 				prev = token
+
+				if print_progress and i % 100 == 0 then
+					io.stderr:write('\rGenerating text... ' .. math.floor(i / #tokens * 100) .. '%')
+				end
 			end
 			return text
 		end,
@@ -236,8 +252,13 @@ LUA = {
 
 		--- Recursively parse require statements and split into a function call and the rest of the program.
 		--- @param tokens LUA.Token[] The tokens to process.
+		--- @param print_progress boolean? Whether to print progress messages.
 		--- @return LUA.Token[] new_tokens The processed tokens.
-		_extract_requires = function(tokens)
+		_extract_requires = function(tokens, print_progress)
+			if print_progress then
+				io.stderr:write('.')
+			end
+
 			local function match_types(tokens, i, group)
 				for j = 1, #group do
 					-- Ignore whitespace and comments
@@ -270,29 +291,6 @@ LUA = {
 			local new_tokens = {}
 			local i = 1
 			while i <= #tokens do
-				--[[if tokens[i].text == 'require' and match_types(tokens, i + 1, { 'lparen', 'string', 'rparen' }) then
-					local file = get_next_value(tokens, i, 'string'):sub(2, -2):gsub('%.', '/') .. '.lua'
-
-					local fp = io.open(file)
-					if not fp then
-						error('ERROR: File not found: ' .. file)
-					end
-					if not LUA.tokens._requires_cache[file] then
-						LUA.tokens._requires_cache[file] = {}
-						LUA.tokens._requires_cache[file] = {
-							tokens = LUA.tokens._extract_requires(LUA.tokenize(fp:read('*a'))),
-							id = 'RQ' .. LUA.tokens._rqid,
-						}
-						LUA.tokens._rqid = LUA.tokens._rqid + 1
-					end
-
-					table.insert(new_tokens, { text = LUA.tokens._requires_cache[file].id, type = 'word' })
-					table.insert(new_tokens, { text = '(', type = 'lparen' })
-					table.insert(new_tokens, { text = ')', type = 'rparen' })
-
-					i = get_next_index(tokens, i, 'rparen')
-					fp:close()
-				else--]]
 				if tokens[i].text == 'require' and match_types(tokens, i + 1, { 'string' }) then
 					local file = get_next_value(tokens, i, 'string'):sub(2, -2):gsub('%.', '/') .. '.lua'
 					local fp = io.open(file)
@@ -302,7 +300,7 @@ LUA = {
 					if not LUA.tokens._requires_cache[file] then
 						LUA.tokens._requires_cache[file] = {}
 						LUA.tokens._requires_cache[file] = {
-							tokens = LUA.tokens._extract_requires(LUA.tokenize(fp:read('*a'))),
+							tokens = LUA.tokens._extract_requires(LUA.tokenize(fp:read('*a')), print_progress),
 							id = 'RQ' .. LUA.tokens._rqid,
 						}
 						LUA.tokens._rqid = LUA.tokens._rqid + 1
@@ -325,11 +323,12 @@ LUA = {
 
 		--- Replace all require calls with the appropriate file contents.
 		--- @param tokens LUA.Token[] The tokens to process.
+		--- @param print_progress boolean? Whether to print progress messages.
 		--- @return LUA.Token[] new_tokens The processed tokens.
-		replace_requires = function(tokens)
+		replace_requires = function(tokens, print_progress)
 			LUA.tokens._requires_cache = {}
 
-			local program = LUA.tokens._extract_requires(tokens)
+			local program = LUA.tokens._extract_requires(tokens, print_progress)
 
 			local result = {}
 			for _, token_list in pairs(LUA.tokens._requires_cache) do
@@ -403,8 +402,9 @@ LUA = {
 
 		--- Replace all blocks of code that are wrapped in `--[[build-replace=...]]` ... `--[[/build-replace]]` comments with the specified file contents.
 		--- @param tokens LUA.Token[] The tokens to process.
+		--- @param print_progress boolean? Whether to print progress messages.
 		--- @return LUA.Token[] new_tokens The processed tokens.
-		replace_build_replace_blocks = function(tokens)
+		replace_build_replace_blocks = function(tokens, print_progress)
 			local new_tokens = {}
 			local i = 1
 			while i <= #tokens do
@@ -432,6 +432,8 @@ LUA = {
 					while tokens[i].type ~= 'comment' or tokens[i].text ~= '--[[/build-replace]]' do
 						i = i + 1
 					end
+
+					if print_progress then io.stderr:write('.') end
 				else
 					table.insert(new_tokens, tokens[i])
 				end

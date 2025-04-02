@@ -84,8 +84,9 @@ if flags.plasma_build then
 	end
 	--[[/no-install]]
 
-	io.stderr:write('Concatenating Lua files...\n')
-	text = LUA.minify(text, true, true)
+	io.stderr:write('Concatenating Lua files...')
+	text = LUA.minify(text, true, true, true)
+	io.stderr:write('\n')
 
 	if not flags.output or flags.output == '-' then
 		print(text)
@@ -138,8 +139,9 @@ local function compile_self_to(output_file, compiler_name)
 	end
 	fp:close()
 
-	io.stderr:write('Concatenating Lua files...\n')
-	text = LUA.minify(text, true)
+	io.stderr:write('Concatenating Lua files...')
+	text = LUA.minify(text, true, false, true)
+	io.stderr:write('\n')
 
 	io.stderr:write('Compiling Lua into an executable...\n')
 	local compiler = _G['STANDALONE'].lua
