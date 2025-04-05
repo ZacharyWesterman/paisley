@@ -86,4 +86,21 @@ STANDALONE.cpp = {
 
 		return false
 	end,
+
+	--- Precompile the C++ runtime for the standalone program.
+	--- This can be used to speed up the compilation process later on.
+	--- @return boolean success Whether the precompilation was successful.
+	precompile = function()
+		local cc = STANDALONE.require_cpp_compiler()
+		local make = STANDALONE.require_make()
+
+		local success = os.execute(make .. ' objects -C ' .. FS.libs_dir .. 'cpp -j32')
+
+		if not success then
+			error('Error: Could not precompile the C++ runtime.\nAre you sure the directory is writable?')
+			return false
+		end
+
+		return true
+	end,
 }

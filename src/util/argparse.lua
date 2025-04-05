@@ -243,7 +243,11 @@ ARG = {
 		end
 		--[[/no-install]]
 
-		if flags.introspect or flags.repl --[[no-install]] or flags.install --[[/no-install]] or flags.plasma_build then
+		if (flags.standalone or flags.target or flags.output) and flags.cpp_precompile then
+			ARG.error('The `--cpp-precompile` flag should be used once, by itself, to pre-compile the C++ run-time.')
+		end
+
+		if flags.introspect or flags.repl --[[no-install]] or flags.install --[[/no-install]] or flags.plasma_build or flags.cpp_precompile then
 			return flags, positional
 		end
 

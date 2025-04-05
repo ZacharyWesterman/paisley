@@ -11,9 +11,11 @@ FUNC := $(wildcard $(addsuffix *.hpp, functions/))
 FTXT := $(patsubst %,\n#include "%",$(wildcard $(addsuffix *.hpp, functions/)))
 FNAM := $(patsubst functions/%.hpp,%,$(wildcard $(addsuffix *.hpp, functions/)))
 
-.PHONY: all clean
+.PHONY: all clean objects
 
 all: $(EXE)
+
+objects: $(OBJS)
 
 clean:
 	rm -f $(OBJS) $(EXE)
