@@ -121,43 +121,56 @@ XML = {
 							--Ignore white space
 						end
 					else
+						--Comments (ignored)
+						local m = text:match("^<!%-%-.-%-%->")
+						if m then
+							text = text:sub(#m + 1)
+						else
+							m = text:match("^<!%-%-.-$")
+							if m then
+								text = text:sub(#m + 1)
+							end
+						end
+
 						--Close tag start
-						local m = text:match("^<%s*/")
-						if m then
-							text = text:sub(#m + 1)
-							in_tag = true
-							found_tag_type = false
-							tag_attr_type = tok.tag_attr
-							return tok.tag_open, "</"
-						end
+						if not m then
+							m = text:match("^<%s*/")
+							if m then
+								text = text:sub(#m + 1)
+								in_tag = true
+								found_tag_type = false
+								tag_attr_type = tok.tag_attr
+								return tok.tag_open, "</"
+							end
 
-						--Open tag start
-						if text:sub(1, 1) == "<" then
-							text = text:sub(2)
-							in_tag = true
-							found_tag_type = false
-							tag_attr_type = tok.tag_attr
-							return tok.tag_open, "<"
-						end
+							--Open tag start
+							if text:sub(1, 1) == "<" then
+								text = text:sub(2)
+								in_tag = true
+								found_tag_type = false
+								tag_attr_type = tok.tag_attr
+								return tok.tag_open, "<"
+							end
 
-						--Plain text
-						m = text:match("^[^<]+")
-						if m then
-							text = text:sub(#m + 1)
+							--Plain text
+							m = text:match("^[^<]+")
+							if m then
+								text = text:sub(#m + 1)
 
-							--Remove leading and trailing whitespace
-							m = m:gsub("^%s+", ""):gsub("%s+$", "")
-							--Normalize whitespace
-							m = m:gsub("[\n\r\x0b\t ]+", " ")
-							--Replace HTML entities
-							m = m:gsub("&lt;", "<")
-								:gsub("&gt;", ">")
-								:gsub("&quot;", "\"")
-								:gsub("&apos;", "'")
-								:gsub("&nbsp;", " ")
-								:gsub("&amp;", "&")
+								--Remove leading and trailing whitespace
+								m = m:gsub("^%s+", ""):gsub("%s+$", "")
+								--Normalize whitespace
+								m = m:gsub("[\n\r\x0b\t ]+", " ")
+								--Replace HTML entities
+								m = m:gsub("&lt;", "<")
+									:gsub("&gt;", ">")
+									:gsub("&quot;", "\"")
+									:gsub("&apos;", "'")
+									:gsub("&nbsp;", " ")
+									:gsub("&amp;", "&")
 
-							return tok.text, m
+								return tok.text, m
+							end
 						end
 					end
 				end

@@ -161,8 +161,21 @@ std::function<std::tuple<int, std::string>()> tokenize(std::string text)
 			}
 			else
 			{
-				// Close tag start
 				std::smatch match;
+
+				// Comments (ignored)
+				if (std::regex_search(text, match, std::regex("^<!--.*?-->")))
+				{
+					text = text.substr(match.length());
+					continue;
+				}
+				if (std::regex_search(text, match, std::regex("^<!--.*$")))
+				{
+					text = text.substr(match.length());
+					continue;
+				}
+
+				// Close tag start
 				if (std::regex_search(text, match, std::regex("^<\\s*/")))
 				{
 					text = text.substr(match.length());
