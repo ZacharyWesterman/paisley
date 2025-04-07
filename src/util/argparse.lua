@@ -167,7 +167,7 @@ ARG = {
 		if hold_arg then
 			local msg = "Expected argument for flag `" .. hold_arg .. "`"
 			local option = long_with_arg['--' .. hold_arg:gsub('_', '-')]
-			if option.options then
+			if option and option.options then
 				msg = msg ..
 					" (can be one of `" .. table.concat(option.options, '`, `') .. '`)'
 			end
