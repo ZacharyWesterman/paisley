@@ -10,7 +10,7 @@ STANDALONE.lua = {
 		local init = [[
 		V4 = os.time()
 		V8 = 1000000000000
-		PGM_ARGS = arg
+		V6 = arg
 		V1 = "]] .. json.stringify(bytecode):
 		gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n') .. '"'
 
