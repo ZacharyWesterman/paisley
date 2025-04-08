@@ -231,6 +231,7 @@ KEEP_DEAD_CODE = flags.no_prune_dead_code
 NO_SHORTCUT = flags.no_shortcut
 COERCE_SHELL_CMDS = flags.shell
 PGM_ARGS = args --program arguments
+V6 = args       --program arguments
 SANDBOX = flags.sandbox
 
 ENDED = false
