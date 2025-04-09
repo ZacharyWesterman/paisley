@@ -3,7 +3,8 @@
 
 bool Value::is_null() const noexcept
 {
-	return index() + 1 < 2; // Hack to correctly check for null variant
+	const auto i = index();
+	return i > 100 || i == 0; // Hack to correctly check for null variant
 }
 
 bool Value::to_bool() const noexcept
@@ -130,12 +131,9 @@ std::vector<Value> Value::to_array() const noexcept
 	{
 		return std::get<std::vector<Value>>(*this);
 	}
-	else if (!std::holds_alternative<Null>(*this))
-	{
-		result.push_back(*this);
-	}
 
-	// null is an empty array
+	result.push_back(*this);
+
 	return result;
 }
 
