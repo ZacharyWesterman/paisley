@@ -186,5 +186,7 @@ return {
 		}
 	},
 
-	finally = function() end,
+	finally = function()
+		return FUNCSIG
+	end,
 }

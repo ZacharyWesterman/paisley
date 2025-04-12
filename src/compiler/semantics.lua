@@ -182,7 +182,7 @@ function SemanticAnalyzer(tokens, root_file)
 
 	config = require "src.compiler.semantics.pass2"
 	recurse2(root, config, root_file)
-	config.finally()
+	local FUNCSIG = config.finally()
 
 	--[[
 		TYPE ANNOTATIONS
