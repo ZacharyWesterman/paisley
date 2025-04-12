@@ -76,6 +76,7 @@ INTROSPECT = {
 		require 'src.compiler.type_signature'
 		require 'src.compiler.tokens'
 		require 'src.compiler.semantics'
+		local FUNCSIG = require "src.compiler.semantics.signature"
 
 		local funcs = {}
 		for key, _ in pairs(BUILTIN_FUNCS) do table.insert(funcs, key) end
