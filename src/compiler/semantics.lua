@@ -797,24 +797,6 @@ function SemanticAnalyzer(tokens, root_file)
 	end
 	--[[/minify-delete]]
 
-	--Make sure that comparisons that aren't directly under match statements
-	--always have two operands
-	recurse(root, { TOK.match_stmt, TOK.comparison }, function(token, file)
-		if token.id == TOK.match_stmt then
-			local body = token.children[2]
-			local kids = body.children
-			if not kids then return end
-			if body.id == TOK.if_stmt then kids = { body } end
-
-			for i = 1, #kids do
-				local expr = kids[i].children[1]
-				if expr.id == TOK.comparison then expr.in_match = true end
-			end
-		elseif not token.in_match and #token.children < 2 then
-			parse_error(token.span, 'Operator `' .. token.text .. '` expected 2 operands, but got 1', file)
-		end
-	end)
-
 	--Restructure match statements into an equivalent if/elif/else block.
 	recurse(root, { TOK.match_stmt }, function(token, file)
 		local iter = { token.children[2] }
@@ -893,91 +875,6 @@ function SemanticAnalyzer(tokens, root_file)
 			token.children = { condition, else_branch }
 		end
 	end)
-
-	--Remove the body of conditionals that will never get executed
-	recurse(root, { TOK.if_stmt, TOK.elif_stmt }, function(token, file)
-		local cond = token.children[1]
-		if cond.value ~= nil or cond.id == TOK.lit_null then
-			--Decide whether to remove "then" or "else" branch
-			local ix, id, text = 2, TOK.kwd_then, 'then'
-			if std.bool(cond.value) then
-				ix, id, text = 3, TOK.kwd_end, 'end'
-			end
-
-			--[[minify-delete]]
-			if _G['LANGUAGE_SERVER'] then
-				if token.children[ix].id == TOK.kwd_end then return end
-				INFO.dead_code(token.children[ix].span, '', file)
-			end
-			--[[/minify-delete]]
-
-			--[[minify-delete]]
-			if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
-				token.children[ix] = {
-					id = id,
-					span = token.children[ix].span,
-					text = text,
-				}
-				--[[minify-delete]]
-			end --[[/minify-delete]]
-		end
-	end)
-
-	--Remove the body of loops that will never get executed
-	recurse(root, { TOK.while_stmt }, function(token, file)
-		local cond = token.children[1]
-		if (cond.value ~= nil or cond.id == TOK.lit_null) and not std.bool(cond.value) then
-			--[[minify-delete]]
-			if _G['LANGUAGE_SERVER'] then
-				INFO.dead_code(token.span, '', file)
-			end
-			--[[/minify-delete]]
-
-			--[[minify-delete]]
-			if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
-				token.children = { cond }
-				--[[minify-delete]]
-			end --[[/minify-delete]]
-		end
-	end)
-	recurse(root, { TOK.for_stmt }, function(token, file)
-		local iter = token.children[2]
-		if type(iter.value) == 'table' and next(iter.value) == nil then
-			--[[minify-delete]]
-			if _G['LANGUAGE_SERVER'] then
-				INFO.dead_code(token.span, '', file)
-			end
-			--[[/minify-delete]]
-
-			--[[minify-delete]]
-			if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
-				token.children[3] = nil
-				--[[minify-delete]]
-			end --[[/minify-delete]]
-		end
-	end)
-
-	--Make sure BREAK and CONTINUE statements can actually break out of the number of specified loops
-	local loop_depth = 0
-	recurse(root, { TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.break_stmt, TOK.continue_stmt },
-		function(token, file)
-			if token.id == TOK.break_stmt or token.id == TOK.continue_stmt then
-				local loop_out = token.children[1].value
-				if loop_out > loop_depth then
-					local phrase, plural, amt = 'break out', '', 'only ' .. loop_depth
-					if token.id == TOK.continue_stmt then phrase = 'skip iteration' end
-					if loop_out ~= 1 then plural = 's' end
-					if loop_depth == 0 then amt = 'none' end
-					parse_error(token.span,
-						'Unable to ' .. phrase .. ' of ' .. loop_out ..
-						' loop' .. plural .. ', ' .. amt .. ' found at this scope', file)
-				end
-			end
-
-			loop_depth = loop_depth + 1
-		end, function(token, file)
-			loop_depth = loop_depth - 1
-		end)
 
 	--Check if subroutines are even used
 	--We also keep track of what subroutines each subroutine references.
@@ -1077,22 +974,6 @@ function SemanticAnalyzer(tokens, root_file)
 		end
 	end)
 
-	--Make sure `break cache` refers to an existing subroutine
-	recurse(root, { TOK.uncache_stmt }, function(token, file)
-		local label = token.children[1].text
-
-		if labels[label] == nil then
-			local msg = 'Subroutine `' .. label .. '` not declared anywhere'
-			local guess = closest_word(label, labels, 4)
-			if guess ~= nil and guess ~= '' then
-				msg = msg .. ' (did you mean "' .. guess .. '"?)'
-			end
-			parse_error(token.children[1].span, msg, file)
-		else
-			token.ignore = labels[label].ignore
-		end
-	end)
-
 	--Warn if subroutines are not used.
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then
@@ -1112,41 +993,7 @@ function SemanticAnalyzer(tokens, root_file)
 	end
 	--[[/minify-delete]]
 
-	--Remove dead code after stop, return, continue, or break statements
-	recurse(root, { TOK.program }, function(token, file)
-		local dead_code_span = nil
-
-		for i = 1, #token.children do
-			if dead_code_span then
-				--[[minify-delete]]
-				if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
-					token.children[i] = nil
-					--[[minify-delete]]
-				end --[[/minify-delete]]
-			else
-				local node = token.children[i]
-				if node.id == TOK.kwd_stop or node.id == TOK.return_stmt or node.id == TOK.continue_stmt or node.id == TOK.break_stmt then
-					--if this is not the last statement in the list,
-					--then mark all future statements as dead code.
-					if i < #token.children then
-						dead_code_span = {
-							from = token.children[i + 1].span.from,
-							to = token.children[#token.children].span.to,
-						}
-					end
-				end
-			end
-		end
-
-		--[[minify-delete]]
-		if _G['LANGUAGE_SERVER'] and dead_code_span then
-			--Warn about dead code
-			INFO.dead_code(dead_code_span, 'Dead code', file)
-		end
-		--[[/minify-delete]]
-	end)
-
-	--Lastly, if using the PC build, make sure shell pipe operators do not get escaped.
+	--If using the PC build, make sure shell pipe operators do not get escaped.
 	--[[minify-delete]]
 	if not _G['RESTRICT_TO_PLASMA_BUILD'] then
 		recurse(root, { TOK.command }, function(token, file)
@@ -1162,7 +1009,15 @@ function SemanticAnalyzer(tokens, root_file)
 	end
 	--[[/minify-delete]]
 
-	if ERRORED then terminate() end
+	--Lastly perform any extra optimizations, now that the code is fully validated.
 
+	--[[REMOVE DEAD CODE]]
+	config = require "src.compiler.semantics.dead_code"
+	recurse2(root, config, root_file)
+	config.finally()
+
+
+	--[[EXIT]]
+	if ERRORED then terminate() end
 	return root
 end

@@ -152,16 +152,6 @@ local function push_scope(token, file)
 	end
 end
 
-local function cleanup_parens(token, file)
-	if not token.children or #token.children ~= 1 then return end
-
-	local child = token.children[1]
-	for _, key in ipairs({ 'value', 'id', 'text', 'span', 'type' }) do
-		token[key] = child[key]
-	end
-	token.children = child.children
-end
-
 --Tidy up WHILE loops and IF/ELIF statements (replace command with cmd contents)
 local function loop_cleanup(token, file)
 	if token.children[1].id == TOK.command then
@@ -448,6 +438,24 @@ return {
 				end
 			end
 		},
+
+		[TOK.uncache_stmt] = {
+			--Make sure `break cache` refers to an existing subroutine
+			function(token, file)
+				local label = token.children[1].text
+
+				if labels[label] == nil then
+					local msg = 'Subroutine `' .. label .. '` not declared anywhere'
+					local guess = closest_word(label, labels, 4)
+					if guess ~= nil and guess ~= '' then
+						msg = msg .. ' (did you mean "' .. guess .. '"?)'
+					end
+					parse_error(token.children[1].span, msg, file)
+				else
+					token.ignore = labels[label].ignore
+				end
+			end,
+		},
 	},
 
 	exit = {
@@ -492,42 +500,20 @@ return {
 			--Make sure key-value for loops always have some mutation of `pairs()` in the expression.
 			function(token, file)
 				local node = token.children[3]
-
-				if not node.children or #node.children ~= 1 then
-					parse_error(node.span, 'Key-value for loop must be a single `pairs()` expression', file)
-				else
-					if node.id == TOK.command then
-						node = node.children[1]
-						token.children[3] = node
+				while true do
+					if node.id == TOK.func_call and node.text == 'pairs' then
+						return
 					end
 
-					local expr_error = false
-					local n = node
-					while true do
-						if n.id ~= TOK.func_call then
-							expr_error = true
-							break
-						end
-
-						if n.text == 'pairs' then break end
-
-						if n.text ~= 'sort' and n.text ~= 'reverse' then
-							expr_error = true
-							break
-						end
-
-						--This would mean an incorrect amount of params, which will be caught later
-						if not n.children or #n.children == 0 then break end
-
-						n = n.children[1]
-					end
-
-					if expr_error then
-						parse_error(node.span, 'Expression in key-value for loop must contain `pairs()`', file)
-					end
+					node = node.children[1]
+					if not node then break end
 				end
 
-				--Don't automatically set var type to "string", let it deduce.
+				parse_error(token.children[3].span, 'Expression in key-value for loop must contain `pairs()`', file)
+			end,
+
+			--Don't automatically set var type to "string", let it deduce.
+			function(token, file)
 				for i = 1, 2 do
 					if token.children[i].id == TOK.text then
 						token.children[i].id = TOK.var_assign
@@ -580,9 +566,6 @@ return {
 				end
 			end,
 		},
-
-		[TOK.parentheses] = { cleanup_parens },
-		[TOK.expression] = { cleanup_parens },
 	},
 
 	finally = function()

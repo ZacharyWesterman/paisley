@@ -1,5 +1,38 @@
 local FUNCSIG = require "src.compiler.semantics.signature"
 
+local loop_depth = 0
+
+local function break_continue(token, file)
+	local loop_out = token.children[1].value
+	if loop_out > loop_depth then
+		local phrase, plural, amt = 'break out', '', 'only ' .. loop_depth
+		if token.id == TOK.continue_stmt then phrase = 'skip iteration' end
+		if loop_out ~= 1 then plural = 's' end
+		if loop_depth == 0 then amt = 'none' end
+		parse_error(token.span,
+			'Unable to ' .. phrase .. ' of ' .. loop_out ..
+			' loop' .. plural .. ', ' .. amt .. ' found at this scope', file)
+	end
+end
+
+local function loop_enter(token, file)
+	loop_depth = loop_depth + 1
+end
+
+local function loop_exit(token, file)
+	loop_depth = loop_depth - 1
+end
+
+local function cleanup_parens(token, file)
+	if not token.children or #token.children ~= 1 then return end
+
+	local child = token.children[1]
+	for _, key in ipairs({ 'value', 'id', 'text', 'span', 'type' }) do
+		token[key] = child[key]
+	end
+	token.children = child.children
+end
+
 return {
 	enter = {
 
@@ -154,6 +187,42 @@ return {
 				end
 			end,
 		},
+
+		[TOK.match_stmt] = {
+			--Keep track of tokens directly inside match statements
+			function(token, file)
+				local body = token.children[2]
+				local kids = body.children
+				if not kids then return end
+				if body.id == TOK.if_stmt then kids = { body } end
+
+				for i = 1, #kids do
+					local expr = kids[i].children[1]
+					if expr.id == TOK.comparison then expr.in_match = true end
+				end
+			end,
+		},
+
+		[TOK.comparison] = {
+			--Make sure that comparisons (that aren't inside match statements) have 2 operands
+			function(token, file)
+				if token.in_match then return end
+				if #token.children < 2 then
+					parse_error(token.span,
+						'Operator `' .. token.text .. '` expected 2 operands, but got ' .. #token.children, file)
+				end
+			end,
+		},
+
+		[TOK.break_stmt] = { break_continue },
+		[TOK.continue_stmt] = { break_continue },
+
+		[TOK.while_stmt] = { loop_enter },
+		[TOK.for_stmt] = { loop_enter },
+		[TOK.kv_for_stmt] = { loop_enter },
+
+		[TOK.parentheses] = { cleanup_parens },
+		[TOK.expression] = { cleanup_parens },
 	},
 
 	exit = {
@@ -183,7 +252,11 @@ return {
 					children = kids,
 				} }
 			end,
-		}
+		},
+
+		[TOK.while_stmt] = { loop_exit },
+		[TOK.for_stmt] = { loop_exit },
+		[TOK.kv_for_stmt] = { loop_exit },
 	},
 
 	finally = function()

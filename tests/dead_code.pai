@@ -1,0 +1,21 @@
+#Test that dead code is correctly removed
+
+# Loops with no body
+for _ in {,} do
+	print "FOR LOOP"
+end
+for _k _v in {(,).pairs()} do
+	print "KEY VALUE FOR LOOP"
+end
+
+# Loop with false condition
+while {false} do
+	print "WHILE LOOP"
+end
+
+# If statements with false condition
+if {false} then
+	print "IF STATEMENT"
+elif {false} then
+	print "ELIF STATEMENT"
+end
