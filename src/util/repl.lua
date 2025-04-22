@@ -460,6 +460,14 @@ if curses_installed then
 					end
 				end
 
+				--Special gosub 'function syntax' calls
+				if not match then
+					match = text:match('^%\\[^\'"%$%{%}%(%) \t#;]*')
+					if match then
+						printf(match, entity.funccall)
+					end
+				end
+
 				--Literals and keyword operators
 				if not match then
 					match = text:match('^[%w_]+')
