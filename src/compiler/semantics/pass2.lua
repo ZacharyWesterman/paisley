@@ -220,9 +220,6 @@ return {
 		[TOK.while_stmt] = { loop_enter },
 		[TOK.for_stmt] = { loop_enter },
 		[TOK.kv_for_stmt] = { loop_enter },
-
-		[TOK.parentheses] = { cleanup_parens },
-		[TOK.expression] = { cleanup_parens },
 	},
 
 	exit = {
@@ -257,6 +254,8 @@ return {
 		[TOK.while_stmt] = { loop_exit },
 		[TOK.for_stmt] = { loop_exit },
 		[TOK.kv_for_stmt] = { loop_exit },
+		[TOK.expression] = { cleanup_parens },
+		[TOK.parentheses] = { cleanup_parens },
 	},
 
 	finally = function()
