@@ -1012,9 +1012,9 @@ function SemanticAnalyzer(tokens, root_file)
 	--Lastly perform any extra optimizations, now that the code is fully validated.
 
 	--[[REMOVE DEAD CODE]]
-	-- config = require "src.compiler.semantics.dead_code"
-	-- recurse2(root, config, root_file)
-	-- config.finally()
+	config = require "src.compiler.semantics.dead_code"
+	recurse2(root, config, root_file)
+	config.finally()
 
 
 	--[[EXIT]]
