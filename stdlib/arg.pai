@@ -11,8 +11,12 @@
 #         'default' => 'default value', # The default value if the argument is not required.
 #         'short' => 's', # The short flag for the argument.
 #     ),
-#     # If the key is a positional value (in this case arg2), the value should be an boolean indicating if it's required.
-#     'arg2' => true,
+#     # If the key is a positional value then the value should be an array,
+#     # indicating the name of the argument, whether it's required, and a description.
+#     '-' => (
+#         ('arg2', true, 'Description of arg2'),
+#         ('arg3', false, 'Description of arg3'),
+#     ),
 # }
 # ```
 #
