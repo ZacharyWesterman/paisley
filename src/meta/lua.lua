@@ -332,12 +332,31 @@ LUA = {
 
 			local result = {}
 			for _, token_list in pairs(LUA.tokens._requires_cache) do
-				table.insert(result, { text = 'function', type = 'word' })
-				table.insert(result, { text = token_list.id, type = 'word' })
+				--Cache for require calls.
+				table.insert(result, { text = 'C' .. token_list.id, type = 'word' })
+				table.insert(result, { text = '={nil,false}', type = 'lparen' })
+
+				--Function begin
+				table.insert(result, { text = 'function ' .. token_list.id, type = 'word' })
+				table.insert(result, { text = '()', type = 'lparen' })
+
+				--Function body (called with `require`).
+				table.insert(result, { text = 'local fn=function', type = 'word' })
 				table.insert(result, { text = '()', type = 'lparen' })
 				for _, token in ipairs(token_list.tokens) do
 					table.insert(result, token)
 				end
+				table.insert(result, { text = 'end', type = 'word' })
+
+				--If function hasn't been called yet, call it and cache the result.
+				table.insert(result, {
+					text = 'if not C' .. token_list.id .. '[2] then C' .. token_list.id .. '={fn(),true} end',
+					type = 'word'
+				})
+				table.insert(result, { text = 'return C' .. token_list.id, type = 'word' })
+				table.insert(result, { text = '[1]', type = 'lparen' })
+
+				--Function end
 				table.insert(result, { text = 'end', type = 'word' })
 			end
 
