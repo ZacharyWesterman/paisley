@@ -214,16 +214,23 @@ return {
 		[TOK.array_concat] = {
 			--Fold nested array_concat tokens into a single array
 			function(token, file)
-				local kids = {}
-				for _, child in ipairs(token.children) do
-					if child.id == TOK.array_concat or child.id == TOK.object then
-						for __, kid in ipairs(child.children) do
-							table.insert(kids, kid)
+				local function fold_children(node)
+					local kids = {}
+					for _, child in ipairs(node.children) do
+						if child.id == TOK.array_concat or child.id == TOK.object then
+							for __, kid in ipairs(child.children) do
+								for ___, subkid in ipairs(fold_children(kid)) do
+									table.insert(kids, subkid)
+								end
+							end
+						else
+							table.insert(kids, child)
 						end
-					else
-						table.insert(kids, child)
 					end
+					return kids
 				end
+
+				local kids = fold_children(token)
 
 				local is_object = false
 				local is_array = false
