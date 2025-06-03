@@ -216,16 +216,16 @@ return {
 			function(token, file)
 				local function fold_children(node)
 					local kids = {}
-					for _, child in ipairs(node.children) do
-						if child.id == TOK.array_concat or child.id == TOK.object then
-							for __, kid in ipairs(child.children) do
-								for ___, subkid in ipairs(fold_children(kid)) do
-									table.insert(kids, subkid)
-								end
+					if node.id == TOK.array_concat or node.id == TOK.object then
+						--If the node is an array_concat or object, fold its children
+						for _, kid in ipairs(node.children) do
+							for _, subkid in ipairs(fold_children(kid)) do
+								table.insert(kids, subkid)
 							end
-						else
-							table.insert(kids, child)
 						end
+					else
+						--Otherwise, just return the node itself
+						table.insert(kids, node)
 					end
 					return kids
 				end
