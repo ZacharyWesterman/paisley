@@ -525,7 +525,7 @@ function generate_bytecode(root, file)
 				if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
 					if is_const(list) then
 						local val = list.value
-						if val ~= nil then
+						if val ~= nil and #val > 0 then
 							if std.type(val) == 'array' then
 								val = val[#val]
 							elseif std.type(val) == 'object' then
@@ -610,6 +610,31 @@ function generate_bytecode(root, file)
 		[TOK.kv_for_stmt] = function(token, file)
 			local loop_beg_label = LABEL_ID()
 			local loop_end_label = LABEL_ID()
+
+			--Try to optimize away for loops with no body and with a knowable stop point
+			if token.children[4] == nil then
+				local list = token.children[3]
+				--If list is entirely constant, just use the last value.
+				--[[minify-delete]]
+				if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
+					if is_const(list) then
+						local val = list.value
+						if val ~= nil and #val > 0 then
+							if std.type(val) == 'array' then
+								val = val[#val]
+							elseif std.type(val) == 'object' then
+								local v
+								for key, value in pairs(val) do v = key end
+								val = v
+							end
+							emit(bc.push, val)
+							emit(bc.set, token.children[1].text)
+						end
+						return
+					end
+					--[[minify-delete]]
+				end --[[/minify-delete]]
+			end
 
 			--Loop setup
 			emit(bc.push, nil)

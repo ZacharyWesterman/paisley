@@ -267,6 +267,12 @@ ARG = {
 
 		if flags.sandbox then flags.shell = false end
 
+		if flags.bytecode and flags.output then
+			ARG.error(
+				'`--output` implicitly converts to bytecode when writing (unless otherwise specified), so `--bytecode` is not needed.'
+			)
+		end
+
 		return flags, positional
 	end,
 

@@ -1,54 +1,16 @@
 require "src.compiler.functions.params"
 require "src.compiler.functions.types"
 
---Helper func for generating func_call error messages.
-function FUNCSIG(func_name)
-	local param_ct = BUILTIN_FUNCS[func_name]
-	local params = ''
-	if param_ct < 0 then
-		params = '...'
-	elseif param_ct > 0 then
-		local i
-		for i = 1, param_ct do
-			--[[minify-delete]]
-			if TYPESIG[func_name].params and TYPESIG[func_name].params[i] then
-				params = params .. TYPESIG[func_name].params[i]
-			else
-				--[[/minify-delete]]
-				params = params .. string.char(96 + i)
-				--[[minify-delete]]
-			end
-			local types = {}
-			if TYPESIG[func_name].valid then
-				for j, k in ipairs(TYPESIG[func_name].valid) do
-					---@diagnostic disable-next-line
-					local key = TYPE_TEXT(k[(i - 1) % #k + 1])
-					if key and std.arrfind(types, key, 1) == 0 then table.insert(types, key) end
-				end
-			else
-				table.insert(types, 'any')
-			end
-			if func_name == 'reduce' and i == 2 then types[1] = 'operator' end
-			params = params .. ': ' .. std.join(types, '|')
-			--[[/minify-delete]]
-			if i < param_ct then params = params .. ',' end
-			--[[minify-delete]]
-			if i < param_ct then params = params .. ' ' end
-			--[[/minify-delete]]
-		end
-	end
-	return params
-end
-
-local file_cache = {}
+FILE_CACHE = {}
 --[[minfy-delete]]
-local aliases_toplevel = { {} }
-local macros_toplevel = { {} }
+ALIASES_TOPLEVEL = { {} }
+MACROS_TOPLEVEL = { {} }
 --[[/minify-delete]]
 
 function SemanticAnalyzer(tokens, root_file)
 	--[[minify-delete]]
-	SHOW_MULTIPLE_ERRORS = true --[[/minify-delete]]
+	SHOW_MULTIPLE_ERRORS = true
+	--[[/minify-delete]]
 
 	---@param root Token
 	---@param token_ids TOK[]
@@ -78,6 +40,34 @@ function SemanticAnalyzer(tokens, root_file)
 
 		if correct_token and on_exit ~= nil then
 			on_exit(root, file)
+		end
+	end
+
+	local function recurse2(root, config, file)
+		if file == nil then file = root_file end
+		if root.filename then file = root.filename end
+
+		local enter_methods = config.enter[root.id]
+		if enter_methods then
+			for i = 1, #enter_methods do
+				enter_methods[i](root, file)
+				if ERRORED then return end
+			end
+		end
+
+		if root.children then
+			for _, token in ipairs(root.children) do
+				recurse2(token, config, file)
+				if ERRORED then return end
+			end
+		end
+
+		local exit_methods = config.exit[root.id]
+		if exit_methods then
+			for i = 1, #exit_methods do
+				exit_methods[i](root, file)
+				if ERRORED then return end
+			end
 		end
 	end
 
@@ -158,6 +148,7 @@ function SemanticAnalyzer(tokens, root_file)
 
 				if not ERRORED and #parser.get() > 0 then
 					local ast = parser.get()[1]
+					recurse(ast, { TOK.import_stmt }, import_file)
 					table.insert(new_asts, ast)
 				end
 
@@ -175,678 +166,20 @@ function SemanticAnalyzer(tokens, root_file)
 
 	INFO.root_file = root_file
 
-	while found_import and not ERRORED do
-		recurse(root, { TOK.import_stmt }, function(token, file)
-			import_file(token)
-		end)
+	recurse(root, { TOK.import_stmt }, import_file)
 
-		check_top_level_stmts()
-	end
+	check_top_level_stmts()
 	--[[/minify-delete]]
 
-	--Flatten "program" nodes so all statements are on the same level.
-	recurse(root, { TOK.program }, nil, function(token, file)
-		local kids = {}
-		for i = 1, #token.children do
-			local child = token.children[i]
-			if child.id == TOK.program then
-				for k = 1, #child.children do table.insert(kids, child.children[k]) end
-			else
-				table.insert(kids, child)
-			end
-		end
-
-		token.children = kids
-	end)
-
-	--Convert @DIGIT variables into @[DIGIT] indexes
-	recurse(root, { TOK.variable }, function(token, file)
-		if #token.text > 1 and token.text:sub(1, 1) == '@' then
-			local index = tonumber(token.text:sub(2))
-			if index < 1 then
-				parse_error(token.span, 'Indexes start at 1', file)
-			end
-
-			token.id = TOK.index
-			token.children = {
-				{
-					span = token.span,
-					id = TOK.variable,
-					text = '@',
-				},
-				{
-					span = token.span,
-					id = TOK.lit_number,
-					text = tostring(index),
-					value = index,
-				}
-			}
-		end
-	end)
-
-	--BREAK and CONTINUE statements are only allowed to have up to a single CONSTANT INTEGER operand
-	recurse(root, { TOK.break_stmt, TOK.continue_stmt }, function(token, file)
-		if not token.children or #token.children == 0 then
-			token.children = { {
-				id = TOK.lit_number,
-				text = '1',
-				value = 1,
-				span = token.span,
-			} }
-			return
-		end
-
-		token.children = token.children[1].children
-		local val = tonumber(token.children[1].text, 10)
-		if #token.children > 1 or val == nil or val < 1 then
-			parse_error(token.span, 'Only a constant positive integer is allowed as a parameter for "' .. token.text ..
-				'"', file)
-		end
-	end)
-
-	--Make sure "delete" statements only have text params. deleting expressions that resolve to variable names is a recipe for disaster.
-	recurse(root, { TOK.delete_stmt }, function(token, file)
-		---@type Token[]
-		local kids = token.children[1].children
-		for i = 1, #kids do
-			if kids[i].id ~= TOK.text then
-				parse_error(kids[i].span, 'Expected only variable names after "delete" keyword', file)
-			end
-		end
-
-		token.children = kids
-	end)
-
-	--Fold nested array_concat tokens into a single array
-	recurse(root, { TOK.array_concat }, nil, function(token, file)
-		local kids = {}
-		for _, child in ipairs(token.children) do
-			if child.id == TOK.array_concat or child.id == TOK.object then
-				for __, kid in ipairs(child.children) do
-					table.insert(kids, kid)
-				end
-			else
-				table.insert(kids, child)
-			end
-		end
-
-		local is_object = false
-		local is_array = false
-		for _, child in ipairs(kids) do
-			if child.id ~= TOK.array_concat and child.id ~= TOK.object and not child.errored then
-				if child.id == TOK.key_value_pair then
-					is_object = true
-					child.inside_object = true
-					if #child.children == 0 and #kids > 1 then
-						parse_error(child.span, 'Missing key and value for object construct', file)
-						child.errored = true
-					end
-				else
-					is_array = true
-				end
-
-				if is_object and is_array then
-					parse_error(child.span,
-						'Ambiguous mixture of object and array constructs. Objects require key-value pairs for every element (e.g. `"key" => value`)',
-						file)
-					child.errored = true
-					break
-				end
-			end
-		end
-
-		if is_object then
-			token.id = TOK.object
-			token.type = _G['TYPE_OBJECT']
-		end
-		token.children = kids
-	end)
-
-	--Extract key-value pairs into objects
-	recurse(root, { TOK.key_value_pair }, nil, function(token, file)
-		if not token.inside_object then
-			local new_token = {
-				id = token.id,
-				span = token.span,
-				text = token.text,
-				children = token.children,
-				filename = token.filename,
-			}
-			token.id = TOK.object
-			token.text = '{}'
-			token.type = _G['TYPE_OBJECT']
-			token.children = { new_token }
-		end
-	end)
-
-	--Make a list of all subroutines, and check that return statements are only in subroutines
-	local labels = {}
-	local inside_sub = 0
-	recurse(root, { TOK.subroutine, TOK.return_stmt }, function(token, file)
-		if token.id == TOK.subroutine then
-			inside_sub = inside_sub + 1
-
-			local label = token.text
-			local prev = labels[label]
-			if prev ~= nil --[[minify-delete]] and not _G['ALLOW_SUBROUTINE_ELISION'] --[[/minify-delete]] then
-				-- Don't allow tokens to be redeclared
-				parse_error(token.span,
-					'Redeclaration of subroutine "' ..
-					label .. '" (previously declared on line ' .. prev.span.from.line ..
-					', col ' .. prev.span.from.col .. ')', file)
-			end
-
-			if not token.children or #token.children == 0 then
-				token.ignore = true
-			end
-
-			labels[label] = token
-		else
-			if inside_sub < 1 then
-				parse_error(token.span, 'Return statements can only be inside subroutines', file)
-			end
-		end
-	end, function(token, file)
-		if token.id == TOK.subroutine then
-			inside_sub = inside_sub - 1
-		end
-	end)
-
-	--Reduce subroutine references.
-	recurse(root, { TOK.gosub_stmt }, function(token, file)
-		if token.children[1].id == TOK.command then
-			token.children = token.children[1].children
-		end
-	end)
-
-	--Split up subroutine aliases that end with an asterisk
-	recurse(root, { TOK.alias_stmt }, function(token, file)
-		local l, a = token.children[1], token.children[2]
-		local label, alias = l.text, a.text
-
-		if label:sub(#label) == '*' and alias:match('%*') then
-			label = label:sub(1, #label - 1)
-			local aliases = {}
-			for i, _ in pairs(labels) do
-				if i:sub(1, #label) == label and i ~= label then
-					table.insert(aliases, {
-						id = TOK.alias_stmt,
-						text = 'using',
-						span = token.span,
-						children = {
-							{
-								id = TOK.text,
-								span = l.span,
-								text = i,
-							},
-							{
-								id = TOK.text,
-								span = a.span,
-								text = alias:gsub('%*', i:sub(#label + 1)),
-							}
-						},
-					})
-				end
-			end
-
-			token.id = TOK.program
-			token.children = aliases
-		end
-	end)
-
-
-	--Resolve all subroutine aliases
-	--Unlike other structures, these do respect scope.
-	local aliases = { {} }
-
-	--[[minify-delete]]
-	if _G['REPL'] then
-		aliases = { aliases_toplevel }
-	end
-	--[[/minify-delete]]
-
-	recurse(root,
-		{ TOK.gosub_stmt, TOK.alias_stmt, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.subroutine, TOK
-			.else_stmt, TOK.elif_stmt, TOK.match_stmt },
-		function(token, file)
-			if token.id == TOK.alias_stmt then
-				--Set the alias
-				local c = token.children[1]
-				aliases[#aliases][token.children[2].text] = c.text
-
-				--If alias refers to a subroutine that doesn't exist, error.
-				if not labels[c.text] then
-					local msg = 'Subroutine `' .. c.text .. '` not declared anywhere'
-					local guess = closest_word(c.text, labels, 4)
-					if guess ~= nil and guess ~= '' then
-						msg = msg .. ' (did you mean "' .. guess .. '"?)'
-					end
-					parse_error(c.span, msg, file)
-				end
-			elseif token.id == TOK.gosub_stmt then
-				--Check for an alias that matches
-				for i = #aliases, 1, -1 do
-					local c = token.children[1]
-					local a = aliases[i][c.text]
-					if a then
-						--If one matches, use it.
-						c.text = a
-						break
-					end
-				end
-			else
-				table.insert(aliases, {})
-			end
-		end, function(token, file)
-			if token.id ~= TOK.alias_stmt and token.id ~= TOK.gosub_stmt then
-				table.remove(aliases)
-			end
-		end
-	)
-
-	--[[minify-delete]]
-	if _G['REPL'] then
-		for key, value in pairs(aliases[1]) do
-			aliases_toplevel[key] = value
-		end
-	end
-	--[[/minify-delete]]
-
-	--Resolve all macro references
-	local macros = { {} }
-
-	--[[minify-delete]]
-	if _G['REPL'] then
-		macros = macros_toplevel
-	end
-	--[[/minify-delete]]
-
-	local function get_macro(name)
-		for i = #macros, 1, -1 do
-			if macros[i][name] then
-				return macros[i][name]
-			end
-		end
-		return nil
-	end
-
-	local tok_level = 0
-	local pop_scope = function(token, file)
-		if token.id == TOK.macro then
-			macros[#macros][token.text] = {
-				level = tok_level,
-				node = token.children[1]
-			}
-		elseif token.id == TOK.macro_ref then
-			local macro = get_macro(token.text)
-			if not macro then
-				parse_error(token.span, 'Macro "' .. token.text .. '" is not defined in the current scope', file)
-			else
-				--Macro is defined, so replace it with the appropriate node
-				for _, i in ipairs({ 'text', 'span', 'id', 'value', 'type', 'children' }) do
-					token[i] = macro.node[i]
-				end
-			end
-		else
-			--Make sure macros are only referenced in the appropriate scope, never outside the scope they're defined.
-			table.remove(macros)
-			tok_level = tok_level - 1
-		end
-	end
-	recurse(root,
-		{ TOK.macro, TOK.macro_ref, TOK.if_stmt, TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.subroutine, TOK
-			.else_stmt, TOK.elif_stmt, TOK.match_stmt }, function(token, file)
-			if token.id ~= TOK.macro and token.id ~= TOK.macro_ref then
-				if token.id == TOK.else_stmt or token.id == TOK.elif_stmt then
-					--Wipe the current scope to prevent macro references from leaking into the else block
-					table.remove(macros)
-					table.insert(macros, {})
-				end
-				table.insert(macros, {})
-				--Make sure macros are only referenced in the appropriate scope, never outside the scope they're defined.
-				tok_level = tok_level + 1
-			end
-		end, pop_scope
-	)
-
-	--[[minify-delete]]
-	if _G['REPL'] then
-		macros_toplevel = macros
-	end
-	--[[/minify-delete]]
-
-	--Replace macro definitions with the appropriate node.
-	recurse(root, { TOK.macro }, nil, function(token, file)
-		local macro_node = token.children[1]
-		for _, i in ipairs({ 'text', 'span', 'id', 'value', 'type' }) do
-			token[i] = macro_node[i]
-		end
-		token.children = macro_node.children
-	end)
-
-	--Move params of all function calls to be direct children
-	--(this makes syntax like `a.func(b)` be the same as `func(a,b)`)
-	recurse(root, { TOK.func_call }, function(token, file)
-		if not token.children then
-			token.children = {}
-		elseif #token.children > 0 then
-			local kids = {}
-			for i = 1, #token.children do
-				local child = token.children[i]
-				if token.children[i].id == TOK.array_concat then
-					local k
-					for k = 1, #token.children[i].children do
-						table.insert(kids, token.children[i].children[k])
-					end
-				else
-					table.insert(kids, token.children[i])
-				end
-			end
-
-			token.children = kids
-		end
-	end)
-
-	--Replace special function calls "\sub_name(arg1,arg2)" with "${gosub sub_name {arg1} {arg2}}"
-	recurse(root, { TOK.func_call }, nil, function(token, file)
-		if token.text:sub(1, 1) ~= '\\' then return end
-
-		--If function name begins with backslash, it's actually a gosub.
-		---@type Token[]
-		local kids = token.children or {}
-		if kids[1] and kids[1].id == TOK.array_concat then kids = kids[1].children or {} end
-		table.insert(kids, 1, {
-			id = TOK.text,
-			text = token.text:sub(2),
-			span = token.span,
-		})
-
-		token.text = '${'
-		token.id = TOK.inline_command
-		token.children = { {
-			id = TOK.gosub_stmt,
-			text = 'gosub',
-			span = token.span,
-			children = kids,
-		} }
-	end)
-
-	--Check function calls
-	recurse(root, { TOK.func_call }, function(token, file)
-		local func = BUILTIN_FUNCS[token.text]
-
-		--Function doesn't exist
-		if func == nil then
-			local msg = 'Unknown function "' .. token.text .. '"'
-			local guess = closest_word(token.text:lower(), BUILTIN_FUNCS, 4)
-
-			if guess ~= nil then
-				msg = msg .. ' (did you mean "' .. guess .. '(' .. FUNCSIG(guess) .. ')"?)'
-			end
-			parse_error(token.span, msg, file)
-			return
-		end
-
-		--Check if function has the right number of params
-		local param_ct = #token.children
-
-		if func ~= param_ct then
-			local plural = ''
-			if func ~= 1 then plural = 's' end
-			local verb = 'was'
-			if param_ct ~= 1 then verb = 'were' end
-
-			if func < 0 then
-				--"-1" means any non-zero num of params, any other negative (-N) means "min 1, max N"
-
-				if func == -1 then
-					if param_ct == 0 then
-						parse_error(token.span,
-							'Function "' ..
-							token.text ..
-							'(' ..
-							FUNCSIG(token.text) .. ')" expects at least 1 parameter, but ' ..
-							param_ct .. ' ' .. verb .. ' given', file)
-					end
-				elseif param_ct > -func or param_ct < 1 then
-					local plural = ''
-					if func < -1 then plural = 's' end
-					parse_error(token.span,
-						'Function "' ..
-						token.text ..
-						'(' ..
-						FUNCSIG(token.text) ..
-						')" expects 1 to ' .. (-func) .. ' parameter' .. plural ..
-						', but ' .. param_ct .. ' ' .. verb .. ' given', file)
-				end
-			else
-				parse_error(token.span,
-					'Function "' ..
-					token.text ..
-					'(' ..
-					FUNCSIG(token.text) ..
-					')" expects ' .. func .. ' parameter' .. plural .. ', but ' .. param_ct .. ' ' .. verb .. ' given',
-					file)
-			end
-		end
-
-		--For reduce() function, make sure that its second parameter is an operator!
-		if token.text == 'reduce' then
-			local correct = false
-			for i, k in pairs({ TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_idiv, TOK.op_div, TOK.op_mod, TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne }) do
-				if token.children[2].id == k then
-					correct = true
-					break
-				end
-			end
-			if not correct then
-				parse_error(token.children[2].span,
-					'The second parameter of "reduce(a,b)" must be a binary operator (e.g. + or *)', file)
-			end
-		elseif token.text == 'clamp' then
-			--Convert "clamp" into max(min(upper_bound, x), lower_bound)
-			---@type Token
-			local node = {
-				id = token.id,
-				span = token.span,
-				text = 'min',
-				children = {
-					token.children[1],
-					token.children[3],
-				},
-				filename = token.filename,
-			}
-			token.text = 'max'
-			token.children = { node, token.children[2] }
-		elseif token.text == 'int' then
-			--Convert "int" into floor(num(x))
-			---@type Token
-			local node = {
-				id = token.id,
-				span = token.span,
-				text = 'num',
-				children = token.children,
-				filename = token.filename,
-			}
-			token.text = 'floor'
-			token.children = { node }
-		elseif token.text == 'shuffle' then
-			--Convert "shuffle(x)" into "random_elements(x, MAX_INT)"
-			token.text = 'random_elements'
-			table.insert(token.children, {
-				id = TOK.lit_number,
-				span = token.span,
-				type = TYPE_NUMBER,
-				value = std.MAX_ARRAY_LEN,
-				text = tostring(std.MAX_ARRAY_LEN),
-			})
-		elseif token.children then
-			for i = 1, #token.children do
-				local child = token.children[i]
-				if child.id >= TOK.op_plus and child.id <= TOK.op_arrow then
-					parse_error(child.span,
-						'Function "' ..
-						token.text ..
-						'(' ..
-						FUNCSIG(token.text) .. ')" cannot take an operator as a parameter (found "' .. child.text .. '")',
-						file)
-				end
-			end
-		end
-	end)
-
-	--Prep plain (non-interpolated) strings to allow constant folding
-	recurse(root, { TOK.string_open }, function(token, file)
-		if token.children then
-			if token.children[1].id == TOK.text and #token.children == 1 then
-				token.value = token.children[1].text
-				token.children = nil
-			end
-		elseif not token.value then
-			token.value = ''
-		end
-	end)
-
-	--Check for variable existence by var name, not value
-	recurse(root, { TOK.boolean }, function(token, file)
-		local ch = token.children[1]
-		if token.text == 'exists' and ch.id == TOK.variable then
-			ch.id = TOK.string_open
-			ch.value = ch.text
-			ch.type = _G['TYPE_STRING']
-		end
-	end)
-
-	--Get rid of parentheses and expression pseudo-tokens
-	recurse(root, { TOK.parentheses, TOK.expression }, nil, function(token, file)
-		if not token.children or #token.children ~= 1 then return end
-
-		local child = token.children[1]
-		for _, key in ipairs({ 'value', 'id', 'text', 'span', 'type' }) do
-			token[key] = child[key]
-		end
-		token.children = child.children
-	end)
-
-	--Prep text to allow constant folding
-	recurse(root, { TOK.text }, function(token, file)
-		local val = tonumber(token.text)
-		if val then
-			token.value = val
-			token.type = _G['TYPE_NUMBER']
-		else
-			token.value = token.text
-			token.type = _G['TYPE_STRING']
-		end
-	end)
-
-	--Make variable assignment make sense, removing quirks of AST generation.
-	recurse(root, { TOK.let_stmt }, function(token, file)
-		local body = token.children[2]
-		if body and body.id == TOK.command then
-			if #body.children > 1 then
-				body.id = TOK.array_concat
-				body.text = '[]'
-			else
-				token.children[2] = body.children[1]
-			end
-		end
-
-		--Make sure there are no redundant variable assignments
-		if token.children[1].children then
-			local vars = { [token.children[1].text] = true }
-			for i = 1, #token.children[1].children do
-				local child = token.children[1].children[i]
-				if child.text ~= '_' and vars[child.text] then
-					parse_error(child.span,
-						'Redundant variable `' ..
-						child.text ..
-						'` in group assignment. To indicate that this element should be ignored, use an underscore for the variable name.',
-						file)
-				end
-				vars[child.text] = true
-			end
-		end
-	end)
-
-	--Tidy up WHILE loops and IF/ELIF statements (replace command with cmd contents)
-	recurse(root, { TOK.while_stmt, TOK.if_stmt, TOK.elif_stmt }, function(token, file)
-		if token.children[1].id == TOK.command then
-			if #token.children[1].children > 1 then
-				parse_error(token.span, 'Too many parameters passed to "' .. token.text .. '" statement', file)
-			end
-			token.children[1] = token.children[1].children[1]
-		end
-	end)
-
-	--Tidy up FOR loops (replace command with cmd contents)
-	recurse(root, { TOK.for_stmt }, function(token, file)
-		if token.children[2].id == TOK.command then
-			if #token.children[2].children > 1 then
-				token.children[2].id = TOK.array_concat
-			else
-				for _, i in ipairs({ 'text', 'span', 'id', 'value', 'type' }) do
-					token.children[2][i] = token.children[2].children[1][i]
-				end
-				token.children[2].children = token.children[2].children[1].children
-			end
-		end
-
-		--Don't automatically set var type to "string", let it deduce.
-		if token.children[1].id == TOK.text then
-			token.children[1].id = TOK.var_assign
-			token.children[1].value = nil
-			token.children[1].type = nil
-		end
-	end)
-
-	--Make sure key-value for loops always have some mutation of `pairs()` in the expression.
-	recurse(root, { TOK.kv_for_stmt }, function(token, file)
-		local node = token.children[3]
-
-		if not node.children or #node.children ~= 1 then
-			parse_error(node.span, 'Key-value for loop must be a single `pairs()` expression', file)
-		else
-			if node.id == TOK.command then
-				node = node.children[1]
-				token.children[3] = node
-			end
-
-			local expr_error = false
-			local n = node
-			while true do
-				if n.id ~= TOK.func_call then
-					expr_error = true
-					break
-				end
-
-				if n.text == 'pairs' then break end
-
-				if n.text ~= 'sort' and n.text ~= 'reverse' then
-					expr_error = true
-					break
-				end
-
-				--This would mean an incorrect amount of params, which will be caught later
-				if not n.children or #n.children == 0 then break end
-
-				n = n.children[1]
-			end
-
-			if expr_error then
-				parse_error(node.span, 'Expression in key-value for loop must contain `pairs()`', file)
-			end
-		end
-
-		--Don't automatically set var type to "string", let it deduce.
-		for i = 1, 2 do
-			if token.children[i].id == TOK.text then
-				token.children[i].id = TOK.var_assign
-				token.children[i].value = nil
-				token.children[i].type = nil
-			end
-		end
-	end)
+	--[[PERFORM COMPILER PASSES]]
+
+	local config = require "src.compiler.semantics.pass1"
+	recurse2(root, config, root_file)
+	local labels = config.finally()
+
+	config = require "src.compiler.semantics.pass2"
+	recurse2(root, config, root_file)
+	local FUNCSIG = config.finally()
 
 	--[[
 		TYPE ANNOTATIONS
@@ -1461,24 +794,6 @@ function SemanticAnalyzer(tokens, root_file)
 	end
 	--[[/minify-delete]]
 
-	--Make sure that comparisons that aren't directly under match statements
-	--always have two operands
-	recurse(root, { TOK.match_stmt, TOK.comparison }, function(token, file)
-		if token.id == TOK.match_stmt then
-			local body = token.children[2]
-			local kids = body.children
-			if not kids then return end
-			if body.id == TOK.if_stmt then kids = { body } end
-
-			for i = 1, #kids do
-				local expr = kids[i].children[1]
-				if expr.id == TOK.comparison then expr.in_match = true end
-			end
-		elseif not token.in_match and #token.children < 2 then
-			parse_error(token.span, 'Operator `' .. token.text .. '` expected 2 operands, but got 1', file)
-		end
-	end)
-
 	--Restructure match statements into an equivalent if/elif/else block.
 	recurse(root, { TOK.match_stmt }, function(token, file)
 		local iter = { token.children[2] }
@@ -1557,91 +872,6 @@ function SemanticAnalyzer(tokens, root_file)
 			token.children = { condition, else_branch }
 		end
 	end)
-
-	--Remove the body of conditionals that will never get executed
-	recurse(root, { TOK.if_stmt, TOK.elif_stmt }, function(token, file)
-		local cond = token.children[1]
-		if cond.value ~= nil or cond.id == TOK.lit_null then
-			--Decide whether to remove "then" or "else" branch
-			local ix, id, text = 2, TOK.kwd_then, 'then'
-			if std.bool(cond.value) then
-				ix, id, text = 3, TOK.kwd_end, 'end'
-			end
-
-			--[[minify-delete]]
-			if _G['LANGUAGE_SERVER'] then
-				if token.children[ix].id == TOK.kwd_end then return end
-				INFO.dead_code(token.children[ix].span, '', file)
-			end
-			--[[/minify-delete]]
-
-			--[[minify-delete]]
-			if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
-				token.children[ix] = {
-					id = id,
-					span = token.children[ix].span,
-					text = text,
-				}
-				--[[minify-delete]]
-			end --[[/minify-delete]]
-		end
-	end)
-
-	--Remove the body of loops that will never get executed
-	recurse(root, { TOK.while_stmt }, function(token, file)
-		local cond = token.children[1]
-		if (cond.value ~= nil or cond.id == TOK.lit_null) and not std.bool(cond.value) then
-			--[[minify-delete]]
-			if _G['LANGUAGE_SERVER'] then
-				INFO.dead_code(token.span, '', file)
-			end
-			--[[/minify-delete]]
-
-			--[[minify-delete]]
-			if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
-				token.children = { cond }
-				--[[minify-delete]]
-			end --[[/minify-delete]]
-		end
-	end)
-	recurse(root, { TOK.for_stmt }, function(token, file)
-		local iter = token.children[2]
-		if type(iter.value) == 'table' and next(iter.value) == nil then
-			--[[minify-delete]]
-			if _G['LANGUAGE_SERVER'] then
-				INFO.dead_code(token.span, '', file)
-			end
-			--[[/minify-delete]]
-
-			--[[minify-delete]]
-			if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
-				token.children[3] = nil
-				--[[minify-delete]]
-			end --[[/minify-delete]]
-		end
-	end)
-
-	--Make sure BREAK and CONTINUE statements can actually break out of the number of specified loops
-	local loop_depth = 0
-	recurse(root, { TOK.while_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.break_stmt, TOK.continue_stmt },
-		function(token, file)
-			if token.id == TOK.break_stmt or token.id == TOK.continue_stmt then
-				local loop_out = token.children[1].value
-				if loop_out > loop_depth then
-					local phrase, plural, amt = 'break out', '', 'only ' .. loop_depth
-					if token.id == TOK.continue_stmt then phrase = 'skip iteration' end
-					if loop_out ~= 1 then plural = 's' end
-					if loop_depth == 0 then amt = 'none' end
-					parse_error(token.span,
-						'Unable to ' .. phrase .. ' of ' .. loop_out ..
-						' loop' .. plural .. ', ' .. amt .. ' found at this scope', file)
-				end
-			end
-
-			loop_depth = loop_depth + 1
-		end, function(token, file)
-			loop_depth = loop_depth - 1
-		end)
 
 	--Check if subroutines are even used
 	--We also keep track of what subroutines each subroutine references.
@@ -1741,22 +971,6 @@ function SemanticAnalyzer(tokens, root_file)
 		end
 	end)
 
-	--Make sure `break cache` refers to an existing subroutine
-	recurse(root, { TOK.uncache_stmt }, function(token, file)
-		local label = token.children[1].text
-
-		if labels[label] == nil then
-			local msg = 'Subroutine `' .. label .. '` not declared anywhere'
-			local guess = closest_word(label, labels, 4)
-			if guess ~= nil and guess ~= '' then
-				msg = msg .. ' (did you mean "' .. guess .. '"?)'
-			end
-			parse_error(token.children[1].span, msg, file)
-		else
-			token.ignore = labels[label].ignore
-		end
-	end)
-
 	--Warn if subroutines are not used.
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then
@@ -1776,41 +990,7 @@ function SemanticAnalyzer(tokens, root_file)
 	end
 	--[[/minify-delete]]
 
-	--Remove dead code after stop, return, continue, or break statements
-	recurse(root, { TOK.program }, function(token, file)
-		local dead_code_span = nil
-
-		for i = 1, #token.children do
-			if dead_code_span then
-				--[[minify-delete]]
-				if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
-					token.children[i] = nil
-					--[[minify-delete]]
-				end --[[/minify-delete]]
-			else
-				local node = token.children[i]
-				if node.id == TOK.kwd_stop or node.id == TOK.return_stmt or node.id == TOK.continue_stmt or node.id == TOK.break_stmt then
-					--if this is not the last statement in the list,
-					--then mark all future statements as dead code.
-					if i < #token.children then
-						dead_code_span = {
-							from = token.children[i + 1].span.from,
-							to = token.children[#token.children].span.to,
-						}
-					end
-				end
-			end
-		end
-
-		--[[minify-delete]]
-		if _G['LANGUAGE_SERVER'] and dead_code_span then
-			--Warn about dead code
-			INFO.dead_code(dead_code_span, 'Dead code', file)
-		end
-		--[[/minify-delete]]
-	end)
-
-	--Lastly, if using the PC build, make sure shell pipe operators do not get escaped.
+	--If using the PC build, make sure shell pipe operators do not get escaped.
 	--[[minify-delete]]
 	if not _G['RESTRICT_TO_PLASMA_BUILD'] then
 		recurse(root, { TOK.command }, function(token, file)
@@ -1826,7 +1006,15 @@ function SemanticAnalyzer(tokens, root_file)
 	end
 	--[[/minify-delete]]
 
-	if ERRORED then terminate() end
+	--Lastly perform any extra optimizations, now that the code is fully validated.
 
+	--[[REMOVE DEAD CODE]]
+	config = require "src.compiler.semantics.dead_code"
+	recurse2(root, config, root_file)
+	config.finally()
+
+
+	--[[EXIT]]
+	if ERRORED then terminate() end
 	return root
 end
