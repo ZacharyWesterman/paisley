@@ -148,6 +148,7 @@ function SemanticAnalyzer(tokens, root_file)
 
 				if not ERRORED and #parser.get() > 0 then
 					local ast = parser.get()[1]
+					recurse(ast, { TOK.import_stmt }, import_file)
 					table.insert(new_asts, ast)
 				end
 
@@ -165,13 +166,9 @@ function SemanticAnalyzer(tokens, root_file)
 
 	INFO.root_file = root_file
 
-	while found_import and not ERRORED do
-		recurse(root, { TOK.import_stmt }, function(token, file)
-			import_file(token)
-		end)
+	recurse(root, { TOK.import_stmt }, import_file)
 
-		check_top_level_stmts()
-	end
+	check_top_level_stmts()
 	--[[/minify-delete]]
 
 	--[[PERFORM COMPILER PASSES]]
