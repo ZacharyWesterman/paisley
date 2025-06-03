@@ -353,6 +353,28 @@ return {
 		[TOK.kv_for_stmt] = {
 			aliases_enter,
 			push_scope,
+			--Tidy up FOR loops (replace command with cmd contents)
+			function(token, file)
+				if token.children[3].id == TOK.command then
+					if #token.children[3].children > 1 then
+						token.children[3].id = TOK.array_concat
+					else
+						for _, i in ipairs({ 'text', 'span', 'id', 'value', 'type' }) do
+							token.children[3][i] = token.children[3].children[1][i]
+						end
+						token.children[3].children = token.children[3].children[1].children
+					end
+				end
+
+				--Don't automatically set var types to "string", let them deduce.
+				for i = 1, 2 do
+					if token.children[i].id == TOK.text then
+						token.children[i].id = TOK.var_assign
+						token.children[i].value = nil
+						token.children[i].type = nil
+					end
+				end
+			end,
 		},
 		[TOK.else_stmt] = {
 			aliases_enter,
