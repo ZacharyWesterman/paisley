@@ -478,8 +478,8 @@ Expressions also give access to a full suite of operators and functions, listed 
 - exponentiation, `^`, e.g. `a^3` raises `a` to the 3rd power.
 - boolean operators, `and`, `or`, `xor`, `not`. Note that the `and` and `or` operators can short-cut, i.e. given an expression `a and b`: if `a` is false, then the whole expression *can never be true*, so `b` is not even evaluated.
 - comparison, `>`, `>=`, `<`, `<=`
-- comparison (equality), `=` or `==` (both are the same)
-- comparison (not equal), `!=` or `~=` (both are the same)
+- comparison (equality), `=` or `==` (the latter is deprecated)
+- comparison (not equal), `!=` or `~=` (the latter is deprecated)
 - check for whether variables are set, `exists` (e.g. `x exists`)
 - string or array length, `&` (e.g. `&variable`)
 - array slicing, `:`. Note that slices are inclusive of both their upper and lower bounds (e.g. `0:5` gives `(0,1,2,3,4,5)`)
