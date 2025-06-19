@@ -260,7 +260,12 @@ subroutine power
     return {@[1] ^ @[2]}
 end
 
+# You can use gosub the same as any inline command evaluation.
 print ${gosub power 2 10}
+
+# However, for calling subroutines inside expressions, they can be used like functions!
+# Just prepend a backslash to the subroutine name.
+print {\power(2,10)}
 ```
 See how in the above, the `@` variable stores any parameters passed to a subroutine as an array, so the first parameter is `@[1]`, the second is `@[2]` and so on. For constant indexes, the square brackets are optional, e.g. `@1` and `@2` will also work, but **not** `@ 2`.
 Also see that subroutines return values the same way that commands do, using the inline command evaluation syntax, `${...}`.
@@ -296,10 +301,7 @@ See the following recursive fibonacci example:
 ```
 cache subroutine fib
 	if {@1 < 2} then return {@1} end
-	return {
-		${gosub fib {@1 - 1}} +
-		${gosub fib {@1 - 2}}
-	}
+	return {\fib(@1 - 1) + \fib(@1 - 2)}
 end
 ```
 Subsequent calls to `fib` will be *very* fast, because each fibonacci number only has to be computed once.
