@@ -290,7 +290,7 @@ This is totally valid; as long as the subroutine is defined *somewhere*, the com
 ### Subroutines in Expressions:
 Inside of expressions, subroutines can be called in one of two ways:
 1. Using the inline command evaluation syntax `${...}`, in the same way as commands are used. E.g. `${gosub my_subroutine {arg1} arg2 "arg3" etc..}`
-2. Using the special function evaluation syntax `\my_subroutine(arg1,arg2,etc...)`.
+2. Using the special function evaluation syntax `\my_subroutine(arg1,arg2,etc...)`. Note that calling subroutines like this ignores other syntax until the parentheses. So calling `\some.sub.name(arg1)` or `\+(123, 456)` will always be interpreted as subroutine calls.
 
 These both do exactly the same thing: the latter is just syntax sugar for the former, and is supplied for convenience.
 
@@ -657,7 +657,8 @@ let object = {=>}
 print {'my object is "' (=>) '"'}
 ```
 
-Object values can of course be accessed the same way array values can, with the regular indexing `[]` syntax. However, attributes can also be accessed with dot notation.
+Object values can of course be accessed the same way array values can, with the regular indexing `[]` syntax.
+However, attributes can also be accessed with dot notation if they contain only alphanumeric characters (that is, they match the pattern `[a-zA-Z_][0-9a-zA-Z_]*`).
 The following lines do the exact same thing.
 ```
 print {object['name']}
