@@ -602,13 +602,16 @@ if curses_installed then
 					perm_scopes = scopes
 					break
 				end
+				if c == '\t' then
+					c = ' '
+				end
 
 				text = text:sub(1, x - x0) .. c .. text:sub(x - x0 + 1, #text)
 
 				--Reprint line so syntax highlighting is updated
 				stdscr:move(y0, x0)
 				scopes = printfmt(text)
-				stdscr:move(y0, x + 1)
+				stdscr:move(y0, x + #c)
 			else
 				--Just ignore window events
 				-- return nil
@@ -624,6 +627,44 @@ if curses_installed then
 		if color then stdscr:attron(curses.color_pair(color)) end
 		stdscr:addstr(text)
 		if color then stdscr:attroff(curses.color_pair(color)) end
+	end
+
+	---Override the print function to handle terminal colors
+	---@param text string|nil
+	print = function(text)
+		if text ~= nil then
+			if curses_installed then
+				local sections = {}
+				local current_color = nil
+
+				-- Split terminal color groups into sections
+				local pattern = '\27%[[0-9;]+m'
+				local c = {
+					['\27[0;31m'] = colors.red,
+					['\27[0;33m'] = colors.yellow,
+				}
+				local i = text:find(pattern)
+				while i do
+					local m = text:match(pattern)
+
+					table.insert(sections, { text:sub(1, i - 1), current_color })
+					current_color = c[m]
+
+					text = text:sub(i + #m, #text)
+					i = text:find(pattern)
+				end
+				table.insert(sections, { text, current_color })
+
+				for _, section in ipairs(sections) do
+					printf(section[1], section[2])
+				end
+				printf('\n')
+			else
+				printf(text .. '\n')
+			end
+		else
+			printf('\n')
+		end
 	end
 
 	clear = function()

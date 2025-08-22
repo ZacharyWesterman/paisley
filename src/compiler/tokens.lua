@@ -205,7 +205,7 @@ function parse_error(span, msg, file)
 
 			--[[minify-delete]]
 			if true then
-				print(string.char(27) .. '[0;31m' .. 'ERROR:' .. string.char(27) .. '[0m ' .. msg)
+				print('\27[0;31mERROR:\27[0m ' .. msg)
 			else
 				--[[/minify-delete]]
 				print(msg)
@@ -239,7 +239,7 @@ function parse_warning(span, msg, file)
 
 		--[[minify-delete]]
 		if true then
-			print(string.char(27) .. '[0;33m' .. 'WARNING:' .. string.char(27) .. '[0m ' .. msg)
+			print('\27[0;33mWARNING:\27[0m ' .. msg)
 			return
 		end
 		--[[/minify-delete]]
