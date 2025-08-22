@@ -103,4 +103,18 @@ STANDALONE.cpp = {
 
 		return true
 	end,
+
+	--- Remove precompiled C++ object files.
+	clean = function()
+		local make = STANDALONE.require_make()
+
+		local success = os.execute(make .. ' clean -C ' .. FS.libs_dir .. 'cpp')
+
+		if not success then
+			error('Error: Could not clean the C++ runtime.\nAre you sure the directory is writable?')
+			return false
+		end
+
+		return true
+	end
 }

@@ -4,7 +4,7 @@ local config = {
 	description = "This is the Paisley compiler and runtime engine.\nhttps://github.com/ZacharyWesterman/paisley",
 	name = "Paisley",
 	exe = "paisley",
-	version = "1.15.18",
+	version = "1.15.19",
 }
 
 local options = {
@@ -33,6 +33,7 @@ local options = {
 	{ description = "If introspecting, output details about the command",            short = "ic",               type = "array",  name = "introspect_cmds", composite = true,                   arg = "[CMD_NAME]" },
 	{ description = "Output a standalone binary (or source code if no output file)", long = "standalone",        short = "s" },
 	{ description = "Precompile C++ runtime object files",                           long = "cpp-precompile" },
+	{ description = "Remove precompiled C++ object files",                           long = "cpp-clean" },
 	{ description = "Compress bytecode or standalone output with zlib compression",  long = "compress",          short = "z" },
 	{ description = "Choose a specific language to compile the standalone binary",   long = "target",            type = "string", arg = "[TARGET]",         options = { "lua", "cpp" } },
 	{ description = "Allow unrecognized commands to coerce to shell exec",           long = "shell",             short = "l" },
@@ -193,6 +194,19 @@ if flags.compile_self then
 	os.exit(0)
 end
 --[[/no-install]]
+
+if flags.cpp_clean then
+	require 'src.runtime.standalone.all'
+	io.stderr:write('Removing precompiled C++ runtime object files...\n')
+	local result = STANDALONE.cpp.clean()
+	if not flags.cpp_precompile then
+		if result then
+			os.exit(0)
+		else
+			os.exit(1)
+		end
+	end
+end
 
 if flags.cpp_precompile then
 	require 'src.runtime.standalone.all'

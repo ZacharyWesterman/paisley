@@ -244,10 +244,16 @@ ARG = {
 		--[[/no-install]]
 
 		if (flags.standalone or flags.target or flags.output) and flags.cpp_precompile then
-			ARG.error('The `--cpp-precompile` flag should be used once, by itself, to pre-compile the C++ run-time.')
+			ARG.error(
+				'The `--cpp-precompile` flag should be used either by itself or with `--cpp-clean`, to pre-compile the C++ run-time.')
 		end
 
-		if flags.introspect or flags.repl --[[no-install]] or flags.install --[[/no-install]] or flags.plasma_build or flags.cpp_precompile then
+		if (flags.standalone or flags.target or flags.output) and not flags.cpp_precompile and flags.cpp_clean then
+			ARG.error(
+				'The `--cpp-clean` flag should be used either by itself or with `--cpp-precompile`, to remove precompiled C++ object files.')
+		end
+
+		if flags.introspect or flags.repl --[[no-install]] or flags.install --[[/no-install]] or flags.plasma_build or flags.cpp_precompile or flags.cpp_clean then
 			return flags, positional
 		end
 

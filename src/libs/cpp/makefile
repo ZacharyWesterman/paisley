@@ -18,7 +18,7 @@ all: $(EXE)
 objects: $(OBJS)
 
 clean:
-	rm -f $(OBJS) $(EXE)
+	rm -f $(OBJS) $(EXE) PAISLEY_BYTECODE.cpp
 
 $(EXE): PAISLEY_BYTECODE.o $(OBJS)
 	@echo Linking...
