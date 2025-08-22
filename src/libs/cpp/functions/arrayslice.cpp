@@ -13,6 +13,11 @@ void arrayslice(Context &context) noexcept
 		length = 32768;
 	}
 
+	if (length < 0)
+	{
+		length = 0;
+	}
+
 	std::vector<Value> result;
 	result.reserve(length);
 
