@@ -92,6 +92,7 @@ BUILTIN_FUNCS = {
 	splice = 4,
 	uuid = 0,
 	glob = -1,
+	log = -2,
 	--[[minify-delete]]
 	file_glob = 1,
 	--[[/minify-delete]]

@@ -419,6 +419,11 @@ FUNC_OPERATIONS = {
 		return result
 	end,
 
+	log = function(values)
+		local base, value = values[2], values[1]
+		return math.log(value, base)
+	end,
+
 	xml_encode = XML.stringify,
 	xml_decode = XML.parse,
 }

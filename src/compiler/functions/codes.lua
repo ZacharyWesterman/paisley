@@ -120,7 +120,8 @@ CALL_CODES = {
 	glob = 116,
 	xml_encode = 117,
 	xml_decode = 118,
+	log = 119,
 	--[[minify-delete]]
-	file_glob = 119,
+	file_glob = 120,
 	--[[/minify-delete]]
 }

@@ -1147,6 +1147,21 @@ local functions = {
 	--DESERIALIZE DATA FROM XML
 	function() PUSH(XML.parse(std.str(POP()[1]))) end,
 
+	--LOGARITHM
+	function()
+		local v = POP()
+		local base, value = v[2], std.num(v[1])
+		if base ~= nil then
+			base = std.num(base)
+			if base <= 1 then
+				error('Error: log() base must be greater than 1!')
+				return
+			end
+		end
+
+		PUSH(math.log(value, base))
+	end,
+
 	--[[minify-delete]]
 	--LIST ALL FILES THAT MATCH A GLOB PATTERN
 	function()

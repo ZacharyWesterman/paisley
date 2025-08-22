@@ -68,6 +68,7 @@
 #include "functions/lerp.hpp"
 #include "functions/lessequal.hpp"
 #include "functions/less.hpp"
+#include "functions/log.hpp"
 #include "functions/lower.hpp"
 #include "functions/lpad.hpp"
 #include "functions/matches.hpp"
@@ -241,6 +242,7 @@ const Function FUNCTIONS[] = {
 	glob,
 	xml_encode,
 	xml_decode,
+	log,
 	file_glob,
 };
-const int FUNCTION_COUNT = 120;
+const int FUNCTION_COUNT = sizeof(FUNCTIONS) / sizeof(FUNCTIONS[0]);

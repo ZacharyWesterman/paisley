@@ -728,6 +728,15 @@ TYPESIG = {
 		description = 'Convert a glob pattern into a list of strings',
 		--[[/minify-delete]]
 	},
+	log = {
+		valid = { { 'number', 'number' } },
+		out = 'number',
+		--[[minify-delete]]
+		params = { 'base', 'value' },
+		description =
+		'Calculate the logarithm of a number with a given base, or the natural logarithm if no base is provided',
+		--[[/minify-delete]]
+	},
 	--[[minify-delete]]
 	file_glob = {
 		valid = { { 'string' } },
