@@ -96,7 +96,8 @@ As a general rule, white space and line endings *do not matter* in Paisley.
 The only use of line endings is to separate commands, which can also be done with a semicolon `;` character.
 
 A Paisley script may consist of a series of comments, statements, and commands.
-- Comments begin with a `#` character and continue to the end of the line. There are no multi-line comments.
+- Single-line comments begin with a `#` character and continue to the end of the line.
+- Multi-line comments begin with `#[[` and continue until `]]` is reached, or the end of the file.
 - There are 5 types of statements: conditionals (if/else/elif/match/try), loops (for/while), variable assignment, subroutines, and miscellaneous statements (return/break/etc).
 - Any text that is not a keyword or otherwise part of a statement is considered a command. More on that later.
 
@@ -506,6 +507,8 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - `null`, equivalent to Lua's "nil"
 - Strings with interpolation allowed, `"some text"`
 - Strings with NO interpolation, `'some text'`
+- Multi-line strings with interpoation, `"""some text"""`
+- Multi-line strings with NO interpolation, `'''some text'''`
 - Variables, `var_name`, `x`, etc.
 - The "parameter list" variable, an array containing any values passed to the current subroutine, `@`
 - The "command list" variable, an array containing the names of all allowed commands, `$`

@@ -83,6 +83,41 @@ EXPORT_LINES = {}
 EXPORT_NEXT_TOKEN = false
 --[[/minify-delete]]
 
+---Some comments can give hints about what commands exist, and suppress "unknown command" errors.
+---Process these annotations.
+---@param text string The comment text to process, including the leading # character.
+local function process_comment_annotations(text)
+	local comment_text = text:upper()
+
+	for i in comment_text:gmatch('@[%w_]+') do
+		if i == '@COMMANDS' then
+			local msg = text:match('@[cC][oO][mM][mM][aA][nN][dD][sS][^%w_]([^\n]*)')
+			if msg then
+				for k in msg:gmatch('[%w_:]+') do
+					local cmd = std.split(k, ':')
+					if cmd[1] ~= '' then
+						if cmd[2] == '' or not cmd[2] then cmd[2] = 'any' end
+						ALLOWED_COMMANDS[cmd[1]] = SIGNATURE(cmd[2], true)
+					end
+				end
+			end
+		elseif i == '@SHELL' then
+			--Allow unknown commands to coerce to shell exec
+			COERCE_SHELL_CMDS = true
+		elseif i == '@PLASMA' then
+			--Allow script to specify that it's meant for the Plasma build
+			PLASMA_RESTRICT()
+			FUNC_SANDBOX_RESTRICT()
+		elseif i == '@SANDBOX' then
+			--Allow script to specify that no file system access is allowed
+			SHELL_RESTRICT()
+			FUNC_SANDBOX_RESTRICT()
+		elseif _G['LANGUAGE_SERVER'] and i == '@EXPORT' then
+			EXPORT_NEXT_TOKEN = true
+		end
+	end
+end
+
 --[[
 Takes text and (optional)file name, and returns an iterator for getting the next token.
 Throws an error if any token error was found in the input text.
@@ -132,6 +167,7 @@ function Lexer(text, file)
 			local tok_ignore = false
 			local curr_scope = scopes[#scopes]
 			local real_value = nil
+			local curr_scope_c1 = curr_scope and curr_scope:sub(1, 1)
 
 			if curr_scope == nil or curr_scope == '$' then
 				--Default parse rules
@@ -153,41 +189,38 @@ function Lexer(text, file)
 					if match then tok_ignore = true end
 				end
 
+				--Multi-line comments
+				if not match then
+					match = text:match('^#%[%[')
+					if match then
+						tok_ignore = true
+						match = text:match('^#%[%[.-%]%]')
+						if not match then match = text:match('^#%[%[.*') end
+						--[[minify-delete]]
+						process_comment_annotations(match)
+						--[[/minify-delete]]
+					end
+				end
+
 				--Comments
 				if not match then
 					match = text:match('^#[^\n]*')
-					if match then tok_ignore = true end
-
-					--[[minify-delete]]
-					--Some comments can give hints about what commands exist, and suppress "unknown command" errors
-					if text:upper():match('^#+[ \t]*@COMMANDS[^%w_]') then
-						local msg = text:match('^#+[ \t]*@COMMANDS[^%w_]([^\n]*)')
-						if msg then
-							for i in msg:gmatch('[%w_:]+') do
-								local cmd = std.split(i, ':')
-								if cmd[1] ~= '' then
-									if cmd[2] == '' or not cmd[2] then cmd[2] = 'any' end
-									ALLOWED_COMMANDS[cmd[1]] = SIGNATURE(cmd[2], true)
-								end
-							end
-						end
-					elseif text:upper():match('^#+[ \t]*@SHELL[^%w_]') then
-						--Allow unknown commands to coerce to shell exec
-						COERCE_SHELL_CMDS = true
-					elseif text:upper():match('^#+[ \t]*@PLASMA[^%w_]') then
-						--Allow script to specify that it's meant for the Plasma build
-						PLASMA_RESTRICT()
-						FUNC_SANDBOX_RESTRICT()
-					elseif text:upper():match('^#+[ \t]*@SANDBOX[^%w_]') then
-						--Allow script to specify that no file system access is allowed
-						SHELL_RESTRICT()
-						FUNC_SANDBOX_RESTRICT()
-					elseif _G['LANGUAGE_SERVER'] then
-						for i in text:upper():gmatch('@[%w_]+') do
-							if i == '@EXPORT' then EXPORT_NEXT_TOKEN = true end
-						end
+					if match then
+						tok_ignore = true
+						--[[minify-delete]]
+						process_comment_annotations(match)
+						--[[/minify-delete]]
 					end
-					--[[/minify-delete]]
+				end
+
+				--multiline string start
+				if not match then
+					match = text:match('^"""')
+					if not match then match = text:match("^'''") end
+					if match then
+						tok_type = TOK.string_open
+						table.insert(scopes, match)
+					end
 				end
 
 				--string start
@@ -276,10 +309,38 @@ function Lexer(text, file)
 					if match then tok_ignore = true end
 				end
 
+				--Multi-line comments
+				if not match then
+					match = text:match('^#%[%[')
+					if match then
+						tok_ignore = true
+						match = text:match('^#%[%[.-%]%]')
+						if not match then match = text:match('^#%[%[.*') end
+						--[[minify-delete]]
+						process_comment_annotations(match)
+						--[[/minify-delete]]
+					end
+				end
+
 				--Comments
 				if not match then
 					match = text:match('^#[^\n]*')
-					if match then tok_ignore = true end
+					if match then
+						tok_ignore = true
+						--[[minify-delete]]
+						process_comment_annotations(match)
+						--[[/minify-delete]]
+					end
+				end
+
+				--multiline string start
+				if not match then
+					match = text:match('^"""')
+					if not match then match = text:match("^'''") end
+					if match then
+						tok_type = TOK.string_open
+						table.insert(scopes, match)
+					end
 				end
 
 				--string start
@@ -448,7 +509,7 @@ function Lexer(text, file)
 					match = text:match('^\\[^ \t\n\r"\'%(%)%[%]{};%$]+')
 					if match then tok_type = TOK.variable end
 				end
-			elseif curr_scope == '"' or curr_scope == '\'' then
+			elseif curr_scope_c1 == '"' or curr_scope_c1 == '\'' then
 				--Logic for inside strings
 				local this_ix = 1
 				local this_str = ''
@@ -467,8 +528,8 @@ function Lexer(text, file)
 						--[[/minify-delete]]
 					end
 
-					--No line breaks are allowed inside strings
-					if this_chr == '\n' then
+					--Line breaks are only allowed inside triple-quoted strings
+					if this_chr == '\n' and #curr_scope == 1 then
 						parse_error(Span:new(line, col + #this_str, line, col + #this_str),
 							'Unexpected line ending inside string', file)
 						--[[minify-delete]]
@@ -482,7 +543,8 @@ function Lexer(text, file)
 					--Once string ends, add text to token list and exit string.
 					--If we found an expression instead, add to the stack (only in double-quoted strings).
 					local next_chr = text:sub(this_ix + 1, this_ix + 1)
-					if this_chr == curr_scope or ((this_chr == '{' or (this_chr == '$' and next_chr == '{')) and curr_scope ~= '\'') then
+					local quote_end = text:sub(this_ix, this_ix + #curr_scope - 1)
+					if quote_end == curr_scope or ((this_chr == '{' or (this_chr == '$' and next_chr == '{')) and curr_scope_c1 ~= '\'') then
 						if #this_str > 0 then
 							--Insert current built string
 							text = text:sub(this_ix, #text)
@@ -508,6 +570,7 @@ function Lexer(text, file)
 							table.insert(scopes, this_chr)
 						else
 							--exit string (pop to previous scope)
+							match = quote_end
 							tok_type = TOK.string_close
 							table.remove(scopes)
 						end
@@ -629,7 +692,8 @@ function Lexer(text, file)
 
 		--Make sure all strings, parens, and brackets all match up.
 		local remaining_scope = scopes[#scopes]
-		if remaining_scope == '"' or remaining_scope == '\'' then
+		local rem_scope_c1 = remaining_scope and remaining_scope:sub(1, 1)
+		if rem_scope_c1 == '"' or rem_scope_c1 == '\'' then
 			parse_error(Span:new(line, col, line, col), 'Unexpected EOF inside string', file)
 		elseif remaining_scope == '(' then
 			--[[minify-delete]]
