@@ -1171,6 +1171,19 @@ local functions = {
 		PUSH(std.normalize(v))
 	end,
 
+	--SELECT A RANDOM ELEMENT ACCORDING TO A DISTRIBUTION
+	function()
+		local v = POP()
+		local vector, weights = v[1], v[2]
+		if std.type(vector) ~= 'array' then
+			vector = { std.num(vector) }
+		end
+		if std.type(weights) ~= 'array' then
+			weights = { std.num(weights) }
+		end
+		PUSH(std.random_weighted(vector, weights))
+	end,
+
 	--[[minify-delete]]
 	--LIST ALL FILES THAT MATCH A GLOB PATTERN
 	function()

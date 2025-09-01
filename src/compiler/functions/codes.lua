@@ -122,7 +122,8 @@ CALL_CODES = {
 	xml_decode = 118,
 	log = 119,
 	normalize = 120,
+	random_weighted = 121,
 	--[[minify-delete]]
-	file_glob = 121,
+	file_glob = 122,
 	--[[/minify-delete]]
 }

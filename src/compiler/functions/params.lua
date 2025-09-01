@@ -94,6 +94,7 @@ BUILTIN_FUNCS = {
 	glob = -1,
 	log = -2,
 	normalize = 1,
+	random_weighted = 2,
 	--[[minify-delete]]
 	file_glob = 1,
 	--[[/minify-delete]]

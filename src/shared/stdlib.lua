@@ -562,5 +562,27 @@ std = {
 		return result
 	end,
 
+	---@brief Select a random element from an array according to a distribution.
+	---@param array any[]
+	---@param weights number[]
+	---@return any
+	random_weighted = function(array, weights)
+		local total = 0
+		local length = math.min(#array, #weights)
+		for i = 1, length do
+			total = total + std.num(weights[i])
+		end
+		local rand = math.random() * total
+		local cumulative = 0
+		for i = 1, length do
+			cumulative = cumulative + std.num(weights[i])
+			if rand < cumulative then
+				return array[i]
+			end
+		end
+
+		return array[length]
+	end,
+
 	MAX_ARRAY_LEN = 32768, --Any larger than this and performance tanks
 }

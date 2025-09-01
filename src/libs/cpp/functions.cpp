@@ -94,6 +94,7 @@
 #include "functions/reverse.hpp"
 #include "functions/round.hpp"
 #include "functions/rpad.hpp"
+#include "functions/random_weighted.hpp"
 #include "functions/sign.hpp"
 #include "functions/sinh.hpp"
 #include "functions/sin.hpp"
@@ -245,6 +246,7 @@ const Function FUNCTIONS[] = {
 	xml_decode,
 	log,
 	normalize,
+	random_weighted,
 	file_glob,
 };
 const int FUNCTION_COUNT = sizeof(FUNCTIONS) / sizeof(FUNCTIONS[0]);

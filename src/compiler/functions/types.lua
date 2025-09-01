@@ -6,7 +6,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'min', 'max' },
-		description = 'Generate a random integer',
+		description = 'Generate a random integer from min to max (inclusive) with uniform distribution.',
 		--[[/minify-delete]]
 	},
 	random_float = {
@@ -14,7 +14,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'min', 'max' },
-		description = 'Generate a random real number',
+		description = 'Generate a random real number from min to max (inclusive) with uniform distribution.',
 		--[[/minify-delete]]
 	},
 	random_element = {
@@ -22,7 +22,7 @@ TYPESIG = {
 		out = 'any',
 		--[[minify-delete]]
 		params = { 'list' },
-		description = 'Select a random element from a list',
+		description = 'Select a random element from a list with uniform distribution.',
 		--[[/minify-delete]]
 	},
 	word_diff = {
@@ -30,7 +30,8 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'word1', 'word2' },
-		description = 'Get the levenshtein difference between two strings',
+		description =
+		'Get the levenshtein difference between two strings. See https://en.wikipedia.org/wiki/Levenshtein_distance for more information.',
 		--[[/minify-delete]]
 	},
 	dist = {
@@ -46,7 +47,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Sine',
+		description = 'Calculate the sine of a number.',
 		--[[/minify-delete]]
 	},
 	cos = {
@@ -54,7 +55,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Cosine',
+		description = 'Calculate the cosine of a number.',
 		--[[/minify-delete]]
 	},
 	tan = {
@@ -62,7 +63,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Tangent',
+		description = 'Calculate the tangent of a number.',
 		--[[/minify-delete]]
 	},
 	asin = {
@@ -70,7 +71,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Arcsine',
+		description = 'Calculate the arcsine of a number.',
 		--[[/minify-delete]]
 	},
 	acos = {
@@ -78,7 +79,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Arccosine',
+		description = 'Calculate the arccosine of a number.',
 		--[[/minify-delete]]
 	},
 	atan = {
@@ -86,7 +87,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Arctangent',
+		description = 'Calculate the arctangent of a number.',
 		--[[/minify-delete]]
 	},
 	atan2 = {
@@ -94,7 +95,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x', 'y' },
-		description = '2-argument arctangent',
+		description = 'Calculate the signed arctangent of y/x.',
 		--[[/minify-delete]]
 	},
 	sqrt = {
@@ -102,7 +103,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Square root',
+		description = 'Calculate the square root of a number.',
 		--[[/minify-delete]]
 	},
 	bytes = {
@@ -110,7 +111,7 @@ TYPESIG = {
 		out = 'array[number]',
 		--[[minify-delete]]
 		params = { 'value' },
-		description = 'Split a number into bytes',
+		description = 'Split a number into bytes. The number is interpreted as an unsigned 32-bit integer.',
 		--[[/minify-delete]]
 	},
 	frombytes = {
@@ -118,35 +119,36 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'bytes' },
-		description = 'Convert a list of bytes into a number',
+		description =
+		'Convert a list of bytes into a number. The resultant number is constructed as an unsigned 32-bit integer.',
 		--[[/minify-delete]]
 	},
 	sum = {
 		valid = { { 'number' }, { 'array[number]' } },
 		out = 'number',
 		--[[minify-delete]]
-		description = 'Sum N values',
+		description = 'Calculate the sum of a list of values.',
 		--[[/minify-delete]]
 	},
 	mult = {
 		valid = { { 'number' }, { 'array[number]' } },
 		out = 'number',
 		--[[minify-delete]]
-		description = 'Multiply N values',
+		description = 'Calculate the product of a list of values.',
 		--[[/minify-delete]]
 	},
 	min = {
 		valid = { { 'number' }, { 'array[number]' } },
 		out = 'number',
 		--[[minify-delete]]
-		description = 'Find the minimum of N values',
+		description = 'Find the minimum of a list of values.',
 		--[[/minify-delete]]
 	},
 	max = {
 		valid = { { 'number' }, { 'array[number]' } },
 		out = 'number',
 		--[[minify-delete]]
-		description = 'Find the maximum of N values',
+		description = 'Find the maximum of a list of values.',
 		--[[/minify-delete]]
 	},
 	clamp = {
@@ -154,7 +156,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'value', 'min', 'max' },
-		description = 'Keep a value inside the given range',
+		description = 'Keep a value inside the given range.',
 		--[[/minify-delete]]
 	},
 	smoothstep = {
@@ -162,7 +164,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'value', 'min', 'max' },
-		description = 'Smoothly transition from 0 to 1 in a given range',
+		description = 'Smoothly transition from 0 to 1 in a given range.',
 		--[[/minify-delete]]
 	},
 	lerp = {
@@ -170,7 +172,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'ratio', 'start', 'end' },
-		description = 'Linearly interpolate between two numbers',
+		description = 'Linearly interpolate between two numbers.',
 		--[[/minify-delete]]
 	},
 	split = {
@@ -178,7 +180,8 @@ TYPESIG = {
 		out = 'array[string]',
 		--[[minify-delete]]
 		params = { 'text', 'delim' },
-		description = 'Split a string into an array based on a delimiter',
+		description =
+		'Split a string into an array based on a delimiter. If the delimiter is an empty string, the string is split into individual characters.',
 		--[[/minify-delete]]
 	},
 	join = {
@@ -186,7 +189,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'list', 'delim' },
-		description = 'Merge an array into a string with a delimiter between elements',
+		description = 'Join an array into a single string with a delimiter between elements.',
 		--[[/minify-delete]]
 	},
 	count = {
@@ -194,58 +197,62 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'iter', 'value' },
-		description = 'Count the number of occurrences of a value in an array or string',
+		description = 'Count the number of occurrences of a value in an array or string.',
 		--[[/minify-delete]]
 	},
 	index = {
 		valid = { { 'array', 'any' }, { 'string', 'string' } },
 		out = 'number',
 		--[[minify-delete]]
-		params = { 'iter', 'value' },
-		description = 'Find the index of the nth occurrence of a value in an array or string',
+		params = { 'iterable', 'value' },
+		description = 'Find the index of the first occurrence of a value in an array or string.',
 		--[[/minify-delete]]
 	},
 	find = {
 		valid = { { 'array', 'any', 'number' }, { 'string', 'string', 'number' } },
 		out = 'number',
 		--[[minify-delete]]
-		params = { 'iter', 'value', 'occurrence' },
-		description = 'Find the index of the first occurrence of a value in an array or string',
+		params = { 'iterable', 'value', 'occurrence' },
+		description = 'Find the index of the nth occurrence of a value in an array or string.',
 		--[[/minify-delete]]
 	},
 	type = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'data' },
-		description = 'Get the data type of a value',
+		description =
+		'Get the data type of a value. Possible return values are "number", "string", "boolean", "null", "array" or "object".',
 		--[[/minify-delete]]
 	},
 	bool = {
 		out = 'boolean',
 		--[[minify-delete]]
 		params = { 'data' },
-		description = 'Convert a value to a boolean',
+		description =
+		'Convert a value to a boolean. Returns false for null, 0, empty strings, empty arrays, and empty objects. All other values return true.',
 		--[[/minify-delete]]
 	},
 	num = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'data' },
-		description = 'Convert a value to a number',
+		description =
+		'Convert a value to a number. Returns 1 for true, and if a string is numeric, returns the number. All other non-number values return 0.',
 		--[[/minify-delete]]
 	},
 	int = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'data' },
-		description = 'Convert a value to an integer',
+		description = 'Convert a value to an integer. Converts a value to a number, then floors it.',
 		--[[/minify-delete]]
 	},
 	str = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'data' },
-		description = 'Convert a value to a string',
+		description =
+		'Convert a value to a string. Null is converted to an empty string, and booleans are converted to a 1 or 0. Arrays are joined into a space-separated list like "value1 value2 etc", and objects are joined in a similar fashion e.g. "key1 value1 key2 value2 etc".',
 		--[[/minify-delete]]
 	},
 	floor = {
@@ -253,7 +260,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Round down',
+		description = 'Round down to the nearest integer.',
 		--[[/minify-delete]]
 	},
 	ceil = {
@@ -261,7 +268,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Round up',
+		description = 'Round up to the nearest integer.',
 		--[[/minify-delete]]
 	},
 	round = {
@@ -269,7 +276,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Round to the nearest integer',
+		description = 'Round to the nearest integer.',
 		--[[/minify-delete]]
 	},
 	abs = {
@@ -277,7 +284,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Get the absolute value',
+		description = 'Get the absolute value of a number.',
 		--[[/minify-delete]]
 	},
 	append = {
@@ -285,7 +292,7 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'list', 'value' },
-		description = 'Append a value to an array',
+		description = 'Append a value to an array.',
 		--[[/minify-delete]]
 	},
 	lower = {
@@ -293,7 +300,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'text' },
-		description = 'Convert a string to lowercase',
+		description = 'Convert a string to lowercase.',
 		--[[/minify-delete]]
 	},
 	upper = {
@@ -301,7 +308,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'text' },
-		description = 'Convert a string to uppercase',
+		description = 'Convert a string to uppercase.',
 		--[[/minify-delete]]
 	},
 	camel = {
@@ -309,7 +316,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'text' },
-		description = 'Capitalize the first letter of every word',
+		description = 'Capitalize the first letter of every word.',
 		--[[/minify-delete]]
 	},
 	replace = {
@@ -317,7 +324,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'text', 'search', 'replace' },
-		description = 'Replace all occurrences of a substring',
+		description = 'Replace all occurrences of a substring.',
 		--[[/minify-delete]]
 	},
 	json_encode = {
@@ -325,7 +332,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'data' },
-		description = 'Serialize data to a JSON string',
+		description = 'Serialize data to a JSON string.',
 		--[[/minify-delete]]
 	},
 	json_decode = {
@@ -333,14 +340,14 @@ TYPESIG = {
 		out = 'any',
 		--[[minify-delete]]
 		params = { 'text' },
-		description = 'Deserialize data from a JSON string',
+		description = 'Deserialize data from a JSON string.',
 		--[[/minify-delete]]
 	},
 	json_valid = {
 		out = 'boolean',
 		--[[minify-delete]]
 		params = { 'text' },
-		description = 'Check if a JSON string is formatted correctly',
+		description = 'Check if a JSON string is formatted correctly.',
 		--[[/minify-delete]]
 	},
 	b64_encode = {
@@ -348,7 +355,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'text' },
-		description = 'Convert a string to base64',
+		description = 'Convert a string to base64.',
 		--[[/minify-delete]]
 	},
 	b64_decode = {
@@ -356,7 +363,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'text' },
-		description = 'Convert base64 text to a string',
+		description = 'Convert base64 text to a string.',
 		--[[/minify-delete]]
 	},
 	lpad = {
@@ -364,7 +371,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'text', 'pad_char', 'width' },
-		description = 'Left-pad a string with a given character',
+		description = 'Left-pad a string with a given character.',
 		--[[/minify-delete]]
 	},
 	rpad = {
@@ -372,7 +379,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'text', 'pad_char', 'width' },
-		description = 'Right-pad a string with a given character',
+		description = 'Right-pad a string with a given character.',
 		--[[/minify-delete]]
 	},
 	hex = {
@@ -380,7 +387,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'value' },
-		description = 'Convert a number to a hexadecimal string',
+		description = 'Convert a number to a hexadecimal string.',
 		--[[/minify-delete]]
 	},
 	filter = {
@@ -388,7 +395,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'text', 'valid_chars' },
-		description = 'Remove all characters that do not match the given pattern',
+		description = 'Remove all characters that do not match the given pattern.',
 		--[[/minify-delete]]
 	},
 	matches = {
@@ -396,7 +403,7 @@ TYPESIG = {
 		out = 'array[string]',
 		--[[minify-delete]]
 		params = { 'text', 'pattern' },
-		description = 'Get all substrings that match the given pattern',
+		description = 'Get all substrings that match the given pattern.',
 		--[[/minify-delete]]
 	},
 	clocktime = {
@@ -404,14 +411,15 @@ TYPESIG = {
 		out = 'array[number]',
 		--[[minify-delete]]
 		params = { 'timestamp' },
-		description = 'Convert a "seconds since midnight" timestamp into (hour, min, sec, milli)',
+		description = 'Convert a "seconds since midnight" timestamp into (hour, min, sec, milli).',
 		--[[/minify-delete]]
 	},
 	reduce = {
 		valid = { { 'array', 'any' } },
 		--[[minify-delete]]
 		params = { 'list', 'op' },
-		description = 'Reduce an array to a single element',
+		description =
+		'Reduce an array to a single element based on a repeated binary operation. Valid operators are: +, -, *, /, %, //, and, or, xor.',
 		--[[/minify-delete]]
 	},
 	reverse = {
@@ -419,7 +427,7 @@ TYPESIG = {
 		out = 1, --output type is the same as that of the first parameter
 		--[[minify-delete]]
 		params = { 'iter' },
-		description = 'Reverse an array or a string',
+		description = 'Reverse an array or a string.',
 		--[[/minify-delete]]
 	},
 	sort = {
@@ -427,7 +435,7 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'list' },
-		description = 'Sort an array in ascending order',
+		description = 'Sort an array in ascending order.',
 		--[[/minify-delete]]
 	},
 	merge = {
@@ -435,7 +443,7 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'list1', 'list2' },
-		description = 'Join two arrays together',
+		description = 'Concatenate two arrays together.',
 		--[[/minify-delete]]
 	},
 	update = {
@@ -443,7 +451,8 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'list', 'index', 'new_value' },
-		description = 'Replace an element in an array',
+		description =
+		'Replace an element in an array at the given index. If the index is out of bounds, the original array is returned.',
 		--[[/minify-delete]]
 	},
 	insert = {
@@ -451,7 +460,8 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'list', 'before_index', 'value' },
-		description = 'Insert an element in an array',
+		description =
+		'Insert an element in an array at the given index. If the index is out of bounds, then the value will either be added to the beginning or the end of the array.',
 		--[[/minify-delete]]
 	},
 	delete = {
@@ -459,7 +469,8 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'list', 'index' },
-		description = 'Delete an element from an array',
+		description =
+		'Delete an element from an array at the given index. If the index is out of bounds, the original array is returned.',
 		--[[/minify-delete]]
 	},
 	hash = {
@@ -467,7 +478,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'text' },
-		description = 'Generate the SHA256 hash of a string',
+		description = 'Generate the SHA256 hash of a string.',
 		--[[/minify-delete]]
 	},
 	object = {
@@ -475,7 +486,8 @@ TYPESIG = {
 		out = 'object',
 		--[[minify-delete]]
 		params = { 'list' },
-		description = 'Convert an array into an object',
+		description =
+		'Convert an array into an object. The array is assumed to be a list of ordered key-value pairs, e.g. (key1, value1, key2, value2, ...) -> { key1: value1, key2: value2, ... }',
 		--[[/minify-delete]]
 	},
 	array = {
@@ -483,7 +495,8 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'obj' },
-		description = 'Convert an object into an array',
+		description =
+		'Convert an object into an array. The array will be a list of key-value pairs, e.g. {key1: value1, key2: value2, ...} -> (key1, value1, key2, value2, ...).',
 		--[[/minify-delete]]
 	},
 	keys = {
@@ -491,7 +504,7 @@ TYPESIG = {
 		out = 'array[string]',
 		--[[minify-delete]]
 		params = { 'obj' },
-		description = 'List an object\'s keys',
+		description = 'List an object\'s keys.',
 		--[[/minify-delete]]
 	},
 	values = {
@@ -499,7 +512,7 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'obj' },
-		description = 'List an object\'s values',
+		description = 'List an object\'s values.',
 		--[[/minify-delete]]
 	},
 	pairs = {
@@ -507,7 +520,8 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'data' },
-		description = 'Get a list of key-value pairs for an object or array',
+		description =
+		'Get a list of key-value pairs for an object or array. The output will be a list of 2-element lists, e.g. {key1: value1, key2: value2, ...} -> ((key1, value1), (key2, value2), ...).',
 		--[[/minify-delete]]
 	},
 	interleave = {
@@ -515,7 +529,7 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'list1', 'list2' },
-		description = 'Interleave the values of two arrays',
+		description = 'Interleave the values of two arrays. E.g. (1, 2, 3) and (4, 5, 6) -> (1, 4, 2, 5, 3, 6).',
 		--[[/minify-delete]]
 	},
 	unique = {
@@ -523,7 +537,8 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'list' },
-		description = 'Make sure an array has no repeated elements',
+		description =
+		'Remove duplicate values from an array. This function is most useful for creating a set, which can then be passed to other set operations.',
 		--[[/minify-delete]]
 	},
 	union = {
@@ -531,7 +546,8 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'set1', 'set2' },
-		description = 'Get the union of two sets',
+		description =
+		'Get the union of two sets. Note that if either set contains duplicate elements, they may or may not be preserved.',
 		--[[/minify-delete]]
 	},
 	intersection = {
@@ -539,7 +555,8 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'set1', 'set2' },
-		description = 'Get the intersection of two sets',
+		description =
+		'Get the intersection of two sets. Note that if either set contains duplicate elements, they may or may not be preserved.',
 		--[[/minify-delete]]
 	},
 	difference = {
@@ -547,7 +564,8 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'set1', 'set2' },
-		description = 'Get the difference of two sets',
+		description =
+		'Get the difference of two sets. Note that if either set contains duplicate elements, they may or may not be preserved.',
 		--[[/minify-delete]]
 	},
 	symmetric_difference = {
@@ -555,7 +573,8 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'set1', 'set2' },
-		description = 'Get the symmetric difference of two sets',
+		description =
+		'Get the symmetric difference of two sets. Note that if either set contains duplicate elements, they may or may not be preserved.',
 		--[[/minify-delete]]
 	},
 	is_disjoint = {
@@ -563,7 +582,7 @@ TYPESIG = {
 		out = 'boolean',
 		--[[minify-delete]]
 		params = { 'set1', 'set2' },
-		description = 'Check if two sets are disjoint',
+		description = 'Check if two sets are disjoint. Returns true if they have no elements in common.',
 		--[[/minify-delete]]
 	},
 	is_subset = {
@@ -571,7 +590,8 @@ TYPESIG = {
 		out = 'boolean',
 		--[[minify-delete]]
 		params = { 'set1', 'set2' },
-		description = 'Check if the first set is a subset of the second',
+		description =
+		'Check if the first set is a subset of the second. Returns true if all elements of the first set are in the second set.',
 		--[[/minify-delete]]
 	},
 	is_superset = {
@@ -579,7 +599,8 @@ TYPESIG = {
 		out = 'boolean',
 		--[[minify-delete]]
 		params = { 'set1', 'set2' },
-		description = 'Check if the first set is a superset of the second',
+		description =
+		'Check if the first set is a superset of the second. Returns true if all elements of the second set are in the first set.',
 		--[[/minify-delete]]
 	},
 	flatten = {
@@ -587,7 +608,7 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'list' },
-		description = 'Flatten an array of any dimension into a 1D array',
+		description = 'Flatten an array of any dimension into a 1D array. E.g. ((1, 2), (3, (4, 5))) -> (1, 2, 3, 4, 5).',
 		--[[/minify-delete]]
 	},
 	sinh = {
@@ -595,7 +616,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Hyperbolic sine',
+		description = 'Calculate the hyperbolic sine of a number.',
 		--[[/minify-delete]]
 	},
 	cosh = {
@@ -603,7 +624,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Hyperbolic cosine',
+		description = 'Calculate the hyperbolic cosine of a number.',
 		--[[/minify-delete]]
 	},
 	tanh = {
@@ -611,7 +632,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Hyperbolic tangent',
+		description = 'Calculate the hyperbolic tangent of a number.',
 		--[[/minify-delete]]
 	},
 	sign = {
@@ -619,7 +640,7 @@ TYPESIG = {
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'x' },
-		description = 'Sign of a number: -1 if negative, 0 if zero, 1 if positive',
+		description = 'Get the signedness of a number. returns -1 if negative, 0 if zero, 1 if positive.',
 		--[[/minify-delete]]
 	},
 	ascii = {
@@ -661,7 +682,8 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'number', 'base', 'pad_width' },
-		description = 'Convert a number to a numeric string of any base from 2 to 36.',
+		description =
+		'Convert a number to a numeric string of any base from 2 to 36. Optionally pad the string with leading zeros to a given width. E.g. 42 in base 16 with padding of 4 would be "002A".',
 		--[[/minify-delete]]
 	},
 	time = {
@@ -686,7 +708,8 @@ TYPESIG = {
 		out = 'any',
 		--[[minify-delete]]
 		params = { 'list', 'count' },
-		description = 'Select (non-repeating) random elements from a list',
+		description =
+		'Select non-repeating random elements from a list. If count is greater than the number of elements in the list, all elements will be returned in random order.',
 		--[[/minify-delete]]
 	},
 	shuffle = {
@@ -694,7 +717,8 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'list' },
-		description = 'Shuffle an array\'s elements into a random order',
+		description =
+		'Shuffle an array\'s elements into a random order. This is identical to calling random_elements with count set to the length of the array.',
 		--[[/minify-delete]]
 	},
 	match = {
@@ -702,7 +726,7 @@ TYPESIG = {
 		out = 'string?',
 		--[[minify-delete]]
 		params = { 'text', 'pattern' },
-		description = 'Get the first substring that matches the given pattern',
+		description = 'Get the first substring that matches the given pattern. If no match is found, null is returned.',
 		--[[/minify-delete]]
 	},
 	splice = {
@@ -710,14 +734,15 @@ TYPESIG = {
 		out = 'array',
 		--[[minify-delete]]
 		params = { 'list', 'start', 'end', 'replacement' },
-		description = 'Remove or replace elements from an array',
+		description = 'Remove or replace elements from an array.',
 		--[[/minify-delete]]
 	},
 	uuid = {
 		value = {},
 		out = 'string',
 		--[[minify-delete]]
-		description = 'Generate a universally unique identifier (UUID)',
+		description =
+		'Generate a universally unique identifier (UUID). See https://en.wikipedia.org/wiki/Universally_unique_identifier for more information.',
 		--[[/minify-delete]]
 	},
 	glob = {
@@ -725,7 +750,8 @@ TYPESIG = {
 		out = 'array[string]',
 		--[[minify-delete]]
 		params = { 'glob_pattern', '...' },
-		description = 'Convert a glob pattern into a list of strings',
+		description =
+		'Convert a glob pattern into a list of strings. E.g. `glob("a?*", "b", "c")` or `glob("a?*", ("b", "c"))` -> ("a?b", "a?c").',
 		--[[/minify-delete]]
 	},
 	log = {
@@ -734,7 +760,7 @@ TYPESIG = {
 		--[[minify-delete]]
 		params = { 'base', 'value' },
 		description =
-		'Calculate the logarithm of a number with a given base, or the natural logarithm if no base is provided',
+		'Calculate the logarithm of a number with a given base, or the natural logarithm if no base is provided.',
 		--[[/minify-delete]]
 	},
 	normalize = {
@@ -742,7 +768,16 @@ TYPESIG = {
 		out = 'array[number]',
 		--[[minify-delete]]
 		params = { 'vector' },
-		description = 'Normalize a vector to length 1',
+		description = 'Normalize a vector to length 1. E.g. (3, 4) -> (0.6, 0.8).',
+		--[[/minify-delete]]
+	},
+	random_weighted = {
+		valid = { { 'array[any]', 'array[number]' } },
+		out = 'any',
+		--[[minify-delete]]
+		params = { 'list', 'weights' },
+		description =
+		'Select a random element from a list according to a weight distribution. Weights will be normalized to sum to 1, so weights like (1, 2, 3) are fine and will be treated as (0.166, 0.333, 0.5); that is, the third element will be three times more likely to be selected than the first element.',
 		--[[/minify-delete]]
 	},
 	--[[minify-delete]]
@@ -750,7 +785,8 @@ TYPESIG = {
 		valid = { { 'string' } },
 		out = 'array[string]',
 		params = { 'glob_pattern' },
-		description = 'List all files that match a glob pattern',
+		description =
+		'List all files that match a glob pattern. E.g. `file_glob("*.txt")` -> ("file1.txt", "file2.txt"), depending on the files in your current directory.',
 	},
 	--[[/minify-delete]]
 	xml_encode = {
@@ -758,7 +794,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'data' },
-		description = 'Serialize data to an XML string',
+		description = 'Serialize data to an XML string.',
 		--[[/minify-delete]]
 	},
 	xml_decode = {
@@ -766,7 +802,7 @@ TYPESIG = {
 		out = 'array[object]',
 		--[[minify-delete]]
 		params = { 'text' },
-		description = 'Deserialize data from an XML string',
+		description = 'Deserialize data from an XML string.',
 		--[[/minify-delete]]
 	},
 

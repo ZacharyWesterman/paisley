@@ -79,6 +79,19 @@ lua paisley --help
 
 There are lots of options available to play around with, so be sure and run `paisley --help` for a rundown of all of them.
 
+A particularly useful feature is the `--introspect` flag, which allows outputting detailed information about functions or commands.
+This information is often more detailed than the readme, though the readme is often plenty detailed.
+For example:
+```
+paisley --introspect -ifnormalize
+```
+The above will print out detailed info about the `normalize()` function.
+```
+paisley --introspect -icsleep
+```
+The above will print out detailed info about the `sleep` command.
+
+
 When you're ready to explore the language, be sure to check out the examples. I recommend `examples/fibonacci.pai`.
 
 ---
@@ -522,6 +535,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Random real number: `random_float(min_value, max_value) -> number`
 - Select a random element from a list: `random_element(array) -> any`
 - Select (non-repeating) random elements from a list: `random_elements(array, count) -> array`
+- Select a random element according to a distribution: `random_weighted(array, weight_array) -> any`
 - Shuffle an array's elements into a random order: `shuffle(array) -> array`
 - Difference between two strings: `word_diff(str1, str2) -> number` ([Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance))
 - Euclidean distance (numbers or vectors of N dimension): `dist(point1, point2) -> number`
