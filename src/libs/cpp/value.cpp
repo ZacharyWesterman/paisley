@@ -71,7 +71,16 @@ std::string Value::to_string() const noexcept
 	else if (std::holds_alternative<double>(*this))
 	{
 		std::stringstream ss;
-		ss << std::get<double>(*this);
+		const auto val = std::get<double>(*this);
+		if ((double)(long)val == val)
+		{
+			ss << (long)val;
+		}
+		else
+		{
+			ss << std::fixed;
+			ss << val;
+		}
 		return ss.str();
 	}
 	else if (std::holds_alternative<bool>(*this))

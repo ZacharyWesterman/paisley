@@ -346,6 +346,11 @@ function SemanticAnalyzer(tokens, root_file)
 			signature = TYPESIG[token.id]
 		elseif TYPESIG[token.text] ~= nil then
 			signature = TYPESIG[token.text]
+			--[[minify-delete]]
+			if _G['RESTRICT_TO_PLASMA_BUILD'] and signature.plasma == false then
+				parse_error(token.span, 'The `' .. token.text .. '` function cannot be used in the Plasma build.', file)
+			end
+			--[[/minify-delete]]
 		else
 			return
 		end
