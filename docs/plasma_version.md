@@ -41,4 +41,10 @@ The following commands will not work in the Plasma build, unless the commands ar
 - `stdout`
 - `stderr`
 
+The following functions will not work in the Plasma build:
+- `toepoch`
+- `fromepoch`
+- `epochnow`
+- `file_glob`
+
 Note that all commands take a little bit of time to run (at least 0.02s), whether they're built-in or not. This is to prevent "infinite loop" errors or performance drops.
