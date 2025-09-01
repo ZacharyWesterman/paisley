@@ -448,5 +448,5 @@ FUNC_OPERATIONS = {
 		datetime.time = { date.hour, date.min, date.sec }
 		return datetime
 	end,
-	--[[minify-delete]]
+	--[[/minify-delete]]
 }
