@@ -881,7 +881,7 @@ function SemanticAnalyzer(tokens, root_file)
 	local current_sub = nil
 	recurse(root, { TOK.gosub_stmt, TOK.subroutine }, function(token, file)
 		if token.id == TOK.gosub_stmt then
-			local text = token.children[1].text
+			local text = token.children[1].value or token.children[1].text
 
 			if current_sub then
 				if not sub_refs[current_sub] then sub_refs[current_sub] = {} end

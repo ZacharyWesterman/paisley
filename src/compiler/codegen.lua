@@ -910,7 +910,7 @@ function generate_bytecode(root, file)
 					emit(bc.push, indexes)
 					emit(bc.swap)
 					emit(bc.call, 'arrayindex')
-					emit(bc.push_index)
+					emit(bc.push_index, 1) --+1 for the return address
 					emit(bc.call, 'jump') --JUMP without param will pop the param from the stack
 
 					--Then push TRUE and return to caller
