@@ -93,6 +93,7 @@ BUILTIN_FUNCS = {
 	uuid = 0,
 	glob = -1,
 	log = -2,
+	normalize = 1,
 	--[[minify-delete]]
 	file_glob = 1,
 	--[[/minify-delete]]

@@ -525,6 +525,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Shuffle an array's elements into a random order: `shuffle(array) -> array`
 - Difference between two strings: `word_diff(str1, str2) -> number` ([Levenshtein distance](https://en.wikipedia.org/wiki/Levenshtein_distance))
 - Euclidean distance (numbers or vectors of N dimension): `dist(point1, point2) -> number`
+- Normalize a vector to length 1: `normalize(vector) -> array[number]`
 - Trig functions: `sin(x), cos(x), tan(x), asin(x), acos(x), atan(x), atan2(x, y), sinh(x), cosh(x), tanh(x) -> number`
 - Square root: `sqrt(x) -> number`
 - Logarithm: `log(x, base) -> number` or the natural logarithm `log(x) -> number`

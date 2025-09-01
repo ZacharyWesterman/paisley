@@ -424,6 +424,8 @@ FUNC_OPERATIONS = {
 		return math.log(value, base)
 	end,
 
+	normalize = std.normalize,
+
 	xml_encode = XML.stringify,
 	xml_decode = XML.parse,
 }

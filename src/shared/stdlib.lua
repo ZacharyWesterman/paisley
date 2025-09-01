@@ -543,5 +543,24 @@ std = {
 		end
 	end,
 
+	---@brief Normalize a vector to length 1.
+	---@param vector number[] The vector to normalize.
+	---@return number[] The normalized vector.
+	normalize = function(vector)
+		local length = 0
+		for i = 1, #vector do
+			local num = std.num(vector[i])
+			length = length + num * num
+		end
+		length = math.sqrt(length)
+		if length == 0 then return vector end
+
+		local result = std.array()
+		for i = 1, #vector do
+			result[i] = std.num(vector[i]) / length
+		end
+		return result
+	end,
+
 	MAX_ARRAY_LEN = 32768, --Any larger than this and performance tanks
 }

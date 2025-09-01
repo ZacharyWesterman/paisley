@@ -78,6 +78,7 @@
 #include "functions/min.hpp"
 #include "functions/mul.hpp"
 #include "functions/mult.hpp"
+#include "functions/normalize.hpp"
 #include "functions/notequal.hpp"
 #include "functions/numeric_string.hpp"
 #include "functions/num.hpp"
@@ -243,6 +244,7 @@ const Function FUNCTIONS[] = {
 	xml_encode,
 	xml_decode,
 	log,
+	normalize,
 	file_glob,
 };
 const int FUNCTION_COUNT = sizeof(FUNCTIONS) / sizeof(FUNCTIONS[0]);

@@ -737,6 +737,14 @@ TYPESIG = {
 		'Calculate the logarithm of a number with a given base, or the natural logarithm if no base is provided',
 		--[[/minify-delete]]
 	},
+	normalize = {
+		valid = { { 'array[number]' } },
+		out = 'array[number]',
+		--[[minify-delete]]
+		params = { 'vector' },
+		description = 'Normalize a vector to length 1',
+		--[[/minify-delete]]
+	},
 	--[[minify-delete]]
 	file_glob = {
 		valid = { { 'string' } },

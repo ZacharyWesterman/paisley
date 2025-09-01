@@ -1162,6 +1162,15 @@ local functions = {
 		PUSH(math.log(value, base))
 	end,
 
+	--NORMALIZE A VECTOR
+	function()
+		local v = POP()[1]
+		if std.type(v) ~= 'array' then
+			v = { std.num(v) }
+		end
+		PUSH(std.normalize(v))
+	end,
+
 	--[[minify-delete]]
 	--LIST ALL FILES THAT MATCH A GLOB PATTERN
 	function()
