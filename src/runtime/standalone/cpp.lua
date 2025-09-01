@@ -10,10 +10,10 @@ STANDALONE.cpp = {
 		for i = 1, #bytecode - 1 do
 			local instr = bytecode[i]
 			text = text .. '\t{ ' ..
-				(instr[1] or 0) .. ', ' ..
-				(instr[2] or 0) .. ', ' ..
-				(instr[3] or 0) .. ', ' ..
-				(instr[4] or 0) .. ' },\n'
+				(tonumber(instr[1]) or 0) .. ', ' ..
+				(tonumber(instr[2]) or 0) .. ', ' ..
+				(tonumber(instr[3]) or 0) .. ', ' ..
+				(tonumber(instr[4]) or 0) .. ' },\n'
 		end
 
 		local function escape_str(str)
