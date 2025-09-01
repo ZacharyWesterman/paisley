@@ -754,6 +754,22 @@ TYPESIG = {
 		'Convert a glob pattern into a list of strings. E.g. `glob("a?*", "b", "c")` or `glob("a?*", ("b", "c"))` -> ("a?b", "a?c").',
 		--[[/minify-delete]]
 	},
+	xml_encode = {
+		valid = { { 'array[object]' } },
+		out = 'string',
+		--[[minify-delete]]
+		params = { 'data' },
+		description = 'Serialize data to an XML string.',
+		--[[/minify-delete]]
+	},
+	xml_decode = {
+		valid = { { 'string' } },
+		out = 'array[object]',
+		--[[minify-delete]]
+		params = { 'text' },
+		description = 'Deserialize data from an XML string.',
+		--[[/minify-delete]]
+	},
 	log = {
 		valid = { { 'number', 'number' } },
 		out = 'number',
@@ -781,30 +797,38 @@ TYPESIG = {
 		--[[/minify-delete]]
 	},
 	--[[minify-delete]]
+	toepoch = {
+		valid = { { 'object' } },
+		out = 'number',
+		params = { 'datetime' },
+		description =
+		'Convert a datetime object to epoch time (seconds since Jan 1, 1970). The datetime object is expected to have the following form: { date: (day, month, year), time: (hour, min, sec) }.',
+		plasma = false,
+	},
+	fromepoch = {
+		valid = { { 'number' } },
+		out = 'object',
+		params = { 'timestamp' },
+		description =
+		'Convert epoch time (seconds since Jan 1, 1970) to a datetime object. The datetime object will have the following form: { date: (day, month, year), time: (hour, min, sec) }.',
+		plasma = false,
+	},
+	epochnow = {
+		value = {},
+		out = 'number',
+		description =
+		'Get the current epoch time (seconds since Jan 1, 1970).',
+		plasma = false,
+	},
 	file_glob = {
 		valid = { { 'string' } },
 		out = 'array[string]',
 		params = { 'glob_pattern' },
 		description =
 		'List all files that match a glob pattern. E.g. `file_glob("*.txt")` -> ("file1.txt", "file2.txt"), depending on the files in your current directory.',
+		plasma = false,
 	},
 	--[[/minify-delete]]
-	xml_encode = {
-		valid = { { 'array[object]' } },
-		out = 'string',
-		--[[minify-delete]]
-		params = { 'data' },
-		description = 'Serialize data to an XML string.',
-		--[[/minify-delete]]
-	},
-	xml_decode = {
-		valid = { { 'string' } },
-		out = 'array[object]',
-		--[[minify-delete]]
-		params = { 'text' },
-		description = 'Deserialize data from an XML string.',
-		--[[/minify-delete]]
-	},
 
 	[TOK.add] = {
 		valid = { { 'number' }, { 'array[number]' } },

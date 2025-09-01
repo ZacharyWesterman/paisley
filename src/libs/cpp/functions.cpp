@@ -34,6 +34,7 @@
 #include "functions/dist.hpp"
 #include "functions/div.hpp"
 #include "functions/endswith.hpp"
+#include "functions/epochnow.hpp"
 #include "functions/equal.hpp"
 #include "functions/explode.hpp"
 #include "functions/file_glob.hpp"
@@ -42,6 +43,7 @@
 #include "functions/flatten.hpp"
 #include "functions/floor.hpp"
 #include "functions/frombytes.hpp"
+#include "functions/fromepoch.hpp"
 #include "functions/glob.hpp"
 #include "functions/greaterequal.hpp"
 #include "functions/greater.hpp"
@@ -112,6 +114,7 @@
 #include "functions/tanh.hpp"
 #include "functions/tan.hpp"
 #include "functions/time.hpp"
+#include "functions/toepoch.hpp"
 #include "functions/type.hpp"
 #include "functions/union.hpp"
 #include "functions/unique.hpp"
@@ -247,6 +250,9 @@ const Function FUNCTIONS[] = {
 	log,
 	normalize,
 	random_weighted,
+	toepoch,
+	fromepoch,
+	epochnow,
 	file_glob,
 };
 const int FUNCTION_COUNT = sizeof(FUNCTIONS) / sizeof(FUNCTIONS[0]);

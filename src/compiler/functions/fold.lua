@@ -428,4 +428,25 @@ FUNC_OPERATIONS = {
 
 	xml_encode = XML.stringify,
 	xml_decode = XML.parse,
+
+	--[[minify-delete]]
+	toepoch = function(datetime)
+		return os.time {
+			year = datetime.date and datetime.date[3],
+			month = datetime.date and datetime.date[2],
+			day = datetime.date and datetime.date[1],
+			hour = datetime.time and datetime.time[1],
+			min = datetime.time and datetime.time[2],
+			sec = datetime.time and datetime.time[3],
+		}
+	end,
+
+	fromepoch = function(epoch)
+		local date = os.date('*t', epoch)
+		local datetime = std.object()
+		datetime.date = { date.day, date.month, date.year }
+		datetime.time = { date.hour, date.min, date.sec }
+		return datetime
+	end,
+	--[[minify-delete]]
 }

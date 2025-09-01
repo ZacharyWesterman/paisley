@@ -10,7 +10,7 @@ NULL = {}
 -- VARS = {}
 
 local function runtime_error(line, msg)
-	if msg:sub(1, 12) == 'RUNTIME BUG' then
+	if msg:sub(1, 11) == 'RUNTIME BUG' then
 		msg = msg .. '\nTHIS IS A BUG IN THE PAISLEY COMPILER, PLEASE REPORT IT!'
 	end
 
@@ -1185,6 +1185,43 @@ local functions = {
 	end,
 
 	--[[minify-delete]]
+	--CONVERT A DATETIME OBJECT TO A UNIX TIMESTAMP
+	function()
+		local dt = POP()[1]
+		if std.type(dt) ~= 'object' then
+			PUSH(0)
+			return
+		end
+		PUSH(os.time {
+			year = dt.date and dt.date[3],
+			month = dt.date and dt.date[2],
+			day = dt.date and dt.date[1],
+			hour = dt.time and dt.time[1],
+			min = dt.time and dt.time[2],
+			sec = dt.time and dt.time[3],
+		})
+	end,
+
+	--CONVERT A UNIX TIMESTAMP TO A DATETIME OBJECT
+	function()
+		local timestamp = POP()[1]
+		local datetime = std.object()
+		if std.type(timestamp) ~= 'number' then
+			PUSH(datetime)
+			return
+		end
+		local dt = os.date('*t', timestamp)
+		datetime.date = { dt.day, dt.month, dt.year }
+		datetime.time = { dt.hour, dt.min, dt.sec }
+		PUSH(datetime)
+	end,
+
+	--GET THE CURRENT EPOCH TIME
+	function()
+		POP()
+		PUSH(os.time())
+	end,
+
 	--LIST ALL FILES THAT MATCH A GLOB PATTERN
 	function()
 		local pattern = std.str(POP()[1])
@@ -1211,7 +1248,14 @@ local functions = {
 
 COMMANDS = {
 	--CALL
-	function(line, p1, p2) functions[p1 + 1](line, p2) end,
+	function(line, p1, p2)
+		local fn = functions[p1 + 1]
+		if not fn then
+			runtime_error(line, 'RUNTIME BUG: No function found for id "' .. std.str(p1) .. '"')
+		else
+			fn(line, p2)
+		end
+	end,
 
 	--SET VARIABLE
 	function(line, p1, p2)

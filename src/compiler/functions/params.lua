@@ -92,14 +92,17 @@ BUILTIN_FUNCS = {
 	splice = 4,
 	uuid = 0,
 	glob = -1,
+	xml_encode = 1,
+	xml_decode = 1,
 	log = -2,
 	normalize = 1,
 	random_weighted = 2,
 	--[[minify-delete]]
+	toepoch = 1,
+	fromepoch = 1,
+	epochnow = 0,
 	file_glob = 1,
 	--[[/minify-delete]]
-	xml_encode = 1,
-	xml_decode = 1,
 }
 
 --[[minify-delete]]
