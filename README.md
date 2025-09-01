@@ -23,7 +23,7 @@ The ethos behind Paisley was *not* to create a particularly fast language (most 
 **Q:** *What niche does Paisley fill?*<br>
 **A:** Paisley would fill a similar niche to Bash scripts, where you're chaining together other scripts/programs to make more complex logic. Similar to bash, commands can be run just by typing the command name and parameters separated by spaces. Basically, it's somewhere between Bash and Python; fitting close to the shell-language niche while also having batteries included. 
 
-**Q:** *Is Paisley a true shell language? Can I replace Bash with it?*
+**Q:** *Is Paisley a true shell language? Can I replace Bash with it?*<br>
 **A:** You could absolutely replace your Bash scripts if you wanted to. However I would not recommend replacing your Bash REPL with Paisley's. For one, while Paisley does support piping, the language is not by any means POSIX-compliant, and in particular there are **no** async capabilities. Paisley's use case is more like Python in that regard where, while it does have a REPL, it's really meant to be used in self-contained scripts.
 
 **Q:** *What does Paisley do different?*<br>
