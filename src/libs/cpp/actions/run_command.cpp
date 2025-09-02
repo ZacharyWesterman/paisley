@@ -1,4 +1,5 @@
 #include "run_command.hpp"
+#include "replace.hpp"
 
 #include <iostream>
 #include <chrono>
@@ -10,7 +11,26 @@
 int LAST_COMMAND_RESULT = 0;
 std::string LAST_COMMAND_STDOUT;
 std::string LAST_COMMAND_STDERR;
-const char RAW_SH_TEXT_SENTINEL = 255;
+const char RAW_SH_TEXT_SENTINEL = -1;
+
+std::string escape_shell_arg(const std::string &arg)
+{
+	// Escape special characters for shell
+	std::string escaped = replace(
+		replace(
+			replace(
+				replace(
+					replace(
+						arg, "\\", "\\\\"),
+					"\"", "\\\""),
+				"$", "\\$"),
+			"`", "\\`"),
+		"!", "\\!");
+#ifdef _WIN32
+	escaped = replace(escaped, "\\\"", "`\"");
+#endif
+	return escaped;
+}
 
 void run_command(VirtualMachine &vm)
 {
@@ -88,29 +108,68 @@ void run_command(VirtualMachine &vm)
 	}
 	else if (command == "!" || command == "?" || command == "?!" || command == "=")
 	{
-		// Run an arbitrary command
-
-		// Get the arguments
-		std::vector<const char *> args;
-		for (int i = 1; i < value.size(); ++i)
+		// If command is run with any parameters, treat them as a shell command to execute
+		if (value.size() > 1)
 		{
-			args.push_back(value[i].c_str());
+			LAST_COMMAND_RESULT = 0;
+			LAST_COMMAND_STDOUT.clear();
+			LAST_COMMAND_STDERR.clear();
+
+			// Get the arguments
+			std::string args;
+			for (size_t i = 1; i < value.size(); ++i)
+			{
+				// If arg starts with RAW_SH_TEXT_SENTINEL, treat it as a raw shell command,
+				// and don't escape special characters.
+				if (value[i][0] == RAW_SH_TEXT_SENTINEL)
+				{
+					args += value[i].substr(1) + " ";
+				}
+				else
+				{
+					args += "\"" + escape_shell_arg(value[i]) + "\" ";
+				}
+			}
+
+			char buffer[512];
+			FILE *in = popen(args.c_str(), "r");
+			if (in)
+			{
+				while (fgets(buffer, sizeof(buffer), in))
+				{
+					LAST_COMMAND_STDOUT += buffer;
+				}
+				LAST_COMMAND_RESULT = pclose(in);
+			}
+
+			if (command != "?!")
+			{
+				if (command != "?")
+				{
+					std::cout << LAST_COMMAND_STDOUT;
+				}
+				else if (command != "!")
+				{
+					std::cerr << LAST_COMMAND_STDERR;
+				}
+			}
 		}
 
-		pid_t pid = -1;
-		int fd[2];
-		if (pipe(fd) == -1)
+		if (command == "?")
 		{
+			vm.last_cmd_result = LAST_COMMAND_STDOUT;
 		}
-
-		// Run the command
-		// if (system(cmd) == 0)
+		else if (command == "!")
 		{
-			vm.last_cmd_result = Null();
+			vm.last_cmd_result = LAST_COMMAND_STDERR;
 		}
-		// else
+		else if (command == "?!")
 		{
-			vm.error("Failed to run command: " + command);
+			vm.last_cmd_result = LAST_COMMAND_STDOUT + LAST_COMMAND_STDERR;
+		}
+		else
+		{
+			vm.last_cmd_result = LAST_COMMAND_RESULT;
 		}
 	}
 	else
