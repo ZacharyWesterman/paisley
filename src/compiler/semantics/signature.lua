@@ -2,11 +2,10 @@
 return function(func_name)
 	local param_ct = BUILTIN_FUNCS[func_name]
 	local params = ''
-	if param_ct < 0 then
+	if param_ct == -1 then
 		params = '...'
-	elseif param_ct > 0 then
-		local i
-		for i = 1, param_ct do
+	elseif param_ct ~= 0 then
+		for i = 1, math.abs(param_ct) do
 			--[[minify-delete]]
 			if TYPESIG[func_name].params and TYPESIG[func_name].params[i] then
 				params = params .. TYPESIG[func_name].params[i]
@@ -28,10 +27,16 @@ return function(func_name)
 			if func_name == 'reduce' and i == 2 then types[1] = 'operator' end
 			params = params .. ': ' .. std.join(types, '|')
 			--[[/minify-delete]]
-			if i < param_ct then params = params .. ',' end
+
+			--Indicate that some parameters are optional.
+			if param_ct < 0 and i == 1 then params = params .. ' [' end
+
+			if i < math.abs(param_ct) then params = params .. ',' end
 			--[[minify-delete]]
-			if i < param_ct then params = params .. ' ' end
+			if i < math.abs(param_ct) then params = params .. ' ' end
 			--[[/minify-delete]]
+
+			if param_ct < 0 and i == math.abs(param_ct) then params = params .. ']' end
 		end
 	end
 	return params
