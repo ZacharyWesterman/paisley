@@ -449,4 +449,17 @@ FUNC_OPERATIONS = {
 		return datetime
 	end,
 	--[[/minify-delete]]
+
+	trim = function(args)
+		local text, chars = args[1], args[2]
+
+		if chars == nil then
+			return text:match('^%s*(.-)%s*$')
+		end
+
+		-- Remove any of a list of chars
+		local pattern = '^[' .. std.str(chars):gsub('(%W)', '%%%1') .. ']*(.-)[' ..
+			std.str(chars):gsub('(%W)', '%%%1') .. ']*$'
+		return text:match(pattern)
+	end,
 }

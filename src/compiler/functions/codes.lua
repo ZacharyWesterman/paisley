@@ -123,10 +123,11 @@ CALL_CODES = {
 	log = 119,
 	normalize = 120,
 	random_weighted = 121,
+	trim = 122,
 	--[[minify-delete]]
-	toepoch = 122,
-	fromepoch = 123,
-	epochnow = 124,
-	file_glob = 125,
+	toepoch = 123,
+	fromepoch = 124,
+	epochnow = 125,
+	file_glob = 126,
 	--[[/minify-delete]]
 }
