@@ -25,7 +25,7 @@ STANDALONE.lua = {
 
 		text = init .. '\n' .. prefix .. '\n' .. text .. '\n' .. postfix
 
-		text = LUA.minify(text, true)
+		text = LUA.minify(text, true, _G['SANDBOX'] or false)
 
 		return text
 	end,

@@ -52,7 +52,8 @@ STANDALONE.cpp = {
 			local value = bytecode[#bytecode][i]
 			text = text .. '\t' .. value_to_cpp(value) .. ',\n'
 		end
-		text = text .. '};\n'
+
+		text = text .. '};\n\nconst bool SANDBOXED = ' .. (_G['SANDBOX'] and 'true' or 'false') .. ';\n'
 
 		return text;
 	end,

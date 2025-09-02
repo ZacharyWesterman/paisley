@@ -3,7 +3,7 @@
 
 void VirtualMachine::error(const std::string &message) const noexcept
 {
-	std::cerr << "Error: " << message << std::endl;
+	std::cerr << "ERROR: " << message << std::endl;
 	exit(1);
 }
 

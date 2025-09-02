@@ -11,6 +11,9 @@ require "src.runtime.runtime_functions"
 
 
 FILE = V2
+--[[minify-delete]]
+RAW_SH_TEXT_SENTINEL = string.char(255)
+--[[/minify-delete]]
 
 ---@diagnostic disable-next-line
 PGM_ARGS = V6 or {}
