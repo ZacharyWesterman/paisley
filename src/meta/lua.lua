@@ -438,7 +438,7 @@ LUA = {
 
 					--Minify any Lua code
 					if file:match('%.lua$') then
-						text = LUA.minify(text, true, false)
+						text = LUA.minify(text, true, _G['SANDBOX'] or false)
 					end
 
 					--Escape the text so it can be used in a Lua string

@@ -418,7 +418,15 @@ end
 
 --Output bytecode, not an entire standalone.
 if flags.output ~= '-' then
-	text = '#!/usr/bin/env -S paisley --\n' .. text
+	local header = '#!/usr/bin/env -S paisley '
+	if _G['RESTRICT_TO_PLASMA_BUILD'] then
+		header = header .. '--plasma '
+	elseif _G['SANDBOX'] then
+		header = header .. '--sandbox '
+	elseif _G['COERCE_SHELL_CMDS'] then
+		header = header .. '--shell '
+	end
+	text = header .. '--\n' .. text
 	local fp = io.open(flags.output, 'wb')
 	if not fp then
 		error('Error: Failed to write to file: ' .. flags.output)

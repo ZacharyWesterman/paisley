@@ -108,6 +108,7 @@ BUILTIN_FUNCS = {
 --[[minify-delete]]
 function FUNC_SANDBOX_RESTRICT()
 	BUILTIN_FUNCS['file_glob'] = nil
+	SANDBOX = true
 end
 
 if _G['RESTRICT_TO_PLASMA_BUILD'] or _G['SANDBOX'] then
