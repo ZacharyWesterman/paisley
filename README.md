@@ -380,7 +380,15 @@ Note that either of the above commands are equivalent to the following:
 print {random_int(0, 100), random_int(0, 100), random_int(0, 100), random_int(0, 100), random_int(0, 100)}
 ```
 
-Unlike variables, macros are restricted to their scope. Thus, for example, if you define a macro in a subroutine, you cannot use it outside the subroutine, unless that outside scope also has a macro definition with the same identifier.
+Another fun use of macros is the ability to create auto-incrementing values that are resolved at compile time:
+```
+define {![0]}
+let a = {![!+1]} # `a` is set to 1.
+let b = {![!+1]} # `b` is set to 2.
+let c = {![!+1]} # `c` is set to 3.
+```
+
+Note that, unlike variables, macros are restricted to their scope. Thus, for example, if you define a macro in a subroutine, you cannot use it outside of the subroutine.
 
 ## Exceptions:
 Sometimes, parts of a program **will** fail, and the failure point is not always easy to predict. Many languages use exceptions to gracefully handle errors, and Paisley does so as well. To raise an exception, use the `error` command along with any message. And then to handle an exception, you can use a `try/catch` block, where the `catch` can have an optional variable to set.
