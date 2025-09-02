@@ -796,6 +796,13 @@ TYPESIG = {
 		'Select a random element from a list according to a weight distribution. Weights will be normalized to sum to 1, so weights like (1, 2, 3) are fine and will be treated as (0.166, 0.333, 0.5); that is, the third element will be three times more likely to be selected than the first element.',
 		--[[/minify-delete]]
 	},
+	trim = {
+		valid = { { 'string' } },
+		out = 'string',
+		params = { 'text', 'chars' },
+		description =
+		'Remove any of the given characters from the beginning and end of a string. If chars is not provided, any whitespace will be removed.',
+	},
 	--[[minify-delete]]
 	toepoch = {
 		valid = { { 'object' } },

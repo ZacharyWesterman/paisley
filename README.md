@@ -577,6 +577,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Replace all occurrences of a substring: `replace(text, search, replace) -> string`
 - Check if a string begins with a given substring: `beginswith(search, substring) -> boolean`
 - Check if a string ends with a given substring: `endswith(search, substring) -> boolean`
+- Trim whitespace from either end of a string: `trim(string) -> string` or a specific substring from either end `trim(string, substring) -> string`
 - Serialize data to a JSON string: `json_encode(data, pretty_print) -> string`. The second parameter is optional, and defaults to false.
 - Deserialize data from a JSON string: `json_decode(text) -> any`
 - Check if a JSON string is formatted correctly: `json_valid(text) -> boolean`

@@ -115,6 +115,7 @@
 #include "functions/tan.hpp"
 #include "functions/time.hpp"
 #include "functions/toepoch.hpp"
+#include "functions/trim.hpp"
 #include "functions/type.hpp"
 #include "functions/union.hpp"
 #include "functions/unique.hpp"
@@ -250,6 +251,7 @@ const Function FUNCTIONS[] = {
 	log,
 	normalize,
 	random_weighted,
+	trim,
 	toepoch,
 	fromepoch,
 	epochnow,
