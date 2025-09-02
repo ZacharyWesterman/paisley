@@ -106,7 +106,7 @@ void run_command(VirtualMachine &vm)
 		std::cout << "\033[2J\033[1;1H";
 		vm.last_cmd_result = Null();
 	}
-	else if (command == "!" || command == "?" || command == "?!" || command == "=")
+	else if (!vm.sandboxed && (command == "!" || command == "?" || command == "?!" || command == "="))
 	{
 		// If command is run with any parameters, treat them as a shell command to execute
 		if (value.size() > 1)

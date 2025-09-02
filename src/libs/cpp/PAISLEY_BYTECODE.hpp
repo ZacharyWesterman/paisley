@@ -5,3 +5,4 @@
 
 extern const std::vector<Instruction> INSTRUCTIONS;
 extern const std::vector<Value> CONSTANTS;
+extern const bool SANDBOXED;

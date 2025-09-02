@@ -318,6 +318,9 @@ int main(int argc, char *argv[])
 		// Constant lookup table
 		CONSTANTS,
 
+		// Whether the VM is sandboxed
+		SANDBOXED,
+
 		// Last command result
 		{},
 
