@@ -298,8 +298,25 @@ subroutine 4 end
 subroutine 5 end
 ```
 
-As an aside, note how in the above, the subroutine call happened *before* their definitions.
-This is totally valid; as long as the subroutine is defined *somewhere*, the compiler doesn't care where it's defined.
+You can of course also pass arguments to a dynamic gosub.
+However, any returned value is ignored.
+
+```
+if gosub "add{random_int(1,5)}" 100 then
+	print "Subroutine exists"
+end
+
+subroutine add1
+	print {@1 + 1}
+end
+...
+subroutine add5
+	print {@1 + 5}
+end
+```
+
+As an aside, note how in the above, the subroutine calls happened *before* their definitions.
+This is totally valid; as long as the subroutine is defined *somewhere*, the compiler doesn't care *where* it's defined.
 
 ### Subroutines in Expressions:
 Inside of expressions, subroutines can be called in one of two ways:
