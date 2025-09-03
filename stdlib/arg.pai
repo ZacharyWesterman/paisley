@@ -20,14 +20,23 @@
 # }
 # ```
 #
-#@param args array[string] The list of arguments to parse.
-#@param config object The configuration for the arguments.
+# The information object should look like the following:
+# ```
+# {
+#     'name' => 'program_name',
+#     'description' => 'program_description',
+# }
+# ```
+#
+#@param 1 array[string] The list of arguments to parse.
+#@param 2 object The configuration for the arguments.
+#@param 3 object The information about the program (name and description).
 #@return object The parsed arguments.
 #@error If the argument is not a list, or if args don't match the expected format.
 subroutine arg.parse
     #Parse name/description
     if {@3.type() != 'object' or not @3.name or not @3.description} then
-        error "Third parameter to arg.parse should be an object of the form:\n{('name' => 'program_name','description' => 'program_description').json_encode(true)}"
+        error "Third parameter to arg.parse should be an object of the form:\n(\n\t'name' => 'program_name',\n\t'description' => 'program_description'\n)"
     end
 
     #Parse argument config and adjust so it's easier to work with.
