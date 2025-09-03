@@ -166,7 +166,7 @@ subroutine arg.parse
 
     # Make sure all required flags were given.
     for _key _val in {_args.flags.pairs()} do
-        if {_val.required and not _res[_val.key]} then
+        if {_val.required and _res[_val.key] = null} then
             if {not _val.found} then
                 error "Missing required flag \"{_key}\""
             else
