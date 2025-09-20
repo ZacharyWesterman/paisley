@@ -1,0 +1,14 @@
+#@allow_elision
+subroutine sub1
+	print "original sub1"
+end
+
+#This should elide the original sub1
+subroutine sub1
+	print "redefined sub1"
+end
+
+#This will not elide because the second definition doesn't explicitly allow it
+subroutine sub1
+	print "second redefined sub1"
+end

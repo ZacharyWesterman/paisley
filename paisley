@@ -20,6 +20,7 @@ local options = {
 	{ description = "Don't report errors in the syntax tree",                        long = "no-ast-errors" },
 	{ description = "Don't remove 'dead code' that will never get run",              long = "no-prune-dead-code" },
 	{ description = "Don't allow `and` and `or` expressions to shortcut",            long = "no-shortcut" },
+	{ description = "Allow any subroutines to be redefined without error",           long = "allow-elision" },
 	{ description = "Print all generated tokens and then exit",                      long = "tokens" },
 	{ description = "Print the abstract syntax tree and then exit",                  long = "ast" },
 	{ description = "Print the AST after semantic analysis and then exit",           long = "ast-sem" },
@@ -242,6 +243,7 @@ AST_AFTER_SEMANTIC = flags.ast_sem
 WORKING_DIR = ''
 LSP_FILENAME = flags.stdin or ''
 KEEP_DEAD_CODE = flags.no_prune_dead_code
+ALLOW_SUBROUTINE_ELISION = flags.allow_elision
 NO_SHORTCUT = flags.no_shortcut
 COERCE_SHELL_CMDS = flags.shell
 PGM_ARGS = args --program arguments

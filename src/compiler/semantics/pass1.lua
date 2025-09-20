@@ -26,7 +26,7 @@ local function subroutine_enter(token, file)
 
 		local label = token.text
 		local prev = labels[label]
-		if prev ~= nil --[[minify-delete]] and not _G['ALLOW_SUBROUTINE_ELISION'] --[[/minify-delete]] then
+		if prev ~= nil --[[minify-delete]] and not _G['ALLOW_SUBROUTINE_ELISION'] and not prev.allow_elision --[[/minify-delete]] then
 			-- Don't allow tokens to be redeclared
 			parse_error(token.span,
 				'Redeclaration of subroutine "' ..
@@ -37,6 +37,12 @@ local function subroutine_enter(token, file)
 		if not token.children or #token.children == 0 then
 			token.ignore = true
 		end
+
+		--[[minify-delete]]
+		if _G['ELIDE_LINES'][token.span.from.line] then
+			token.allow_elision = true
+		end
+		--[[/minify-delete]]
 
 		labels[label] = token
 	else
