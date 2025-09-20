@@ -81,7 +81,8 @@ literals = {
 --[[minify-delete]]
 EXPORT_LINES = {}
 EXPORT_NEXT_TOKEN = false
---[[/minify-delete]]
+ELIDE_LINES = {}
+ELIDE_NEXT_TOKEN = false
 
 ---Some comments can give hints about what commands exist, and suppress "unknown command" errors.
 ---Process these annotations.
@@ -114,9 +115,12 @@ local function process_comment_annotations(text)
 			FUNC_SANDBOX_RESTRICT()
 		elseif _G['LANGUAGE_SERVER'] and i == '@EXPORT' then
 			EXPORT_NEXT_TOKEN = true
+		elseif i == '@ALLOW_ELISION' then
+			ELIDE_NEXT_TOKEN = true
 		end
 	end
 end
+--[[/minify-delete]]
 
 --[[
 Takes text and (optional)file name, and returns an iterator for getting the next token.
@@ -670,6 +674,11 @@ function Lexer(text, file)
 					if EXPORT_NEXT_TOKEN and tok_type ~= TOK.line_ending then
 						EXPORT_LINES[line] = true
 						EXPORT_NEXT_TOKEN = false
+					end
+
+					if ELIDE_NEXT_TOKEN and tok_type ~= TOK.line_ending then
+						ELIDE_LINES[line] = true
+						ELIDE_NEXT_TOKEN = false
 					end
 					--[[/minify-delete]]
 

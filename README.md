@@ -834,6 +834,7 @@ The following is a complete list of annotations and what their effects are:
 - `@param` : Indicate a subroutine parameter of a specific type. This is a type hint and is not enforced.
 - `@return` : Indicate a subroutine return value of a specific type.
 - `@mutate` : Indicate that this subroutine mutates the given variable(s) (e.g. `#@mutate var1 var2`)
+- `@allow-elision`: Allow this subroutine to be overridden by external code.
 - `@export` : Don't mark this subroutine or variable as dead code. Only used when running Paisley as a language server.
 - `@plasma`: Apply the `--plasma` flag to the current compilation unit.
 - `@shell`: Apply the `--shell` flag to the current compilation unit.
