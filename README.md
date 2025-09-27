@@ -568,6 +568,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Trig functions: `sin(x), cos(x), tan(x), asin(x), acos(x), atan(x), atan2(x, y), sinh(x), cosh(x), tanh(x) -> number`
 - Square root: `sqrt(x) -> number`
 - Logarithm: `log(x, base) -> number` or the natural logarithm `log(x) -> number`
+- Split a number into its integer and fractional parts: `modf(x) -> number`
 - Get the sign of a number: `sign(number) -> number`. Returns -1 if a number is negative, 0 if zero, or 1 if positive.
 - Split a number into bytes: `bytes(number, count) -> array`
 - Convert a list of bytes into a number: `frombytes(array) -> number`
