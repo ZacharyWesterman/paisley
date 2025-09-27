@@ -43,7 +43,11 @@ for _, entry in ipairs(new_document) do
 
 	table.sort(entry.funcs, function(a, b) return a.name < b.name end)
 	for _, func in ipairs(entry.funcs) do
-		print('- `' .. func.name .. '(' .. function_signature(func.name) .. ') -> ' .. (func.out or 'any') .. '`')
+		local return_type = func.info.out
+		if type(return_type) ~= 'table' then return_type = TYPE_ANY end
+		print('- `' ..
+			func.name ..
+			'(' .. function_signature(func.name) .. ') -> ' .. TYPE_TEXT(return_type) .. '`')
 		print('  - ' .. func.info.description)
 	end
 	print()
