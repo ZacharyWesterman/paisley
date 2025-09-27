@@ -355,15 +355,24 @@ function FOLD_CONSTANTS(token, file)
 				token.children = nil
 			end
 		elseif math[token.text] then
-			local val = math[token.text](c1.value)
+			local val1, val2 = math[token.text](c1.value)
 
 			--Check for NaN
-			local r = tostring(val)
+			local r = tostring(val1)
 			if r == tostring(1 / 0) or r == tostring(0 / 0) or r == tostring(-(0 / 0)) then
 				parse_error(token.span, 'Result of "' .. token.text .. '(' .. c1.value .. ')" is not a number', file)
 			end
 
-			token.id, token.value, token.text, token.children = TOK.lit_number, val, tostring(val), nil
+			if val2 then --math.modf returns two values
+				token.id = TOK.lit_array
+				token.value = { val1, val2 }
+				token.text = '[]'
+			else
+				token.id = TOK.lit_number
+				token.value = val1
+				token.text = tostring(val1)
+			end
+			token.children = nil
 		end
 	elseif token.id == TOK.array_concat then
 		token.id = TOK.lit_array

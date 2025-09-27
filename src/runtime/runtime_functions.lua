@@ -63,9 +63,8 @@ local function mathfunc(funcname)
 			table.insert(p, std.num(v[i]))
 		end
 
-		local u = table.unpack
 		---@diagnostic disable-next-line
-		if not u then u = unpack end
+		local u = table.unpack or unpack
 
 		--If null was passed to the function, in a way that could not be determined at compile time, coerce it to be zero.
 		if #p == 0 then
@@ -73,7 +72,12 @@ local function mathfunc(funcname)
 			p = { 0 }
 		end
 
-		PUSH(math[funcname](u(p)))
+		local val1, val2 = math[funcname](u(p))
+		if val2 then
+			PUSH({ val1, val2 })
+		else
+			PUSH(val1)
+		end
 	end
 end
 --[[/]]
@@ -1199,6 +1203,8 @@ local functions = {
 			std.str(chars):gsub('(%W)', '%%%1') .. ']*$'
 		PUSH(text:match(pattern))
 	end,
+
+	mathfunc('modf'),
 
 	--[[minify-delete]]
 	--CONVERT A DATETIME OBJECT TO A UNIX TIMESTAMP

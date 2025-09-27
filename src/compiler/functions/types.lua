@@ -799,9 +799,19 @@ TYPESIG = {
 	trim = {
 		valid = { { 'string' } },
 		out = 'string',
+		--[[minify-delete]]
 		params = { 'text', 'chars' },
 		description =
 		'Remove any of the given characters from the beginning and end of a string. If chars is not provided, any whitespace will be removed.',
+		--[[/minify-delete]]
+	},
+	modf = {
+		valid = { { 'number' } },
+		out = 'array[number]',
+		--[[minify-delete]]
+		params = { 'x' },
+		description = 'Split a number into its integer and fractional parts. E.g. 3.14 -> (3, 0.14).',
+		--[[/minify-delete]]
 	},
 	--[[minify-delete]]
 	toepoch = {
