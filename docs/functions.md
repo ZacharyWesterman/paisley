@@ -1,6 +1,10 @@
 # Paisley Standard Library Functions
 
 ## Arrays
+- `all(list: array[any]) -> boolean`
+  - Check if all elements in an array are truthy. This is identical to calling `reduce(..., and)`.
+- `any(list: array[any]) -> boolean`
+  - Check if any element in an array is truthy. This is identical to calling `reduce(..., or)`.
 - `append(list: array[any], value: any) -> array[any]`
   - Append a value to an array.
 - `delete(list: array[any], index: number) -> array[any]`
@@ -18,7 +22,7 @@
 - `min(...) -> number`
   - Find the minimum of a list of values.
 - `mult(...) -> number`
-  - Calculate the product of a list of values.
+  - Calculate the product of a list of values. This is identical to calling `reduce(..., *)`.
 - `reduce(list: array[any], op: operator) -> any`
   - Reduce an array to a single element based on a repeated binary operation. Valid operators are: +, -, *, /, %, //, and, or, xor.
 - `sort(list: array[any]) -> array[any]`
@@ -26,7 +30,7 @@
 - `splice(list: array[any], start: number, end: number, replacement: array[any]) -> array[any]`
   - Remove or replace elements from an array.
 - `sum(...) -> number`
-  - Calculate the sum of a list of values.
+  - Calculate the sum of a list of values. This is identical to calling `reduce(..., +)`.
 - `update(list: array[any], index: number, new_value: any) -> array[any]`
   - Replace an element in an array at the given index. If the index is out of bounds, the original array is returned.
 
@@ -187,7 +191,7 @@
   - Convert a string to lowercase.
 - `lpad(text: string, pad_char: string, width: number) -> string`
   - Left-pad a string with a given character.
-- `match(text: string, pattern: string) -> null|string`
+- `match(text: string, pattern: string) -> string|null`
   - Get the first substring that matches the given pattern. If no match is found, null is returned.
 - `matches(text: string, pattern: string) -> array[string]`
   - Get all substrings that match the given pattern.
@@ -215,7 +219,7 @@
   - Get the current epoch time (seconds since Jan 1, 1970).
 - `fromepoch(timestamp: number) -> object[any]`
   - Convert epoch time (seconds since Jan 1, 1970) to a datetime object. The datetime object will have the following form: { date: (day, month, year), time: (hour, min, sec) }.
-- `time(timestamp: array[number]|number) -> string`
+- `time(timestamp: number|array[number]) -> string`
   - Convert a number or array representation of a time (timestamp OR [hour, min, sec, milli]) into an ISO compliant time string.
 - `toepoch(datetime: object[any]) -> number`
   - Convert a datetime object to epoch time (seconds since Jan 1, 1970). The datetime object is expected to have the following form: { date: (day, month, year), time: (hour, min, sec) }.
