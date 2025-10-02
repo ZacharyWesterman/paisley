@@ -429,6 +429,13 @@ FUNC_OPERATIONS = {
 	xml_encode = XML.stringify,
 	xml_decode = XML.parse,
 
+	cot = function(x) return 1 / math.tan(x) end,
+	acot = function(x) return math.atan(1 / x) end,
+	sec = function(x) return 1 / math.cos(x) end,
+	asec = function(x) return math.acos(1 / x) end,
+	csc = function(x) return 1 / math.sin(x) end,
+	acsc = function(x) return math.asin(1 / x) end,
+
 	--[[minify-delete]]
 	toepoch = function(datetime)
 		return os.time {
