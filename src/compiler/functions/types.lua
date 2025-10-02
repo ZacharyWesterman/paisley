@@ -915,17 +915,75 @@ TYPESIG = {
 	all = {
 		valid = { { 'array' } },
 		out = 'boolean',
+		--[[minify-delete]]
 		params = { 'list' },
 		description =
 		'Check if all elements in an array are truthy. This is identical to calling `reduce(..., and)`.',
 		category = 'arrays',
+		--[[/minify-delete]]
 	},
 	any = {
 		valid = { { 'array' } },
 		out = 'boolean',
+		--[[minify-delete]]
 		params = { 'list' },
 		description = 'Check if any element in an array is truthy. This is identical to calling `reduce(..., or)`.',
 		category = 'arrays',
+		--[[/minify-delete]]
+	},
+	cot = {
+		valid = { { 'number' } },
+		out = 'number',
+		--[[minify-delete]]
+		params = { 'x' },
+		description = 'Calculate the cotangent of a number.',
+		category = 'math',
+		--[[/minify-delete]]
+	},
+	acot = {
+		valid = { { 'number' } },
+		out = 'number',
+		--[[minify-delete]]
+		params = { 'x' },
+		description = 'Calculate the arccotangent of a number.',
+		category = 'math',
+		--[[/minify-delete]]
+	},
+	sec = {
+		valid = { { 'number' } },
+		out = 'number',
+		--[[minify-delete]]
+		params = { 'x' },
+		description = 'Calculate the secant of a number.',
+		category = 'math',
+		--[[/minify-delete]]
+	},
+	asec = {
+		valid = { { 'number' } },
+		out = 'number',
+		--[[minify-delete]]
+		params = { 'x' },
+		description = 'Calculate the arcsecant of a number.',
+		category = 'math',
+		--[[/minify-delete]]
+	},
+	csc = {
+		valid = { { 'number' } },
+		out = 'number',
+		--[[minify-delete]]
+		params = { 'x' },
+		description = 'Calculate the cosecant of a number.',
+		category = 'math',
+		--[[/minify-delete]]
+	},
+	acsc = {
+		valid = { { 'number' } },
+		out = 'number',
+		--[[minify-delete]]
+		params = { 'x' },
+		description = 'Calculate the arccosecant of a number.',
+		category = 'math',
+		--[[/minify-delete]]
 	},
 	--[[minify-delete]]
 	toepoch = {

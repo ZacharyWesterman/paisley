@@ -1,4 +1,5 @@
 local FUNCSIG = require "src.compiler.semantics.signature"
+local synonyms = require "src.compiler.semantics.synonyms"
 
 local loop_depth = 0
 
@@ -134,59 +135,9 @@ return {
 						parse_error(token.children[2].span,
 							'The second parameter of "reduce(a,b)" must be a binary operator (e.g. + or *)', file)
 					end
-				elseif token.text == 'clamp' then
-					--Convert "clamp" into max(min(upper_bound, x), lower_bound)
-					---@type Token
-					local node = {
-						id = token.id,
-						span = token.span,
-						text = 'min',
-						children = {
-							token.children[1],
-							token.children[3],
-						},
-						filename = token.filename,
-					}
-					token.text = 'max'
-					token.children = { node, token.children[2] }
-				elseif token.text == 'int' then
-					--Convert "int" into floor(num(x))
-					---@type Token
-					local node = {
-						id = token.id,
-						span = token.span,
-						text = 'num',
-						children = token.children,
-						filename = token.filename,
-					}
-					token.text = 'floor'
-					token.children = { node }
-				elseif token.text == 'shuffle' then
-					--Convert "shuffle(x)" into "random_elements(x, MAX_INT)"
-					token.text = 'random_elements'
-					table.insert(token.children, {
-						id = TOK.lit_number,
-						span = token.span,
-						type = TYPE_NUMBER,
-						value = std.MAX_ARRAY_LEN,
-						text = tostring(std.MAX_ARRAY_LEN),
-					})
-				elseif token.text == 'all' then
-					--Convert "all(x)" into "reduce(x, and)"
-					token.text = 'reduce'
-					table.insert(token.children, {
-						id = TOK.op_and,
-						span = token.span,
-						text = 'and',
-					})
-				elseif token.text == 'any' then
-					--Convert "any(x)" into "reduce(x, or)"
-					token.text = 'reduce'
-					table.insert(token.children, {
-						id = TOK.op_or,
-						span = token.span,
-						text = 'or',
-					})
+				elseif synonyms[token.text] then
+					--Handle synonyms (functions that are actually other functions in disguise)
+					synonyms[token.text](token)
 				elseif token.children then
 					for i = 1, #token.children do
 						local child = token.children[i]

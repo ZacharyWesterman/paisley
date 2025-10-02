@@ -101,6 +101,12 @@ BUILTIN_FUNCS = {
 	modf = 1,
 	all = 1,
 	any = 1,
+	cot = 1,
+	acot = 1,
+	sec = 1,
+	asec = 1,
+	csc = 1,
+	acsc = 1,
 	--[[minify-delete]]
 	toepoch = 1,
 	fromepoch = 1,

@@ -99,6 +99,12 @@
   - Get the absolute value of a number.
 - `acos(x: number) -> number`
   - Calculate the arccosine of a number.
+- `acot(x: number) -> number`
+  - Calculate the arccotangent of a number.
+- `acsc(x: number) -> number`
+  - Calculate the arccosecant of a number.
+- `asec(x: number) -> number`
+  - Calculate the arcsecant of a number.
 - `asin(x: number) -> number`
   - Calculate the arcsine of a number.
 - `atan(x: number) -> number`
@@ -113,6 +119,10 @@
   - Calculate the cosine of a number.
 - `cosh(x: number) -> number`
   - Calculate the hyperbolic cosine of a number.
+- `cot(x: number) -> number`
+  - Calculate the cotangent of a number.
+- `csc(x: number) -> number`
+  - Calculate the cosecant of a number.
 - `floor(x: number) -> number`
   - Round down to the nearest integer.
 - `lerp(ratio: number, start: number, end: number) -> number`
@@ -123,6 +133,8 @@
   - Split a number into its integer and fractional parts. E.g. 3.14 -> (3, 0.14).
 - `round(x: number) -> number`
   - Round to the nearest integer.
+- `sec(x: number) -> number`
+  - Calculate the secant of a number.
 - `sign(x: number) -> number`
   - Get the signedness of a number. returns -1 if negative, 0 if zero, 1 if positive.
 - `sin(x: number) -> number`
@@ -219,7 +231,7 @@
   - Get the current epoch time (seconds since Jan 1, 1970).
 - `fromepoch(timestamp: number) -> object[any]`
   - Convert epoch time (seconds since Jan 1, 1970) to a datetime object. The datetime object will have the following form: { date: (day, month, year), time: (hour, min, sec) }.
-- `time(timestamp: array[number]|number) -> string`
+- `time(timestamp: number|array[number]) -> string`
   - Convert a number or array representation of a time (timestamp OR [hour, min, sec, milli]) into an ISO compliant time string.
 - `toepoch(datetime: object[any]) -> number`
   - Convert a datetime object to epoch time (seconds since Jan 1, 1970). The datetime object is expected to have the following form: { date: (day, month, year), time: (hour, min, sec) }.
