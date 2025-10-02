@@ -44,6 +44,7 @@
 #include "functions/floor.hpp"
 #include "functions/frombytes.hpp"
 #include "functions/fromepoch.hpp"
+#include "functions/from_base.hpp"
 #include "functions/glob.hpp"
 #include "functions/greaterequal.hpp"
 #include "functions/greater.hpp"
@@ -252,6 +253,7 @@ const Function FUNCTIONS[] = {
 	random_weighted,
 	trim,
 	modf,
+	from_base,
 	toepoch,
 	fromepoch,
 	epochnow,

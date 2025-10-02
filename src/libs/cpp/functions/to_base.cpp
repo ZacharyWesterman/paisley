@@ -13,7 +13,7 @@ void to_base(Context &context) noexcept
 
 	if (base < 2 || base > 36)
 	{
-		context.warn("Base must be between 2 and 36.");
+		context.warn("In to_base(), base must be between 2 and 36.");
 		context.stack.push("");
 		return;
 	}

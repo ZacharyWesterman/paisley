@@ -1201,6 +1201,17 @@ local functions = {
 
 	mathfunc('modf'),
 
+	--CONVERT A NUMERIC STRING FROM ANY BASE TO A NUMBER
+	function()
+		local v = POP()
+		local str_value, base = std.str(v[1]), std.num(v[2])
+		if base < 2 or base > 36 then
+			error('Error: from_base() base must be between 2 and 36!')
+			return
+		end
+		PUSH(std.from_base(str_value, base))
+	end,
+
 	--[[minify-delete]]
 	--CONVERT A DATETIME OBJECT TO A UNIX TIMESTAMP
 	function()

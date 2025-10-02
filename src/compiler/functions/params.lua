@@ -107,6 +107,7 @@ BUILTIN_FUNCS = {
 	asec = 1,
 	csc = 1,
 	acsc = 1,
+	from_base = 2,
 	--[[minify-delete]]
 	toepoch = 1,
 	fromepoch = 1,

@@ -985,6 +985,16 @@ TYPESIG = {
 		category = 'math',
 		--[[/minify-delete]]
 	},
+	from_base = {
+		valid = { { 'string', 'number' } },
+		out = 'number',
+		--[[minify-delete]]
+		params = { 'text', 'base' },
+		description =
+		'Convert a numeric string of any base from 2 to 36 into a number. E.g. "2A" in base 16 would be 42. If the string contains invalid characters, 0 is returned.',
+		category = 'strings',
+		--[[/minify-delete]]
+	},
 	--[[minify-delete]]
 	toepoch = {
 		valid = { { 'object' } },

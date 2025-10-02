@@ -361,7 +361,14 @@ FUNC_OPERATIONS = {
 	endswith = function(search, substring)
 		return search:sub(#search - #substring + 1, #search) == substring
 	end,
-	to_base = std.to_base,
+	to_base = function(number, base, pad_width, token, file)
+		if base < 2 or base > 36 then
+			parse_error(token.span, 'Function "to_base(number, base)" requires the base to be between 2 and 36', file)
+			return ''
+		end
+
+		return std.to_base(number, base, pad_width)
+	end,
 
 	time = function(timestamp)
 		if type(timestamp) == 'number' then timestamp = FUNC_OPERATIONS.clocktime(timestamp) end
@@ -435,6 +442,15 @@ FUNC_OPERATIONS = {
 	asec = function(x) return math.acos(1 / x) end,
 	csc = function(x) return 1 / math.sin(x) end,
 	acsc = function(x) return math.asin(1 / x) end,
+
+	from_base = function(text, base, token, file)
+		if base < 2 or base > 36 then
+			parse_error(token.span, 'Function "from_base(text, base)" requires the base to be between 2 and 36', file)
+			return 0
+		end
+
+		return std.from_base(text, base)
+	end,
 
 	--[[minify-delete]]
 	toepoch = function(datetime)

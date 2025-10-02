@@ -516,6 +516,50 @@ std = {
 		return result
 	end,
 
+	---Convert a numeric string of any base (in the range 2-36) into a number.
+	---Both the integer and fractional parts of the string are converted.
+	---If the string contains invalid characters, 0 is returned.
+	---@param text string The numeric string to convert.
+	---@param base number The base of the number, clamped to [2,36] and rounded down.
+	---@return number
+	from_base = function(text, base)
+		base = math.min(36, math.max(2, math.floor(base)))
+		local radix = text:find('.', 1, true) or (#text + 1)
+
+		local function from_base(char)
+			local byte = string.byte(char)
+			if byte >= 48 and byte <= 57 then
+				return byte - 48 -- '0'-'9'
+			elseif byte >= 65 and byte <= 90 then
+				return byte - 55 -- 'A'-'Z'
+			elseif byte >= 97 and byte <= 122 then
+				return byte - 87 -- 'a'-'z'
+			end
+			return -1
+		end
+
+		local integer_part = 0
+		local fractional_part = 0
+
+		--Process integer part
+		for i = 1, radix - 1 do
+			local digit = from_base(text:sub(i, i))
+			if digit < 0 or digit >= base then return 0 end
+			integer_part = integer_part * base + digit
+		end
+
+		--Process fractional part
+		local place = base
+		for i = radix + 1, #text do
+			local digit = from_base(text:sub(i, i))
+			if digit < 0 or digit >= base then return 0 end
+			fractional_part = fractional_part + digit / place
+			place = place * base
+		end
+
+		return integer_part + fractional_part
+	end,
+
 	---@brief Check if two values are strictly equal.
 	---@note This function will compare arrays and objects recursively.
 	---@param data1 any

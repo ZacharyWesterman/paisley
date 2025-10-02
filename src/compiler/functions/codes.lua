@@ -132,6 +132,7 @@ CALL_CODES = {
 	random_weighted = uid(),
 	trim = uid(),
 	modf = uid(),
+	from_base = uid(),
 	--[[minify-delete]]
 	---@note These functions have to be at the end of the list,
 	---because they are not available in sandboxed environments.
