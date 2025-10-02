@@ -77,6 +77,7 @@
 #include "functions/max.hpp"
 #include "functions/merge.hpp"
 #include "functions/min.hpp"
+#include "functions/modf.hpp"
 #include "functions/mul.hpp"
 #include "functions/mult.hpp"
 #include "functions/normalize.hpp"
@@ -250,6 +251,7 @@ const Function FUNCTIONS[] = {
 	normalize,
 	random_weighted,
 	trim,
+	modf,
 	toepoch,
 	fromepoch,
 	epochnow,
