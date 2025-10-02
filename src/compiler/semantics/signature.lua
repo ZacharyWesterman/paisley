@@ -1,9 +1,24 @@
+require 'src.shared.json'
+
+local function _type_text(type_signature, func_name, position)
+	if not type_signature then return 'any' end
+
+	local types = {}
+	for j, k in ipairs(type_signature) do
+		---@diagnostic disable-next-line
+		local key = TYPE_TEXT(k[((position or 1) - 1) % #k + 1])
+		if key and std.arrfind(types, key, 1) == 0 then table.insert(types, key) end
+	end
+	if func_name == 'reduce' and position == 2 then types[1] = 'operator' end
+	return std.join(types, '|')
+end
+
 --Helper func for generating func_call error messages.
 return function(func_name)
 	local param_ct = BUILTIN_FUNCS[func_name]
 	local params = ''
 	if param_ct == -1 then
-		params = '...'
+		params = '...: ' .. _type_text(TYPESIG[func_name].valid, func_name)
 	elseif param_ct ~= 0 then
 		for i = 1, math.abs(param_ct) do
 			--[[minify-delete]]
@@ -14,18 +29,7 @@ return function(func_name)
 				params = params .. string.char(96 + i)
 				--[[minify-delete]]
 			end
-			local types = {}
-			if TYPESIG[func_name].valid then
-				for j, k in ipairs(TYPESIG[func_name].valid) do
-					---@diagnostic disable-next-line
-					local key = TYPE_TEXT(k[(i - 1) % #k + 1])
-					if key and std.arrfind(types, key, 1) == 0 then table.insert(types, key) end
-				end
-			else
-				table.insert(types, 'any')
-			end
-			if func_name == 'reduce' and i == 2 then types[1] = 'operator' end
-			params = params .. ': ' .. std.join(types, '|')
+			params = params .. ': ' .. _type_text(TYPESIG[func_name].valid, func_name, i)
 			--[[/minify-delete]]
 
 			--Indicate that some parameters are optional.

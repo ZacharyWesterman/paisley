@@ -15,13 +15,13 @@
   - Insert an element in an array at the given index. If the index is out of bounds, then the value will either be added to the beginning or the end of the array.
 - `interleave(list1: array[any], list2: array[any]) -> array[any]`
   - Interleave the values of two arrays. E.g. (1, 2, 3) and (4, 5, 6) -> (1, 4, 2, 5, 3, 6).
-- `max(...) -> number`
+- `max(...: number|array[number]) -> number`
   - Find the maximum of a list of values.
 - `merge(list1: array[any], list2: array[any]) -> array[any]`
   - Concatenate two arrays together.
-- `min(...) -> number`
+- `min(...: number|array[number]) -> number`
   - Find the minimum of a list of values.
-- `mult(...) -> number`
+- `mult(...: number|array[number]) -> number`
   - Calculate the product of a list of values. This is identical to calling `reduce(..., *)`.
 - `reduce(list: array[any], op: operator) -> any`
   - Reduce an array to a single element based on a repeated binary operation. Valid operators are: +, -, *, /, %, //, and, or, xor.
@@ -29,7 +29,7 @@
   - Sort an array in ascending order.
 - `splice(list: array[any], start: number, end: number, replacement: array[any]) -> array[any]`
   - Remove or replace elements from an array.
-- `sum(...) -> number`
+- `sum(...: number|array[number]) -> number`
   - Calculate the sum of a list of values. This is identical to calling `reduce(..., +)`.
 - `update(list: array[any], index: number, new_value: any) -> array[any]`
   - Replace an element in an array at the given index. If the index is out of bounds, the original array is returned.
@@ -181,7 +181,7 @@
   - List all files that match a glob pattern. E.g. `file_glob("*.txt")` -> ("file1.txt", "file2.txt"), depending on the files in your current directory.
 - `filter(text: string, valid_chars: string) -> string`
   - Remove all characters that do not match the given pattern.
-- `glob(...) -> array[string]`
+- `glob(...: string) -> array[string]`
   - Convert a glob pattern into a list of strings. E.g. `glob("a?*", "b", "c")` or `glob("a?*", ("b", "c"))` -> ("a?b", "a?c").
 - `hex(value: number) -> string`
   - Convert a number to a hexadecimal string.
@@ -191,7 +191,7 @@
   - Convert a string to lowercase.
 - `lpad(text: string, pad_char: string, width: number) -> string`
   - Left-pad a string with a given character.
-- `match(text: string, pattern: string) -> string|null`
+- `match(text: string, pattern: string) -> null|string`
   - Get the first substring that matches the given pattern. If no match is found, null is returned.
 - `matches(text: string, pattern: string) -> array[string]`
   - Get all substrings that match the given pattern.
@@ -219,7 +219,7 @@
   - Get the current epoch time (seconds since Jan 1, 1970).
 - `fromepoch(timestamp: number) -> object[any]`
   - Convert epoch time (seconds since Jan 1, 1970) to a datetime object. The datetime object will have the following form: { date: (day, month, year), time: (hour, min, sec) }.
-- `time(timestamp: number|array[number]) -> string`
+- `time(timestamp: array[number]|number) -> string`
   - Convert a number or array representation of a time (timestamp OR [hour, min, sec, milli]) into an ISO compliant time string.
 - `toepoch(datetime: object[any]) -> number`
   - Convert a datetime object to epoch time (seconds since Jan 1, 1970). The datetime object is expected to have the following form: { date: (day, month, year), time: (hour, min, sec) }.
