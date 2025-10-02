@@ -435,7 +435,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		params = { 'value' },
-		description = 'Convert a number to a hexadecimal string.',
+		description = 'Convert a number to a hexadecimal string. This is identical to `numeric_string(value, 16, 0)`.',
 		category = 'strings',
 		--[[/minify-delete]]
 	},
