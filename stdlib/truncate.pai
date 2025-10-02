@@ -1,0 +1,14 @@
+# @brief Truncate a string with ellipsis
+# @param text string The string to truncate
+# @param length number The max character length
+# @param suffix string? The string to append if truncating. If not specified, "..." is used.
+# @return string A string with the specified length, truncated and appended with the suffix if necessary.
+# @export
+subroutine truncate
+	if {&@1 <= @2} then return {@1} end
+	
+	return {
+		@1[1:(@2 - &(@3 if @3 else "..."))]
+		(@3 if @3 else "...")
+	}
+end
