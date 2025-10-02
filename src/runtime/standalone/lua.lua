@@ -8,6 +8,7 @@ STANDALONE.lua = {
 		require 'src.meta.lua'
 
 		local init = [[
+		VERSION = "]] .. (_G['VERSION'] or 'unknown') .. [["
 		V4 = os.time()
 		V8 = 1000000000000
 		V6 = arg

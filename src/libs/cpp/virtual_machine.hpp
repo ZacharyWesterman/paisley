@@ -28,7 +28,9 @@ struct VirtualMachine
 	size_t instruction_index;
 	std::vector<Instruction> instructions;
 	std::vector<Value> const_lookup;
+
 	bool sandboxed;
+	const std::string &version;
 
 	Value last_cmd_result;
 	std::map<size_t, std::map<std::string, Value>> cache;

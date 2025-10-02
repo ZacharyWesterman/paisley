@@ -249,6 +249,7 @@ COERCE_SHELL_CMDS = flags.shell
 PGM_ARGS = args --program arguments
 V6 = args       --program arguments
 SANDBOX = flags.sandbox
+VERSION = config.version
 
 ENDED = false
 
@@ -262,7 +263,6 @@ if flags.compress and not FS.rocks.zlib then
 end
 
 if flags.repl then
-	VERSION = config.version
 	require "src.util.repl"
 	os.exit(0)
 end

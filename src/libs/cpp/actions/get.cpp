@@ -31,6 +31,12 @@ void get(VirtualMachine &vm) noexcept
 		vm.stack.push(vm.variables);
 		return;
 	}
+	else if (var_name == "_VERSION")
+	{
+		// Get version string
+		vm.stack.push(vm.version);
+		return;
+	}
 
 	if (vm.variables.find(var_name) == vm.variables.end())
 	{
