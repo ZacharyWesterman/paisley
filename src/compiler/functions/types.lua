@@ -142,7 +142,7 @@ TYPESIG = {
 		valid = { { 'number' }, { 'array[number]' } },
 		out = 'number',
 		--[[minify-delete]]
-		description = 'Calculate the sum of a list of values.',
+		description = 'Calculate the sum of a list of values. This is identical to calling `reduce(..., +)`.',
 		category = 'arrays',
 		--[[/minify-delete]]
 	},
@@ -150,7 +150,7 @@ TYPESIG = {
 		valid = { { 'number' }, { 'array[number]' } },
 		out = 'number',
 		--[[minify-delete]]
-		description = 'Calculate the product of a list of values.',
+		description = 'Calculate the product of a list of values. This is identical to calling `reduce(..., *)`.',
 		category = 'arrays',
 		--[[/minify-delete]]
 	},
@@ -911,6 +911,21 @@ TYPESIG = {
 		description = 'Split a number into its integer and fractional parts. E.g. 3.14 -> (3, 0.14).',
 		category = 'math',
 		--[[/minify-delete]]
+	},
+	all = {
+		valid = { { 'array' } },
+		out = 'boolean',
+		params = { 'list' },
+		description =
+		'Check if all elements in an array are truthy. This is identical to calling `reduce(..., and)`.',
+		category = 'arrays',
+	},
+	any = {
+		valid = { { 'array' } },
+		out = 'boolean',
+		params = { 'list' },
+		description = 'Check if any element in an array is truthy. This is identical to calling `reduce(..., or)`.',
+		category = 'arrays',
 	},
 	--[[minify-delete]]
 	toepoch = {

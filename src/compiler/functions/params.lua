@@ -99,6 +99,8 @@ BUILTIN_FUNCS = {
 	random_weighted = 2,
 	trim = -2,
 	modf = 1,
+	all = 1,
+	any = 1,
 	--[[minify-delete]]
 	toepoch = 1,
 	fromepoch = 1,

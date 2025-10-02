@@ -171,6 +171,22 @@ return {
 						value = std.MAX_ARRAY_LEN,
 						text = tostring(std.MAX_ARRAY_LEN),
 					})
+				elseif token.text == 'all' then
+					--Convert "all(x)" into "reduce(x, and)"
+					token.text = 'reduce'
+					table.insert(token.children, {
+						id = TOK.op_and,
+						span = token.span,
+						text = 'and',
+					})
+				elseif token.text == 'any' then
+					--Convert "any(x)" into "reduce(x, or)"
+					token.text = 'reduce'
+					table.insert(token.children, {
+						id = TOK.op_or,
+						span = token.span,
+						text = 'or',
+					})
 				elseif token.children then
 					for i = 1, #token.children do
 						local child = token.children[i]
