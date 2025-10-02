@@ -1,5 +1,4 @@
 local FUNCSIG = require "src.compiler.semantics.signature"
-local synonyms = require "src.compiler.semantics.synonyms"
 
 local loop_depth = 0
 
@@ -135,9 +134,6 @@ return {
 						parse_error(token.children[2].span,
 							'The second parameter of "reduce(a,b)" must be a binary operator (e.g. + or *)', file)
 					end
-				elseif synonyms[token.text] then
-					--Handle synonyms (functions that are actually other functions in disguise)
-					synonyms[token.text](token)
 				elseif token.children then
 					for i = 1, #token.children do
 						local child = token.children[i]

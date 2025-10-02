@@ -195,7 +195,7 @@ FUNC_OPERATIONS = {
 		return text .. c:rep(width - #text)
 	end,
 	hex = function(value)
-		return string.format('%x', value)
+		return std.numeric_string(value, 16, 0)
 	end,
 
 	filter = function(text, pattern)

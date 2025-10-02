@@ -168,4 +168,22 @@ return {
 			},
 		}
 	end,
+
+	hex = function(token)
+		--Convert "hex(x)" into "numeric_string(x, 16, 0)"
+		token.text = 'numeric_string'
+		token.children = {
+			token.children[1],
+			{
+				id = TOK.lit_number,
+				span = token.span,
+				value = 16,
+			},
+			{
+				id = TOK.lit_number,
+				span = token.span,
+				value = 0,
+			}
+		}
+	end,
 }

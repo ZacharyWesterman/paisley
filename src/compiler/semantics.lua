@@ -729,6 +729,10 @@ function SemanticAnalyzer(tokens, root_file)
 				.return_stmt, TOK.subroutine, TOK.length }, nil, type_checking)
 	end
 
+	-- After type checking, run one more pass on the AST to adjust synonym functions and so on.
+	config = require "src.compiler.semantics.pass3"
+	recurse2(root, config, root_file)
+
 	--If running as language server, print type info for any variable declarations or command calls.
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then

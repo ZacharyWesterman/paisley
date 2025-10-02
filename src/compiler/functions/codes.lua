@@ -77,7 +77,6 @@ CALL_CODES = {
 	b64_decode = uid(),
 	lpad = uid(),
 	rpad = uid(),
-	hex = uid(),
 	filter = uid(),
 	matches = uid(),
 	clocktime = uid(),
