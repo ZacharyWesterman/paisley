@@ -48,7 +48,6 @@
 #include "functions/greaterequal.hpp"
 #include "functions/greater.hpp"
 #include "functions/hash.hpp"
-#include "functions/hex.hpp"
 #include "functions/implode.hpp"
 #include "functions/inarray.hpp"
 #include "functions/index.hpp"
@@ -197,7 +196,6 @@ const Function FUNCTIONS[] = {
 	b64_decode,
 	lpad,
 	rpad,
-	hex,
 	filter,
 	matches,
 	clocktime,
