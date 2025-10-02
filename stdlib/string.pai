@@ -1,0 +1,38 @@
+# @brief Truncate a string with ellipsis
+# @param text string The string to truncate
+# @param length number The max character length
+# @param suffix string? The string to append if truncating. If not specified, "..." is used.
+# @return string A string with the specified length, truncated and appended with the suffix if necessary.
+# @export
+subroutine truncate
+	if {&@1 <= @2} then return {@1} end
+	
+	return {
+		@1[1:(@2 - &(@3 if @3 else "..."))]
+		(@3 if @3 else "...")
+	}
+end
+
+# @brief Check if a string is numeric
+# @param text string The string to test
+# @return boolean True if the string only contains numeric characters.
+# @export
+subroutine is_numeric
+	return {@1 like '^%d+$'}
+end
+
+# @brief Check if a string only contains letters
+# @param text string The string to test
+# @return boolean True if the string only contains alphabetic characters.
+# @export
+subroutine is_alpha
+	return {@1 like '^%a+$'}
+end
+
+# @brief Check if a string is alphanumeric
+# @param text string The string to test
+# @return boolean True if the string only contains alphanumeric characters.
+# @export
+subroutine is_alphanumeric
+	return {@1 like '^%w+$'}
+end
