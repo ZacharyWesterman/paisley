@@ -9,6 +9,7 @@ require 'src.util.filesystem'
 DEBUG_EXTRA = false
 RUN_PROGRAM = false
 STEP_PROGRAM = false
+PRINT_HELP = false
 for i, v in ipairs(arg) do
 	if v:sub(1, 1) == '-' and v ~= '-' then
 		if v == '--extra' then
@@ -17,10 +18,26 @@ for i, v in ipairs(arg) do
 			RUN_PROGRAM = true
 		elseif v == '--step' then
 			STEP_PROGRAM = true
+			RUN_PROGRAM = true
+		elseif v == '--help' or v == '-h' then
+			PRINT_HELP = true
 		end
 	else
 		V2 = v
 	end
+end
+
+if PRINT_HELP then
+	print('Paisley Compiler Debug Tool')
+	print('Usage: ./debug.lua [options] <file>')
+	print('Options:')
+	print('  --extra       Print all intermediate states while building the AST')
+	print('  --run         Run the compiled bytecode after compiling')
+	print('  --step        Step through the program one instruction at a time (implies --run)')
+	print('  --help, -h    Show this help message')
+	print('')
+	print('If <file> is `-`, read from stdin instead.')
+	os.exit()
 end
 
 if V2 == nil then
