@@ -4,7 +4,7 @@
 # @param suffix string? The string to append if truncating. If not specified, "..." is used.
 # @return string A string with the specified length, truncated and appended with the suffix if necessary.
 # @export
-subroutine truncate
+subroutine string.truncate
 	if {&@1 <= @2} then return {@1} end
 	
 	return {
@@ -17,7 +17,7 @@ end
 # @param text string The string to test
 # @return boolean True if the string only contains numeric characters.
 # @export
-subroutine is_numeric
+subroutine string.is_numeric
 	return {@1 like '^%d+$'}
 end
 
@@ -25,7 +25,7 @@ end
 # @param text string The string to test
 # @return boolean True if the string only contains alphabetic characters.
 # @export
-subroutine is_alpha
+subroutine string.is_alpha
 	return {@1 like '^%a+$'}
 end
 
@@ -33,6 +33,6 @@ end
 # @param text string The string to test
 # @return boolean True if the string only contains alphanumeric characters.
 # @export
-subroutine is_alphanumeric
+subroutine string.is_alphanumeric
 	return {@1 like '^%w+$'}
 end
