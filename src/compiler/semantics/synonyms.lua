@@ -170,8 +170,8 @@ return {
 	end,
 
 	hex = function(token)
-		--Convert "hex(x)" into "numeric_string(x, 16, 0)"
-		token.text = 'numeric_string'
+		--Convert "hex(x)" into "to_base(x, 16, 0)"
+		token.text = 'to_base'
 		token.children = {
 			token.children[1],
 			{

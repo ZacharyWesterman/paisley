@@ -2,4 +2,4 @@
 
 #include "../context.hpp"
 
-void numeric_string(Context &) noexcept;
+void to_base(Context &) noexcept;

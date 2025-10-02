@@ -1025,7 +1025,7 @@ local functions = {
 	function()
 		local v = POP()
 		local number, base, pad_width = std.num(v[1]), std.num(v[2]), std.num(v[3])
-		PUSH(std.numeric_string(number, base, pad_width))
+		PUSH(std.to_base(number, base, pad_width))
 	end,
 
 	--CONVERT TIMESTAMP INTO TIME STRING

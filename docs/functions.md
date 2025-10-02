@@ -196,7 +196,7 @@
 - `glob(...: string) -> array[string]`
   - Convert a glob pattern into a list of strings. E.g. `glob("a?*", "b", "c")` or `glob("a?*", ("b", "c"))` -> ("a?b", "a?c").
 - `hex(value: number) -> string`
-  - Convert a number to a hexadecimal string.
+  - Convert a number to a hexadecimal string. This is identical to `to_base(value, 16, 0)`.
 - `join(list: array[any], delim: string) -> string`
   - Join an array into a single string with a delimiter between elements.
 - `lower(text: string) -> string`
@@ -207,14 +207,14 @@
   - Get the first substring that matches the given pattern. If no match is found, null is returned.
 - `matches(text: string, pattern: string) -> array[string]`
   - Get all substrings that match the given pattern.
-- `numeric_string(number: number, base: number, pad_width: number) -> string`
-  - Convert a number to a numeric string of any base from 2 to 36. Optionally pad the string with leading zeros to a given width. E.g. 42 in base 16 with padding of 4 would be "002A".
 - `replace(text: string, search: string, replace: string) -> string`
   - Replace all occurrences of a substring.
 - `rpad(text: string, pad_char: string, width: number) -> string`
   - Right-pad a string with a given character.
 - `split(text: string, delim: string) -> array[string]`
   - Split a string into an array based on a delimiter. If the delimiter is an empty string, the string is split into individual characters.
+- `to_base(number: number, base: number, pad_width: number) -> string`
+  - Convert a number to a numeric string of any base from 2 to 36. Optionally pad the string with leading zeros to a given width. E.g. 42 in base 16 with padding of 4 would be "002A".
 - `trim(text: string [, chars: string]) -> string`
   - Remove any of the given characters from the beginning and end of a string. If chars is not provided, any whitespace will be removed.
 - `upper(text: string) -> string`
@@ -231,7 +231,7 @@
   - Get the current epoch time (seconds since Jan 1, 1970).
 - `fromepoch(timestamp: number) -> object[any]`
   - Convert epoch time (seconds since Jan 1, 1970) to a datetime object. The datetime object will have the following form: { date: (day, month, year), time: (hour, min, sec) }.
-- `time(timestamp: number|array[number]) -> string`
+- `time(timestamp: array[number]|number) -> string`
   - Convert a number or array representation of a time (timestamp OR [hour, min, sec, milli]) into an ISO compliant time string.
 - `toepoch(datetime: object[any]) -> number`
   - Convert a datetime object to epoch time (seconds since Jan 1, 1970). The datetime object is expected to have the following form: { date: (day, month, year), time: (hour, min, sec) }.

@@ -1,7 +1,7 @@
-#include "numeric_string.hpp"
+#include "to_base.hpp"
 #include <sstream>
 
-void numeric_string(Context &context) noexcept
+void to_base(Context &context) noexcept
 {
 	// Convert a number to a string of any base.
 	auto params = std::get<std::vector<Value>>(context.stack.pop());

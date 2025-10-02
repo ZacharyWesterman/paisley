@@ -475,7 +475,7 @@ std = {
 	---@param base number The base of the number, clamped to [2,36] and rounded down.
 	---@param pad_width number The minimum width of the output string.
 	---@return string
-	numeric_string = function(number, base, pad_width)
+	to_base = function(number, base, pad_width)
 		local FRACT_DIGITS = 6
 		local FRACT_MIN = 0.000001
 

@@ -195,7 +195,7 @@ FUNC_OPERATIONS = {
 		return text .. c:rep(width - #text)
 	end,
 	hex = function(value)
-		return std.numeric_string(value, 16, 0)
+		return std.to_base(value, 16, 0)
 	end,
 
 	filter = function(text, pattern)
@@ -361,7 +361,7 @@ FUNC_OPERATIONS = {
 	endswith = function(search, substring)
 		return search:sub(#search - #substring + 1, #search) == substring
 	end,
-	numeric_string = std.numeric_string,
+	to_base = std.to_base,
 
 	time = function(timestamp)
 		if type(timestamp) == 'number' then timestamp = FUNC_OPERATIONS.clocktime(timestamp) end

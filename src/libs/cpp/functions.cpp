@@ -82,7 +82,6 @@
 #include "functions/mult.hpp"
 #include "functions/normalize.hpp"
 #include "functions/notequal.hpp"
-#include "functions/numeric_string.hpp"
 #include "functions/num.hpp"
 #include "functions/object.hpp"
 #include "functions/pairs.hpp"
@@ -115,6 +114,7 @@
 #include "functions/tan.hpp"
 #include "functions/time.hpp"
 #include "functions/toepoch.hpp"
+#include "functions/to_base.hpp"
 #include "functions/trim.hpp"
 #include "functions/type.hpp"
 #include "functions/union.hpp"
@@ -237,7 +237,7 @@ const Function FUNCTIONS[] = {
 	_char,
 	beginswith,
 	endswith,
-	numeric_string,
+	to_base,
 	time,
 	date,
 	random_elements,
