@@ -548,9 +548,10 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Multi-line strings with interpoation, `"""some text"""`
 - Multi-line strings with NO interpolation, `'''some text'''`
 - Variables, `var_name`, `x`, etc.
-- The "parameter list" variable, an array containing any values passed to the current subroutine, `@`
-- The "command list" variable, an array containing the names of all allowed commands, `$`
-- The "variables" variable, an object that contains variable names and values, `_VARS`
+- `@`, the "parameter list" variable, an array containing any values passed to the current subroutine.
+- `$`, the "command list" variable, an array containing the names of all allowed commands.
+- `_VARS`, the "variables" variable, an object that contains variable names and values.
+- `_VERSION`, the "version number" variable, a string formatted as `MAJOR.MINOR.PATCH`.
 - Inline command evaluation, `${}`
 - Arrays, e.g. `(1,2,3,4,5)`
 - Objects, e.g. `("a" => 1, "b" => 2)`

@@ -594,6 +594,8 @@ function SemanticAnalyzer(tokens, root_file)
 				token.type = _G['TYPE_ARRAY']
 			elseif token.text == '_VARS' then
 				token.type = _G['TYPE_OBJECT']
+			elseif token.text == '_VERSION' then
+				token.type = _G['TYPE_STRING']
 			end
 		end
 	end
@@ -603,7 +605,13 @@ function SemanticAnalyzer(tokens, root_file)
 		['$'] = {},
 		['@'] = {},
 		['_VARS'] = {},
+		['_VERSION'] = {},
 	}
+	local readonly_vars = {
+		['_VARS'] = true,
+		['_VERSION'] = true,
+	}
+
 	local this_var = nil
 	recurse(root, { TOK.var_assign, TOK.inline_command, TOK.try_stmt }, function(token, file)
 		local ix = token.span.from
@@ -611,9 +619,9 @@ function SemanticAnalyzer(tokens, root_file)
 			this_var = token.text
 			token.ignore = true --If this variable is not used anywhere, we can optimize it away.
 
-			--Don't allow assignment to _VARS variable.
-			if this_var == '_VARS' then
-				parse_error(token.span, '_VARS variable cannot be written to, it only contains defined variables', file)
+			--Don't allow assignment to read-only variables.
+			if readonly_vars[this_var] then
+				parse_error(token.span, this_var .. ' variable is read-only', file)
 			end
 
 			--If we're specifically keeping the vars, then don't remove the dead code.

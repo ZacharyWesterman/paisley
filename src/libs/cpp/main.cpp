@@ -33,6 +33,9 @@ int main(int argc, char *argv[])
 		// Whether the VM is sandboxed
 		SANDBOXED,
 
+		// Version string
+		VERSION,
+
 		// Last command result
 		{},
 
