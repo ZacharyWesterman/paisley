@@ -20,28 +20,14 @@ subroutine color.rgb_to_hex
 	return "#{@.flatten().frombytes().to_base(16, 6)}"
 end
 
-# @brief Convert RGB values to HSL values
-# @param @ array[number] An array containing the RGB values [R, G, B]. RGB array may be passed as a single argument or as three separate arguments.
-# @return array[number] An array containing the HSL values [H, S, L]
-# @export
-subroutine color.rgb_to_hsl
-	let _rgb = {i / 255 for i in @.flatten()}
-
-	let _cmax = {_rgb.max()}
-	let _cmin = {_rgb.min()}
-	let _hsl = 0 0 {(_cmax + _cmin) / 2}
-
-	if {_cmax != _cmin} then
-		let _hsl{1} = {
-			(_rgb[2] - _rgb[3]) / (_cmax - _cmin) * 60
-			+ (240 if _cmax = _rgb[3] else (
-				(120 if _cmax = _rgb[2] else 0)
-			))
-		}
-
-		let _hsl{2} = {(_cmax - _cmin) / (2 - _cmax - _cmin if _hsl[3] >= 0.5 else _cmax + _cmin)}
-	end
-
-	return {_hsl}
+#[[
+@brief Blend two colors together
+@param color1 array[number] The first color as an array of RGB values [R, G, B]
+@param color2 array[number] The second color as an array of RGB values [R, G, B]
+@param ratio number The blend ratio (0.0 to 1.0). 0.0 returns color1, 1.0 returns color2.
+@return array[number] An array containing the blended RGB values [R, G, B]
+@export
+#]]
+subroutine color.blend
+	return {(@1[i] * (1 - @3.clamp(0, 1)) + @2[i] * @3.clamp(0, 1)).round() for i in 1:3}
 end
-

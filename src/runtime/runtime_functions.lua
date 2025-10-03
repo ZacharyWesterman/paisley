@@ -72,7 +72,12 @@ local function mathfunc(funcname)
 			p = { 0 }
 		end
 
-		local val1, val2 = math[funcname](u(p))
+		local fn = math[funcname]
+		if not fn then
+			runtime_error(line, 'RUNTIME BUG: Math function "' .. funcname .. '" does not exist')
+		end
+
+		local val1, val2 = fn(u(p))
 		if val2 then
 			PUSH({ val1, val2 })
 		else
@@ -498,7 +503,10 @@ local functions = {
 	--MORE MATH FUNCTIONS
 	mathfunc('floor'),
 	mathfunc('ceil'),
-	mathfunc('round'),
+
+	--ROUND
+	function() PUSH(math.floor(std.num(POP()[1]) + 0.5)) end,
+
 	mathfunc('abs'),
 
 	--ARRAY APPEND
