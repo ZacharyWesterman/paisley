@@ -180,11 +180,6 @@ function Lexer(text, file)
 				match = text:match('^[\n;]')
 				if match then
 					tok_type = TOK.line_ending
-
-					if match ~= ';' then
-						line = line + 1
-						col = 0
-					end
 				end
 
 				--White space
@@ -303,8 +298,6 @@ function Lexer(text, file)
 				if not match then
 					match = text:match('^\n')
 					if match then
-						line = line + 1
-						col = 0
 						tok_ignore = true
 					end
 				end
@@ -626,11 +619,6 @@ function Lexer(text, file)
 				match = text:match('^[\n;]')
 				if match then
 					tok_type = TOK.line_ending
-
-					if match ~= ';' then
-						line = line + 1
-						col = 0
-					end
 					table.remove(scopes)
 				end
 
@@ -667,7 +655,12 @@ function Lexer(text, file)
 
 			--Append currently matched token to token list
 			if match then
-				col = col + #match
+				local num_line_endings = #match:gsub('[^\n]', '')
+				line = line + num_line_endings
+				if num_line_endings > 0 then col = 1 end
+				local lines = std.split(match, '\n')
+				col = col + #(lines[#lines])
+
 				text = text:sub(#match + 1, #text)
 				if not tok_ignore then
 					--[[minify-delete]]
