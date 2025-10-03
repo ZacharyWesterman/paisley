@@ -21,6 +21,26 @@ end
 function FOLD_CONSTANTS(token, file)
 	if not token.children then return end
 
+	local function check_if_nan_or_inf(token, file)
+		local inf = 1 / 0
+		local ninf = -(0 / 0)
+		if token.value ~= token.value or token.value == inf or token.value == ninf then
+			local values = {}
+			for i = 1, #token.children do
+				table.insert(values, token.children[i].value)
+			end
+
+			local result = ({
+				["inf"] = 'infinity',
+				["-inf"] = '-infinity',
+				["nan"] = 'not a number',
+			})[tostring(token.value)]
+
+			parse_error(token.span,
+				'Result of "' .. token.text .. '(' .. std.join(values, ', ') .. ')" is ' .. result, file)
+		end
+	end
+
 	local operator = token.text
 	local c1, c2 = token.children[1], token.children[2]
 
@@ -329,6 +349,9 @@ function FOLD_CONSTANTS(token, file)
 				end
 			end
 
+			--Check for NaN
+			check_if_nan_or_inf(token, file)
+
 			--Fold values of only the deterministic functions
 			if token.value ~= nil then
 				token.text = tostring(token.value)
@@ -358,10 +381,7 @@ function FOLD_CONSTANTS(token, file)
 			local val1, val2 = math[token.text](c1.value)
 
 			--Check for NaN
-			local r = tostring(val1)
-			if r == tostring(1 / 0) or r == tostring(0 / 0) or r == tostring(-(0 / 0)) then
-				parse_error(token.span, 'Result of "' .. token.text .. '(' .. c1.value .. ')" is not a number', file)
-			end
+			check_if_nan_or_inf(token, file)
 
 			if val2 then --math.modf returns two values
 				token.id = TOK.lit_array
