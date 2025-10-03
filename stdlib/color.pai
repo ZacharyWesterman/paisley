@@ -1,0 +1,47 @@
+# @brief Convert a hex color code to RGB values
+# @param hex string The hex color code (e.g., "#RRGGBB" or "RRGGBB")
+# @return array[number] An array containing the RGB values [R, G, B]
+# @export
+subroutine color.hex_to_rgb
+	let _color = {@1[(2 if @1[1] = '#' else 1)::]}
+	
+	if {&_color != 6 or _color not like '^[0-9a-fA-F]+$'} then
+		error "Invalid hex color code: {@1}"
+	end
+
+	return { _color.from_base(16).bytes(3) }
+end
+
+# @brief Convert RGB values to a hex color code
+# @param @ array[number] An array containing the RGB values [R, G, B]. RGB array may be passed as a single argument or as three separate arguments.
+# @return string The hex color code in the format "#RRGGBB"
+# @export
+subroutine color.rgb_to_hex
+	return "#{@.flatten().frombytes().to_base(16, 6)}"
+end
+
+# @brief Convert RGB values to HSL values
+# @param @ array[number] An array containing the RGB values [R, G, B]. RGB array may be passed as a single argument or as three separate arguments.
+# @return array[number] An array containing the HSL values [H, S, L]
+# @export
+subroutine color.rgb_to_hsl
+	let _rgb = {i / 255 for i in @.flatten()}
+
+	let _cmax = {_rgb.max()}
+	let _cmin = {_rgb.min()}
+	let _hsl = 0 0 {(_cmax + _cmin) / 2}
+
+	if {_cmax != _cmin} then
+		let _hsl{1} = {
+			(_rgb[2] - _rgb[3]) / (_cmax - _cmin) * 60
+			+ (240 if _cmax = _rgb[3] else (
+				(120 if _cmax = _rgb[2] else 0)
+			))
+		}
+
+		let _hsl{2} = {(_cmax - _cmin) / (2 - _cmax - _cmin if _hsl[3] >= 0.5 else _cmax + _cmin)}
+	end
+
+	return {_hsl}
+end
+

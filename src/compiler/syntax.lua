@@ -389,6 +389,7 @@ local rules = {
 		text = 2,
 		onmatch = _equality_op_onmatch,
 		not_after = { TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod },
+		not_before = { TOK.index_open, TOK.op_dot, TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod },
 	},
 	--Special logical comparison with only an RHS operand.
 	--This is only for use in "match" statements,
