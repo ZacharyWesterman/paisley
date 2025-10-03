@@ -84,6 +84,34 @@
 - `xml_encode(data: array[object[any]]) -> string`
   - Serialize data to an XML string.
 
+## Files
+- `dir_create(dir_path: string [, create_parents: boolean]) -> boolean`
+  - Create a directory. Returns true on success, or false if the directory could not be created. If create_parents is true, any missing parent directories will also be created.
+- `dir_delete(dir_path: string [, recursive: boolean]) -> boolean`
+  - Delete a directory. Returns true on success, or false if the directory could not be deleted. If recursive is true, all files and subdirectories will also be deleted.
+- `dir_list(dir_path: string) -> array[string]`
+  - List all files and directories in the given directory. If the directory does not exist, an empty array is returned.
+- `file_append(file_path: string, data: string) -> boolean`
+  - Append a string to the end of a file, creating it if it does not exist. Returns true on success, or false if the file could not be written.
+- `file_copy(source_path: string, dest_path: string) -> boolean`
+  - Copy a file from source_path to dest_path. If overwrite is true, any existing file at dest_path will be overwritten. Returns true on success, or false if the file could not be copied.
+- `file_delete(file_path: string) -> boolean`
+  - Delete a file. Returns true on success, or false if the file could not be deleted.
+- `file_exists(file_path: string) -> boolean`
+  - Check if a file exists at the given path.
+- `file_glob(glob_pattern: string) -> array[string]`
+  - List all files that match a glob pattern. E.g. `file_glob("*.txt")` -> ("file1.txt", "file2.txt"), depending on the files in your current directory.
+- `file_move(source_path: string, dest_path: string) -> boolean`
+  - Move a file from source_path to dest_path. If overwrite is true, any existing file at dest_path will be overwritten. Returns true on success, or false if the file could not be moved.
+- `file_read(file_path: string) -> null|string`
+  - Read the entire contents of a file as a string. If the file does not exist or cannot be read, null is returned.
+- `file_size(file_path: string) -> number`
+  - Get the size of a file in bytes. If the file does not exist, 0 is returned.
+- `file_type(file_path: string) -> string`
+  - Get the type of a file. Possible return values are "file", "directory", "symlink", or "other". If the file does not exist, "none" is returned.
+- `file_write(file_path: string, data: string) -> boolean`
+  - Write a string to a file, overwriting it if it already exists. Returns true on success, or false if the file could not be written.
+
 ## Iterables
 - `count(iter: array[any]|string, value: any|string) -> number`
   - Count the number of occurrences of a value in an array or string.
@@ -189,10 +217,10 @@
   - Capitalize the first letter of every word.
 - `endswith(search: string, substring: string) -> boolean`
   - Check if the search string ends with the given substring.
-- `file_glob(glob_pattern: string) -> array[string]`
-  - List all files that match a glob pattern. E.g. `file_glob("*.txt")` -> ("file1.txt", "file2.txt"), depending on the files in your current directory.
 - `filter(text: string, valid_chars: string) -> string`
   - Remove all characters that do not match the given pattern.
+- `from_base(text: string, base: number) -> number`
+  - Convert a numeric string of any base from 2 to 36 into a number. E.g. "2A" in base 16 would be 42. If the string contains invalid characters, 0 is returned.
 - `glob(...: string) -> array[string]`
   - Convert a glob pattern into a list of strings. E.g. `glob("a?*", "b", "c")` or `glob("a?*", ("b", "c"))` -> ("a?b", "a?c").
 - `hex(value: number) -> string`
@@ -231,7 +259,7 @@
   - Get the current epoch time (seconds since Jan 1, 1970).
 - `fromepoch(timestamp: number) -> object[any]`
   - Convert epoch time (seconds since Jan 1, 1970) to a datetime object. The datetime object will have the following form: { date: (day, month, year), time: (hour, min, sec) }.
-- `time(timestamp: array[number]|number) -> string`
+- `time(timestamp: number|array[number]) -> string`
   - Convert a number or array representation of a time (timestamp OR [hour, min, sec, milli]) into an ISO compliant time string.
 - `toepoch(datetime: object[any]) -> number`
   - Convert a datetime object to epoch time (seconds since Jan 1, 1970). The datetime object is expected to have the following form: { date: (day, month, year), time: (hour, min, sec) }.

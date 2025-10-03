@@ -1028,7 +1028,112 @@ TYPESIG = {
 		params = { 'glob_pattern' },
 		description =
 		'List all files that match a glob pattern. E.g. `file_glob("*.txt")` -> ("file1.txt", "file2.txt"), depending on the files in your current directory.',
-		category = 'strings',
+		category = 'files',
+		plasma = false,
+	},
+	file_exists = {
+		valid = { { 'string' } },
+		out = 'boolean',
+		params = { 'file_path' },
+		description = 'Check if a file exists at the given path.',
+		category = 'files',
+		plasma = false,
+	},
+	file_size = {
+		valid = { { 'string' } },
+		out = 'number',
+		params = { 'file_path' },
+		description = 'Get the size of a file in bytes. If the file does not exist, 0 is returned.',
+		category = 'files',
+		plasma = false,
+	},
+	file_read = {
+		valid = { { 'string' } },
+		out = 'string?',
+		params = { 'file_path' },
+		description =
+		'Read the entire contents of a file as a string. If the file does not exist or cannot be read, null is returned.',
+		category = 'files',
+		plasma = false,
+	},
+	file_write = {
+		valid = { { 'string' } },
+		out = 'boolean',
+		params = { 'file_path', 'data' },
+		description =
+		'Write a string to a file, overwriting it if it already exists. Returns true on success, or false if the file could not be written.',
+		category = 'files',
+		plasma = false,
+	},
+	file_append = {
+		valid = { { 'string' } },
+		out = 'boolean',
+		params = { 'file_path', 'data' },
+		description =
+		'Append a string to the end of a file, creating it if it does not exist. Returns true on success, or false if the file could not be written.',
+		category = 'files',
+		plasma = false,
+	},
+	file_delete = {
+		valid = { { 'string' } },
+		out = 'boolean',
+		params = { 'file_path' },
+		description = 'Delete a file. Returns true on success, or false if the file could not be deleted.',
+		category = 'files',
+		plasma = false,
+	},
+	dir_create = {
+		valid = { { 'string', 'boolean' } },
+		out = 'boolean',
+		params = { 'dir_path', 'create_parents' },
+		description =
+		'Create a directory. Returns true on success, or false if the directory could not be created. If create_parents is true, any missing parent directories will also be created.',
+		category = 'files',
+		plasma = false,
+	},
+	dir_list = {
+		valid = { { 'string' } },
+		out = 'array[string]',
+		params = { 'dir_path' },
+		description =
+		'List all files and directories in the given directory. If the directory does not exist, an empty array is returned.',
+		category = 'files',
+		plasma = false,
+	},
+	dir_delete = {
+		valid = { { 'string', 'boolean' } },
+		out = 'boolean',
+		params = { 'dir_path', 'recursive' },
+		description =
+		'Delete a directory. Returns true on success, or false if the directory could not be deleted. If recursive is true, all files and subdirectories will also be deleted.',
+		category = 'files',
+		plasma = false,
+	},
+	file_type = {
+		valid = { { 'string' } },
+		out = 'string',
+		params = { 'file_path' },
+		description =
+		'Get the type of a file. Possible return values are "file", "directory", "symlink", or "other". If the file does not exist, "none" is returned.',
+		category = 'files',
+		plasma = false,
+	},
+	file_copy = {
+		valid = { { 'string', 'string', 'boolean' } },
+		out = 'boolean',
+		params = { 'source_path', 'dest_path', 'overwrite' },
+		description =
+		'Copy a file from source_path to dest_path. If overwrite is true, any existing file at dest_path will be overwritten. Returns true on success, or false if the file could not be copied.',
+		category = 'files',
+		plasma = false,
+	},
+	file_move = {
+		valid = { { 'string', 'string', 'boolean' } },
+		out = 'boolean',
+		params = { 'source_path', 'dest_path', 'overwrite' },
+		description =
+		'Move a file from source_path to dest_path. If overwrite is true, any existing file at dest_path will be overwritten. Returns true on success, or false if the file could not be moved.',
+		category = 'files',
 		plasma = false,
 	},
 	--[[/minify-delete]]

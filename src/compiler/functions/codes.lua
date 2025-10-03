@@ -140,5 +140,17 @@ CALL_CODES = {
 	fromepoch = uid(),
 	epochnow = uid(),
 	file_glob = uid(),
+	file_exists = uid(),
+	file_size = uid(),
+	file_read = uid(),
+	file_write = uid(),
+	file_append = uid(),
+	file_delete = uid(),
+	dir_create = uid(),
+	dir_list = uid(),
+	dir_delete = uid(),
+	file_type = uid(),
+	file_copy = uid(),
+	file_move = uid(),
 	--[[/minify-delete]]
 }
