@@ -36,8 +36,10 @@ function FOLD_CONSTANTS(token, file)
 				["nan"] = 'not a number',
 			})[tostring(token.value)]
 
-			parse_error(token.span,
-				'Result of "' .. token.text .. '(' .. std.join(values, ', ') .. ')" is ' .. result, file)
+			if result then
+				parse_error(token.span,
+					'Result of "' .. token.text .. '(' .. std.join(values, ', ') .. ')" is ' .. result, file)
+			end
 		end
 	end
 
