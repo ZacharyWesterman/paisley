@@ -103,12 +103,14 @@
   - List all files that match a glob pattern. E.g. `file_glob("*.txt")` -> ("file1.txt", "file2.txt"), depending on the files in your current directory.
 - `file_move(source_path: string, dest_path: string) -> boolean`
   - Move a file from source_path to dest_path. If overwrite is true, any existing file at dest_path will be overwritten. Returns true on success, or false if the file could not be moved.
-- `file_read(file_path: string) -> null|string`
+- `file_read(file_path: string) -> string|null`
   - Read the entire contents of a file as a string. If the file does not exist or cannot be read, null is returned.
 - `file_size(file_path: string) -> number`
   - Get the size of a file in bytes. If the file does not exist, 0 is returned.
-- `file_type(file_path: string) -> string`
-  - Get the type of a file. Possible return values are "file", "directory", "symlink", or "other". If the file does not exist, "none" is returned.
+- `file_stat(file_path: string) -> object[any]|null`
+  - Get information about a filesystem object. If the file does not exist, null is returned.
+- `file_type(file_path: string) -> string|null`
+  - Get the type of a file. Possible return values are "file", "directory", or "other". If the file does not exist, null is returned.
 - `file_write(file_path: string, data: string) -> boolean`
   - Write a string to a file, overwriting it if it already exists. Returns true on success, or false if the file could not be written.
 
@@ -231,7 +233,7 @@
   - Convert a string to lowercase.
 - `lpad(text: string, pad_char: string, width: number) -> string`
   - Left-pad a string with a given character.
-- `match(text: string, pattern: string) -> null|string`
+- `match(text: string, pattern: string) -> string|null`
   - Get the first substring that matches the given pattern. If no match is found, null is returned.
 - `matches(text: string, pattern: string) -> array[string]`
   - Get all substrings that match the given pattern.
@@ -259,7 +261,7 @@
   - Get the current epoch time (seconds since Jan 1, 1970).
 - `fromepoch(timestamp: number) -> object[any]`
   - Convert epoch time (seconds since Jan 1, 1970) to a datetime object. The datetime object will have the following form: { date: (day, month, year), time: (hour, min, sec) }.
-- `time(timestamp: number|array[number]) -> string`
+- `time(timestamp: array[number]|number) -> string`
   - Convert a number or array representation of a time (timestamp OR [hour, min, sec, milli]) into an ISO compliant time string.
 - `toepoch(datetime: object[any]) -> number`
   - Convert a datetime object to epoch time (seconds since Jan 1, 1970). The datetime object is expected to have the following form: { date: (day, month, year), time: (hour, min, sec) }.
