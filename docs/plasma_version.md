@@ -46,5 +46,19 @@ The following functions will not work in the Plasma build:
 - `fromepoch`
 - `epochnow`
 - `file_glob`
+- `file_exists`
+- `file_size`
+- `file_read`
+- `file_write`
+- `file_append`
+- `file_delete`
+- `dir_create`
+- `dir_list`
+- `dir_delete`
+- `file_type`
+- `file_stat`
+- `file_copy`
+- `file_move`
 
 Note that all commands take a little bit of time to run (at least 0.02s), whether they're built-in or not. This is to prevent "infinite loop" errors or performance drops.
+The only exception to this is the `.` no-op command. It does not actually interact with the outside world, so it will complete immediately.

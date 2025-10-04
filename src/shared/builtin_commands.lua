@@ -5,6 +5,7 @@ BUILTIN_COMMANDS = {
 	"error:null",
 	"systime:number",
 	"sysdate:array[number]",
+	".:null",
 	--[[minify-delete]]
 	--The following commands are only available in the CLI version of Paisley
 	"clear:null",
@@ -39,6 +40,7 @@ CMD_DESCRIPTION = {
 	'Execute a unix command, capturing the stderr output. Run with no params to output the result of the last command.',
 	['?!'] =
 	'Execute a unix command, capturing both the stdout and stderr output. Run with no params to output the result of the last command.',
+	['.'] = 'No-op. Calculates the value of its arguments and discards the result. Returns null.',
 }
 --[[/minify-delete]]
 

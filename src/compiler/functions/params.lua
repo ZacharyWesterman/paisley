@@ -113,6 +113,19 @@ BUILTIN_FUNCS = {
 	fromepoch = 1,
 	epochnow = 0,
 	file_glob = 1,
+	file_exists = 1,
+	file_size = 1,
+	file_read = 1,
+	file_write = 2,
+	file_append = 2,
+	file_delete = 1,
+	dir_create = -2,
+	dir_list = 1,
+	dir_delete = -2,
+	file_type = 1,
+	file_stat = 1,
+	file_copy = 2,
+	file_move = 2,
 	--[[/minify-delete]]
 }
 
