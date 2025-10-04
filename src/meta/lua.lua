@@ -233,16 +233,28 @@ LUA = {
 				type = 'space',
 				text = '',
 			}
+			local buffer = ''
+
 			for i, token in ipairs(tokens) do
 				if prev.type == 'word' and token.type == 'word' then
-					text = text .. ' '
+					buffer = buffer .. ' '
 				end
-				text = text .. token.text
+				buffer = buffer .. token.text
 				prev = token
 
 				if print_progress and i % 100 == 0 then
 					io.stderr:write('\rGenerating text... ' .. math.floor(i / #tokens * 100) .. '%')
 				end
+
+				if #buffer > 4096 then
+					text = text .. buffer
+					buffer = ''
+				end
+			end
+			text = text .. buffer
+
+			if print_progress then
+				io.stderr:write('\rGenerating text... 100%\n')
 			end
 			return text
 		end,
