@@ -1322,6 +1322,18 @@ local functions = {
 	--STAT A FILE
 	function() PUSH(FS.file_stat(std.str(POP()[1]))) end,
 
+	--COPY A FILE
+	function()
+		local v = POP()
+		PUSH(FS.file_copy(std.str(v[1]), std.str(v[2]), std.bool(v[3])))
+	end,
+
+	--MOVE A FILE
+	function()
+		local v = POP()
+		PUSH(FS.file_move(std.str(v[1]), std.str(v[2]), std.bool(v[3])))
+	end,
+
 	--[[/minify-delete]]
 }
 
