@@ -9,6 +9,9 @@ NULL = {}
 -- STACK = {}
 -- VARS = {}
 
+--[[minify-delete]]
+require 'src.util.filesystem'
+
 local function runtime_error(line, msg)
 	if msg:sub(1, 11) == 'RUNTIME BUG' then
 		msg = msg .. '\nTHIS IS A BUG IN THE PAISLEY COMPILER, PLEASE REPORT IT!'
@@ -1262,14 +1265,63 @@ local functions = {
 	function()
 		local pattern = std.str(POP()[1])
 
-		local lfs = _G['FS'].rocks.lfs
+		local lfs = FS.rocks.lfs
 		if not lfs then
 			error('Error in file_glob(): Lua lfs module not installed!')
 			return
 		end
 
-		PUSH(_G['FS'].glob_files(pattern))
+		PUSH(FS.glob_files(pattern))
 	end,
+
+	--CHECK IF A FILE EXISTS
+	function() PUSH(FS.file_exists(std.str(POP()[1]))) end,
+
+	--GET FILE SIZE
+	function() PUSH(FS.file_size(std.str(POP()[1]))) end,
+
+	--READ FILE CONTENTS
+	function() PUSH(FS.file_read(std.str(POP()[1]))) end,
+
+	--WRITE FILE CONTENTS
+	function()
+		local v = POP()
+		PUSH(FS.file_write(std.str(v[1]), std.str(v[2]), false))
+	end,
+
+	--APPEND TO FILE
+	function()
+		local v = POP()
+		PUSH(FS.file_write(std.str(v[1]), std.str(v[2]), true))
+	end,
+
+	--DELETE A FILE
+	function() PUSH(FS.file_delete(std.str(POP()[1]))) end,
+
+	--MAKE A DIRECTORY
+	function()
+		local v = POP()
+		PUSH(FS.dir_create(std.str(v[1]), std.bool(v[2])))
+	end,
+
+	--LIST FILES IN A DIRECTORY
+	function()
+		local v = POP()
+		PUSH(FS.dir_list(std.str(v[1])))
+	end,
+
+	--DELETE A DIRECTORY
+	function()
+		local v = POP()
+		PUSH(FS.dir_delete(std.str(v[1]), std.bool(v[2])))
+	end,
+
+	--GET THE TYPE OF A FILESYSTEM OBJECT
+	function() PUSH(FS.file_type(std.str(POP()[1]))) end,
+
+	--STAT A FILE
+	function() PUSH(FS.file_stat(std.str(POP()[1]))) end,
+
 	--[[/minify-delete]]
 }
 

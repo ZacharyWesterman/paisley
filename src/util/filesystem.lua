@@ -149,6 +149,186 @@ FS = {
 		if not FS.rocks.lfs then return {} end
 		return glob(pattern)
 	end,
+
+	--- Check if a file or directory exists at the given path.
+	--- @param path string
+	--- @return boolean result true if the file or directory exists, false otherwise
+	file_exists = function(path)
+		local file = io.open(path, "r")
+		if file then
+			file:close()
+			return true
+		else
+			return false
+		end
+	end,
+
+	--- Get the size of a file at the given path.
+	--- @param path string
+	--- @return number size The size of the file in bytes, or 0 if the file does not exist or is not readable.
+	file_size = function(path)
+		local file = io.open(path, "r")
+		if file then
+			local size, error = file:seek("end")
+			file:close()
+			if error then
+				return 0
+			else
+				return size
+			end
+		else
+			return 0
+		end
+	end,
+
+	--- Read the entire content of a file at the given path.
+	--- @param path string
+	--- @return string|nil content The content of the file as a string, or nil if the file does not exist or is not readable.
+	file_read = function(path)
+		local file = io.open(path, "r")
+		if file then
+			local content = file:read("*a")
+			file:close()
+			return content
+		else
+			return nil
+		end
+	end,
+
+	--- Write content to a file at the given path, overwriting any existing content.
+	--- @param path string
+	--- @param content string
+	--- @param append boolean If true, append to the file instead of overwriting it.
+	--- @return boolean success true if the write operation was successful, false otherwise.
+	file_write = function(path, content, append)
+		local mode = append and "a" or "w"
+		local file = io.open(path, mode)
+		if file then
+			file:write(content)
+			file:close()
+			return true
+		else
+			return false
+		end
+	end,
+
+	--- Delete a file at the given path.
+	--- @param path string The path of the file to delete.
+	--- @return boolean success true if the file was successfully deleted, false otherwise.
+	file_delete = function(path)
+		if os.remove(path) then
+			return true
+		else
+			return false
+		end
+	end,
+
+	--- Create a directory at the given path.
+	--- @param path string The path of the directory to create.
+	--- @param recursive boolean If true, create parent directories as needed.
+	--- @return boolean success true if the directory was successfully created, false otherwise.
+	dir_create = function(path, recursive)
+		local command = recursive and 'mkdir -p "%s"' or 'mkdir "%s"'
+		local result = os.execute(string.format(command, path))
+		return result == 0
+	end,
+
+	--- Delete a directory at the given path.
+	--- @param path string The path of the directory to delete.
+	--- @param recursive boolean If true, delete the directory and its contents recursively.
+	--- @return boolean success true if the directory was successfully deleted, false otherwise.
+	dir_delete = function(path, recursive)
+		local command
+		if FS.os.windows then
+			command = recursive and 'rmdir /s /q "%s"' or 'rmdir "%s"'
+		else
+			command = recursive and 'rm -rf "%s"' or 'rmdir "%s"'
+		end
+		local result = os.execute(string.format(command, path))
+		return result == 0
+	end,
+
+	--- List the contents of a directory at the given path.
+	--- @param path string The path of the directory to list.
+	--- @return table|nil contents A table of filenames in the directory, or nil if the directory does not exist or is not readable.
+	dir_list = function(path)
+		local contents = std.array()
+		local lfs = FS.rocks.lfs
+		if not lfs or not FS.file_exists(path) then return contents end
+
+		for filename in lfs.dir(path) do
+			if filename ~= "." and filename ~= ".." then
+				table.insert(contents, filename)
+			end
+		end
+		return contents
+	end,
+
+	--- Get the type of a file at the given path.
+	--- @param path string The path of the file to check.
+	--- @return string|nil filetype The type of the file: "file", "directory", "other", or nil if the path does not exist.
+	file_type = function(path)
+		local lfs = FS.rocks.lfs
+		if not lfs then return nil end
+
+		local attr = lfs.attributes(path)
+		if not attr then return "other" end
+
+		if attr.mode == "file" then
+			return "file"
+		elseif attr.mode == "directory" then
+			return "directory"
+		else
+			return "other"
+		end
+	end,
+
+	--- Get file information at the given path.
+	--- @param path string The path of the file to check.
+	--- @return table|nil info A table containing file attributes, or nil if the path does not exist.
+	file_stat = function(path)
+		local lfs = FS.rocks.lfs
+		if not lfs then return nil end
+		local attr = lfs.attributes(path)
+		std.set_table_type(attr, false)
+		return attr
+	end,
+
+	--- Copy a file from source to destination.
+	--- @param src string The path of the source file.
+	--- @param dest string The path of the destination file.
+	--- @param overwrite boolean If true, overwrite the destination file if it exists.
+	--- @return boolean success true if the file was successfully copied, false otherwise.
+	file_copy = function(src, dest, overwrite)
+		if not FS.file_exists(src) then return false end
+		if FS.file_exists(dest) and not overwrite then return false end
+
+		local input = io.open(src, "rb")
+		if not input then return false end
+		local output = io.open(dest, "wb")
+		if not output then
+			input:close()
+			return false
+		end
+
+		local content = input:read("*a")
+		output:write(content)
+		input:close()
+		output:close()
+		return true
+	end,
+
+	--- Move (rename) a file from source to destination.
+	--- @param src string The path of the source file.
+	--- @param dest string The path of the destination file.
+	--- @param overwrite boolean If true, overwrite the destination file if it exists.
+	--- @return boolean success true if the file was successfully moved, false otherwise.
+	file_move = function(src, dest, overwrite)
+		if not overwrite and FS.file_exists(dest) then return false end
+
+		local success = os.rename(src, dest)
+		return success
+	end
 }
 
 --Setup filesystem constants

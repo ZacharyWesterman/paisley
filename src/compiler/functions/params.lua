@@ -123,6 +123,7 @@ BUILTIN_FUNCS = {
 	dir_list = 1,
 	dir_delete = -2,
 	file_type = 1,
+	file_stat = 1,
 	file_copy = 2,
 	file_move = 2,
 	--[[/minify-delete]]

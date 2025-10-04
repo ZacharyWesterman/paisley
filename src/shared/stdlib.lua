@@ -349,6 +349,14 @@ std = {
 		return setmetatable({}, { is_array = true })
 	end,
 
+	---Manually set whether a table is an array or an object.
+	---@param tbl table The table to set the type of.
+	---@param is_array boolean Whether the table is an array or not.
+	set_table_type = function(tbl, is_array)
+		if type(tbl) ~= 'table' then return end
+		setmetatable(tbl, { is_array = is_array })
+	end,
+
 	---Swap a table's keys and values.
 	---@param array table
 	---@return table

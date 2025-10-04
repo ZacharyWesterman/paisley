@@ -1111,10 +1111,19 @@ TYPESIG = {
 	},
 	file_type = {
 		valid = { { 'string' } },
-		out = 'string',
+		out = 'string?',
 		params = { 'file_path' },
 		description =
-		'Get the type of a file. Possible return values are "file", "directory", "symlink", or "other". If the file does not exist, "none" is returned.',
+		'Get the type of a file. Possible return values are "file", "directory", or "other". If the file does not exist, null is returned.',
+		category = 'files',
+		plasma = false,
+	},
+	file_stat = {
+		valid = { { 'string' } },
+		out = 'object?',
+		params = { 'file_path' },
+		description =
+		'Get information about a filesystem object. If the file does not exist, null is returned.',
 		category = 'files',
 		plasma = false,
 	},

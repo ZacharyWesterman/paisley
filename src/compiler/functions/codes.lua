@@ -150,6 +150,7 @@ CALL_CODES = {
 	dir_list = uid(),
 	dir_delete = uid(),
 	file_type = uid(),
+	file_stat = uid(),
 	file_copy = uid(),
 	file_move = uid(),
 	--[[/minify-delete]]
