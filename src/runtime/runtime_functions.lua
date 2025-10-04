@@ -1515,6 +1515,8 @@ COMMANDS = {
 				end
 				output_array({ cmd_name, text }, 9)
 				--[[/minify-delete]]
+			elseif cmd_name == '.' then
+				--No-op (results are calculated but discarded)
 			else
 				runtime_error(line, 'RUNTIME BUG: No logic implemented for built-in command "' .. command_array[1] .. '"')
 			end

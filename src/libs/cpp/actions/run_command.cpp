@@ -172,6 +172,11 @@ void run_command(VirtualMachine &vm)
 			vm.last_cmd_result = LAST_COMMAND_RESULT;
 		}
 	}
+	else if (command == ".")
+	{
+		// No-op (results are calculated but discarded)
+		vm.last_cmd_result = Null();
+	}
 	else
 	{
 		vm.error("Unknown command: " + command);

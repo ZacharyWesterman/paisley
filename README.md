@@ -688,6 +688,7 @@ For ease of use and consistency, there are 6 built-in commands that will always 
 - `print`: Prints any params to the 'print' or 'stdout' output.
 - `error`: Raises an exception with the line number, message, and stack info. If not caught, outputs the error and ends the program.
 - `sleep`: Pause script execution for the given amount of seconds. If the first argument is not a positive number, delay defaults to minimum value (0.02s).
+- `.`: No-op. Calculates the value of its arguments and discards the result. Returns null.
 
 In the PC build, the following commands are also available:
 - `clear`: Clears the screen.
