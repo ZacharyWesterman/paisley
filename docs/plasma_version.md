@@ -56,6 +56,7 @@ The following functions will not work in the Plasma build:
 - `dir_list`
 - `dir_delete`
 - `file_type`
+- `file_stat`
 - `file_copy`
 - `file_move`
 
