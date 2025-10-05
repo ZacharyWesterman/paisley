@@ -1029,16 +1029,31 @@ function generate_bytecode(root, file)
 							[TOK.op_xor] = 'boolxor',
 							[TOK.op_eq] = 'equal',
 							[TOK.op_ne] = 'notequal',
-							[TOK.op_gt] = 'greater',
-							[TOK.op_ge] = 'greaterequal',
-							[TOK.op_lt] = 'less',
-							[TOK.op_le] = 'lessequal',
+							[TOK.op_gt] = 'less', --Since we don't swap the order of args, gt becomes lt.
+							[TOK.op_ge] = 'lessequal', --ditto for the following 3.
+							[TOK.op_lt] = 'greater',
+							[TOK.op_le] = 'greaterequal',
 						}
 						emit(bc.call, ops[op_id])
 					end
-					emit(bc.call, 'jump', loop_beg_label)
+
+					--Optimize ands and ors to shortcut out of the loop if possible
+					if op_id == TOK.op_and then
+						emit(bc.call, 'jumpiffalse', loop_end_label)
+						emit(bc.call, 'jump', loop_beg_label)
+					elseif op_id == TOK.op_or then
+						emit(bc.call, 'jumpiffalse', loop_beg_label)
+						emit(bc.call, 'jump', loop_end_label)
+					else
+						emit(bc.call, 'jump', loop_beg_label)
+					end
+
 					emit(bc.label, loop_end_label)
-					emit(bc.pop)
+					if op_id == TOK.op_and or op_id == TOK.op_or then
+						emit(bc.pop_until_null, 1) --Leave the top value on the stack
+					else
+						emit(bc.pop)
+					end
 					emit(bc.label, loop_skip_label)
 
 					return
