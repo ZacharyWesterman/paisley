@@ -436,10 +436,14 @@ local functions = {
 		local v, total = POP(), 1
 		for i = 1, #v do
 			if type(v[i]) == 'table' then
-				for k = 1, #v[i] do total = total * std.num(v[i][k]) end
+				for k = 1, #v[i] do
+					total = total * std.num(v[i][k])
+					if total == 0 then break end
+				end
 			else
 				total = total * std.num(v[i])
 			end
+			if total == 0 then break end
 		end
 		PUSH(total)
 	end,

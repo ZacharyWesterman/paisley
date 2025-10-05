@@ -11,11 +11,20 @@ void mult(Context &context) noexcept
 			for (const Value &inner_value : std::get<std::vector<Value>>(value))
 			{
 				total *= inner_value.to_number();
+				if (total == 0)
+				{
+					break;
+				}
 			}
 		}
 		else
 		{
 			total *= value.to_number();
+		}
+
+		if (total == 0)
+		{
+			break;
 		}
 	}
 	context.stack.push(total);
