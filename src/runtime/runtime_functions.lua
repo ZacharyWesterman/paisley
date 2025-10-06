@@ -636,7 +636,6 @@ local functions = {
 	function()
 		local v = POP()
 		local array = std.array()
-		print(json.stringify(std.str(v[1]):gmatch("^%d+")()))
 		for i in std.str(v[1]):gmatch(std.str(v[2])) do
 			table.insert(array, i)
 		end
