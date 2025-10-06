@@ -1,0 +1,2 @@
+
+print "Username is {_ENV.USERNAME}"

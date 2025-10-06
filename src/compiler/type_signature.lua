@@ -134,6 +134,7 @@ TYPE_STRING = SIGNATURE('string')
 TYPE_NUMBER = SIGNATURE('number')
 TYPE_BOOLEAN = SIGNATURE('boolean')
 TYPE_NULL = SIGNATURE('null')
+TYPE_ENV = SIGNATURE('object[string]')
 
 TYPE_ARRAY_STRING = SIGNATURE('array[string]')
 TYPE_ARRAY_NUMBER = SIGNATURE('array[number]')

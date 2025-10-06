@@ -596,6 +596,8 @@ function SemanticAnalyzer(tokens, root_file)
 				token.type = _G['TYPE_OBJECT']
 			elseif token.text == '_VERSION' then
 				token.type = _G['TYPE_STRING']
+			elseif token.text == '_ENV' then
+				token.type = _G['TYPE_ENV']
 			end
 		end
 	end
@@ -606,10 +608,12 @@ function SemanticAnalyzer(tokens, root_file)
 		['@'] = {},
 		['_VARS'] = {},
 		['_VERSION'] = {},
+		['_ENV'] = {},
 	}
 	local readonly_vars = {
 		['_VARS'] = true,
 		['_VERSION'] = true,
+		['_ENV'] = true,
 	}
 
 	local this_var = nil

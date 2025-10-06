@@ -552,7 +552,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - `$`, the "command list" variable, an array containing the names of all allowed commands.
 - `_VARS`, the "variables" variable, an object that contains variable names and values.
 - `_VERSION`, the "version number" variable, a string formatted as `MAJOR.MINOR.PATCH`.
-- Inline command evaluation, `${}`
+- `_ENV`, the "environment variables" variable, an object containing string values. Note that unlike other variables, only individual keys of `_ENV` are allowed to be accessed, not the entire object.
 - Arrays, e.g. `(1,2,3,4,5)`
 - Objects, e.g. `("a" => 1, "b" => 2)`
 

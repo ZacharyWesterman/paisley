@@ -183,6 +183,30 @@ return {
 		[TOK.while_stmt] = { loop_enter },
 		[TOK.for_stmt] = { loop_enter },
 		[TOK.kv_for_stmt] = { loop_enter },
+
+		[TOK.index] = {
+			--Convert _ENV accesses to a function call
+			function(token, file)
+				if token.children[1].text == '_ENV' then
+					token.id = TOK.func_call
+					token.text = 'env_get'
+					token.type = nil
+					token.value = nil
+					token.children = { token.children[2] }
+				end
+			end,
+		},
+
+		[TOK.variable] = {
+			--Don't allow reading the entirety of _ENV, as it may be very large
+			--(and it's a little expensive to copy all the values)
+			function(token, file)
+				if token.text == '_ENV' then
+					parse_error(token.span,
+						'Reading the entirety of _ENV is not allowed. Try accessing individual keys instead.', file)
+				end
+			end,
+		}
 	},
 
 	exit = {
