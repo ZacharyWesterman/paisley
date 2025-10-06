@@ -23,6 +23,7 @@
 #include "functions/camel.hpp"
 #include "functions/ceil.hpp"
 #include "functions/char.hpp"
+#include "functions/chunk.hpp"
 #include "functions/clocktime.hpp"
 #include "functions/concat.hpp"
 #include "functions/cos.hpp"
@@ -267,6 +268,7 @@ const Function FUNCTIONS[] = {
 	trim,
 	modf,
 	from_base,
+	chunk,
 	toepoch,
 	fromepoch,
 	epochnow,
