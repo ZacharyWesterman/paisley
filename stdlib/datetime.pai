@@ -38,9 +38,9 @@ subroutine datetime.isiso
 end
 
 #@export
-#@brief Parse a duration string (e.g., "1h30m") into total seconds.
+#@brief Parse a duration string (e.g., "1h30m") into an elapsed datetime object.
 #@param duration string The duration string to parse.
-#@return number The total duration in seconds.
+#@return object The total duration.
 subroutine datetime.duration
 	let _d_time = 0
 	let _d_date = {0, 0, 0}
@@ -68,7 +68,7 @@ subroutine datetime.duration
 		end
 	end
 
-	delete _m _d _number _unit
+	delete _m _number _unit
 	return {
 		'date' => _d_date,
 		'time' => _d_time,
