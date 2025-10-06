@@ -42,5 +42,35 @@ end
 #@param duration string The duration string to parse.
 #@return number The total duration in seconds.
 subroutine datetime.duration
-	error "Not implemented yet"
+	let _d_time = 0
+	let _d_date = {0, 0, 0}
+
+	for _m in {@1.matches('%d+%s*%a+')} do
+		let _number = {_m.match('%d+').num()}
+		let _unit = {_m.match('%a+')[1].lower()}
+		if {_unit = 'm' and _m.match('%a+')[2] = 'o'} then let _unit = 'mo' end
+
+		match {_unit} do
+			if h then let _d_time = {_d_time + _number * 60 * 60} end
+			if m then let _d_time = {_d_time + _number * 60} end
+			if s then let _d_time = {_d_time + _number} end
+			if y then let _d_date{3} = {_d_date[3] + _number} end
+			if mo then
+				let _d_date{2} = {_d_date[2] + _number}
+				if {_d_date[2] > 12} then
+					let _d_date{3} = {_d_date[3] + (_d_date[2] - 1) / 12}
+					let _d_date{2} = {(_d_date[2] - 1) % 12 + 1}
+				end
+			end
+			if d then let _d_date{1} = {_d_date[1] + _number} end
+		else
+			error "Invalid duration unit: {_m.match('%a+')}"
+		end
+	end
+
+	delete _m _d _number _unit
+	return {
+		'date' => _d_date,
+		'time' => _d_time,
+	}
 end
