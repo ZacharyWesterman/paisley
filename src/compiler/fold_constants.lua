@@ -197,11 +197,36 @@ function FOLD_CONSTANTS(token, file)
 	end
 
 	--If this token does not contain only constant children, we cannot fold it.
+	local non_const_ct = 0
 	for i = 1, #token.children do
 		local ch = token.children[i]
 		if ch.value == nil and ch.id ~= TOK.lit_null then
+			non_const_ct = non_const_ct + 1
+		end
+	end
+	if non_const_ct > 0 then
+		if non_const_ct > 1 or token.id ~= TOK.boolean or (token.text ~= 'and' and token.text ~= 'or') then
 			return
 		end
+
+		--Boolean 'and' and 'or' operators have short-circuiting behavior, so we may still be able to fold them if one child is constant.
+
+		--[[minify-delete]]
+		if _G['NO_SHORTCUT'] then return end
+		--[[/minify-delete]]
+
+		local literal_value
+		if not_const(c1) then literal_value = c2.value else literal_value = c1.value end
+		if token.text == 'and' then literal_value = not literal_value end
+		literal_value = std.bool(literal_value)
+
+		if literal_value then
+			token.id = TOK.lit_boolean
+			token.value = token.text == 'or'
+			token.children = {}
+		end
+
+		return
 	end
 
 
