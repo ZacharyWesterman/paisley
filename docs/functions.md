@@ -265,6 +265,8 @@
   - Convert epoch time (seconds since Jan 1, 1970) to a datetime object. The datetime object will have the following form: { date: (day, month, year), time: (hour, min, sec) }.
 - `time(timestamp: number|array[number]) -> string`
   - Convert a number or array representation of a time (timestamp OR [hour, min, sec, milli]) into an ISO compliant time string.
+- `timestamp(time_array: array[number]) -> number`
+  - Convert an (hour, min, sec, milli) array into a "seconds since midnight" timestamp.
 - `toepoch(datetime: object[any]) -> number`
   - Convert a datetime object to epoch time (seconds since Jan 1, 1970). The datetime object is expected to have the following form: { date: (day, month, year), time: (hour, min, sec) }.
 
