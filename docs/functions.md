@@ -7,6 +7,8 @@
   - Check if any element in an array is truthy. This is identical to calling `reduce(..., or)`.
 - `append(list: array[any], value: any) -> array[any]`
   - Append a value to an array.
+- `chunk(list: array[any], chunk_size: number) -> array[array[any]]`
+  - Split an array into chunks of a given size. The last chunk may be smaller than the given size if the array length is not a multiple of the chunk size.
 - `delete(list: array[any], index: number) -> array[any]`
   - Delete an element from an array at the given index. If the index is out of bounds, the original array is returned.
 - `flatten(list: array[any]) -> array[any]`
@@ -103,13 +105,13 @@
   - List all files that match a glob pattern. E.g. `file_glob("*.txt")` -> ("file1.txt", "file2.txt"), depending on the files in your current directory.
 - `file_move(source_path: string, dest_path: string) -> boolean`
   - Move a file from source_path to dest_path. If overwrite is true, any existing file at dest_path will be overwritten. Returns true on success, or false if the file could not be moved.
-- `file_read(file_path: string) -> string|null`
+- `file_read(file_path: string) -> null|string`
   - Read the entire contents of a file as a string. If the file does not exist or cannot be read, null is returned.
 - `file_size(file_path: string) -> number`
   - Get the size of a file in bytes. If the file does not exist, 0 is returned.
-- `file_stat(file_path: string) -> object[any]|null`
+- `file_stat(file_path: string) -> null|object[any]`
   - Get information about a filesystem object. If the file does not exist, null is returned.
-- `file_type(file_path: string) -> string|null`
+- `file_type(file_path: string) -> null|string`
   - Get the type of a file. Possible return values are "file", "directory", or "other". If the file does not exist, null is returned.
 - `file_write(file_path: string, data: string) -> boolean`
   - Write a string to a file, overwriting it if it already exists. Returns true on success, or false if the file could not be written.
@@ -233,7 +235,7 @@
   - Convert a string to lowercase.
 - `lpad(text: string, pad_char: string, width: number) -> string`
   - Left-pad a string with a given character.
-- `match(text: string, pattern: string) -> string|null`
+- `match(text: string, pattern: string) -> null|string`
   - Get the first substring that matches the given pattern. If no match is found, null is returned.
 - `matches(text: string, pattern: string) -> array[string]`
   - Get all substrings that match the given pattern.
@@ -261,7 +263,7 @@
   - Get the current epoch time (seconds since Jan 1, 1970).
 - `fromepoch(timestamp: number) -> object[any]`
   - Convert epoch time (seconds since Jan 1, 1970) to a datetime object. The datetime object will have the following form: { date: (day, month, year), time: (hour, min, sec) }.
-- `time(timestamp: array[number]|number) -> string`
+- `time(timestamp: number|array[number]) -> string`
   - Convert a number or array representation of a time (timestamp OR [hour, min, sec, milli]) into an ISO compliant time string.
 - `toepoch(datetime: object[any]) -> number`
   - Convert a datetime object to epoch time (seconds since Jan 1, 1970). The datetime object is expected to have the following form: { date: (day, month, year), time: (hour, min, sec) }.
