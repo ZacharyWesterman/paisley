@@ -539,7 +539,7 @@ return {
 					if node.id == TOK.func_call and (node.text == 'pairs' or node.text == 'chunk') then
 						if node.text == 'chunk' then
 							--Make sure that the second parameter to chunk() is exactly 2.
-							node = token.children[2]
+							node = node.children[2]
 							if node.value ~= 2 then
 								parse_error(node.span,
 									'The second parameter to `chunk()` in key-value for loops must be exactly 2',
