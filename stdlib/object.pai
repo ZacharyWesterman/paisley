@@ -1,0 +1,32 @@
+
+#[[
+@export
+@brief Pick specific keys from an object.
+@param obj object The input object.
+@param keys array The keys to pick.
+@return object A new object containing only the specified keys.
+#]]
+subroutine object.pick
+	return {
+		(
+			(i, @1[i]) for i in @2 if i in @1
+		)
+		.flatten(1).object()
+	}
+end
+
+#[[
+@export
+@brief Omit specific keys from an object.
+@param obj object The input object.
+@param keys array The keys to omit.
+@return object A new object without the specified keys.
+#]]
+subroutine object.omit
+	return {
+		(
+			(i, @1[i]) for i in @1 if i not in @2
+		)
+		.flatten(1).object()
+	}
+end
