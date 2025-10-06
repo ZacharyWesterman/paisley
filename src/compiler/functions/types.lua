@@ -1005,6 +1005,15 @@ TYPESIG = {
 		category = 'arrays',
 		--[[/minify-delete]]
 	},
+	timestamp = {
+		valid = { { 'array[number]' } },
+		out = 'number',
+		--[[minify-delete]]
+		params = { 'time_array' },
+		description = 'Convert an (hour, min, sec, milli) array into a "seconds since midnight" timestamp.',
+		category = 'time',
+		--[[/minify-delete]]
+	},
 	--[[minify-delete]]
 	toepoch = {
 		valid = { { 'object' } },

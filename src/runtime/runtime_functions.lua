@@ -1254,6 +1254,16 @@ local functions = {
 		--[[/minify-delete]]
 	end,
 
+	--CONVERT A TIME ARRAY INTO A TIMESTAMP
+	function()
+		local v = POP()[1]
+		if type(v) ~= 'table' then
+			PUSH(0)
+			return
+		end
+		PUSH((v[1] or 0) * 3600 + (v[2] or 0) * 60 + (v[3] or 0) + (v[4] or 0) / 1000)
+	end,
+
 	--[[minify-delete]]
 	--CONVERT A DATETIME OBJECT TO A UNIX TIMESTAMP
 	function()

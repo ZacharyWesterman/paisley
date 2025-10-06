@@ -25,7 +25,7 @@ subroutine datetime.fromiso
 	let _dt = {@[1].split('T')}
 	return {
 		'date' => int(i) for i in _dt[1].split('-').reverse(),
-		'time' => int(i) for i in _dt[2].split(':'),
+		'time' => (int(i) for i in _dt[2].split(':')).timestamp(),
 	}
 end
 
@@ -35,4 +35,12 @@ end
 #@return boolean True if the string is in ISO 8601 format, false otherwise.
 subroutine datetime.isiso
 	return {@[1] like '%d%d%d%d%-%d%d%-%d%dT%d%d:%d%d:%d%d'}
+end
+
+#@export
+#@brief Parse a duration string (e.g., "1h30m") into total seconds.
+#@param duration string The duration string to parse.
+#@return number The total duration in seconds.
+subroutine datetime.duration
+	error "Not implemented yet"
 end

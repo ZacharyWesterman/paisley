@@ -454,6 +454,10 @@ FUNC_OPERATIONS = {
 
 	chunk = std.chunk,
 
+	timestamp = function(array)
+		return (array[1] or 0) * 3600 + (array[2] or 0) * 60 + (array[3] or 0) + (array[4] or 0) / 1000
+	end,
+
 	--[[minify-delete]]
 	toepoch = function(datetime)
 		return os.time {

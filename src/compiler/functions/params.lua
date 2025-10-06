@@ -109,6 +109,7 @@ BUILTIN_FUNCS = {
 	acsc = 1,
 	from_base = 2,
 	chunk = 2,
+	timestamp = 1,
 	--[[minify-delete]]
 	toepoch = 1,
 	fromepoch = 1,
