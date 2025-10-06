@@ -636,5 +636,25 @@ std = {
 		return array[length]
 	end,
 
+	---@brief Group elements of an array into sub-arrays of a given size.
+	---@param array any[]
+	---@param size integer
+	---@return any[][]
+	chunk = function(array, size)
+		if size < 1 then return std.array() end
+
+		local result = std.array()
+		local chunk = std.array()
+		for i = 1, #array do
+			table.insert(chunk, array[i])
+			if #chunk == size then
+				table.insert(result, chunk)
+				chunk = std.array()
+			end
+		end
+		if #chunk > 0 then table.insert(result, chunk) end
+		return result
+	end,
+
 	MAX_ARRAY_LEN = 32768, --Any larger than this and performance tanks
 }

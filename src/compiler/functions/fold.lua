@@ -452,6 +452,8 @@ FUNC_OPERATIONS = {
 		return std.from_base(text, base)
 	end,
 
+	chunk = std.chunk,
+
 	--[[minify-delete]]
 	toepoch = function(datetime)
 		return os.time {

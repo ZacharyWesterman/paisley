@@ -1227,6 +1227,18 @@ local functions = {
 		PUSH(std.from_base(str_value, base))
 	end,
 
+	--CHUNK AN ARRAY INTO SUB-ARRAYS OF A GIVEN SIZE
+	function()
+		local v = POP()
+		local array, size = v[1], std.num(v[2])
+		if std.type(array) ~= 'array' then
+			print('WARNING: chunk() first argument is not an array! Coercing to an empty array.')
+			array = {}
+		end
+
+		PUSH(std.chunk(array, size))
+	end,
+
 	--[[minify-delete]]
 	--CONVERT A DATETIME OBJECT TO A UNIX TIMESTAMP
 	function()
