@@ -678,11 +678,12 @@ TYPESIG = {
 		--[[/minify-delete]]
 	},
 	flatten = {
-		valid = { { 'array' } },
+		valid = { { 'array', 'number' } },
 		out = 'array',
 		--[[minify-delete]]
-		params = { 'list' },
-		description = 'Flatten an array of any dimension into a 1D array. E.g. ((1, 2), (3, (4, 5))) -> (1, 2, 3, 4, 5).',
+		params = { 'list', 'depth' },
+		description =
+		'Flatten an array of any dimension into a 1D array. E.g. ((1, 2), (3, (4, 5))) -> (1, 2, 3, 4, 5). Optionally specify a depth to only flatten that many levels.',
 		category = 'arrays',
 		--[[/minify-delete]]
 	},

@@ -980,11 +980,11 @@ local functions = {
 
 	--FLATTEN AN ARRAY OF ANY DIMENSION TO A 1-DIMENSIONAL ARRAY
 	function()
-		local function flatten(array)
+		local function flatten(array, depth)
 			local result = std.array()
 			for i = 1, #array do
-				if type(array[i]) == 'table' then
-					local flat = flatten(array[i])
+				if depth > 0 and type(array[i]) == 'table' then
+					local flat = flatten(array[i], depth - 1)
 					for k = 1, #flat do table.insert(result, flat[k]) end
 				else
 					table.insert(result, array[i])
@@ -993,7 +993,13 @@ local functions = {
 			return result
 		end
 
-		PUSH(flatten(POP()))
+		local v = POP()
+		if type(v[1]) ~= 'table' then
+			PUSH({ v[1] })
+			return
+		end
+
+		PUSH(flatten(v[1], v[2] and std.num(v[2]) or math.maxinteger))
 	end,
 
 	--SMOOTHSTEP
