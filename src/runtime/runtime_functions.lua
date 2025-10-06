@@ -1239,6 +1239,21 @@ local functions = {
 		PUSH(std.chunk(array, size))
 	end,
 
+	--GET ENVIRONMENT VARIABLE
+	function()
+		--Environment variables are always null in the plasma build.
+
+		--[[minify-delete]]
+		if true then
+			PUSH(os.getenv(std.str(POP()[1])))
+		else
+			--[[/minify-delete]]
+			PUSH(nil)
+			--[[minify-delete]]
+		end
+		--[[/minify-delete]]
+	end,
+
 	--[[minify-delete]]
 	--CONVERT A DATETIME OBJECT TO A UNIX TIMESTAMP
 	function()

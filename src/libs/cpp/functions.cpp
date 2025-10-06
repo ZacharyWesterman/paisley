@@ -38,6 +38,7 @@
 #include "functions/dist.hpp"
 #include "functions/div.hpp"
 #include "functions/endswith.hpp"
+#include "functions/env_get.hpp"
 #include "functions/epochnow.hpp"
 #include "functions/equal.hpp"
 #include "functions/explode.hpp"
@@ -269,6 +270,7 @@ const Function FUNCTIONS[] = {
 	modf,
 	from_base,
 	chunk,
+	env_get,
 	toepoch,
 	fromepoch,
 	epochnow,

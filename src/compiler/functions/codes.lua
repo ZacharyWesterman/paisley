@@ -134,6 +134,7 @@ CALL_CODES = {
 	modf = uid(),
 	from_base = uid(),
 	chunk = uid(),
+	env_get = uid(),
 	--[[minify-delete]]
 	---@note These functions have to be at the end of the list,
 	---because they are not available in sandboxed environments.
