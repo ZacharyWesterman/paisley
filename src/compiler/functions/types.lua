@@ -995,6 +995,16 @@ TYPESIG = {
 		category = 'strings',
 		--[[/minify-delete]]
 	},
+	chunk = {
+		valid = { { 'array', 'number' } },
+		out = 'array[array]',
+		--[[minify-delete]]
+		params = { 'list', 'chunk_size' },
+		description =
+		'Split an array into chunks of a given size. The last chunk may be smaller than the given size if the array length is not a multiple of the chunk size.',
+		category = 'arrays',
+		--[[/minify-delete]]
+	},
 	--[[minify-delete]]
 	toepoch = {
 		valid = { { 'object' } },

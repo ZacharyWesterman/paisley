@@ -1,0 +1,5 @@
+let numbers = {0:8}
+
+for key value in {numbers.chunk(2)} do
+	print ">{key.json_encode()}: {value.json_encode()}"
+end

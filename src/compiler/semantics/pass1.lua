@@ -532,19 +532,31 @@ return {
 		[TOK.kv_for_stmt] = {
 			aliases_exit,
 			pop_scope,
-			--Make sure key-value for loops always have some mutation of `pairs()` in the expression.
+			--Make sure key-value for loops always have some mutation of `pairs()` or `chunk()` in the expression.
 			function(token, file)
 				local node = token.children[3]
 				while true do
-					if node.id == TOK.func_call and node.text == 'pairs' then
+					if node.id == TOK.func_call and (node.text == 'pairs' or node.text == 'chunk') then
+						if node.text == 'chunk' then
+							--Make sure that the second parameter to chunk() is exactly 2.
+							node = token.children[2]
+							if node.value ~= 2 then
+								parse_error(node.span,
+									'The second parameter to `chunk()` in key-value for loops must be exactly 2',
+									file)
+							end
+						end
+
 						return
 					end
 
+					if not node.children then break end
 					node = node.children[1]
 					if not node then break end
 				end
 
-				parse_error(token.children[3].span, 'Expression in key-value for loop must contain `pairs()`', file)
+				parse_error(token.children[3].span,
+					'Expression in key-value for loop must contain `pairs()` or `chunk()`', file)
 			end,
 
 			--Don't automatically set var type to "string", let it deduce.
