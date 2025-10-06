@@ -491,6 +491,34 @@ return {
 				end
 			end,
 		},
+
+		[TOK.func_call] = {
+			--Replace special function calls "\sub_name(arg1,arg2)" with "${gosub sub_name {arg1} {arg2}}"
+			function(token, file)
+				if token.text:sub(1, 1) ~= '\\' then return end
+
+				--If function name begins with backslash, it's actually a gosub.
+				---@type Token[]
+				local kids = token.children or {}
+				if kids[1] and kids[1].id == TOK.array_concat then kids = kids[1].children or {} end
+				table.insert(kids, 1, {
+					id = TOK.text,
+					text = token.text:sub(2),
+					span = token.span,
+					type = TYPE_STRING,
+					value = token.text:sub(2),
+				})
+
+				token.text = '${'
+				token.id = TOK.inline_command
+				token.children = { {
+					id = TOK.gosub_stmt,
+					text = 'gosub',
+					span = token.span,
+					children = kids,
+				} }
+			end,
+		},
 	},
 
 	exit = {

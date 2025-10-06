@@ -1,0 +1,6 @@
+require datetime
+
+using datetime.*
+
+print ${gosub now}
+print {\now()}
