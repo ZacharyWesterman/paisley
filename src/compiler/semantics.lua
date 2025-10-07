@@ -329,6 +329,9 @@ function SemanticAnalyzer(tokens, root_file)
 
 					if SIMILAR_TYPE(t1, _G['TYPE_STRING']) then
 						token.type = _G['TYPE_STRING']
+					elseif EXACT_TYPE(t2, _G['TYPE_ANY']) then
+						--If index is "any", result is either the same type as t1, or the subtype of t1
+						token.type = MERGE_TYPES(t1, GET_SUBTYPES(t1))
 					elseif SIMILAR_TYPE(t2, _G['TYPE_ARRAY']) then
 						token.type = t1
 					elseif HAS_SUBTYPES(t1) then

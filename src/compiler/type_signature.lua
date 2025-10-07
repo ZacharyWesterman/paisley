@@ -193,6 +193,35 @@ function GET_SUBTYPES(tp)
 	return _G['TYPE_ANY']
 end
 
+function MERGE_TYPES(lhs, rhs)
+	if not lhs or not rhs then return lhs or rhs end
+	if lhs.any or rhs.any then return TYPE_ANY end
+
+	local out = {}
+	for key, val in pairs(lhs) do
+		if rhs[key] then
+			if val.subtypes and rhs[key].subtypes then
+				out[key] = {
+					type = key,
+					subtypes = MERGE_TYPES(val.subtypes, rhs[key].subtypes),
+				}
+			else
+				out[key] = { type = key }
+			end
+		else
+			out[key] = val
+		end
+	end
+
+	for key, val in pairs(rhs) do
+		if not out[key] then
+			out[key] = val
+		end
+	end
+
+	return out
+end
+
 ---Convert a type signature back into its string representation.
 ---This is useful for error reporting and debug purposes.
 ---@param tp table A type signature object.
