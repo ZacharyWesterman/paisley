@@ -1,5 +1,25 @@
 #include "actions.hpp"
 
+#include "actions/call.hpp"
+#include "actions/set.hpp"
+#include "actions/get.hpp"
+#include "actions/push.hpp"
+#include "actions/pop.hpp"
+#include "actions/run_command.hpp"
+#include "actions/push_cmd_result.hpp"
+#include "actions/push_index.hpp"
+#include "actions/pop_goto_index.hpp"
+#include "actions/copy.hpp"
+#include "actions/delete_var.hpp"
+#include "actions/swap.hpp"
+#include "actions/pop_until_null.hpp"
+#include "actions/get_cache_else_jump.hpp"
+#include "actions/set_cache.hpp"
+#include "actions/delete_cache.hpp"
+#include "actions/push_catch_loc.hpp"
+#include "actions/pop_catch_or_throw.hpp"
+#include "actions/variable_insert.hpp"
+
 const Operation OPERATIONS[] = {
 	call,
 	set,
@@ -18,6 +38,7 @@ const Operation OPERATIONS[] = {
 	set_cache,
 	delete_cache,
 	push_catch_loc,
+	variable_insert,
 
 	pop_catch_or_throw, // This operation is not in the original code, but is called when an exception is thrown
 };

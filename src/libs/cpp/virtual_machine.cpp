@@ -7,6 +7,11 @@ void VirtualMachine::error(const std::string &message) const noexcept
 	exit(1);
 }
 
+void VirtualMachine::warn(const std::string &message) const noexcept
+{
+	std::cerr << "WARNING: " << message << std::endl;
+}
+
 Value &VirtualMachine::get_const(size_t id) noexcept
 {
 	if (id >= const_lookup.size())

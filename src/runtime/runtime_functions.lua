@@ -1655,7 +1655,7 @@ COMMANDS = {
 			index = std.num(index)
 			return
 		elseif type(var) ~= 'table' then
-			print('WARNING: insert() called on non-array variable "' .. var_name .. '", ignoring!')
+			print('WARNING: attempted to index a non-iterable variable "' .. var_name .. '", ignoring!')
 			return
 		end
 
@@ -1664,7 +1664,7 @@ COMMANDS = {
 			if std.type(var) == 'array' then
 				table.insert(var, value)
 			else
-				print('WARNING: insert() called on non-array variable "' .. var_name .. '" without an index, ignoring!')
+				print('WARNING: attempted to append to a non-array variable "' .. var_name .. '", ignoring!')
 			end
 			return
 		end
