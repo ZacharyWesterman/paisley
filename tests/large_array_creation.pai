@@ -1,0 +1,22 @@
+
+print "Creating large array..."
+let large_array = {,}
+for x in {1:100} do
+	for y in {1:100} do
+		let large_array{} = {x, y}
+	end
+end
+
+print "Large array created."
+print "Array size: {&large_array}"
+
+print "Changing each element in array..."
+
+for i in {1:&large_array} do
+	let large_array{i} = {large_array[i][1] * 2, large_array[i][2] * 2}
+end
+
+print "Array modified."
+print "Array size: {&large_array}"
+print "First element: {large_array[1]}"
+print "Last element: {large_array[&large_array]}"

@@ -737,62 +737,9 @@ local functions = {
 	--UPDATE ELEMENT IN ARRAY
 	function()
 		local v = POP()
-		local object, indices, value, is_string = v[1], v[2], v[3], false
+		local object, indices, value = v[1], v[2], v[3]
 
-		--Only valid for arrays, objects, or strings
-		if type(object) == 'string' then
-			is_string = true
-			object = std.split(object, '')
-		elseif type(object) ~= 'table' then
-			PUSH(object)
-			return
-		end
-
-		if type(indices) ~= 'table' then indices = { indices } end
-		if #indices == 0 then
-			PUSH(object)
-			return
-		end
-
-		--Narrow down to sub-object
-		local sub_object = object
-		for i = 1, #indices - 1 do
-			local ix, tp = indices[i], std.type(sub_object)
-			if tp == 'object' then
-				ix = std.str(ix)
-			elseif tp ~= 'array' then
-				PUSH(object)
-				return
-			else
-				ix = std.num(ix)
-				if ix < 0 then ix = #sub_object + ix + 1 end
-			end
-
-			if sub_object[ix] == nil then
-				--We can only set the bottom-level object
-				PUSH(object)
-				return
-			end
-
-			sub_object = sub_object[ix]
-		end
-
-
-		local ix, tp = indices[#indices], std.type(sub_object)
-		if tp == 'object' then
-			ix = std.str(ix)
-			sub_object[ix] = value
-		elseif tp == 'array' then
-			ix = std.num(ix)
-			if ix < 0 then ix = #sub_object + ix + 1 end
-			if ix > 0 then
-				sub_object[ix] = value
-			else
-				table.insert(sub_object, 1, value)
-			end
-		end
-
-		PUSH(object)
+		PUSH(std.update_element(object, indices, value))
 	end,
 
 	--INSERT ELEMENT IN ARRAY
@@ -1693,5 +1640,35 @@ COMMANDS = {
 			stack = #STACK,
 			instr_stack = #INSTR_STACK,
 		})
+	end,
+
+	--INSERT VALUE INTO VARIABLE
+	function(line, p1, p2)
+		local value = POP()
+		local index = POP()
+
+		---@type string
+		local var_name = POP()
+
+		local var = VARS[var_name]
+		if type(var) == 'string' then
+			index = std.num(index)
+			return
+		elseif type(var) ~= 'table' then
+			print('WARNING: insert() called on non-array variable "' .. var_name .. '", ignoring!')
+			return
+		end
+
+		if index == nil then
+			--If no index is given, append to array or do nothing if object
+			if std.type(var) == 'array' then
+				table.insert(var, value)
+			else
+				print('WARNING: insert() called on non-array variable "' .. var_name .. '" without an index, ignoring!')
+			end
+			return
+		end
+
+		std.update_element(var, index, value)
 	end,
 }

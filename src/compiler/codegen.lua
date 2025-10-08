@@ -18,6 +18,7 @@ local bc = {
 	set_cache = 15,
 	delete_cache = 16,
 	push_catch_loc = 17,
+	variable_insert = 18,
 }
 
 require "src.compiler.functions.codes"
@@ -276,21 +277,18 @@ function generate_bytecode(root, file)
 			end
 
 			if token.children[3] then
+				--Appending to or inserting in a variable
+				emit(bc.push, token.children[1].text)
 				if token.children[3].id == TOK.expr_open then
 					--Append to variable
-					emit(bc.get, token.children[1].text)
-					emit(bc.push, -1)
-					codegen_rules.recur_push(token.children[2])
-					emit(bc.call, 'implode', 3)
-					emit(bc.call, 'insert')
+					emit(bc.push, nil)
 				else
 					--Update element of variable
-					emit(bc.get, token.children[1].text)
 					codegen_rules.recur_push(token.children[3])
-					codegen_rules.recur_push(token.children[2])
-					emit(bc.call, 'implode', 3)
-					emit(bc.call, 'update')
 				end
+				codegen_rules.recur_push(token.children[2])
+				emit(bc.variable_insert)
+				return
 			elseif token.children[2] then
 				codegen_rules.recur_push(token.children[2])
 			else
