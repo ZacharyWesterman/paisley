@@ -1,0 +1,4 @@
+require http
+
+let response = {\http.get("https://xkcd.com/info.0.json").json_decode()}
+print "Title: {response.title}"

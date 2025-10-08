@@ -1,7 +1,7 @@
 #[[
 @brief Sends an HTTP GET request to the specified URL.
 @param url string The URL to send the GET request to.
-@return string? The response body from the server.
+@return string? The response body from the server, or null if the request fails.
 @export
 #]]
 subroutine http.get
@@ -15,7 +15,7 @@ end
 @brief Sends an HTTP POST request to the specified URL with the given data.
 @param url string The URL to send the POST request to.
 @param data string The data to include in the POST request body.
-@return string? The response body from the server.
+@return string? The response body from the server, or null if the request fails.
 @export
 #]]
 subroutine http.post
