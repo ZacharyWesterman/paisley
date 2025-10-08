@@ -193,7 +193,7 @@ function Lexer(text, file)
 					match = text:match('^#%[%[')
 					if match then
 						tok_ignore = true
-						match = text:match('^#%[%[.-%]%]')
+						match = text:match('^#%[%[.-#%]%]')
 						if not match then match = text:match('^#%[%[.*') end
 						--[[minify-delete]]
 						process_comment_annotations(match)
@@ -311,7 +311,7 @@ function Lexer(text, file)
 					match = text:match('^#%[%[')
 					if match then
 						tok_ignore = true
-						match = text:match('^#%[%[.-%]%]')
+						match = text:match('^#%[%[.-#%]%]')
 						if not match then match = text:match('^#%[%[.*') end
 						--[[minify-delete]]
 						process_comment_annotations(match)

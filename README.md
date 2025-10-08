@@ -110,7 +110,7 @@ The only use of line endings is to separate commands, which can also be done wit
 
 A Paisley script may consist of a series of comments, statements, and commands.
 - Single-line comments begin with a `#` character and continue to the end of the line.
-- Multi-line comments begin with `#[[` and continue until `]]` is reached, or the end of the file.
+- Multi-line comments begin with `#[[` and continue until `#]]` is reached, or the end of the file.
 - There are 5 types of statements: conditionals (if/else/elif/match/try), loops (for/while), variable assignment, subroutines, and miscellaneous statements (return/break/etc).
 - Any text that is not a keyword or otherwise part of a statement is considered a command. More on that later.
 
