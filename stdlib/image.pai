@@ -84,7 +84,6 @@ subroutine image.bitmap
 
 	delete _image _row _pixel _i _row_bytes _padding _row_size _image_size
 
-	print "Image width: {_width}, height: {_height}, row size: {_row_size}, image size: {_image_size} bytes."
 	return "{_file_header}{_dib_header}{_pixel_data.join('')}"
 end
 
