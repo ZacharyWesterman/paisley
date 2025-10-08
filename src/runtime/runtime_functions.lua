@@ -987,7 +987,7 @@ local functions = {
 	function() PUSH(string.byte(std.str(POP()[1]))) end,
 
 	--ASCII TO CHAR
-	function() PUSH(string.char(std.num(POP()[1]))) end,
+	function() PUSH(string.char(math.floor(std.num(POP()[1])))) end,
 
 	--STRING BEGINS WITH
 	function()
