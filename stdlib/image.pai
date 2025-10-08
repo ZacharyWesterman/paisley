@@ -1,0 +1,91 @@
+require serialize
+
+#[[
+@brief Create a new image.
+@param width number The width of the image.
+@param height number The height of the image.
+@param color array[number] An optional RGB color array to fill the image with. Default is black: {0, 0, 0}.
+@return image A new image object.
+@export
+#]]
+subroutine image.new
+	let _color = {@3 if @3 else (0, 0, 0)}
+	let _image = {,}
+
+	for _ in {1:@2} do
+		let _row = {,}
+		for _ in {1:@1} do
+			let _row{} = {_color}
+		end
+		let _image{} = {_row}
+	end
+
+	delete _color _row
+	return {_image}
+end
+
+#@brief Convert an image into a bitmap format (BMP) string.
+#@param image array[array[number]] The image to convert.
+#@return string A string containing the BMP representation of the image.
+#@export
+subroutine image.bitmap
+	let _image = {@1}
+
+	let _width = {&_image[1]}
+	let _height = {&_image}
+
+	# Row bytes and padding
+	let _row_bytes = {_width * 3}
+	let _padding = {(4 - (_row_bytes % 4)) % 4}
+	let _row_size = {_row_bytes + _padding}
+	let _image_size = {_row_size * _height}
+
+	# FILE HEADER (14 bytes)
+	let _file_header = {(
+		"BM", # file type
+		\serialize.int(14 + 40 + _image_size), # file size
+		"\x00\x00", # bfReserved1
+		"\x00\x00", # bfReserved2
+		\serialize.int(14 + 40) # pixel data offset
+	).join("")}
+
+	# DIB HEADER: BITMAPINFOHEADER (40 bytes)
+	let _dib_header = {(
+		"{char(40)}\x00\x00\x00", # 4 bytes for size
+		\serialize.int(_width),
+		\serialize.int(_height),
+		"\x01\x00", # planes
+		"{char(24)}\x00", # bits per pixel
+		"\x00\x00\x00\x00", # no compression
+		\serialize.int(_image_size),
+		"\x00\x00\x00\x00", # X pixels per meter
+		"\x00\x00\x00\x00", # Y pixels per meter
+		"\x00\x00\x00\x00", # colors used (no palette)
+		"\x00\x00\x00\x00"  # important colors (all)
+	).join("")}
+
+	# Generate pixel data (bottom-up)
+    # We'll create a simple pattern: red varies with x, green varies with y, blue constant
+	let _pixel_data = {,}
+	for _row in {_image.reverse()} do
+		for _pixel in {_row} do
+			# BMP uses BGR format, the opposite of our RGB
+			for _i in {_pixel.reverse()} do
+				let _pixel_data{} = {char(_i)}
+			end
+		end
+		# Add padding bytes
+		if {_padding} then
+			for _ in {1:_padding} do
+				let _pixel_data{} = {char(0)}
+			end
+		end
+	end
+
+	delete _image _row _pixel _i _row_bytes _padding _row_size _image_size
+
+	print "Image width: {_width}, height: {_height}, row size: {_row_size}, image size: {_image_size} bytes."
+	return "{_file_header}{_dib_header}{_pixel_data.join('')}"
+end
+
+
