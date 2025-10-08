@@ -24,10 +24,10 @@ end
 @brief Blend two colors together
 @param color1 array[number] The first color as an array of RGB values [R, G, B]
 @param color2 array[number] The second color as an array of RGB values [R, G, B]
-@param ratio number The blend ratio (0.0 to 1.0). 0.0 returns color1, 1.0 returns color2.
+@param ratio number? The blend ratio (0.0 to 1.0). 0.0 returns color1, 1.0 returns color2. Defaults to 0.5.
 @return array[number] An array containing the blended RGB values [R, G, B]
 @export
 #]]
 subroutine color.blend
-	return {(@1[i] * (1 - @3.clamp(0, 1)) + @2[i] * @3.clamp(0, 1)).round() for i in 1:3}
+	return {floor(i) for i in lerp(@3 if @3 else 0.5, @1, @2)}
 end
