@@ -189,11 +189,11 @@ TYPESIG = {
 		--[[/minify-delete]]
 	},
 	lerp = {
-		valid = { { 'number' } },
+		valid = { { 'number' }, { 'number', 'array[number]', 'array[number]' } },
 		out = 'number',
 		--[[minify-delete]]
 		params = { 'ratio', 'start', 'end' },
-		description = 'Linearly interpolate between two numbers.',
+		description = 'Linearly interpolate between two numbers or vectors.',
 		category = 'math',
 		--[[/minify-delete]]
 	},

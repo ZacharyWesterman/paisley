@@ -103,7 +103,16 @@ FUNC_OPERATIONS = {
 		value = value * value * (3.0 - 2.0 * value)
 		return value * range + min
 	end,
-	lerp = function(x, a, b) return a + x * (b - a) end,
+	lerp = function(ratio, a, b)
+		if type(a) == 'table' then
+			local result = {}
+			for i = 1, math.min(#a, #b) do
+				result[i] = a[i] + ratio * (b[i] - a[i])
+			end
+			return result
+		end
+		return a + ratio * (b - a)
+	end,
 	-- pow = function(a, b) return a ^ b end,
 	bool = function(data) return std.bool(data) end,
 	str = function(data) return std.str(data) end,
