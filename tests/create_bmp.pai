@@ -1,0 +1,37 @@
+require image
+require math
+
+let image = {,}
+let height = 100
+let width = 100
+
+print "Creating image..."
+
+# Fill with a gradient pattern
+for y in {1:height} do
+	let row = {,}
+	for x in {1:width} do
+		let radius = {dist((x / width, y / height), (0.5, 0.5)) * max(width, height) * !pi}
+		let angle = {atan2(y - height / 2, x - width / 2)}
+
+		# arrange RGB values in a rainbow ring around the center
+		# radius affects brightness
+		# angle affects color
+
+		let r = {0.5 + 0.5 * sin(angle + 0 * 2 * !pi / 3)}
+		let g = {0.5 + 0.5 * sin(angle + 1 * 2 * !pi / 3)}
+		let b = {0.5 + 0.5 * sin(angle + 2 * 2 * !pi / 3)}
+
+		let row{} = {r * radius, g * radius, b * radius} # RGB values
+	end
+	let image{} = {row}
+end
+
+print "Image created."
+
+
+let bmp_data = {\image.bitmap(image)}
+print "BMP data generated."
+
+# Write BMP data to a file
+.{"output.bmp".file_write(bmp_data)}
