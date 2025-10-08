@@ -498,9 +498,29 @@ return {
 				if token.text:sub(1, 1) ~= '\\' then return end
 
 				--If function name begins with backslash, it's actually a gosub.
+
+				local function flatten_array_concats(node)
+					if node.id == TOK.array_concat then
+						local kids = {}
+						for _, kid in ipairs(node.children) do
+							for _, subkid in ipairs(flatten_array_concats(kid)) do
+								table.insert(kids, subkid)
+							end
+						end
+						return kids
+					else
+						return { node }
+					end
+				end
+
+				local kids = {}
+				for _, kid in ipairs(token.children or {}) do
+					for _, subkid in ipairs(flatten_array_concats(kid)) do
+						table.insert(kids, subkid)
+					end
+				end
+
 				---@type Token[]
-				local kids = token.children or {}
-				if kids[1] and kids[1].id == TOK.array_concat then kids = kids[1].children or {} end
 				table.insert(kids, 1, {
 					id = TOK.text,
 					text = token.text:sub(2),
