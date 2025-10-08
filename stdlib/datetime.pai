@@ -113,9 +113,15 @@ subroutine datetime.add
 		)[_m]]
 	}
 
+	let _t = {@1.time + @2.time}
 	let _d = {@1.date[1] + @2.date[1]}
 	let _m = {@1.date[2] + @2.date[2]}
 	let _y = {@1.date[3] + @2.date[3]}
+
+	while {_t >= 60 * 60 * 24} do
+		let _t = {_t - 60 * 60 * 24}
+		let _d = {_d + 1}
+	end
 	
 	if {_m > 12} then
 		let _y = {_y + (_m - 1) // 12}
@@ -135,7 +141,7 @@ subroutine datetime.add
 
 	return {
 		'date' => (_d, _m, _y),
-		'time' => @1.time + @2.time,
+		'time' => _t,
 	}
 end
 
@@ -177,9 +183,15 @@ subroutine datetime.sub
 		)[_m]]
 	}
 
+	let _t = {@1.time - @2.time}
 	let _d = {@1.date[1] - @2.date[1]}
 	let _m = {@1.date[2] - @2.date[2]}
 	let _y = {@1.date[3] - @2.date[3]}
+
+	while {_t < 0} do
+		let _t = {_t + 60 * 60 * 24}
+		let _d = {_d - 1}
+	end
 
 	if {_m < 1} then
 		let _y = {_y - 1}
@@ -199,6 +211,6 @@ subroutine datetime.sub
 
 	return {
 		'date' => (_d, _m, _y),
-		'time' => @1.time + @2.time,
+		'time' => _t,
 	}
 end
