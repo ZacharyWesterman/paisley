@@ -74,3 +74,131 @@ subroutine datetime.duration
 		'time' => _d_time,
 	}
 end
+
+#[[
+@export
+@brief Add a duration to a datetime object.
+@param dt object The original datetime object.
+@param duration object The duration to add.
+@return object The new datetime object after addition.
+#]]
+subroutine datetime.add
+	define {
+		!january[31],
+		!february[28],
+		!leap_february[29],
+		!march[31],
+		!april[30],
+		!may[31],
+		!june[30],
+		!july[31]
+		!august[31]
+		!september[30]
+		!october[31]
+		!november[30]
+		!december[31]
+		!month_days[(
+			!january,
+			(!february if _y % 4 else !leap_february),
+			!march,
+			!april,
+			!may,
+			!june,
+			!july,
+			!august,
+			!september,
+			!october,
+			!november,
+			!december,
+		)[_m]]
+	}
+
+	let _d = {@1.date[1] + @2.date[1]}
+	let _m = {@1.date[2] + @2.date[2]}
+	let _y = {@1.date[3] + @2.date[3]}
+	
+	if {_m > 12} then
+		let _y = {_y + (_m - 1) // 12}
+		let _m = {(_m - 1) % 12 + 1}
+	end
+
+	let _month_days = {!month_days}
+	while {_d > _month_days} do
+		let _d = {_d - _month_days}
+		let _m = {_m + 1}
+		if {_m > 12} then
+			let _y = {_y + (_m - 1) // 12}
+			let _m = {(_m - 1) % 12 + 1}
+		end
+		let _month_days = {!month_days}
+	end
+
+	return {
+		'date' => (_d, _m, _y),
+		'time' => @1.time + @2.time,
+	}
+end
+
+#[[
+@export
+@brief Add a duration to a datetime object.
+@param dt object The original datetime object.
+@param duration object The duration to add.
+@return object The new datetime object after addition.
+#]]
+subroutine datetime.sub
+	define {
+		!january[31],
+		!february[28],
+		!leap_february[29],
+		!march[31],
+		!april[30],
+		!may[31],
+		!june[30],
+		!july[31]
+		!august[31]
+		!september[30]
+		!october[31]
+		!november[30]
+		!december[31]
+		!month_days[(
+			!january,
+			(!february if _y % 4 else !leap_february),
+			!march,
+			!april,
+			!may,
+			!june,
+			!july,
+			!august,
+			!september,
+			!october,
+			!november,
+			!december,
+		)[_m]]
+	}
+
+	let _d = {@1.date[1] - @2.date[1]}
+	let _m = {@1.date[2] - @2.date[2]}
+	let _y = {@1.date[3] - @2.date[3]}
+
+	if {_m < 1} then
+		let _y = {_y - 1}
+		let _m = {_m + 12}
+	end
+
+	let _month_days = {!month_days}
+	while {_d < 1} do
+		let _d = {_d + _month_days}
+		let _m = {_m - 1}
+		if {_m < 1} then
+			let _y = {_y - 1}
+			let _m = {_m + 12}
+		end
+		let _month_days = {!month_days}
+	end
+
+	return {
+		'date' => (_d, _m, _y),
+		'time' => @1.time + @2.time,
+	}
+end
