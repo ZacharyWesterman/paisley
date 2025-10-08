@@ -40,5 +40,6 @@ struct VirtualMachine
 	std::vector<Value> argv;
 
 	void error(const std::string &message) const noexcept;
+	void warn(const std::string &message) const noexcept;
 	Value &get_const(size_t id) noexcept;
 };

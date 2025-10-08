@@ -656,5 +656,69 @@ std = {
 		return result
 	end,
 
+	---@brief Update an element in a nested array or object structure.
+	---@param data any The array, object, or string to update.
+	---@param indices any|any[] The index or list of indices to navigate to the element to update.
+	---@param value any The new value to set at the specified location.
+	---@return any The updated array, object, or string. If the specified indices do not lead to a valid location, the original data is returned unchanged.
+	---@warning This function modifies `data` in place! It does not create a copy.
+	update_element = function(data, indices, value)
+		local is_string = false
+
+		--Only valid for arrays, objects, or strings
+		if type(data) == 'string' then
+			is_string = true
+			data = std.split(data, '')
+		elseif type(data) ~= 'table' then
+			return data
+		end
+
+		if type(indices) ~= 'table' then indices = { indices } end
+		if #indices == 0 then
+			return data
+		end
+
+		--Narrow down to sub-object
+		local sub_object = data
+		for i = 1, #indices - 1 do
+			local ix, tp = indices[i], std.type(sub_object)
+			if tp == 'object' then
+				ix = std.str(ix)
+			elseif tp ~= 'array' then
+				return data
+			else
+				ix = std.num(ix)
+				if ix < 0 then ix = #sub_object + ix + 1 end
+			end
+
+			if sub_object[ix] == nil then
+				--We can only set the bottom-level object
+				return data
+			end
+
+			sub_object = sub_object[ix]
+		end
+
+		local ix, tp = indices[#indices], std.type(sub_object)
+		if tp == 'object' then
+			ix = std.str(ix)
+			sub_object[ix] = value
+		elseif tp == 'array' then
+			ix = std.num(ix)
+			if ix < 0 then ix = #sub_object + ix + 1 end
+			if ix > 0 then
+				sub_object[ix] = value
+			else
+				table.insert(sub_object, 1, value)
+			end
+		end
+
+		if is_string then
+			data = std.join(data, '')
+		end
+
+		return data
+	end,
+
 	MAX_ARRAY_LEN = 32768, --Any larger than this and performance tanks
 }

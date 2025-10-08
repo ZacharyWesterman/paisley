@@ -13,4 +13,6 @@ struct Variables : public std::map<std::string, Value>
 	void set(const std::string &key, const Value &value) noexcept;
 
 	bool has(const std::string &key) const noexcept;
+
+	Value &get_ref(const std::string &key);
 };

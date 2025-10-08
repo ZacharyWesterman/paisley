@@ -18,3 +18,8 @@ bool Variables::has(const std::string &key) const noexcept
 {
 	return find(key) != end();
 }
+
+Value &Variables::get_ref(const std::string &key)
+{
+	return (*this)[key];
+}
