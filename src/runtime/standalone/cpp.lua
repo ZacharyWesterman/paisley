@@ -17,7 +17,7 @@ STANDALONE.cpp = {
 		end
 
 		local function escape_str(str)
-			return '"' .. str:gsub('\\', '\\\\'):gsub('\n', '\\n'):gsub('"', '\\"') .. '"'
+			return '"' .. str:gsub('\\', '\\\\'):gsub('\n', '\\n'):gsub('"', '\\"'):gsub('\0', '\\0') .. '"s'
 		end
 
 		local function value_to_cpp(value)
