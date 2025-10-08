@@ -987,7 +987,18 @@ local functions = {
 	function() PUSH(string.byte(std.str(POP()[1]))) end,
 
 	--ASCII TO CHAR
-	function() PUSH(string.char(math.floor(std.num(POP()[1])))) end,
+	function()
+		local num = math.floor(std.num(POP()[1]))
+
+		local nans = {
+			['nan'] = true,
+			['inf'] = true,
+			['-inf'] = true,
+		}
+
+		if nans[tostring(num)] then num = 0 end
+		PUSH(string.char(num % 256))
+	end,
 
 	--STRING BEGINS WITH
 	function()
