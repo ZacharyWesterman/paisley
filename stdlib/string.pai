@@ -44,7 +44,6 @@ end
 subroutine string.urlencode
 	define {
 		!entities[(
-		'%' => '%25',
 		' ' => '%20',
 		'!' => '%21',
 		'"' => '%22',
@@ -77,7 +76,7 @@ subroutine string.urlencode
 		)]
 	}
 
-	let _url = {@1}
+	let _url = {@1.replace('%', '%25')}
 	for _key _value in {!entities.pairs()} do
 		let _url = {_url.replace(_key, _value)}
 	end
