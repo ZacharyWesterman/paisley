@@ -130,6 +130,7 @@
 #include "functions/tan.hpp"
 #include "functions/tanh.hpp"
 #include "functions/time.hpp"
+#include "functions/timestamp.hpp"
 #include "functions/to_base.hpp"
 #include "functions/toepoch.hpp"
 #include "functions/trim.hpp"
@@ -271,6 +272,7 @@ const Function FUNCTIONS[] = {
 	modf,
 	from_base,
 	chunk,
+	timestamp,
 	fmod,
 	env_get,
 	toepoch,
