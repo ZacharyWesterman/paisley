@@ -141,6 +141,7 @@ end
 ```
 
 Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression's truthiness: false, null, zero, empty strings, empty arrays and empty objects are all falsey, everything else is truthy.
+See [the type-casting docs](docs/type-casting.md) for more info on truthiness and other type-casting rules.
 
 There is also the `match` structure, which is similar to c-like languages' `switch/case` structure (or Rust's `match`). This structure is included to allow for more readable logic with less repeated code.
 ```
@@ -567,70 +568,10 @@ Note that functions can be called in one of two ways:
 Both are exactly equivalent, the latter syntax is included simply for convenience.
 
 ### Arrays in expressions
-The comma `,` and slice `:` operators always indicate an array.
-For example, `(1,2,3)` is an array, as are `(1,2,3,)`, `(1,)` and `(,)`. Note that expressions *are* allowed to have a trailing comma, which simply indicates that the expression is an array with a single element. Likewise, a single comma by itself indicates an empty array.
-
-Note that an expression must contain a comma `,` or slice `:` operator to be considered an array, just parentheses is not enough.
-So `(1,)` is an array and `(1:1)` is an equivalent array, but `(1)` is a number, not an array.
-
-Basically, if there's a comma, you have an array.
-
-To access an array's elements, use the usual square-brackets syntax, e.g.
-```
-let array = {'a', 'b', 'c'}
-print {array[1]} #prints "a"
-```
-And to change an array's elements,
-```
-let array{2} = 'd' #array is now ('a', 'd', 'c')
-let array{-1} = 'e' #array is now ('a', 'd', 'e')
-```
-You can also append to an array,
-```
-let array{} = 'f' #array is now ('a', 'd', 'e', 'f')
-```
-
-Note that array indexes start at 1, and can be negative to start from the end of the array instead of the beginning (e.g. -1 is the last element, -2 is the second to last, etc).
+See the [array documentation](docs/arrays.md) for a full run-down of how arrays work.
 
 ### Objects in expressions
-Objects function very much like JavaScript objects. The keys are always strings, and the values can be anything.
-To define an object, just construct a list of key-value pairs, which are any two expressions separated by an arrow, e.g. `"key" => "value"`.
-Note that unlike in Lua, you **cannot** mix array and object syntax; it's either one or the other.
-
-Like with arrays, key-value pairs are allowed to have an optional trailing comma.
-```
-let object = {
-	'name' => 'Jerry',
-	'age' => 30,
-	'friend' => (
-		'name' => 'Susan',
-		'age' => 35,
-	),
-}
-```
-In some cases, it can be useful to create an *empty object*. To do so, just use the arrow operator by itself.
-```
-let object = {=>}
-print {'my object is "' (=>) '"'}
-```
-
-Object values can of course be accessed the same way array values can, with the regular indexing `[]` syntax.
-However, attributes can also be accessed with dot notation if they contain only alphanumeric characters (that is, they match the pattern `[a-zA-Z_][0-9a-zA-Z_]*`).
-The following lines do the exact same thing.
-```
-print {object['name']}
-print {object.name}
-```
-
-Like with arrays, object values can be added or changed with the following syntax,
-```
-let object{'name'} = 'Jekyll'
-let object{'friend', 'name'} = 'Hyde'
-```
-However, you cannot use the append syntax on an object, as it does not make sense in that context. So the following will not work:
-```
-let object{} = 'some value'
-```
+See the [object documentation](docs/objects.md) for a full run-down of how objects work.
 
 ### List comprehension
 Often you need to take an array and mutate every element in some way. While you could very well use a for loop for this, this operation comes up often enough that there is a convenient shorthand for it. See how in the following script, we're taking the array `x` and multiplying every element by `2`, then assigning the result to `y`.
