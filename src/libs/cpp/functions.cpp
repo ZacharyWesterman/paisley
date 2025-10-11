@@ -57,6 +57,7 @@
 #include "functions/find.hpp"
 #include "functions/flatten.hpp"
 #include "functions/floor.hpp"
+#include "functions/fmod.hpp"
 #include "functions/from_base.hpp"
 #include "functions/frombytes.hpp"
 #include "functions/fromepoch.hpp"
@@ -270,6 +271,7 @@ const Function FUNCTIONS[] = {
 	modf,
 	from_base,
 	chunk,
+	fmod,
 	env_get,
 	toepoch,
 	fromepoch,

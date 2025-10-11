@@ -405,7 +405,7 @@ function FOLD_CONSTANTS(token, file)
 				token.children = nil
 			end
 		elseif math[token.text] then
-			local val1, val2 = math[token.text](c1.value)
+			local val1, val2 = math[token.text](c1.value, c2 and c2.value)
 
 			--Check for NaN
 			check_if_nan_or_inf(token, file)

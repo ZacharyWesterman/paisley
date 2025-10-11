@@ -1015,6 +1015,15 @@ TYPESIG = {
 		category = 'time',
 		--[[/minify-delete]]
 	},
+	fmod = {
+		valid = { { 'number', 'number' } },
+		out = 'number',
+		--[[minify-delete]]
+		params = { 'x', 'y' },
+		description = 'Calculate the floating-point remainder of x / y.',
+		category = 'math',
+		--[[/minify-delete]]
+	},
 	--[[minify-delete]]
 	toepoch = {
 		valid = { { 'object' } },
