@@ -49,3 +49,46 @@ let arr = {\array.drop(arr, 3)}
 subroutine array.drop
 	return {@1[(@2+1)::]}
 end
+
+#[[
+@export
+@brief Generate the next lexicographical permutation of an array.
+@param arr array The input array.
+@return array The next permutation of the array, or the same array if it is the last permutation.
+#]]
+subroutine array.permute
+	let _array = {@1}
+	
+	# Find the largest index _k such that _array[_k] < _array[_k + 1]. If no such index exists, the permutation is the last permutation.
+	let _k = {&_array - 1}
+	while {_k and _array[_k] < _array[_k + 1]} do
+		let _k = {_k - 1}
+	end
+
+	if {_k = 0} then
+		# This is the last permutation, return the array as is.
+		return {_array}
+	end
+	
+	# Find the largest index _l greater than _k such that _array[_k] < _array[_l].
+	let _l = {&_array}
+	while {_l and _array[_k] < _array[_l]} do
+		let _l = {_l - 1}
+	end
+
+	# Swap the value of _array[_k] with that of _array[_l].
+	let _temp = {_array[_k]}
+	let _array{_k} = {_array[_l]}
+	let _array{_l} = {_temp}
+
+	# Reverse the sequence from _array[_k + 1] up to and including the final element _array[n].
+	let _array = {
+		merge(
+			_array[1:_k],
+			reverse(_array[(_k + 1)::])
+		)
+	}
+
+	delete _temp _start _end _k _l
+	return {_array}
+end
