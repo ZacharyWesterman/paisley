@@ -1,0 +1,8 @@
+let xml = {"""
+<root>
+  <child name="first">Content 1</child>
+  <child name="second">Content 2</child>
+</root>
+""".xml_decode()}
+
+print {xml.json_encode(true)}
