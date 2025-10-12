@@ -1,0 +1,51 @@
+#[[
+@export
+@brief Zip multiple arrays into a single array of arrays.
+@param ... array The arrays to zip.
+@return array[array] An array of arrays, where each inner array contains elements from the input arrays at the same index.
+#]]
+subroutine array.zip
+	return {
+		(@[i][index] for i in 1:&@)
+		for index in (1:max(&i for i in @))
+	}
+end
+
+#[[
+@export
+@brief Take the first n elements from an array.
+
+Example usage:
+```
+let arr = {1, 2, 3, 4, 5}
+let taken arr = {\array.take(arr, 3)}
+# taken is {1, 2, 3}
+# arr is {4, 5}
+```
+
+@param arr array The input array.
+@param n number The number of elements to take.
+@return array[array] The first n elements of the input array, and the rest as a second array.
+#]]
+subroutine array.take
+	return {@1[1:@2], @1[(@2+1)::]}
+end
+
+#[[
+@export
+@brief Drop the first n elements from an array.
+
+Example usage:
+```
+let arr = {1, 2, 3, 4, 5}
+let arr = {\array.drop(arr, 3)}
+# arr is now {4, 5}
+```
+
+@param arr array The input array.
+@param n number The number of elements to drop.
+@return array The array after dropping the first n elements.
+#]]
+subroutine array.drop
+	return {@1[(@2+1)::]}
+end
