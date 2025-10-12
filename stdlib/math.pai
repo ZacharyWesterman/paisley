@@ -69,7 +69,5 @@ subroutine math.lcm
 		delete _a _b
 		return 0
 	end
-	let _a = {abs(_a * _b) // \math.gcd(_a, _b)}
-	delete _b
-	return {_a}
+	return {abs(_a * _b) // \math.gcd(_a, _b)}
 end
