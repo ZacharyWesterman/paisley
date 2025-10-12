@@ -54,6 +54,7 @@ STANDALONE.lua = {
 
 		local c_code = [[
 		#define LUA_IMPL
+		#define LUA_COMPAT_MATHLIB
 		#include <minilua.h>
 		const char pgm[] = ]] .. pgm_buffer .. [[;
 		int main(int argc, char **argv) {
