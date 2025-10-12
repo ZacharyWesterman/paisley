@@ -54,10 +54,10 @@ end
 @export
 @brief Generate the next lexicographical permutation of an array.
 @param arr array The input array.
-@return array The next permutation of the array, or the same array if it is the last permutation.
+@return array? The next permutation of the array, or null if it is the last permutation.
 #]]
 subroutine array.permute
-	let _array = {@1}
+	let _array = {@1.reverse()}
 	
 	# Find the largest index _k such that _array[_k] < _array[_k + 1]. If no such index exists, the permutation is the last permutation.
 	let _k = {&_array - 1}
@@ -66,8 +66,8 @@ subroutine array.permute
 	end
 
 	if {_k = 0} then
-		# This is the last permutation, return the array as is.
-		return {_array}
+		# This is the last permutation.
+		return
 	end
 	
 	# Find the largest index _l greater than _k such that _array[_k] < _array[_l].
@@ -84,8 +84,8 @@ subroutine array.permute
 	# Reverse the sequence from _array[_k + 1] up to and including the final element _array[n].
 	let _array = {
 		merge(
-			_array[1:_k],
-			reverse(_array[(_k + 1)::])
+			_array[(_k + 1)::],
+			reverse(_array[1:_k]),
 		)
 	}
 
