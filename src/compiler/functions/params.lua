@@ -111,6 +111,7 @@ BUILTIN_FUNCS = {
 	chunk = 2,
 	timestamp = 1,
 	fmod = 2,
+	sorted = 1,
 	--[[minify-delete]]
 	toepoch = 1,
 	fromepoch = 1,

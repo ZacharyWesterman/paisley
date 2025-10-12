@@ -1,6 +1,5 @@
 #include "sort.hpp"
 #include <algorithm>
-#include <iostream>
 
 void sort(Context &context) noexcept
 {

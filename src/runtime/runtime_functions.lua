@@ -1244,6 +1244,26 @@ local functions = {
 
 	mathfunc('fmod'),
 
+	--CHECK IF AN ARRAY IS SORTED
+	function()
+		local array = POP()[1]
+
+		if std.type(array) ~= 'array' then
+			PUSH(false)
+			return
+		end
+
+		local last_element = array[1]
+		for i = 2, #array do
+			if last_element > array[i] then
+				PUSH(false)
+				return
+			end
+			last_element = array[i]
+		end
+		PUSH(true)
+	end,
+
 	--[[minify-delete]]
 	--CONVERT A DATETIME OBJECT TO A UNIX TIMESTAMP
 	function()

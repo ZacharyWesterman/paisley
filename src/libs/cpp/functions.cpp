@@ -118,6 +118,7 @@
 #include "functions/sinh.hpp"
 #include "functions/smoothstep.hpp"
 #include "functions/sort.hpp"
+#include "functions/sorted.hpp"
 #include "functions/splice.hpp"
 #include "functions/split.hpp"
 #include "functions/sqrt.hpp"
@@ -272,9 +273,11 @@ const Function FUNCTIONS[] = {
 	modf,
 	from_base,
 	chunk,
+	env_get,
 	timestamp,
 	fmod,
-	env_get,
+	sorted,
+
 	toepoch,
 	fromepoch,
 	epochnow,
