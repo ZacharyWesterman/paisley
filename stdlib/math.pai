@@ -1,2 +1,75 @@
 define {!pi[3.14159265358979323846]}
 define {!e[2.71828182845904523536]}
+
+#[[
+@export
+@brief Compute the factorial of a positive integer.
+@param n number The positive integer to compute the factorial of.
+@return number The factorial of the given integer, or 1 if n is non-positive.
+#]]
+subroutine math.factorial
+	return {(1:@1).reduce(*)}
+end
+
+#[[
+@export
+@brief Check if a number is prime.
+@param n number The number to check for primality.
+@return boolean True if the number is prime, false otherwise.
+#]]
+subroutine math.isprime
+	let _n = {@1}
+	if {_n.type() != 'number' or _n < 2 or _n.floor() != _n} then
+		delete _n
+		return {false}
+	end
+	let _i = 2
+	let _limit = {_n.sqrt().floor()}
+	while {_i <= _limit} do
+		if {_n % _i} else
+			delete _n _i _limit
+			return {false}
+		end
+		let _i = {_i + 1}
+	end
+	delete _n _i _limit
+	return {true}
+end
+
+#[[
+@export
+@brief Compute the greatest common divisor (GCD) of two integers.
+@param a number The first integer.
+@param b number The second integer.
+@return number The GCD of the two integers.
+#]]
+subroutine math.gcd
+	let _a = {@1.abs().floor()}
+	let _b = {@2.abs().floor()}
+	while {_b != 0} do
+		let _temp = {_b}
+		let _b = {_a % _b}
+		let _a = {_temp}
+	end
+	delete _b _temp
+	return {_a}
+end
+
+#[[
+@export
+@brief Compute the least common multiple (LCM) of two integers.
+@param a number The first integer.
+@param b number The second integer.
+@return number The LCM of the two integers.
+#]]
+subroutine math.lcm
+	let _a = {@1.floor()}
+	let _b = {@2.floor()}
+	if {_a = 0 or _b = 0} then
+		delete _a _b
+		return 0
+	end
+	let _a = {abs(_a * _b) // \math.gcd(_a, _b)}
+	delete _b
+	return {_a}
+end

@@ -260,7 +260,7 @@ local rules = {
 		id = TOK.array_concat,
 		keep = { 1, 3 },
 		text = 2,
-		not_before = { TOK.index_open, TOK.op_arrow, TOK.op_dot, TOK.kwd_if_expr, TOK.kwd_for_expr, TOK.op_plus, TOK.op_minus, TOK.op_count, TOK.add, TOK.multiply },
+		not_before = { TOK.index_open, TOK.op_arrow, TOK.op_dot, TOK.kwd_if_expr, TOK.kwd_for_expr, TOK.op_plus, TOK.op_minus, TOK.op_count, TOK.add, TOK.multiply, TOK.op_mod, TOK.op_div, TOK.op_idiv, TOK.op_exponent },
 		not_after = { TOK.op_dot, TOK.op_arrow, TOK.op_in, TOK.kwd_else_expr, TOK.op_times, TOK.op_div, TOK.op_idiv, TOK.op_mod, TOK.op_plus, TOK.op_minus, TOK.op_exponent, TOK.array_concat },
 	},
 	{
