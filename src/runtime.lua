@@ -49,7 +49,7 @@ function INIT()
 	local constants = table.remove(INSTRUCTIONS)
 	for i = 1, #INSTRUCTIONS do
 		local id, value = INSTRUCTIONS[i][1], INSTRUCTIONS[i][3]
-		if (id == 2 or id == 3 or id == 4) and value ~= nil and constants[value] ~= nil then
+		if (id == 2 or id == 3 or id == 4 or id == 11) and value ~= nil and constants[value] ~= nil then
 			INSTRUCTIONS[i][3] = constants[value]
 		end
 	end
