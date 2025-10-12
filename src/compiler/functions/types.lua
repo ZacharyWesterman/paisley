@@ -1024,6 +1024,15 @@ TYPESIG = {
 		category = 'math',
 		--[[/minify-delete]]
 	},
+	sorted = {
+		valid = { { 'array' } },
+		out = 'boolean',
+		--[[minify-delete]]
+		params = { 'list' },
+		description = 'Check if an array is sorted in ascending order.',
+		category = 'arrays',
+		--[[/minify-delete]]
+	},
 	--[[minify-delete]]
 	toepoch = {
 		valid = { { 'object' } },

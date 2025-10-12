@@ -467,6 +467,16 @@ FUNC_OPERATIONS = {
 		return (array[1] or 0) * 3600 + (array[2] or 0) * 60 + (array[3] or 0) + (array[4] or 0) / 1000
 	end,
 
+	sorted = function(array)
+		local last_element = array[1]
+		for i = 2, #array do
+			if last_element > array[i] then return false end
+			last_element = array[i]
+		end
+		return true
+	end,
+
+
 	--[[minify-delete]]
 	toepoch = function(datetime)
 		return os.time {

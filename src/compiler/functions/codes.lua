@@ -137,6 +137,7 @@ CALL_CODES = {
 	env_get = uid(),
 	timestamp = uid(),
 	fmod = uid(),
+	sorted = uid(),
 	--[[minify-delete]]
 	---@note These functions have to be at the end of the list,
 	---because they are not available in sandboxed environments.
