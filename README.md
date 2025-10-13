@@ -478,38 +478,38 @@ There are a few special escape sequences:
 - `\x` followed by any 2 hexadecimal digits outputs the respective byte.
 
 There are also a bunch of escape sequences that correspond to emoticons, included for convenience:
-- `\^-^` outputs `<sprite=0>`
-- `\:relaxed:` outputs `<sprite=0>`
-- `\:P` outputs `<sprite=1>`
-- `\:yum:` outputs `<sprite=1>`
-- `\<3` outputs `<sprite=2>`
-- `\:heart_eyes:` outputs `<sprite=2>`
-- `\B)` outputs `<sprite=3>`
-- `\:sunglasses:` outputs `<sprite=3>`
-- `\:D` outputs `<sprite=4>`
-- `\:grinning:` outputs `<sprite=4>`
-- `\^o^` outputs `<sprite=5>`
-- `\:smile:` outputs `<sprite=5>`
-- `\XD` outputs `<sprite=6>`
-- `\:laughing:` outputs `<sprite=6>`
-- `\:lol:` outputs `<sprite=6>`
-- `\=D` outputs `<sprite=7>`
-- `\:smiley:` outputs `<sprite=7>`
-- `\:sweat_smile:` outputs `<sprite=9>`
-- `\DX` outputs `<sprite=10>`
-- `\:tired_face:` outputs `<sprite=10>`
-- `\;P` outputs `<sprite=11>`
-- `\:stuck_out_tongue_winking_eye:` outputs `<sprite=11>`
-- `\:-*` outputs `<sprite=12>`
-- `\;-*` outputs `<sprite=12>`
-- `\:kissing_heart:` outputs `<sprite=12>`
-- `\:kissing:` outputs `<sprite=12>`
-- `\:rofl:` outputs `<sprite=13>`
-- `\:)` outputs `<sprite=14>`
-- `\:slight_smile:` outputs `<sprite=14>`
-- `\:(` outputs `<sprite=15>`
-- `\:frown:` outputs `<sprite=15>`
-- `\:frowning:` outputs `<sprite=15>`
+- `^-^` outputs `😌`
+- `:relaxed:` outputs `😌`
+- `:P` outputs `😋`
+- `:yum:` outputs `😋`
+- `<3` outputs `❤️`
+- `:heart_eyes:` outputs `❤️`
+- `B)` outputs `😎`
+- `:sunglasses:` outputs `😎`
+- `:D` outputs `😀`
+- `:grinning:` outputs `😀`
+- `^o^` outputs `😄`
+- `:smile:` outputs `😄`
+- `XD` outputs `😆`
+- `:laughing:` outputs `😆`
+- `:lol:` outputs `😆`
+- `=D` outputs `😃`
+- `:smiley:` outputs `😃`
+- `:sweat_smile:` outputs `😅`
+- `DX` outputs `😱`
+- `:tired_face:` outputs `😫`
+- `;P` outputs `😜`
+- `:stuck_out_tongue_winking_eye:` outputs `😜`
+- `:-*` outputs `😘`
+- `;-*` outputs `😘`
+- `:kissing_heart:` outputs `😘`
+- `:kissing:` outputs `😘`
+- `:rofl:` outputs `🤣`
+- `:)` outputs `🙂`
+- `:slight_smile:` outputs `🙂`
+- `:(` outputs `🙁`
+- `:frown:` outputs `🙁`
+- `:frowning:` outputs `🙁`
 
 Expressions also give access to a full suite of operators and functions, listed below:
 
