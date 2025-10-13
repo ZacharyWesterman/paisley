@@ -1,4 +1,5 @@
 require serialize
+require color
 
 #[[
 @brief Create a new image.
@@ -9,7 +10,7 @@ require serialize
 @export
 #]]
 subroutine image.new
-	let _color = {@3 if @3 else (0, 0, 0)}
+	let _color = {@3 if @3 else !black}
 	let _image = {,}
 
 	for _ in {1:@2} do
@@ -69,8 +70,9 @@ subroutine image.bitmap
 	let _pixel_data = {,}
 	for _row in {_image.reverse()} do
 		for _pixel in {_row} do
-			# BMP uses BGR format, the opposite of our RGB
-			for _i in {_pixel.reverse()} do
+			# BMP uses BGR format, the opposite of our RGB.
+			# Note that any alpha channel is ignored.
+			for _i in {_pixel[1:3].reverse()} do
 				let _pixel_data{} = {char(_i)}
 			end
 		end

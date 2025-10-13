@@ -22,7 +22,7 @@ for y in {1:height} do
 		let g = {0.5 + 0.5 * sin(angle + 1 * 2 * !pi / 3)}
 		let b = {0.5 + 0.5 * sin(angle + 2 * 2 * !pi / 3)}
 
-		let row{} = {r * radius, g * radius, b * radius} # RGB values
+		let row{} = {r * radius, g * radius, b * radius, 0xff} # RGBA values. Alpha is always 255 (opaque)
 	end
 	let image{} = {row}
 end

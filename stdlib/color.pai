@@ -1,33 +1,65 @@
+define {
+	!white[0xffffffff.bytes(4)]
+	!black[0x00000000.bytes(4)]
+	!red[0xff0000ff.bytes(4)]
+	!green[0x00ff00ff.bytes(4)]
+	!blue[0x0000ffff.bytes(4)]
+	!yellow[0xffff00ff.bytes(4)]
+	!cyan[0x00ffffff.bytes(4)]
+	!magenta[0xff00ffff.bytes(4)]
+	!gray[0x808080ff.bytes(4)]
+}
+
 # @brief Convert a hex color code to RGB values
 # @param hex string The hex color code (e.g., "#RRGGBB" or "RRGGBB")
 # @return array[number] An array containing the RGB values [R, G, B]
 # @export
-subroutine color.hex_to_rgb
+subroutine color.hex_to_rgba
 	let _color = {@1[(2 if @1[1] = '#' else 1)::]}
 	
-	if {&_color != 6 or _color not like '^[0-9a-fA-F]+$'} then
+	if {(&_color != 6 and &_color != 8) or _color not like '^[0-9a-fA-F]+$'} then
 		error "Invalid hex color code: {@1}"
 	end
 
-	return { _color.from_base(16).bytes(3) }
+	if {_color = 6} then
+		let _color = {_color 'ff'}
+	end
+
+	return { _color.from_base(16).bytes(4) }
 end
 
-# @brief Convert RGB values to a hex color code
-# @param @ array[number] An array containing the RGB values [R, G, B]. RGB array may be passed as a single argument or as three separate arguments.
-# @return string The hex color code in the format "#RRGGBB"
+# @brief Convert an RGBA color value to a hex color code
+# @param @ array[number] An array containing the RGB values [R, G, B, A]. RGBA array may be passed as a single argument or as four separate arguments.
+# @return string The hex color code in the format "#RRGGBBAA"
 # @export
-subroutine color.rgb_to_hex
-	return "#{@.flatten().frombytes().to_base(16, 6)}"
+subroutine color.rgba_to_hex
+	let _color = {@.flatten().frombytes()}
+	# Append alpha value of 255 if not provided
+	if {&_color < 4} then let _color{} = {0xff} end
+	return "#{_color.to_base(16, 8)}"
 end
 
 #[[
 @brief Blend two colors together
-@param color1 array[number] The first color as an array of RGB values [R, G, B]
-@param color2 array[number] The second color as an array of RGB values [R, G, B]
+@param color1 array[number] The first color as an array of RGBA values [R, G, B, A]
+@param color2 array[number] The second color as an array of RGBA values [R, G, B, A]
 @param ratio number? The blend ratio (0.0 to 1.0). 0.0 returns color1, 1.0 returns color2. Defaults to 0.5.
-@return array[number] An array containing the blended RGB values [R, G, B]
+@return array[number] An array containing the blended RGBA values [R, G, B, A]
 @export
 #]]
 subroutine color.blend
 	return {floor(i) for i in lerp(@3 if @3 else 0.5, @1, @2)}
+end
+
+#[[
+@brief Create a new color from RGB values
+@param r number The red component (0-255)
+@param g number The green component (0-255)
+@param b number The blue component (0-255)
+@param a number? The alpha component (0-255). Defaults to 255 (opaque).
+@return array[number] An array containing the RGBA values [R, G, B, A]
+@export
+#]]
+subroutine color.new
+	return { @1, @2, @3, (@4 if @4 else 255) }
 end
