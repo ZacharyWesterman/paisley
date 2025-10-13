@@ -130,3 +130,93 @@ subroutine string.urldecode
 	delete _key _value
 	return {_url.replace('%25', '%')}
 end
+
+#[[
+@export
+@brief Convert a number to its English numeral representation (e.g., 123 -> "one hundred twenty-three").
+@param number number The number to convert.
+@return string The English numeral representation of the number.
+#]]
+subroutine string.numeral
+	let _n = {abs(@[1])}
+
+	if {_n = 0} then
+		delete _n
+		return zero
+	end
+
+	let _nums = one two three four five six seven eight nine
+	let _rank = thousand million billion trillion quadrillion quintillion sextillion septillion octillion nonillion
+
+	let _result = ''
+
+	while {_n} do
+		let _ones = {_n % 10}
+		let _tens = {_n // 10 % 10}
+		let _hundreds = {_n // 100 % 10}
+		let _thousands = {_n // 1000 % 1000}
+
+		let _r = ''
+		if {_tens = 1} then
+			let _r = {('ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen')[_ones+1]}
+		else
+			if {_ones} then let _r = {_nums[_ones]} end
+			if {_tens} then
+				if {_r} then let _r = "-{_r}" end
+				let _r = {('twenty', 'thirty', 'fourty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety')[_tens-1] _r}
+			end
+		end
+
+		if {_hundreds} then
+			let _r = {_nums[_hundreds] ' hundred' (' ' if _r else '') _r}
+		end
+
+		if {_thousands} then
+			let _r = {' ' _rank[1] (' ' if _r else '') _r}
+		end
+
+		let _result = {_r _result}
+
+		let _n = {_n // 1000}
+		let _rank = {_rank.delete(1)}
+	end
+
+	delete _n _nums _rank _ones _tens _hundreds _thousands _r
+	return {('negative ' if @[1] < 0 else '') _result}
+end
+
+#[[
+@export
+@brief Convert a number to its English ordinal representation (e.g., 1 -> "first", 2 -> "second", 3 -> "third").
+@param number number The number to convert.
+@return string The English ordinal representation of the number.
+#]]
+subroutine string.ordinal
+	let _r = ${gosub string.numeral {@[1]}}
+
+	let _repl = {
+		'twelve' => 'twelfth',
+		'nine' => 'ninth',
+		'eight' => 'eighth',
+		'five' => 'fifth',
+		'three' => 'third',
+		'two' => 'second',
+		'one' => 'first',
+	}
+
+	for _k _v in {pairs(_repl)} do
+		if {_r.endswith(_k)} then
+			let _r = {_r[1:(&_r - &_k)] _v}
+			delete _k _v _repl
+			return {_r}
+		end
+	end
+
+	delete _k _v _repl
+
+	if {_r[&_r] = 'y'} then
+		return {_r[1:(&_r-1)] 'ieth'}
+	end
+
+	return {_r 'th'}
+end
