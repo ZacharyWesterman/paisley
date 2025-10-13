@@ -62,3 +62,40 @@ The following functions will not work in the Plasma build:
 
 Note that all commands take a little bit of time to run (at least 0.02s), whether they're built-in or not. This is to prevent "infinite loop" errors or performance drops.
 The only exception to this is the `.` no-op command. It does not actually interact with the outside world, so it will complete immediately.
+
+### Escape sequences
+
+All escape sequences work the same, however internally the emoji sequences are represented differently. Instead of unicode symbols, they're stored as `<sprite=XX>` tags.
+
+- `\^-^` outputs `<sprite=0>`
+- `\:relaxed:` outputs `<sprite=0>`
+- `\:P` outputs `<sprite=1>`
+- `\:yum:` outputs `<sprite=1>`
+- `\<3` outputs `<sprite=2>`
+- `\:heart_eyes:` outputs `<sprite=2>`
+- `\B)` outputs `<sprite=3>`
+- `\:sunglasses:` outputs `<sprite=3>`
+- `\:D` outputs `<sprite=4>`
+- `\:grinning:` outputs `<sprite=4>`
+- `\^o^` outputs `<sprite=5>`
+- `\:smile:` outputs `<sprite=5>`
+- `\XD` outputs `<sprite=6>`
+- `\:laughing:` outputs `<sprite=6>`
+- `\:lol:` outputs `<sprite=6>`
+- `\=D` outputs `<sprite=7>`
+- `\:smiley:` outputs `<sprite=7>`
+- `\:sweat_smile:` outputs `<sprite=9>`
+- `\DX` outputs `<sprite=10>`
+- `\:tired_face:` outputs `<sprite=10>`
+- `\;P` outputs `<sprite=11>`
+- `\:stuck_out_tongue_winking_eye:` outputs `<sprite=11>`
+- `\:-*` outputs `<sprite=12>`
+- `\;-*` outputs `<sprite=12>`
+- `\:kissing_heart:` outputs `<sprite=12>`
+- `\:kissing:` outputs `<sprite=12>`
+- `\:rofl:` outputs `<sprite=13>`
+- `\:)` outputs `<sprite=14>`
+- `\:slight_smile:` outputs `<sprite=14>`
+- `\:(` outputs `<sprite=15>`
+- `\:frown:` outputs `<sprite=15>`
+- `\:frowning:` outputs `<sprite=15>`

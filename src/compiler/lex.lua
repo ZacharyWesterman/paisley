@@ -587,13 +587,25 @@ function Lexer(text, file)
 							for search, replace in pairs(ESCAPE_CODES) do
 								if text:sub(this_ix, this_ix + #search - 1) == search then
 									if type(replace) == 'table' then
-										--Special case for hex characters
-										local m = text:sub(this_ix - 1, this_ix + 9):match('^\\' ..
-											search .. replace.next)
-										if m then
-											this_chr = replace.op(m:sub(2 + #search, 3 + #search))
-											this_ix = this_ix + #m - 2
+										if replace.next then
+											--Special case for hex characters
+											local m = text:sub(this_ix - 1, this_ix + 9):match('^\\' ..
+												search .. replace.next)
+											if m then
+												this_chr = replace.op(m:sub(2 + #search, 3 + #search))
+												this_ix = this_ix + #m - 2
+												found_esc = true
+											end
+											--[[minify-delete]]
+										elseif replace.plasma and RESTRICT_TO_PLASMA_BUILD then
+											this_ix = this_ix + #search - 1
+											this_chr = replace.plasma
 											found_esc = true
+										elseif replace.default then
+											this_ix = this_ix + #search - 1
+											this_chr = replace.default
+											found_esc = true
+											--[[/minify-delete]]
 										end
 									else
 										found_esc = true
