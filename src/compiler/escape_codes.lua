@@ -1,13 +1,14 @@
 ESCAPE_CODES = {
 	['n'] = '\n',
 	['t'] = '\t',
+	['r'] = '\r',
+	['v'] = '\v',
 	['"'] = '"',
 	['\''] = '\'',
 	['\\'] = '\\',
-	['r'] = '\r',
-	[' '] = ' ', --non-breaking space
 	['{'] = '{',
 	['}'] = '}',
+	[' '] = ' ', --non-breaking space
 	['^-^'] = --[[minify-delete]] {
 		plasma = --[[/minify-delete]] '<sprite=0>' --[[minify-delete]],
 		default = '😌',

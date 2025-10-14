@@ -470,6 +470,7 @@ There are a few special escape sequences:
 - `\n` outputs a line ending.
 - `\t` outputs a tab.
 - `\r` outputs a carriage return.
+- `\v` outputs a vertical tab.
 - `\ ` (backslash + space) outputs a non-breaking space.
 - `\"` outputs a double quote.
 - `\'` outputs a single quote.
