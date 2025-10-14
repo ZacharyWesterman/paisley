@@ -471,11 +471,11 @@ There are a few special escape sequences:
 - `\t` outputs a tab.
 - `\r` outputs a carriage return.
 - `\v` outputs a vertical tab.
-- `\ ` (backslash + space) outputs a non-breaking space.
 - `\"` outputs a double quote.
 - `\'` outputs a single quote.
 - `\{` outputs a left curly brace.
 - `\}` outputs a right curly brace.
+- `\ ` (backslash + space) outputs a non-breaking space.
 - `\x` followed by any 2 hexadecimal digits outputs the respective byte.
 - `\u` followed by any 4 hexadecimal digits outputs the respective Unicode character.
 - `\U` followed by any 8 hexadecimal digits outputs the respective Unicode character.
