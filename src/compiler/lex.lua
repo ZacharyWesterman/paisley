@@ -415,9 +415,9 @@ function Lexer(text, file)
 					end
 				end
 
-				--Numbers (can have formats 0xAAAA, 0bAAAA, AA.AAA, A_AAA_AAA.AAA)
+				--Numbers (can have formats 0xAAAA, 0cAAAA 0bAAAA, AA.AAA, A_AAA_AAA.AAA)
 				if not match then
-					match = text:match('^0[xb][0-9_a-fA-F]*')          --0x12af / 0b0011
+					match = text:match('^0[xcb][0-9_a-fA-F]*')         --0x12af / 0c567 / 0b0011
 					if not match then match = text:match('^%.[0-9]+') end --.123456
 					if not match then match = text:match('^[0-9][0-9_]*%.[0-9]+') end --1_234.657
 					if not match then match = text:match('^[0-9][0-9_]*') end --1_234_567
@@ -426,10 +426,15 @@ function Lexer(text, file)
 						local m = match:gsub('_', '')
 						local n
 						local tp = ''
-						if m:sub(2, 2) == 'x' then
+						local numtype = m:sub(2, 2)
+						if numtype == 'x' then
 							n = tonumber(m:sub(3, #m), 16)
 							tp = 'hexadecimal '
-						elseif m:sub(2, 2) == 'b' then
+						elseif numtype == 'c' then
+							print('octal number ', m:sub(3, #m))
+							n = tonumber(m:sub(3, #m), 8)
+							tp = 'octal '
+						elseif numtype == 'b' then
 							n = tonumber(m:sub(3, #m), 2)
 							tp = 'binary '
 						else

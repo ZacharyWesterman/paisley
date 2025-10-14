@@ -543,6 +543,7 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 
 ### Allowed values:
 - Hexadecimal numbers, `0xFFFF`
+- Octal numbers, `0c7777`
 - Binary numbers, `0b1111`
 - Decimal numbers, `1.2345` or `12345` or `1_000_000`. Note that underscores are ignored by the compiler, you can use them for readability purposes.
 - Booleans, `true` or `false`

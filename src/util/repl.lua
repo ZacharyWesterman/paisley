@@ -291,6 +291,7 @@ if curses_installed then
 		command = colors.blue,
 		funccall = colors.yellow,
 		error = colors.red,
+		macro = colors.lime,
 	}
 
 	if curses.has_colors() then
@@ -468,6 +469,30 @@ if curses_installed then
 					end
 				end
 
+				--Number literals
+				if not match then
+					match = text:match('^0x[%da-fA-F_]*')
+					local invalid = false
+					if match and not text:match('^0x[%da-fA-F_]+') then invalid = true end
+					if not match then
+						match = text:match('^0b[01_]*')
+						if match and not text:match('^0b[01_]+') then invalid = true end
+					end
+					if not match then
+						match = text:match('^0c[0-7_]*')
+						if match and not text:match('^0c[0-7_]+') then invalid = true end
+					end
+					if not match then match = text:match('^%d+%.%d+') end
+					if not match then match = text:match('^%d+') end
+					if match then
+						if invalid then
+							printf(match, entity.error)
+						else
+							printf(match, entity.literal)
+						end
+					end
+				end
+
 				--Literals and keyword operators
 				if not match then
 					match = text:match('^[%w_]+')
@@ -479,6 +504,14 @@ if curses_installed then
 						else
 							printf(match)
 						end
+					end
+				end
+
+				--Macros
+				if not match then
+					match = text:match('^!+[%w_]*')
+					if match then
+						printf(match, entity.macro)
 					end
 				end
 
