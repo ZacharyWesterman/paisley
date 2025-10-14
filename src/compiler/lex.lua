@@ -589,10 +589,10 @@ function Lexer(text, file)
 									if type(replace) == 'table' then
 										if replace.next then
 											--Special case for hex characters
-											local m = text:sub(this_ix - 1, this_ix + 9):match('^\\' ..
+											local m = text:sub(this_ix - 1, this_ix + #replace.next + 1):match('^\\' ..
 												search .. replace.next)
 											if m then
-												this_chr = replace.op(m:sub(2 + #search, 3 + #search))
+												this_chr = replace.op(m:sub(2 + #search, #m))
 												this_ix = this_ix + #m - 2
 												found_esc = true
 											end

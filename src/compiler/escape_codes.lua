@@ -143,4 +143,18 @@ ESCAPE_CODES = {
 			return string.char(tonumber(next, 16))
 		end,
 	},
+	['u'] = {
+		next = '%x%x%x%x',
+		op = function(next)
+			--convert 4 hex digits to a Unicode character
+			return utf8.char(tonumber(next, 16))
+		end,
+	},
+	['U'] = {
+		next = '%x%x%x%x%x%x%x%x',
+		op = function(next)
+			--convert 8 hex digits to a Unicode character
+			return utf8.char(tonumber(next, 16))
+		end,
+	},
 }

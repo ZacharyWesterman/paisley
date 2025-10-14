@@ -476,6 +476,8 @@ There are a few special escape sequences:
 - `\{` outputs a left curly brace.
 - `\}` outputs a right curly brace.
 - `\x` followed by any 2 hexadecimal digits outputs the respective byte.
+- `\u` followed by any 4 hexadecimal digits outputs the respective Unicode character.
+- `\U` followed by any 8 hexadecimal digits outputs the respective Unicode character.
 
 There are also a bunch of escape sequences that correspond to emoticons, included for convenience:
 - `^-^` outputs `😌`
