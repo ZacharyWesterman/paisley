@@ -206,13 +206,14 @@ return {
 			--Make sure "delete" statements only have text params. deleting expressions that resolve to variable names is a recipe for disaster.
 			function(token, file)
 				---@type Token[]
-				local kids = token.children[1].children
+				local kids = token.children
+				if not kids then return end
+				if kids[1].children then kids = kids[1].children end
 				for i = 1, #kids do
-					if kids[i].id ~= TOK.text then
+					if kids and kids[i].id ~= TOK.text then
 						parse_error(kids[i].span, 'Expected only variable names after "delete" keyword', file)
 					end
 				end
-
 				token.children = kids
 			end,
 		},

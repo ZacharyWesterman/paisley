@@ -416,7 +416,7 @@ if curses_installed then
 						--Escape sequences
 						for k, v in pairs(ESCAPE_CODES) do
 							if text:sub(2, 1 + #k) == k then
-								if type(v) == 'table' then
+								if type(v) == 'table' and v.next then
 									local next = text:match('^\\' .. k .. v.next)
 									if next then
 										match = next
