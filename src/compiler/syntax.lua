@@ -186,7 +186,7 @@ local rules = {
 		not_after = { TOK.op_exponent, TOK.op_dot },
 		keep = { 1, 3 },
 		text = 2,
-		not_before = { TOK.op_dot },
+		not_before = { TOK.op_dot, TOK.index_open },
 	},
 
 	--If no other exponent was detected, just promote the value.

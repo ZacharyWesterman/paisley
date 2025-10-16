@@ -71,3 +71,22 @@ subroutine math.lcm
 	end
 	return {abs(_a * _b) // \math.gcd(_a, _b)}
 end
+
+
+#[[
+@export
+@brief Convert a list of characters to a bit flag integer.
+@param str string A string containing characters to be converted to flags.
+@param chars string A string containing the characters to be used as flags.
+@return number An integer representing the bit flags of the characters.
+#]]
+subroutine math.flagify
+	return {
+		(
+			(2 ^ (@2.index(i) - 1) if @2.index(i) else 0)
+			for i in @1.split('')
+		)
+		.reduce(+)
+		.floor()
+	}
+end
