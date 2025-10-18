@@ -112,12 +112,8 @@ json = {
 			elseif data == nil then
 				return 'null'
 			else
-				local msg = 'Unable to stringify data "' .. tostring(data) .. '" of type ' .. tp .. '.'
-				if return_error then
-					return '', msg
-				else
-					error(msg)
-				end
+				--If an unsupported type, just convert to a string.
+				return '"<' .. tp .. '>"'
 			end
 		end
 
