@@ -106,7 +106,16 @@ array :=
 	| kv_pair
 
 kv_pair :=
-	| boolean `=>` array
+	| ternary `=>` array
+	| ternary
+
+ternary :=
+	| list_comprehension `if` list_comprehension `else` ternary
+	| list_comprehension
+
+list_comprehension :=
+	| boolean `for` variable `in` list_comprehension `if` list_comprehension
+	| boolean `for` variable `in` list_comprehension
 	| boolean
 
 boolean :=
