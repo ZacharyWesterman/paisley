@@ -98,7 +98,7 @@ inline_command :=
 	| command
 
 expression :=
-	| comparison_expr
+	| array
 
 array :=
 	| kv_pair `,` array
