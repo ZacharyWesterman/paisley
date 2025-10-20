@@ -1,5 +1,6 @@
 require "src.compiler.tokens"
 require "src.compiler.escape_codes"
+require "src.shared.stdlib"
 
 ---@diagnostic disable-next-line
 kwds = {

@@ -270,7 +270,7 @@ INFO = {
 function terminate()
 	--[[minify-delete]]
 	if true then
-		error()
+		os.exit(1)
 	else --[[/minify-delete]]
 		error('ERROR in user-supplied Paisley script.')
 		--[[minify-delete]]
