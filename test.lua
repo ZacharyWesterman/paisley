@@ -3,7 +3,7 @@ require 'src.compiler.syntax'
 require 'src.shared.json'
 
 local program = [[
-print 123 end
+if 1 then print else print end
 ]]
 
 local tokens = {}

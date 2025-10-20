@@ -6,6 +6,7 @@ local function argument()
 		-- string,
 	}, {
 		TOK.text,
+		TOK.string,
 	})
 end
 
@@ -32,7 +33,13 @@ local function else_stmt(span)
 	if not parser.accept(TOK.kwd_else) then return parser.out(false) end
 
 	---`else` program `end`
-	local ok, list = parser.expect_list({ program, TOK.kwd_end }, TOK.line_ending)
+	local ok, list = parser.expect_list({
+		program,
+		TOK.kwd_end,
+	}, {
+		TOK.program,
+		'end',
+	}, TOK.line_ending)
 
 	return ok, list[1]
 end
@@ -54,6 +61,11 @@ local function if_stmt(span)
 		{ TOK.kwd_then },
 		program,
 		{ TOK.kwd_end, else_stmt },
+	}, {
+		{ TOK.text, 'string' },
+		{ 'then' },
+		'program',
+		{ 'end', 'else' },
 	}, TOK.line_ending)
 
 	node.children = list
@@ -70,7 +82,7 @@ local function statement()
 		TOK.line_ending,
 		TOK.command,
 		'if',
-	}, true)
+	}, false)
 end
 
 program = function()

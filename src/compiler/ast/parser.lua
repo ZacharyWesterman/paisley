@@ -102,15 +102,17 @@ local function one_or_more(symbol)
 	return ok, list
 end
 
-local function expect_list(symbols, skip_symbol)
+local function expect_list(symbols, valid_symbols, skip_symbol)
 	local list = {}
 	for i = 1, #symbols do
 		if skip_symbol then skip(skip_symbol) end
 
 		local symbol = symbols[i]
+		local valid = valid_symbols[i]
 		if type(symbol) ~= 'table' then symbol = { symbol } end
+		if type(valid) ~= 'table' then valid = { valid } end
 
-		local ok, node = any_of(symbol, symbol, true)
+		local ok, node = any_of(symbol, valid, true)
 		if not ok then
 			return false, list
 		end
