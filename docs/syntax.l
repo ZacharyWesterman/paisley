@@ -16,6 +16,7 @@ statement :=
 	| match_stmt
 	| alias_stmt
 	| try_stmt
+	| stop_stmt
 	| command
 
 if_stmt :=
@@ -80,19 +81,110 @@ alias_stmt :=
 try_stmt :=
 	| `try` program `catch` text? program `end`
 
+stop_stmt :=
+	| `stop`
+
 command :=
 	| argument+
 
 argument :=
 	| text
+	| string
 	| `{` expression `}`
-	| `"` argument* `"`
-	| `"""` argument* `"""`
-	| `'` text? `'`
-	| `'''` text? `'''`
 	| `${` inline_command `}`
 
 inline_command :=
 	| gosub_stmt
 	| command
 
+expression :=
+	| comparison_expr
+
+array :=
+	| kv_pair `,` array
+	| kv_pair `,`
+	| kv_pair
+
+kv_pair :=
+	| boolean `=>` array
+	| boolean
+
+boolean :=
+	| `not` boolean
+	| comparison `and` boolean
+	| comparison `or` boolean
+	| comparison `xor` boolean
+	| comparison `exists`
+	| comparison 
+
+comparison :=
+	| add `>` comparison
+	| add `<` comparison
+	| add `>=` comparison
+	| add `<=` comparison
+	| add `=` comparison
+	| add `!=` comparison
+	| add `in` comparison
+	| add `not` `in` comparison
+	| add `not` `like` comparison
+	| add
+
+add :=
+	| mult `+` add
+	| mult `-` add
+	| mult
+
+mult :=
+	| slice `*` mult
+	| slice `/` mult
+	| slice `//` mult
+	| slice `%` mult
+	| slice
+
+slice :=
+	| exponent `:` slice
+	| exponent
+
+exponent :=
+	| length `^` exponent
+	| length
+
+length :=
+	| `&` index
+	| index
+
+index :=
+	| dot `[` expression `]`
+	| dot
+
+dot :=
+	| dot `.` value
+	| value
+
+value :=
+	| macro
+	| func_call
+	| variable
+	| number
+	| string
+	| `true` | `false` | `null`
+	| `(` expression `)`
+	| `{` expression `}`
+
+macro :=
+	| exclamation `[` expression `]`
+	| exclamation
+
+func_call :=
+	| variable `(` expression `)`
+
+string :=
+	| `"` string_interp* `"`
+	| `"""` string_interp* `"""`
+	| `'` text? `'`
+	| `'''` text? `'''`
+
+string_interp :=
+	| text
+	| `{` expression `}`
+	| `${` inline_command `}`
