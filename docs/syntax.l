@@ -98,6 +98,8 @@ inline_command :=
 	| command
 
 expression :=
+	| `,`
+	| `=>`
 	| array
 
 array :=
