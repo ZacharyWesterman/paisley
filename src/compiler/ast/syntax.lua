@@ -1,7 +1,12 @@
 local parser = require 'src.compiler.ast.parser'
 
 local function argument()
-	return parser.accept(TOK.text)
+	return parser.any_of({
+		TOK.text
+		-- string,
+	}, {
+		TOK.text,
+	})
 end
 
 local function command()
@@ -57,13 +62,15 @@ local function if_stmt(span)
 end
 
 local function statement()
-	local ok, node = parser.any_of({
+	return parser.any_of({
 		TOK.line_ending,
 		command,
 		if_stmt,
-	})
-
-	return ok, node
+	}, {
+		TOK.line_ending,
+		TOK.command,
+		'if',
+	}, true)
 end
 
 program = function()

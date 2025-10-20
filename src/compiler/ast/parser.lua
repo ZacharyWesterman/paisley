@@ -7,8 +7,11 @@ local function ast_error(symbol, valid_tokens)
 	local list = {}
 
 	if type(symbol) == 'table' then symbol = symbol[1] end
+	if not symbol then symbol = token end
 	if not symbol then
 		error_msg = 'Unexpected EOF.'
+	elseif type(symbol) == 'table' then
+		error_msg = 'Unexpected token <' .. token_text(symbol.id) .. '>.'
 	elseif type(symbol) ~= 'function' then
 		error_msg = 'Unexpected token <' .. token_text(symbol) .. '>.'
 	end
@@ -71,14 +74,14 @@ local function skip(symbol)
 	end
 end
 
-local function any_of(symbol_list, required)
+local function any_of(symbol_list, valid_symbol_list, required)
 	local ok, node = false, token
 	for i = 1, #symbol_list do
 		ok, node = accept(symbol_list[i])
 		if ok then break end
 	end
 	if required and not ok then
-		ast_error(token, symbol_list)
+		ast_error(token, valid_symbol_list)
 	end
 	return ok, node
 end
@@ -107,7 +110,7 @@ local function expect_list(symbols, skip_symbol)
 		local symbol = symbols[i]
 		if type(symbol) ~= 'table' then symbol = { symbol } end
 
-		local ok, node = any_of(symbol, true)
+		local ok, node = any_of(symbol, symbol, true)
 		if not ok then
 			return false, list
 		end
@@ -127,6 +130,8 @@ return {
 		return ok, token
 	end,
 	t = function() return token end,
+
+	ast_error = ast_error,
 
 	nextsym = nextsym,
 	accept = accept,
