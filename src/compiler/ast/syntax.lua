@@ -200,11 +200,36 @@ if_stmt = function(span)
 	return ok, node
 end
 
+delete_stmt = function(span)
+	if not parser.accept(TOK.kwd_delete) then return parser.out(false) end
+
+	---`delete` var1 var2 ... etc
+	local ok, list = parser.one_or_more(argument)
+	if not ok then
+		parser.ast_error(parser.t(), 'argument')
+		return parser.out(false)
+	end
+
+	return ok, {
+		id = TOK.delete_stmt,
+		span = Span:merge(span, list[#list].span),
+		text = 'delete',
+		children = list,
+	}
+end
+
+---@brief Syntax rule for `stop` statement
+stop_stmt = function(span)
+	return parser.accept(TOK.kwd_stop)
+end
+
 statement = function()
 	return parser.any_of({
 		TOK.line_ending,
-		command,
 		if_stmt,
+		delete_stmt,
+		stop_stmt,
+		command,
 	}, {
 		TOK.line_ending,
 		TOK.command,
@@ -246,5 +271,10 @@ end
 return function()
 	parser.nextsym()
 	local ok, node = program()
+
+	if parser.t() then
+		parser.ast_error(parser.t())
+	end
+
 	return node
 end
