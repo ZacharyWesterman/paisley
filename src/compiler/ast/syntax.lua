@@ -54,16 +54,22 @@ local literal
 local parens
 local string_interpolation
 
+---@brief Syntax rule for command arguments
 argument = function()
 	return parser.any_of({
-		TOK.text
-		-- string,
+		TOK.text,
+		string,
+		expression,
+		inline_command,
 	}, {
 		TOK.text,
 		TOK.string,
+		TOK.expression,
+		TOK.inline_command,
 	})
 end
 
+---@brief Syntax rule for commands
 command = function()
 	local ok, arguments = parser.one_or_more(argument)
 	if not ok then return parser.out(false) end
@@ -81,7 +87,9 @@ command = function()
 	return true, cmd
 end
 
+---@brief Syntax rule for `else` blocks
 else_stmt = function(span)
+	--Start with `else`
 	if not parser.accept(TOK.kwd_else) then return parser.out(false) end
 
 	---`else` program `end`
@@ -96,7 +104,7 @@ else_stmt = function(span)
 	return ok, list[1]
 end
 
-
+---@brief Syntax rule for `if` blocks
 if_stmt = function(span)
 	if not parser.accept(TOK.kwd_if) then return parser.out(false) end
 
@@ -107,6 +115,21 @@ if_stmt = function(span)
 		span = span,
 		children = {},
 	}
+
+	-- `if` argument ...
+	local ok, child = parser.expect(argument)
+	if not ok then return parser.out(false) end
+
+	-- `if` argument `then` ...
+	ok, child = parser.accept(TOK.kwd_then)
+	if ok then
+		---
+		return ok, node
+	end
+
+	-- `if` argument `else`
+	ok, child = parser.expect(else_stmt, 'else')
+
 
 	local ok, list = parser.expect_list({
 		argument,

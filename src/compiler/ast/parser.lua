@@ -2,6 +2,10 @@ local token, last_token, file_name
 local token_i = 0
 local token_list = {}
 
+---@brief Generate an error message indicating invalid syntax.
+---@param symbol function|Token|integer The token or token id to generate the error message for.
+---@param valid_tokens any Either a single, or a list of, expected token ids/text.
+---@return nil
 local function ast_error(symbol, valid_tokens)
 	local error_msg = 'Unexpected token.'
 	local list = {}
@@ -40,12 +44,18 @@ local function ast_error(symbol, valid_tokens)
 	parse_error((symbol or token or last_token).span, error_msg, file_name)
 end
 
+---@brief Get the next symbol from the token list
+---@return nil
 local function nextsym()
 	last_token = token
 	token_i = token_i + 1
 	token = token_list[token_i]
 end
 
+---@brief Accept a symbol if it shows up, but don't error if it's not there.
+---@param symbol function|integer The symbol id or parsing function.
+---@return boolean ok True if the symbol was found, false otherwise.
+---@return Token node The generated AST node if the symbol was found, or the current token if not.
 local function accept(symbol)
 	local ok, node
 	if not token then return false, token end
@@ -60,6 +70,11 @@ local function accept(symbol)
 	return ok, node
 end
 
+---@brief Require a symbol to show up next, and error if it's not there.
+---@param symbol function|integer The symbol id or parsing function.
+---@param valid_tokens any? Either a single, or a list of, expected token ids/text.
+---@return boolean ok True if the symbol was found, false otherwise.
+---@return Token node The generated AST node if the symbol was found, or the current token if not.
 local function expect(symbol, valid_tokens)
 	local ok, node = accept(symbol)
 	if not ok then
@@ -68,12 +83,19 @@ local function expect(symbol, valid_tokens)
 	return ok, node
 end
 
+---@brief Skip any number of occurrences of the given symbol
+---@param symbol function|integer The symbol id or parsing function.
+---@return nil
 local function skip(symbol)
-	while accept(symbol) do
-		--
-	end
+	while accept(symbol) do end
 end
 
+---@brief Accept any of a list of symbols.
+---@param symbol_list (function|integer)[] A list of symbol ids or parsing functions.
+---@param valid_symbol_list (integer|string)[] A list, each element containing either a single, or a list of, expected token ids/text.
+---@param required boolean? Whether to error if none of the symbols were found.
+---@return boolean ok True if one of the symbols was found, false otherwise.
+---@return Token node The generated AST node if one of the symbols was found, or the current token if not.
 local function any_of(symbol_list, valid_symbol_list, required)
 	local ok, node = false, token
 	for i = 1, #symbol_list do
@@ -86,6 +108,10 @@ local function any_of(symbol_list, valid_symbol_list, required)
 	return ok, node
 end
 
+---@brief Accept any number of a given symbol, skipping if none are present.
+---@param symbol function|integer The symbol id or parsing function.
+---@return boolean ok true.
+---@return Token[] list All the found symbols.
 local function zero_or_more(symbol)
 	local list = {}
 	local ok, node = accept(symbol)
@@ -96,12 +122,34 @@ local function zero_or_more(symbol)
 	return true, list
 end
 
+---@brief Accept at least one of a given symbol.
+---@param symbol function|integer The symbol id or parsing function.
+---@return boolean ok True if at least one of the symbol was found, false otherwise.
+---@return Token[] list All the found symbols.
 local function one_or_more(symbol)
 	local ok, list = zero_or_more(symbol)
 	if #list == 0 then ok = false end
 	return ok, list
 end
 
+---Require a list of symbols to appear in an exact order.
+---
+---Each symbol in the list may have several options, e.g.
+---```
+---{
+---  a,
+---  {b, c},
+---  d
+---}
+---```
+---would match symbol "a", then *either* symbols "b" or "c",
+---and then symbol "d".
+---
+---@param symbols (function|integer|table)[] A list of symbol ids or parsing functions (or lists thereof).
+---@param valid_symbols (integer|string|table)[] A list, each element containing either a single, or a list of, expected token ids/text.
+---@param skip_symbol (integer|function) The symbol to ignore, if any.
+---@return boolean ok True if all the symbols were found, false otherwise.
+---@return Token[] list All the found symbols.
 local function expect_list(symbols, valid_symbols, skip_symbol)
 	local list = {}
 	for i = 1, #symbols do
