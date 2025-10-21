@@ -220,8 +220,15 @@ program = function()
 		id = TOK.program,
 		text = 'program',
 		span = span,
-		children = statements,
+		children = {},
 	}
+
+	--Remove newlines from program
+	for _, s in ipairs(statements) do
+		if s.id ~= TOK.line_ending then
+			table.insert(pgm.children, s)
+		end
+	end
 
 	if #statements > 0 then
 		pgm.span = Span:merge(
