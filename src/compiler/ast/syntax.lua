@@ -212,6 +212,7 @@ statement = function()
 	}, false)
 end
 
+---@brief Syntax rule for a list of statements
 program = function()
 	local span = parser.t().span
 	local ok, statements = parser.zero_or_more(statement)
@@ -240,8 +241,8 @@ program = function()
 	return ok, pgm
 end
 
---
 
+---@brief Parse the list of tokens into an AST.
 return function()
 	parser.nextsym()
 	local ok, node = program()
