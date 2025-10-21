@@ -73,20 +73,15 @@ end
 
 ---@brief Syntax rule for commands
 command = function()
-	local ok, arguments = parser.one_or_more(argument)
+	local ok, list = parser.one_or_more(argument)
 	if not ok then return parser.out(false) end
 
-	local cmd = {
+	return true, {
 		id = TOK.command,
 		text = '',
-		span = {
-			from = arguments[1].span.from,
-			to = arguments[#arguments].span.to,
-		},
-		children = arguments,
+		span = Span:merge(list[1].span, list[#list].span),
+		children = list,
 	}
-
-	return true, cmd
 end
 
 ---@brief Syntax rule for `else` blocks
@@ -199,6 +194,95 @@ if_stmt = function(span)
 	return ok, node
 end
 
+---@brief Syntax rule for `while` blocks
+while_stmt = function(span)
+	if not parser.accept(TOK.kwd_while) then return parser.out(false) end
+
+	--`while` argument `do` program `end`
+	local ok, list = parser.expect_list({
+		argument,
+		TOK.kwd_do,
+		program,
+		TOK.kwd_end,
+	}, {
+		'argument',
+		'do',
+		'program',
+		'end',
+	}, TOK.line_ending)
+
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = TOK.while_stmt,
+		text = '',
+		span = Span:merge(span, list[#list].span),
+		children = { list[1], list[3] },
+	}
+end
+
+---@brief Syntax rule for `for` block
+for_stmt = function(span)
+	if not parser.accept(TOK.kwd_for) then return parser.out(false) end
+
+	local node = {
+		id = TOK.for_stmt,
+		text = '',
+		span = span,
+		children = {},
+	}
+
+	nl()
+
+	--`for` var1 ...
+	local ok, child = parser.expect(TOK.text)
+	if not ok then return parser.out(false) end
+	table.insert(node.children, child)
+
+	--`for` var1 var2 ...
+	ok, child = parser.accept(TOK.text)
+	if ok then
+		node.id = TOK.kv_for_stmt
+		table.insert(node.children, child)
+	end
+
+	--`for` ... `in` argument+ `do` program `end`
+	local list
+	ok, list = parser.expect_list({
+		TOK.kwd_in,
+		function()
+			local ok, list = parser.one_or_more(argument)
+
+			if #list > 1 then
+				return ok, {
+					id = TOK.array_concat,
+					text = '',
+					span = Span:merge(list[1].span, list[#list].span),
+					children = list,
+				}
+			end
+
+			return ok, list[1]
+		end,
+		TOK.kwd_do,
+		program,
+		TOK.kwd_end,
+	}, {
+		'in',
+		'argument(s)',
+		'do',
+		'program',
+		'end',
+	}, TOK.line_ending)
+	if not ok then return parser.out(false) end
+
+	table.insert(node.children, list[2])
+	table.insert(node.children, list[4])
+	node.span = Span:merge(span, list[#list].span)
+
+	return true, node
+end
+
 ---@brief Syntax rule for `subroutine` block
 subroutine = function(span)
 	local memoize = false
@@ -224,7 +308,6 @@ subroutine = function(span)
 		'end',
 	})
 	if not ok then return parser.out(false) end
-
 
 	return true, {
 		id = TOK.subroutine,
@@ -315,6 +398,8 @@ statement = function()
 	return parser.any_of({
 		TOK.line_ending,
 		if_stmt,
+		while_stmt,
+		for_stmt,
 		subroutine,
 		gosub_stmt,
 		delete_stmt,
