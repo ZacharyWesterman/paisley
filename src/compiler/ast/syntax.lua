@@ -200,6 +200,35 @@ if_stmt = function(span)
 	return ok, node
 end
 
+---@brief Syntax rule for `break` statement
+break_stmt = function(span)
+	if not parser.accept(TOK.kwd_break) then return parser.out(false) end
+
+	local ok, list = parser.one_or_more(argument)
+
+	return true, {
+		id = TOK.break_stmt,
+		text = 'break',
+		span = ok and Span:merge(span, list[#list].span) or span,
+		children = ok and list or {},
+	}
+end
+
+---@brief Syntax rule for `continue` statement
+continue_stmt = function(span)
+	if not parser.accept(TOK.kwd_continue) then return parser.out(false) end
+
+	local ok, list = parser.one_or_more(argument)
+
+	return true, {
+		id = TOK.continue_stmt,
+		text = 'continue',
+		span = ok and Span:merge(span, list[#list].span) or span,
+		children = ok and list or {},
+	}
+end
+
+---@brief Syntax rule for `delete` statement
 delete_stmt = function(span)
 	if not parser.accept(TOK.kwd_delete) then return parser.out(false) end
 
@@ -228,12 +257,18 @@ statement = function()
 		TOK.line_ending,
 		if_stmt,
 		delete_stmt,
+		break_stmt,
+		continue_stmt,
 		stop_stmt,
 		command,
 	}, {
 		TOK.line_ending,
-		TOK.command,
 		'if',
+		'delete',
+		'break',
+		'continue',
+		'stop',
+		TOK.command,
 	}, false)
 end
 
