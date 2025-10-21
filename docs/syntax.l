@@ -37,16 +37,16 @@ while_stmt :=
 	| `while` argument `do` program `end`
 
 for_stmt :=
-	| `for` text+ `in` argument+ `do` program `end`
+	| `for` <text>+ `in` argument+ `do` program `end`
 
 delete_stmt :=
-	| `delete` text+
+	| `delete` <text>+
 
 subroutine :=
-	| `subroutine` text program `end`
+	| `subroutine` <text> program `end`
 
 gosub_stmt :=
-	| `gosub` text
+	| `gosub` <text>
 
 let_stmt :=
 	| `let` variable `{` `}` `=` argument+
@@ -56,7 +56,7 @@ let_stmt :=
 	| `initial` variable `=` argument+
 
 uncache_stmt :=
-	| `break` `cache` text
+	| `break` `cache` <text>
 
 break_stmt :=
 	| `break` argument?
@@ -79,7 +79,7 @@ alias_stmt :=
 	| `using` argument
 
 try_stmt :=
-	| `try` program `catch` text? program `end`
+	| `try` program `catch` <text>? program `end`
 
 stop_stmt :=
 	| `stop`
@@ -88,7 +88,7 @@ command :=
 	| argument+
 
 argument :=
-	| text
+	| <text>
 	| string
 	| `{` expression `}`
 	| `${` inline_command `}`
@@ -98,18 +98,18 @@ inline_command :=
 	| command
 
 expression :=
-	| `,`
-	| `=>`
 	| array
 
 array :=
 	| kv_pair `,` array
 	| kv_pair `,`
 	| kv_pair
+	| `,`
 
 kv_pair :=
 	| ternary `=>` array
 	| ternary
+	| `=>`
 
 ternary :=
 	| list_comprehension `if` list_comprehension `else` ternary
@@ -122,11 +122,14 @@ list_comprehension :=
 
 boolean :=
 	| `not` boolean
-	| comparison `and` boolean
-	| comparison `or` boolean
-	| comparison `xor` boolean
-	| comparison `exists`
-	| comparison 
+	| concat `and` boolean
+	| concat `or` boolean
+	| concat `xor` boolean
+	| concat `exists`
+	| concat
+
+concat :=
+	| comparison+
 
 comparison :=
 	| add `>` comparison
@@ -192,10 +195,10 @@ func_call :=
 string :=
 	| `"` string_interp* `"`
 	| `"""` string_interp* `"""`
-	| `'` text? `'`
-	| `'''` text? `'''`
+	| `'` <text>? `'`
+	| `'''` <text>? `'''`
 
 string_interp :=
-	| text
+	| <text>
 	| `{` expression `}`
 	| `${` inline_command `}`

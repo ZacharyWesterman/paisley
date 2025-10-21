@@ -1,6 +1,60 @@
 local parser = require 'src.compiler.ast.parser'
 
-local function argument()
+local program
+local statement
+
+--Statements
+local if_stmt
+local else_stmt
+local elif_stmt
+local while_stmt
+local for_stmt
+local delete_stmt
+local subroutine
+local gosub_stmt
+local let_stmt
+local uncache_stmt
+local break_stmt
+local continue_stmt
+local match_stmt
+local alias_stmt
+local try_stmt
+local stop_stmt
+local command
+
+--Expressions
+local value
+local dot
+local index
+local length
+local exponent
+local slice
+local mult
+local add
+local comparison
+local concat
+local boolean
+local list_comprehension
+local ternary
+local kv_pair
+local array
+
+--Misc
+local expression
+local inline_command
+local argument
+
+--Atoms
+local macro
+local func_call
+local variable
+local number
+local string
+local literal
+local parens
+local string_interpolation
+
+argument = function()
 	return parser.any_of({
 		TOK.text
 		-- string,
@@ -10,7 +64,7 @@ local function argument()
 	})
 end
 
-local function command()
+command = function()
 	local ok, arguments = parser.one_or_more(argument)
 	if not ok then return parser.out(false) end
 
@@ -27,9 +81,7 @@ local function command()
 	return true, cmd
 end
 
-local program
-
-local function else_stmt(span)
+else_stmt = function(span)
 	if not parser.accept(TOK.kwd_else) then return parser.out(false) end
 
 	---`else` program `end`
@@ -45,7 +97,7 @@ local function else_stmt(span)
 end
 
 
-local function if_stmt(span)
+if_stmt = function(span)
 	if not parser.accept(TOK.kwd_if) then return parser.out(false) end
 
 	--Any missing syntax after this is invalid
@@ -73,7 +125,7 @@ local function if_stmt(span)
 	return ok, node
 end
 
-local function statement()
+statement = function()
 	return parser.any_of({
 		TOK.line_ending,
 		command,
