@@ -13,7 +13,6 @@ local delete_stmt
 local subroutine
 local gosub_stmt
 local let_stmt
-local uncache_stmt
 local break_stmt
 local continue_stmt
 local match_stmt
@@ -79,7 +78,7 @@ command = function()
 
 	local cmd = {
 		id = TOK.command,
-		text = 'command',
+		text = '',
 		span = {
 			from = arguments[1].span.from,
 			to = arguments[#arguments].span.to,
@@ -200,15 +199,75 @@ if_stmt = function(span)
 	return ok, node
 end
 
----@brief Syntax rule for `break` statement
-break_stmt = function(span)
-	if not parser.accept(TOK.kwd_break) then return parser.out(false) end
+---@brief Syntax rule for `subroutine` block
+subroutine = function(span)
+	local memoize = false
+
+	if parser.accept(TOK.kwd_cache) then
+		memoize = true
+		if not parser.expect(TOK.kwd_subroutine, 'subroutine') then
+			return parser.out(false)
+		end
+	else
+		if not parser.accept(TOK.kwd_subroutine) then
+			return parser.out(false)
+		end
+	end
+
+	local ok, list = parser.expect_list({
+		TOK.text,
+		program,
+		TOK.kwd_end,
+	}, {
+		'subroutine name',
+		TOK.program,
+		'end',
+	})
+	if not ok then return parser.out(false) end
+
+
+	return true, {
+		id = TOK.subroutine,
+		text = list[1].text,
+		span = Span:merge(span, list[3].span),
+		children = { list[2] },
+		memoize = memoize,
+	}
+end
+
+---@brief Syntax rule for `gosub` statement
+gosub_stmt = function(span)
+	if not parser.accept(TOK.kwd_gosub) then return parser.out(false) end
 
 	local ok, list = parser.one_or_more(argument)
 
 	return true, {
-		id = TOK.break_stmt,
-		text = 'break',
+		id = TOK.gosub_stmt,
+		text = 'gosub',
+		span = ok and Span:merge(span, list[#list].span) or span,
+		children = ok and list or {},
+	}
+end
+
+---@brief Syntax rule for `break` statement and `break cache` statement
+break_stmt = function(span)
+	if not parser.accept(TOK.kwd_break) then return parser.out(false) end
+
+	local id = TOK.break_stmt
+	local text = 'break'
+
+	--`break` `cache` argument
+	--is different from the regular `break` statement, but has very similar syntax
+	if parser.accept(TOK.kwd_cache) then
+		id = TOK.uncache_stmt
+		text = 'break cache'
+	end
+
+	local ok, list = parser.one_or_more(argument)
+
+	return true, {
+		id = id,
+		text = text,
 		span = ok and Span:merge(span, list[#list].span) or span,
 		children = ok and list or {},
 	}
@@ -256,6 +315,8 @@ statement = function()
 	return parser.any_of({
 		TOK.line_ending,
 		if_stmt,
+		subroutine,
+		gosub_stmt,
 		delete_stmt,
 		break_stmt,
 		continue_stmt,
@@ -279,7 +340,7 @@ program = function()
 
 	local pgm = {
 		id = TOK.program,
-		text = 'program',
+		text = '',
 		span = span,
 		children = {},
 	}

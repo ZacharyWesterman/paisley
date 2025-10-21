@@ -147,7 +147,7 @@ end
 ---
 ---@param symbols (function|integer|table)[] A list of symbol ids or parsing functions (or lists thereof).
 ---@param valid_symbols (integer|string|table)[] A list, each element containing either a single, or a list of, expected token ids/text.
----@param skip_symbol (integer|function) The symbol to ignore, if any.
+---@param skip_symbol (integer|function)? The symbol to ignore, if any.
 ---@return boolean ok True if all the symbols were found, false otherwise.
 ---@return Token[] list All the found symbols.
 local function expect_list(symbols, valid_symbols, skip_symbol)
