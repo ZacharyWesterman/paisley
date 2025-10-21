@@ -54,6 +54,9 @@ local literal
 local parens
 local string_interpolation
 
+--Helpers for common use cases
+local nl = function() parser.skip(TOK.line_ending) end
+
 ---@brief Syntax rule for command arguments
 argument = function()
 	return parser.any_of({
@@ -104,6 +107,48 @@ else_stmt = function(span)
 	return ok, list[1]
 end
 
+---@brief Syntax rule for `elif` blocks
+elif_stmt = function(span)
+	--Start with `elif`
+	if not parser.accept(TOK.kwd_elif) then return parser.out(false) end
+
+	--Any missing syntax after this is invalid
+	local node = {
+		id = TOK.if_stmt,
+		text = 'if',
+		span = span,
+		children = {},
+	}
+
+	nl()
+
+	--`elif` argument
+	local ok, child = parser.expect(argument)
+	if not ok then return parser.out(false) end
+	table.insert(node.children, child)
+
+	nl()
+
+	--`elif` argument `then` ...
+	local list
+	ok, list = parser.expect_list({
+		TOK.kwd_then,
+		program,
+		{ else_stmt, elif_stmt, TOK.kwd_end },
+	}, {
+		'then',
+		TOK.program,
+		{ 'else', 'elif', 'end' }
+	}, TOK.line_ending)
+
+	if not ok then return parser.out(false) end
+
+	table.insert(node.children, list[2])
+	table.insert(node.children, list[3])
+
+	return ok, node
+end
+
 ---@brief Syntax rule for `if` blocks
 if_stmt = function(span)
 	if not parser.accept(TOK.kwd_if) then return parser.out(false) end
@@ -116,34 +161,41 @@ if_stmt = function(span)
 		children = {},
 	}
 
+	nl()
+
 	-- `if` argument ...
 	local ok, child = parser.expect(argument)
 	if not ok then return parser.out(false) end
 
-	-- `if` argument `then` ...
+	nl()
+
+	-- `if` argument `then` program ...
 	ok, child = parser.accept(TOK.kwd_then)
 	if ok then
-		---
+		table.insert(node.children, child)
+
+		ok, child = parser.expect(program)
+		if not ok then return parser.out(false) end
+
+		ok, child = parser.any_of({ else_stmt, elif_stmt, TOK.kwd_end }, { 'else', 'elif', 'end' }, true)
+		if not ok then return parser.out(false) end
+		table.insert(node.children, child)
+
 		return ok, node
 	end
 
 	-- `if` argument `else`
 	ok, child = parser.expect(else_stmt, 'else')
+	if not ok then return parser.out(false) end
 
-
-	local ok, list = parser.expect_list({
-		argument,
-		{ TOK.kwd_then },
-		program,
-		{ TOK.kwd_end, else_stmt },
-	}, {
-		{ TOK.text, 'string' },
-		{ 'then' },
-		'program',
-		{ 'end', 'else' },
-	}, TOK.line_ending)
-
-	node.children = list
+	node.children = {
+		{
+			id = TOK.kwd_then,
+			text = 'then',
+			span = span,
+		},
+		child,
+	}
 
 	return ok, node
 end
