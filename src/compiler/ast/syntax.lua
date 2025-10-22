@@ -21,6 +21,7 @@ local match_if_stmt
 local alias_stmt
 local try_stmt
 local stop_stmt
+local import_stmt
 local command
 
 --Expressions
@@ -570,6 +571,63 @@ stop_stmt = function(span)
 	return parser.accept(TOK.kwd_stop)
 end
 
+--[[minify-delete]]
+---@brief Syntax rule for `require` statements
+import_stmt = function(span)
+	if not parser.accept(TOK.kwd_import_file) then return parser.out(false) end
+
+	local ok, list = parser.one_or_more(TOK.text)
+	if not ok then
+		parse_error(span, 'One or more module names expected after `require`.', parser.filename())
+		return parser.out(false)
+	end
+
+	local files = {}
+
+	local file = parser.filename() or _G['LSP_FILENAME'] or ''
+	local current_script_dir = file:match('(.-)([^\\/]-%.?([^%.\\/]*))$')
+
+	local function pai(filename)
+		local fname = filename:gsub('%.', '/')
+		local fp = io.open(fname .. '.pai')
+		if fp then
+			return fp, fname .. '.pai'
+		end
+		return io.open(fname), fname .. '.paisley'
+	end
+
+	--For each file in the list,
+	for i = 1, #list do
+		local orig_filename = list[i].text
+
+		--Make sure import points to a valid file
+		local fp, filename = pai(current_script_dir .. orig_filename)
+
+		--If the file doesn't exist locally, try the stdlib
+		if fp == nil then
+			local fname
+			---@diagnostic disable-next-line
+			fp, fname = _G['FS'].stdlib(orig_filename)
+			if fp then filename = fname end
+		end
+
+		if fp == nil then
+			parse_error(list[i].span, 'Cannot load "' .. filename ..
+				'": file does not exist or is unreadable', file)
+		else
+			table.insert(files, filename)
+			fp:close()
+		end
+	end
+
+	return true, {
+		id = TOK.import_stmt,
+		span = Span:merge(span, list[#list].span),
+		value = files,
+	}
+end
+--[[/minify-delete]]
+
 statement = function()
 	return parser.any_of({
 		TOK.line_ending,
@@ -586,6 +644,7 @@ statement = function()
 		alias_stmt,
 		try_stmt,
 		stop_stmt,
+		--[[minify-delete]] import_stmt, --[[/minify-delete]]
 		command,
 	}, {}, false)
 end
