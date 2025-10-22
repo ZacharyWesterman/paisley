@@ -50,11 +50,11 @@ gosub_stmt :=
 	| `gosub` <text>
 
 let_stmt :=
-	| `let` variable `{` `}` `=` argument+
-	| `let` variable `{` expression `}` `=` argument+
-	| `let` variable+ `=` argument+
-	| `let` variable+
-	| `initial` variable `=` argument+
+	| `let` <variable> `{` `}` `=` argument+
+	| `let` <variable> `{` expression `}` `=` argument+
+	| `let` <variable>+ `=` argument+
+	| `let` <variable>+
+	| `initial` <variable> `=` argument+
 
 uncache_stmt :=
 	| `break` `cache` <text>
@@ -120,8 +120,8 @@ ternary :=
 	| list_comprehension
 
 list_comprehension :=
-	| boolean `for` variable `in` list_comprehension `if` list_comprehension
-	| boolean `for` variable `in` list_comprehension
+	| boolean `for` <variable> `in` list_comprehension `if` list_comprehension
+	| boolean `for` <variable> `in` list_comprehension
 	| boolean
 
 boolean :=
@@ -182,19 +182,19 @@ dot :=
 value :=
 	| macro
 	| func_call
-	| variable
-	| number
+	| <variable>
+	| <number>
 	| string
 	| `true` | `false` | `null`
 	| `(` expression `)`
 	| `{` expression `}`
 
 macro :=
-	| exclamation `[` expression `]`
-	| exclamation
+	| <exclamation> `[` expression `]`
+	| <exclamation>
 
 func_call :=
-	| variable `(` expression `)`
+	| <variable> `(` expression `)`
 
 string :=
 	| `"` string_interp* `"`
