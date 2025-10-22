@@ -20,10 +20,10 @@ statement :=
 	| command
 
 if_stmt :=
-	| `if` argument `then` program `end`
-	| `if` argument `then` program else_stmt
-	| `if` argument `then` program elif_stmt
-	| `if` argument else_stmt
+	| `if` (argument|gosub_stmt) `then` program `end`
+	| `if` (argument|gosub_stmt) `then` program else_stmt
+	| `if` (argument|gosub_stmt) `then` program elif_stmt
+	| `if` (argument|gosub_stmt) else_stmt
 
 elif_stmt :=
 	| `elif` program `end`

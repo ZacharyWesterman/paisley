@@ -158,39 +158,53 @@ if_stmt = function(span)
 
 	nl()
 
-	-- `if` argument ...
-	local ok, child = parser.expect(argument)
+	-- `if` (argument|`gosub`) ...
+	local ok, child = parser.any_of({
+		argument,
+		gosub_stmt,
+	}, {
+		'argument',
+		'gosub',
+	}, true)
 	if not ok then return parser.out(false) end
+	table.insert(node.children, child)
 
 	nl()
 
 	-- `if` argument `then` program ...
 	ok, child = parser.accept(TOK.kwd_then)
 	if ok then
-		table.insert(node.children, child)
-
-		ok, child = parser.expect(program)
+		ok, child = parser.expect(program, 'program')
 		if not ok then return parser.out(false) end
+		table.insert(node.children, child)
 
 		ok, child = parser.any_of({ else_stmt, elif_stmt, TOK.kwd_end }, { 'else', 'elif', 'end' }, true)
 		if not ok then return parser.out(false) end
+
+		if child.id == TOK.kwd_end then
+			child = {
+				id = TOK.program,
+				text = '',
+				span = child.span,
+				children = {},
+			}
+		end
 		table.insert(node.children, child)
 
 		return ok, node
 	end
 
 	-- `if` argument `else`
-	ok, child = parser.expect(else_stmt, 'else')
+	ok, child = parser.expect(else_stmt, { 'then', 'else' })
 	if not ok then return parser.out(false) end
 
-	node.children = {
-		{
-			id = TOK.kwd_then,
-			text = 'then',
-			span = span,
-		},
-		child,
-	}
+	table.insert(node.children, {
+		id = TOK.program,
+		text = '',
+		span = span,
+		children = {},
+	})
+	table.insert(node.children, child)
 
 	return ok, node
 end
@@ -323,18 +337,18 @@ end
 gosub_stmt = function(span)
 	if not parser.accept(TOK.kwd_gosub) then return parser.out(false) end
 
-	local ok, child = parser.zero_or_one(TOK.text, 'subroutine name')
-
+	local _, list
+	local ok, list = parser.one_or_more(argument)
 	if not ok then
-		parser.ast_error(child, 'subroutine name')
-		return false, child
+		parser.ast_error(parser.t(), { 'argument' })
+		return parser.out(false)
 	end
 
 	return true, {
 		id = TOK.gosub_stmt,
 		text = 'gosub',
-		span = ok and Span:merge(span, child.span) or span,
-		children = ok and { child } or {},
+		span = Span:merge(span, list[#list].span),
+		children = list,
 	}
 end
 

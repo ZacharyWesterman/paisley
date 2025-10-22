@@ -41,7 +41,7 @@ local function ast_error(symbol, valid_tokens)
 		error_msg = error_msg .. last .. '.'
 	end
 
-	parse_error((symbol or token or last_token).span, error_msg, file_name)
+	parse_error((token or last_token).span, error_msg, file_name)
 end
 
 ---@brief Get the next symbol from the token list
@@ -78,7 +78,7 @@ end
 local function expect(symbol, valid_tokens)
 	local ok, node = accept(symbol)
 	if not ok then
-		ast_error(token.id, valid_tokens or { symbol })
+		ast_error(token and token.id, valid_tokens or { symbol })
 	end
 	return ok, node
 end
