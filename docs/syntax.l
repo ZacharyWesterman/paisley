@@ -5,7 +5,6 @@ statement :=
 	| if_stmt
 	| while_stmt
 	| for_stmt
-	| delete_stmt
 	| subroutine
 	| gosub_stmt
 	| let_stmt
@@ -16,6 +15,7 @@ statement :=
 	| match_stmt
 	| alias_stmt
 	| try_stmt
+	| delete_stmt
 	| stop_stmt
 	| command
 

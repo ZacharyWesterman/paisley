@@ -15,6 +15,7 @@ local gosub_stmt
 local let_stmt
 local break_stmt
 local continue_stmt
+local return_stmt
 local match_stmt
 local alias_stmt
 local try_stmt
@@ -322,13 +323,18 @@ end
 gosub_stmt = function(span)
 	if not parser.accept(TOK.kwd_gosub) then return parser.out(false) end
 
-	local ok, list = parser.one_or_more(argument)
+	local ok, child = parser.zero_or_one(TOK.text, 'subroutine name')
+
+	if not ok then
+		parser.ast_error(child, 'subroutine name')
+		return false, child
+	end
 
 	return true, {
 		id = TOK.gosub_stmt,
 		text = 'gosub',
-		span = ok and Span:merge(span, list[#list].span) or span,
-		children = ok and list or {},
+		span = ok and Span:merge(span, child.span) or span,
+		children = ok and { child } or {},
 	}
 end
 
@@ -337,22 +343,20 @@ break_stmt = function(span)
 	if not parser.accept(TOK.kwd_break) then return parser.out(false) end
 
 	local id = TOK.break_stmt
-	local text = 'break'
 
 	--`break` `cache` argument
 	--is different from the regular `break` statement, but has very similar syntax
 	if parser.accept(TOK.kwd_cache) then
 		id = TOK.uncache_stmt
-		text = 'break cache'
 	end
 
-	local ok, list = parser.one_or_more(argument)
+	local ok, child = parser.zero_or_one(argument, 'argument')
 
 	return true, {
 		id = id,
-		text = text,
-		span = ok and Span:merge(span, list[#list].span) or span,
-		children = ok and list or {},
+		text = '',
+		span = ok and Span:merge(span, child.span) or span,
+		children = ok and { child } or {},
 	}
 end
 
@@ -360,13 +364,27 @@ end
 continue_stmt = function(span)
 	if not parser.accept(TOK.kwd_continue) then return parser.out(false) end
 
-	local ok, list = parser.one_or_more(argument)
+	local ok, child = parser.zero_or_one(argument, 'argument')
 
 	return true, {
 		id = TOK.continue_stmt,
-		text = 'continue',
-		span = ok and Span:merge(span, list[#list].span) or span,
-		children = ok and list or {},
+		text = '',
+		span = ok and Span:merge(span, child.span) or span,
+		children = ok and { child } or {},
+	}
+end
+
+---@brief Syntax rule for `return` statement
+return_stmt = function(span)
+	if not parser.accept(TOK.kwd_return) then return parser.out(false) end
+
+	local ok, child = parser.zero_or_one(argument, 'argument')
+
+	return true, {
+		id = TOK.return_stmt,
+		text = '',
+		span = ok and Span:merge(span, child.span) or span,
+		children = ok and { child } or {},
 	}
 end
 
@@ -405,6 +423,7 @@ statement = function()
 		delete_stmt,
 		break_stmt,
 		continue_stmt,
+		return_stmt,
 		stop_stmt,
 		command,
 	}, {

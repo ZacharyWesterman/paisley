@@ -132,6 +132,41 @@ local function one_or_more(symbol)
 	return ok, list
 end
 
+---@brief Accept only zero or one of a given symbol, and error if any more are found.
+---@param symbol function|integer The symbol id or parsing function.
+---@param valid_tokens any Either a single, or a list of, expected token ids/text.
+---@return boolean ok True if at one of the symbol was found, false otherwise.
+---@return Token node The generated AST node if the symbol was found, or the current token if not.
+local function zero_or_one(symbol, valid_tokens)
+	local ok, node = accept(symbol)
+	if not ok then return ok, node end
+
+	if accept(symbol) then
+		if type(valid_tokens) ~= 'table' then valid_tokens = { valid_tokens } end
+
+		local list = {}
+		for i = 1, #valid_tokens do
+			if type(valid_tokens[i]) == 'string' then
+				table.insert(list, '`' .. valid_tokens[i] .. '`')
+			else
+				table.insert(list, '<' .. token_text(valid_tokens[i]) .. '>')
+			end
+		end
+
+		local error_msg = 'Expected only one of '
+		local last = table.remove(list)
+		if #list > 0 then
+			error_msg = error_msg .. std.join(list, ', ') .. ' or '
+		end
+		error_msg = error_msg .. last .. ', but multiple were found.'
+		parse_error(node.span, error_msg, file_name)
+
+		return false, token
+	end
+
+	return true, node
+end
+
 ---Require a list of symbols to appear in an exact order.
 ---
 ---Each symbol in the list may have several options, e.g.
@@ -191,4 +226,5 @@ return {
 	zero_or_more = zero_or_more,
 	one_or_more = one_or_more,
 	expect_list = expect_list,
+	zero_or_one = zero_or_one,
 }
