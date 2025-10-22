@@ -7,6 +7,8 @@ local token_list = {}
 ---@param valid_tokens any Either a single, or a list of, expected token ids/text.
 ---@return nil
 local function ast_error(symbol, valid_tokens)
+	ERROR = true
+
 	local error_msg = 'Unexpected token.'
 	local list = {}
 
@@ -215,6 +217,7 @@ return {
 		return ok, token
 	end,
 	t = function() return token end,
+	filename = function() return file_name end,
 
 	ast_error = ast_error,
 

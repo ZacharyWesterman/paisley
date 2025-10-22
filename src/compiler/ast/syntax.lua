@@ -402,6 +402,49 @@ return_stmt = function(span)
 	}
 end
 
+---@brief Syntax rule for `using` statement
+alias_stmt = function(span)
+	if not parser.accept(TOK.kwd_using) then return parser.out(false) end
+
+	local node = {
+		id = TOK.alias_stmt,
+		text = '',
+		span = span,
+		children = {},
+	}
+
+	local ok, child = parser.expect(TOK.text)
+	if not ok then return parser.out(false) end
+	table.insert(node.children, child)
+
+	if parser.accept(TOK.kwd_as) then
+		ok, child = parser.expect(TOK.text)
+		if not ok then return parser.out(false) end
+		table.insert(node.children, child)
+	else
+		--Deduce alias conversion here
+		local alias = child.text:match('%.[^%.]+$')
+
+		if not alias then
+			parse_error(
+				child.span,
+				'Unable to deduce alias from subroutine name "' ..
+				child.text .. '" (e.g. `A.B` or `A.C.B` will be aliased to `B`)',
+				parser.filename()
+			)
+			return false, node
+		end
+
+		table.insert(node.children, {
+			id = TOK.text,
+			span = child.span,
+			text = alias:sub(2, #alias),
+		})
+	end
+
+	return true, node
+end
+
 ---@brief Syntax rule for `delete` statement
 delete_stmt = function(span)
 	if not parser.accept(TOK.kwd_delete) then return parser.out(false) end
@@ -434,21 +477,14 @@ statement = function()
 		for_stmt,
 		subroutine,
 		gosub_stmt,
+		alias_stmt,
 		delete_stmt,
 		break_stmt,
 		continue_stmt,
 		return_stmt,
 		stop_stmt,
 		command,
-	}, {
-		TOK.line_ending,
-		'if',
-		'delete',
-		'break',
-		'continue',
-		'stop',
-		TOK.command,
-	}, false)
+	}, {}, false)
 end
 
 ---@brief Syntax rule for a list of statements
