@@ -349,6 +349,95 @@ gosub_stmt = function(span)
 	}
 end
 
+---@brief Syntax rule for `let` statement
+let_stmt = function(span)
+	local ok, child = parser.any_of({ TOK.kwd_let, TOK.kwd_initial }, {})
+	if not ok then return parser.out(false) end
+
+	local is_initial = child.id == TOK.kwd_initial
+
+	local list
+	ok, list = parser.one_or_more(TOK.var_assign)
+	if not ok then
+		parser.ast_error(parser.t(), 'variable name')
+		return parser.out(false)
+	end
+
+	local node = {
+		id = TOK.let_stmt,
+		text = is_initial and 'initial' or 'let',
+		span = Span:merge(span, list[#list].span),
+		children = { list[1] },
+	}
+
+	if #list > 1 then
+		if is_initial then
+			--Multi-assignment is not allowed with `initial` statement
+			parse_error(list[2].span, 'Only a single variable may be initialized at a time.', parser.filename())
+			return parser.out(false)
+		end
+
+		--In multi-assignment, append child vars to first one.
+		list[1].children = {}
+		for i = 2, #list do
+			table.insert(list[1].children, list[i])
+		end
+	else
+		--Indexed assignment is only available in single assignment
+		ok, child = parser.accept(TOK.expr_open)
+		if ok then
+			if is_initial then
+				--Indexed assignment is not allowed with `initial` statement
+				parser.ast_error(child, '=')
+				return parser.out(false)
+			end
+
+			if not parser.accept(TOK.expr_close) then
+				ok, child = parser.expect(expression, 'expression')
+				if not ok or not parser.expect(TOK.expr_close, '}') then
+					return parser.out(false)
+				end
+			end
+
+			--Indexed assignment MUST have an `=` operator after it.
+			if not parser.expect(TOK.op_assign, '=') then
+				return parser.out(false)
+			end
+
+			--and then at least one value
+			local ch2
+			ok, ch2 = parser.expect(command, 'argument(s)')
+			if not ok then return parser.out(false) end
+
+			table.insert(node.children, ch2)
+			table.insert(node.children, child)
+
+			return true, node
+		end
+	end
+
+	--There are two valid assignment syntaxes.
+	--The first assigns vars to a specific value,
+	--and the second just defines them and assigns null.
+	--`let` ... `=` ...
+	--`let` ...
+	ok, child = parser.accept(TOK.op_assign)
+	if not ok then
+		if is_initial then
+			--A value must be given in `initial` statement
+			parser.ast_error(child, '=')
+			return parser.out(false)
+		end
+		return true, node
+	end
+
+	ok, child = parser.expect(command, 'argument(s)')
+	if not ok then return parser.out(false) end
+	table.insert(node.children, child)
+
+	return true, node
+end
+
 ---@brief Syntax rule for `break` statement and `break cache` statement
 break_stmt = function(span)
 	if not parser.accept(TOK.kwd_break) then return parser.out(false) end
@@ -636,6 +725,7 @@ statement = function()
 		for_stmt,
 		subroutine,
 		gosub_stmt,
+		let_stmt,
 		delete_stmt,
 		break_stmt,
 		continue_stmt,
