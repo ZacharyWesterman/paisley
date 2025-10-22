@@ -147,6 +147,8 @@ TOK = {
 	raw_sh_text = k(), --This only exists for the PC build. It basically just tells Paisley to not enclose that part of the command in quotes.
 	--[[/minify-delete]]
 
+	argument = k(),
+
 	no_value = k(),
 }
 
@@ -320,7 +322,7 @@ function print_token(token, indent)
 	end
 
 	print((indent .. '%2d:%2d: %13s = %s%s'):format(token.span.from.line, token.span.from.col, id,
-		token.text:gsub('\n', '<nl>'):gsub('\x09', '<nl>'), meta))
+		(token.text or ''):gsub('\n', '<nl>'):gsub('\x09', '<nl>'), meta))
 end
 
 function print_tokens_recursive(root, indent)

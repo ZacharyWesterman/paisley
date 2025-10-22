@@ -17,6 +17,7 @@ statement :=
 	| try_stmt
 	| delete_stmt
 	| stop_stmt
+	| import_stmt
 	| command
 
 if_stmt :=
@@ -83,6 +84,9 @@ try_stmt :=
 
 stop_stmt :=
 	| `stop`
+
+import_stmt :=
+	| `require` text+
 
 command :=
 	| argument+

@@ -3,8 +3,11 @@ require 'src.compiler.syntax'
 require 'src.shared.json'
 
 local program = [[
-break 123 456
-continue 1
+match 1 do
+	if a then end
+else
+	c
+end
 ]]
 
 local tokens = {}

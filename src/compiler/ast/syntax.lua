@@ -17,6 +17,7 @@ local break_stmt
 local continue_stmt
 local return_stmt
 local match_stmt
+local match_if_stmt
 local alias_stmt
 local try_stmt
 local stop_stmt
@@ -79,7 +80,6 @@ command = function()
 
 	return true, {
 		id = TOK.command,
-		text = '',
 		span = Span:merge(list[1].span, list[#list].span),
 		children = list,
 	}
@@ -163,7 +163,7 @@ if_stmt = function(span)
 		argument,
 		gosub_stmt,
 	}, {
-		'argument',
+		TOK.argument,
 		'gosub',
 	}, true)
 	if not ok then return parser.out(false) end
@@ -174,7 +174,7 @@ if_stmt = function(span)
 	-- `if` argument `then` program ...
 	ok, child = parser.accept(TOK.kwd_then)
 	if ok then
-		ok, child = parser.expect(program, 'program')
+		ok, child = parser.expect(program, { TOK.program, 'end' })
 		if not ok then return parser.out(false) end
 		table.insert(node.children, child)
 
@@ -200,7 +200,6 @@ if_stmt = function(span)
 
 	table.insert(node.children, {
 		id = TOK.program,
-		text = '',
 		span = span,
 		children = {},
 	})
@@ -220,9 +219,9 @@ while_stmt = function(span)
 		program,
 		TOK.kwd_end,
 	}, {
-		'argument',
+		TOK.argument,
 		'do',
-		'program',
+		{ TOK.program, 'end' },
 		'end',
 	}, TOK.line_ending)
 
@@ -230,7 +229,6 @@ while_stmt = function(span)
 
 	return true, {
 		id = TOK.while_stmt,
-		text = '',
 		span = Span:merge(span, list[#list].span),
 		children = { list[1], list[3] },
 	}
@@ -242,7 +240,6 @@ for_stmt = function(span)
 
 	local node = {
 		id = TOK.for_stmt,
-		text = '',
 		span = span,
 		children = {},
 	}
@@ -271,7 +268,6 @@ for_stmt = function(span)
 			if #list > 1 then
 				return ok, {
 					id = TOK.array_concat,
-					text = '',
 					span = Span:merge(list[1].span, list[#list].span),
 					children = list,
 				}
@@ -286,7 +282,7 @@ for_stmt = function(span)
 		'in',
 		'argument(s)',
 		'do',
-		'program',
+		{ TOK.program, 'end' },
 		'end',
 	}, TOK.line_ending)
 	if not ok then return parser.out(false) end
@@ -340,7 +336,7 @@ gosub_stmt = function(span)
 	local _, list
 	local ok, list = parser.one_or_more(argument)
 	if not ok then
-		parser.ast_error(parser.t(), { 'argument' })
+		parser.ast_error(parser.t(), { TOK.argument })
 		return parser.out(false)
 	end
 
@@ -364,11 +360,10 @@ break_stmt = function(span)
 		id = TOK.uncache_stmt
 	end
 
-	local ok, child = parser.zero_or_one(argument, 'argument')
+	local ok, child = parser.zero_or_one(argument, TOK.argument)
 
 	return true, {
 		id = id,
-		text = '',
 		span = ok and Span:merge(span, child.span) or span,
 		children = ok and { child } or {},
 	}
@@ -378,11 +373,10 @@ end
 continue_stmt = function(span)
 	if not parser.accept(TOK.kwd_continue) then return parser.out(false) end
 
-	local ok, child = parser.zero_or_one(argument, 'argument')
+	local ok, child = parser.zero_or_one(argument, TOK.argument)
 
 	return true, {
 		id = TOK.continue_stmt,
-		text = '',
 		span = ok and Span:merge(span, child.span) or span,
 		children = ok and { child } or {},
 	}
@@ -392,13 +386,80 @@ end
 return_stmt = function(span)
 	if not parser.accept(TOK.kwd_return) then return parser.out(false) end
 
-	local ok, child = parser.zero_or_one(argument, 'argument')
+	local ok, child = parser.zero_or_one(argument, TOK.argument)
 
 	return true, {
 		id = TOK.return_stmt,
-		text = '',
 		span = ok and Span:merge(span, child.span) or span,
 		children = ok and { child } or {},
+	}
+end
+
+---@brief Syntax rule for `match` block
+match_stmt = function(span)
+	if not parser.accept(TOK.kwd_match) then return parser.out(false) end
+
+	--`match` argument `do` (match_if_stmt)+ (`else`... `end`|`end`)
+	local ok, list = parser.expect_list({
+		argument,
+		TOK.kwd_do,
+		function()
+			local ok, list = parser.one_or_more(match_if_stmt)
+			if not ok then return parser.out(false) end
+
+			return ok, {
+				id = TOK.program,
+				span = Span:merge(list[1].span, list[#list].span),
+				children = list,
+			}
+		end,
+		{ else_stmt, TOK.kwd_end },
+	}, {
+		TOK.argument,
+		'do',
+		'if',
+		{ 'else', 'end' },
+	}, TOK.line_ending)
+	if not ok then return parser.out(false) end
+
+	local node = {
+		id = TOK.match_stmt,
+		span = span,
+		children = {
+			list[1],
+			list[3],
+			list[4].id == TOK.else_stmt and list[4] or {
+				id = TOK.program,
+				span = list[4].span,
+			},
+		}
+	}
+
+	return true, node
+end
+
+---@brief Syntax rule for the simpler `if` blocks that are allowed inside `match` blocks.
+match_if_stmt = function(span)
+	nl()
+	if not parser.accept(TOK.kwd_if) then return parser.out(false) end
+
+	local ok, list = parser.expect_list({
+		argument,
+		TOK.kwd_then,
+		program,
+		TOK.kwd_end,
+	}, {
+		TOK.argument,
+		'then',
+		{ TOK.program, 'end' },
+		'end',
+	}, TOK.line_ending)
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = TOK.if_stmt,
+		span = Span:merge(span, list[#list].span),
+		children = { list[1], list[3] },
 	}
 end
 
@@ -408,7 +469,6 @@ alias_stmt = function(span)
 
 	local node = {
 		id = TOK.alias_stmt,
-		text = '',
 		span = span,
 		children = {},
 	}
@@ -452,7 +512,7 @@ delete_stmt = function(span)
 	---`delete` var1 var2 ... etc
 	local ok, list = parser.one_or_more(argument)
 	if not ok then
-		parser.ast_error(parser.t(), 'argument')
+		parser.ast_error(parser.t(), TOK.argument)
 		return parser.out(false)
 	end
 
@@ -477,11 +537,12 @@ statement = function()
 		for_stmt,
 		subroutine,
 		gosub_stmt,
-		alias_stmt,
 		delete_stmt,
 		break_stmt,
 		continue_stmt,
 		return_stmt,
+		alias_stmt,
+		match_stmt,
 		stop_stmt,
 		command,
 	}, {}, false)
@@ -494,7 +555,6 @@ program = function()
 
 	local pgm = {
 		id = TOK.program,
-		text = '',
 		span = span,
 		children = {},
 	}
