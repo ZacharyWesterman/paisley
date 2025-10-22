@@ -505,6 +505,47 @@ alias_stmt = function(span)
 	return true, node
 end
 
+---@brief Syntax rule for `try`/`catch` blocks
+try_stmt = function(span)
+	if not parser.accept(TOK.kwd_try) then return parser.out(false) end
+
+	local ok, list
+	local has_var = true
+
+	--`try` program `catch` text? program `end`
+	ok, list = parser.expect_list({
+		program,
+		TOK.kwd_catch,
+		function()
+			local ok, child = parser.accept(TOK.text)
+			if not ok then has_var = false end
+			return true, child
+		end,
+		program,
+		TOK.kwd_end,
+	}, {
+		TOK.program,
+		'catch',
+		'variable name',
+		TOK.program,
+		'end',
+	}, TOK.line_ending)
+	if not ok then return parser.out(false) end
+
+	local node = {
+		id = TOK.try_stmt,
+		span = Span:merge(span, list[#list].span),
+		children = {
+			list[1],
+			list[4],
+		},
+	}
+	--Note that the variable always goes last since it's optional
+	if has_var then table.insert(node.children, list[3]) end
+
+	return true, node
+end
+
 ---@brief Syntax rule for `delete` statement
 delete_stmt = function(span)
 	if not parser.accept(TOK.kwd_delete) then return parser.out(false) end
@@ -541,8 +582,9 @@ statement = function()
 		break_stmt,
 		continue_stmt,
 		return_stmt,
-		alias_stmt,
 		match_stmt,
+		alias_stmt,
+		try_stmt,
 		stop_stmt,
 		command,
 	}, {}, false)
