@@ -3,7 +3,7 @@ require 'src.compiler.syntax'
 require 'src.shared.json'
 
 local program = [[
-{<1}
+print {1*(2+3)}
 ]]
 
 local tokens = {}

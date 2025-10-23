@@ -50,10 +50,7 @@ local argument
 --Atoms
 local macro
 local func_call
-local variable
-local number
 local string
-local literal
 local parens
 local expr
 local string_interp
@@ -339,7 +336,8 @@ add = function(span)
 			TOK.op_plus,
 			TOK.op_minus,
 		},
-		add
+		add,
+		TOK.add
 	)
 end
 
@@ -353,7 +351,8 @@ mult = function(span)
 			TOK.op_idiv,
 			TOK.op_mod,
 		},
-		mult
+		mult,
+		TOK.multiply
 	)
 end
 
@@ -362,7 +361,8 @@ slice = function(span)
 	return binary_lassoc(
 		negate,
 		{ TOK.op_slice },
-		slice
+		slice,
+		TOK.array_slice
 	)
 end
 
@@ -385,7 +385,8 @@ exponent = function(span)
 	return binary_lassoc(
 		length,
 		{ TOK.op_exponent },
-		exponent
+		exponent,
+		TOK.exponent
 	)
 end
 
@@ -426,10 +427,13 @@ end
 
 ---Syntax rule for dot-notation
 dot = function(span)
+	--TODO: Dot-notation coerces into either indexing or function calls!
+
 	return binary_lassoc(
 		value,
 		{ TOK.op_dot },
-		dot
+		dot,
+		TOK.op_dot
 	)
 end
 
@@ -511,6 +515,17 @@ macro = function(span)
 	lhs.id = TOK.macro_ref
 	return true, lhs
 end
+
+---Syntax rule for parentheses
+parens = function(span)
+	if not parser.accept(TOK.paren_open) then return parser.out(false) end
+	local ok, child = parser.expect(expression)
+	if not ok then return parser.out(false) end
+	if not parser.expect(TOK.paren_close) then return parser.out(false) end
+
+	return true, child
+end
+
 
 ---Currently, the top-level expression is array syntax
 expression = array
