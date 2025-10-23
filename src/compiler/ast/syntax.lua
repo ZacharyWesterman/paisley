@@ -179,7 +179,7 @@ list_comprehension = function(span)
 
 	ok, list = parser.expect_list({
 		TOK.variable,
-		TOK.kwd_in,
+		TOK.op_in,
 		list_comprehension,
 	}, {
 		TOK.variable,
@@ -191,9 +191,10 @@ list_comprehension = function(span)
 	list = { list[1], list[3] }
 
 	--List filtering condition is optional
-	if parser.accept(TOK.kwd_if) then
+	if parser.accept(TOK.kwd_if_expr) then
 		local condition
-		ok, condition = parser.expect(TOK.kwd_if_expr, 'if')
+		ok, condition = exp(boolean)
+
 		if not ok then return parser.out(false) end
 		table.insert(list, condition)
 	end
