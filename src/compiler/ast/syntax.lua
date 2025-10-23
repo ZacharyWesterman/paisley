@@ -119,7 +119,7 @@ kv_pair = function(span)
 	end
 
 	local lhs, rhs, arrow
-	ok, lhs = parser.expect(ternary, 'key')
+	ok, lhs = exp(ternary)
 	if not ok then return parser.out(false) end
 
 	--Not an array_concat expression
