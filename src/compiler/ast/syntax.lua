@@ -264,7 +264,7 @@ concat = function(span)
 	local ok, lhs, rhs
 
 	ok, lhs = exp(comparison)
-	if not ok then parser.out(false) end
+	if not ok then return parser.out(false) end
 
 	ok, rhs = parser.accept(comparison)
 	if not ok then return true, lhs end
@@ -281,7 +281,7 @@ comparison = function(span)
 	local ok, lhs, op, rhs, list
 
 	ok, lhs = exp(add)
-	if not ok then parser.out(false) end
+	if not ok then return parser.out(false) end
 
 	--Check for special (a `not` `in` b) or (a `not` `like` b) syntax.
 	list = parser.peek(2)
@@ -291,7 +291,7 @@ comparison = function(span)
 		parser.nextsym()
 
 		ok, rhs = exp(comparison)
-		if not ok then parser.out(false) end
+		if not ok then return parser.out(false) end
 
 		span = Span:merge(span, rhs.span)
 		return true, {
@@ -321,7 +321,7 @@ comparison = function(span)
 	if not ok then return true, lhs end
 
 	ok, rhs = exp(comparison)
-	if not ok then parser.out(false) end
+	if not ok then return parser.out(false) end
 
 	return true, {
 		id = TOK.comparison,

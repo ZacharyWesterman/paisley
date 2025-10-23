@@ -3,7 +3,7 @@ require 'src.compiler.syntax'
 require 'src.shared.json'
 
 local program = [[
-{1}
+{<1}
 ]]
 
 local tokens = {}
