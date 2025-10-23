@@ -143,6 +143,7 @@ comparison :=
 	| add `=` comparison
 	| add `!=` comparison
 	| add `in` comparison
+	| add `like` comparison
 	| add `not` `in` comparison
 	| add `not` `like` comparison
 	| add
@@ -160,7 +161,11 @@ mult :=
 	| slice
 
 slice :=
-	| exponent `:` slice
+	| negate `:` slice
+	| negate
+
+negate :=
+	| `-` negate
 	| exponent
 
 exponent :=
@@ -188,6 +193,7 @@ value :=
 	| `true` | `false` | `null`
 	| `(` expression `)`
 	| `{` expression `}`
+	| `${` inline_command `}`
 
 macro :=
 	| <exclamation> `[` expression `]`

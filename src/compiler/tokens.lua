@@ -152,6 +152,7 @@ TOK = {
 	--Fake token IDs used for AST error reporting
 	argument = k(),
 	condition = k(),
+	number = k(),
 }
 
 require "src.compiler.span"

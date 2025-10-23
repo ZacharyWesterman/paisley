@@ -30,6 +30,7 @@ local dot
 local index
 local length
 local exponent
+local negate
 local slice
 local mult
 local add
@@ -59,7 +60,26 @@ local string_interp
 
 --Helpers for common use cases
 local nl = function() parser.skip(TOK.line_ending) end
-local exp = function(symbol) return parser.expect(symbol, TOK.expression) end
+local exp = function(symbol) return parser.accept(symbol) end
+local binary_lassoc = function(lhs_symbol, oper_list, rhs_symbol, node_id)
+	local ok, lhs, op, rhs
+
+	ok, lhs = parser.accept(lhs_symbol)
+	if not ok then return parser.out(false) end
+
+	ok, op = parser.any_of(oper_list, {})
+	if not ok then return true, lhs end
+
+	ok, rhs = parser.expect(rhs_symbol, TOK.expression)
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = node_id,
+		text = op.text,
+		span = Span:merge(lhs.span, rhs.span),
+		children = { lhs, rhs },
+	}
+end
 
 ---Syntax rule for array concatenation -> other expressions
 array = function(span)
@@ -204,6 +224,7 @@ boolean = function(span)
 
 	local ok, lhs, rhs, op
 
+	--Just pass on higher-precedence expressions
 	ok, lhs = exp(concat)
 	if not ok then return parser.out(false) end
 
@@ -239,7 +260,7 @@ boolean = function(span)
 	}
 end
 
----Syntax for string concatenation
+---Syntax rule for string concatenation
 concat = function(span)
 	local ok, lhs, list
 
@@ -255,6 +276,242 @@ concat = function(span)
 		span = Span:merge(span, list[#list].span),
 		children = list,
 	}
+end
+
+---Syntax rule for comparison
+comparison = function(span)
+	local ok, lhs, op, rhs, list
+
+	ok, lhs = exp(add)
+	if not ok then parser.out(false) end
+
+	--Check for special (a `not` `in` b) or (a `not` `like` b) syntax.
+	list = parser.peek(2)
+	if list[1] == TOK.op_not and (list[2] == TOK.op_in or list[2] == TOK.op_like) then
+		parser.nextsym()
+		op = parser.t()
+		parser.nextsym()
+
+		ok, rhs = exp(comparison)
+		if not ok then parser.out(false) end
+
+		span = Span:merge(span, rhs.span)
+		return true, {
+			id = TOK.boolean,
+			text = 'not',
+			span = span,
+			children = { {
+				id = TOK.boolean,
+				text = op.text,
+				span = span,
+				children = { lhs, rhs },
+			} },
+		}
+	end
+
+	--Just pass on higher-precedence expressions
+	ok, op = parser.any_of({
+		TOK.op_gt,
+		TOK.op_lt,
+		TOK.op_ge,
+		TOK.op_le,
+		TOK.op_eq,
+		TOK.op_ne,
+		TOK.op_in,
+		TOK.op_like,
+	}, {})
+	if not ok then return true, lhs end
+
+	ok, rhs = exp(comparison)
+	if not ok then parser.out(false) end
+
+	return true, {
+		id = TOK.comparison,
+		text = op.text,
+		span = Span:merge(span, rhs.span),
+		children = { lhs, rhs },
+	}
+end
+
+---Syntax rule for addition
+add = function(span)
+	return binary_lassoc(
+		mult,
+		{
+			TOK.op_plus,
+			TOK.op_minus,
+		},
+		add
+	)
+end
+
+---Syntax rule for multiplication
+mult = function(span)
+	return binary_lassoc(
+		slice,
+		{
+			TOK.op_times,
+			TOK.op_div,
+			TOK.op_idiv,
+			TOK.op_mod,
+		},
+		mult
+	)
+end
+
+---Syntax rule for slices
+slice = function(span)
+	return binary_lassoc(
+		negate,
+		{ TOK.op_slice },
+		slice
+	)
+end
+
+---Syntax rule for negation
+negate = function(span)
+	if not parser.accept(TOK.op_minus) then return exp(exponent) end
+
+	local ok, child = exp(negate)
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = TOK.negate,
+		span = Span:merge(span, child.span),
+		children = { child },
+	}
+end
+
+---Syntax rule for exponents
+exponent = function(span)
+	return binary_lassoc(
+		length,
+		{ TOK.op_exponent },
+		exponent
+	)
+end
+
+---Syntax rule for length
+length = function(span)
+	if not parser.accept(TOK.op_count) then return exp(index) end
+
+	local ok, child = exp(index)
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = TOK.length,
+		span = Span:merge(span, child.span),
+		children = { child },
+	}
+end
+
+---Syntax rule for array indexing
+index = function(span)
+	local ok, lhs, rhs, c
+	ok, lhs = parser.accept(dot)
+	if not ok then return parser.out(false) end
+
+	if not parser.accept(TOK.index_open) then return true, lhs end
+
+	ok, rhs = exp(expression)
+	if not ok then return parser.out(false) end
+
+	ok, c = parser.expect(TOK.index_close, ']')
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = TOK.index,
+		span = Span:merge(span, c.span),
+		children = { lhs, rhs },
+	}
+end
+
+---Syntax rule for dot-notation
+dot = function(span)
+	return binary_lassoc(
+		value,
+		{ TOK.op_dot },
+		dot
+	)
+end
+
+---Syntax rule for bottom-level expression values
+value = function(span)
+	return parser.any_of({
+		macro,
+		func_call,
+		TOK.variable,
+		TOK.lit_number,
+		TOK.lit_boolean,
+		TOK.lit_null,
+		string,
+		expr,
+		parens,
+		inline_command,
+	}, {
+		TOK.variable,
+		TOK.number,
+		'true',
+		'false',
+		'null',
+		'(',
+		'{',
+		'${',
+		'!',
+	})
+end
+
+---Syntax rule for function calls
+func_call = function(span)
+	local t = parser.peek(2)
+
+	if t[1] ~= TOK.variable or t[2] ~= TOK.paren_open then
+		return parser.out(false)
+	end
+
+	local ok, list = parser.expect_list({
+		TOK.variable,
+		TOK.paren_open,
+		expression,
+		TOK.paren_close,
+	}, {
+		TOK.variable,
+		'(',
+		TOK.expression,
+		')',
+	})
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = TOK.func_call,
+		text = list[1].text,
+		span = Span:merge(span, list[#list].span),
+		children = { list[3] },
+	}
+end
+
+---Syntax rules for macro definitions and uses
+macro = function(span)
+	local ok, lhs, rhs, c
+	ok, lhs = parser.accept(TOK.op_exclamation)
+	if not ok then return parser.out(false) end
+
+	if parser.accept(TOK.index_open) then
+		ok, rhs = exp(expression)
+		if not ok then return parser.out(false) end
+		ok, c = parser.expect(TOK.index_close, ']')
+		if not ok then return parser.out(false) end
+
+		return true, {
+			id = TOK.macro,
+			text = lhs.text,
+			span = Span:merge(span, c.span),
+			children = { rhs },
+		}
+	end
+
+	lhs.id = TOK.macro_ref
+	return true, lhs
 end
 
 ---Currently, the top-level expression is array syntax
@@ -332,7 +589,7 @@ argument = function()
 	return parser.any_of({
 		TOK.text,
 		string,
-		expression,
+		expr,
 		inline_command,
 	}, {
 		TOK.text,
@@ -387,7 +644,7 @@ elif_stmt = function(span)
 	nl()
 
 	--`elif` argument
-	local ok, child = parser.expect(argument)
+	local ok, child = parser.expect(argument, TOK.argument)
 	if not ok then return parser.out(false) end
 	table.insert(node.children, child)
 
