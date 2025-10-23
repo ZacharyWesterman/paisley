@@ -111,7 +111,7 @@ array :=
 	| `,`
 
 kv_pair :=
-	| ternary `=>` array
+	| ternary `=>` ternary
 	| ternary
 	| `=>`
 

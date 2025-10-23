@@ -147,9 +147,11 @@ TOK = {
 	raw_sh_text = k(), --This only exists for the PC build. It basically just tells Paisley to not enclose that part of the command in quotes.
 	--[[/minify-delete]]
 
-	argument = k(),
-
 	no_value = k(),
+
+	--Fake token IDs used for AST error reporting
+	argument = k(),
+	condition = k(),
 }
 
 require "src.compiler.span"

@@ -29,7 +29,7 @@ local function ast_error(symbol, valid_tokens)
 			if type(valid_tokens[i]) == 'string' then
 				table.insert(list, '`' .. valid_tokens[i] .. '`')
 			else
-				table.insert(list, '<' .. token_text(valid_tokens[i]) .. '>')
+				table.insert(list, '<' .. token_text(valid_tokens[i]):gsub('_', ' ') .. '>')
 			end
 		end
 	end
@@ -151,7 +151,7 @@ local function zero_or_one(symbol, valid_tokens)
 			if type(valid_tokens[i]) == 'string' then
 				table.insert(list, '`' .. valid_tokens[i] .. '`')
 			else
-				table.insert(list, '<' .. token_text(valid_tokens[i]) .. '>')
+				table.insert(list, '<' .. token_text(valid_tokens[i]):gsub('_', ' ') .. '>')
 			end
 		end
 
@@ -207,6 +207,21 @@ local function expect_list(symbols, valid_symbols, skip_symbol)
 	return true, list
 end
 
+---Look ahead some number of tokens.
+---@param count integer? The number of tokens to look ahead. Defaults to 1.
+---@return integer[] id_list A list of token ids that are yet to be consumed.
+local function peek(count)
+	if not count then count = 1 end
+
+	local list = {}
+	for i = token_i, token_i + count - 1 do
+		local t = token_list[i]
+		if t then table.insert(list, t) end
+	end
+
+	return list
+end
+
 
 return {
 	set_token_list = function(tokens, filename)
@@ -230,4 +245,6 @@ return {
 	one_or_more = one_or_more,
 	expect_list = expect_list,
 	zero_or_one = zero_or_one,
+
+	peek = peek,
 }

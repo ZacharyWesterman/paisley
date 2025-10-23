@@ -59,6 +59,206 @@ local string_interp
 
 --Helpers for common use cases
 local nl = function() parser.skip(TOK.line_ending) end
+local exp = function(symbol) return parser.expect(symbol, TOK.expression) end
+
+---Syntax rule for array concatenation -> other expressions
+array = function(span)
+	--A single `,` by itself indicates an empty array.
+	local ok, _ = parser.accept(TOK.op_comma)
+	if ok then
+		return ok, {
+			id = TOK.array_concat,
+			span = span,
+		}
+	end
+
+	local lhs, rhs, comma
+	ok, lhs = parser.accept(kv_pair)
+	if not ok then return parser.out(false) end
+
+	--Not an array_concat expression
+	ok, comma = parser.accept(TOK.op_comma)
+	if not ok then return true, lhs end
+
+	--Trailing commas are allowed!
+	ok, rhs = parser.accept(array)
+
+	return true, {
+		id = TOK.array_concat,
+		span = Span:merge(span, (ok and rhs or comma).span),
+		children = ok and { lhs, rhs } or { lhs },
+	}
+end
+
+---Syntax rule for key-value pairs -> other expressions
+kv_pair = function(span)
+	--A single `=>` by itself indicates an empty object.
+	local ok, _ = parser.accept(TOK.op_arrow)
+	if ok then
+		return ok, {
+			id = TOK.key_value_pair,
+			span = span,
+		}
+	end
+
+	local lhs, rhs, arrow
+	ok, lhs = parser.expect(ternary, 'key')
+	if not ok then return parser.out(false) end
+
+	--Not an array_concat expression
+	ok, arrow = parser.accept(TOK.op_arrow)
+	if not ok then return true, lhs end
+
+	--key-value pairs must have values on both sides, and cannot be
+	ok, rhs = parser.expect(ternary, 'value for object key')
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = TOK.key_value_pair,
+		span = Span:merge(span, (ok and rhs or arrow).span),
+		children = { lhs, rhs },
+	}
+end
+
+---Syntax rule for ternary -> other expressions
+ternary = function(span)
+	local ok, lhs, list
+
+	ok, lhs = exp(list_comprehension)
+	if not ok then return parser.out(false) end
+
+	--Just pass on higher-precedence expressions
+	ok, _ = parser.accept(TOK.kwd_if_expr)
+	if not ok then return true, lhs end
+
+	ok, list = parser.expect_list({
+		list_comprehension,
+		TOK.kwd_else,
+		ternary,
+	}, {
+		TOK.expression,
+		'else',
+		TOK.expression,
+	})
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = TOK.ternary,
+		span = Span:merge(span, list[#list].span),
+		children = { lhs, list[1], list[3] },
+	}
+end
+
+---Syntax rule for list comprehension -> other expressions
+list_comprehension = function(span)
+	local ok, lhs, list
+
+	ok, lhs = exp(boolean)
+	if not ok then return parser.out(false) end
+
+	--Just pass on higher-precedence expressions
+	ok, _ = parser.accept(TOK.kwd_for_expr)
+	if not ok then return true, lhs end
+
+	ok, list = parser.expect_list({
+		TOK.variable,
+		TOK.kwd_in,
+		list_comprehension,
+	}, {
+		TOK.variable,
+		'in',
+		TOK.expression,
+	})
+	if not ok then return parser.out(false) end
+
+	list = { list[1], list[3] }
+
+	--List filtering condition is optional
+	if parser.accept(TOK.kwd_if) then
+		local condition
+		ok, condition = parser.expect(TOK.kwd_if_expr, 'if')
+		if not ok then return parser.out(false) end
+		table.insert(list, condition)
+	end
+
+	return true, {
+		id = TOK.list_comp,
+		span = Span:merge(span, list[#list].span),
+		children = list,
+	}
+end
+
+---Syntax rule for boolean expressions
+boolean = function(span)
+	--`not` boolean
+	if parser.accept(TOK.op_not) then
+		local ok, child = exp(boolean)
+		if not ok then return parser.out(false) end
+		return true, {
+			id = TOK.boolean,
+			text = 'not',
+			span = Span:merge(span, child.span),
+			children = { child },
+		}
+	end
+
+	local ok, lhs, rhs, op
+
+	ok, lhs = exp(concat)
+	if not ok then return parser.out(false) end
+
+	--variable `exists`
+	ok, op = parser.accept(TOK.op_exists)
+	if ok then
+		return true, {
+			id = TOK.boolean,
+			text = 'exists',
+			span = Span:merge(span, op.span),
+			children = { lhs },
+		}
+	end
+
+	--binary boolean operations
+	ok, op = parser.expect(function()
+		return parser.any_of({
+			TOK.op_and,
+			TOK.op_or,
+			TOK.op_xor,
+		}, {})
+	end, { 'and', 'or', 'xor' })
+	if not ok then return parser.out(false) end
+
+	ok, rhs = exp(boolean)
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = TOK.boolean,
+		text = op.text,
+		span = Span:merge(span, rhs.span),
+		children = { lhs, rhs },
+	}
+end
+
+---Syntax for string concatenation
+concat = function(span)
+	local ok, lhs, list
+
+	ok, lhs = exp(comparison)
+	if not ok then parser.out(false) end
+
+	ok, list = parser.zero_or_more(comparison)
+	if #list == 0 then return true, lhs end
+
+	table.insert(list, 1, lhs)
+	return true, {
+		id = TOK.concat,
+		span = Span:merge(span, list[#list].span),
+		children = list,
+	}
+end
+
+---Currently, the top-level expression is array syntax
+expression = array
 
 ---@brief Syntax rule for brace-enclosed expressions
 expr = function(span)
