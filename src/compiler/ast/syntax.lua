@@ -240,14 +240,13 @@ boolean = function(span)
 	end
 
 	--binary boolean operations
-	ok, op = parser.expect(function()
-		return parser.any_of({
-			TOK.op_and,
-			TOK.op_or,
-			TOK.op_xor,
-		}, {})
-	end, { 'and', 'or', 'xor' })
-	if not ok then return parser.out(false) end
+	ok, op = parser.any_of({
+		TOK.op_and,
+		TOK.op_or,
+		TOK.op_xor,
+	}, {})
+
+	if not ok then return true, lhs end
 
 	ok, rhs = exp(boolean)
 	if not ok then return parser.out(false) end
@@ -262,19 +261,18 @@ end
 
 ---Syntax rule for string concatenation
 concat = function(span)
-	local ok, lhs, list
+	local ok, lhs, rhs
 
 	ok, lhs = exp(comparison)
 	if not ok then parser.out(false) end
 
-	ok, list = parser.zero_or_more(comparison)
-	if #list == 0 then return true, lhs end
+	ok, rhs = parser.accept(comparison)
+	if not ok then return true, lhs end
 
-	table.insert(list, 1, lhs)
 	return true, {
 		id = TOK.concat,
-		span = Span:merge(span, list[#list].span),
-		children = list,
+		span = Span:merge(span, rhs.span),
+		children = { lhs, rhs },
 	}
 end
 
