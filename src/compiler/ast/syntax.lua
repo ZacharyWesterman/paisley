@@ -54,10 +54,78 @@ local number
 local string
 local literal
 local parens
-local string_interpolation
+local expr
+local string_interp
 
 --Helpers for common use cases
 local nl = function() parser.skip(TOK.line_ending) end
+
+---@brief Syntax rule for brace-enclosed expressions
+expr = function(span)
+	if not parser.accept(TOK.expr_open) then return parser.out(false) end
+
+	local ok, list = parser.expect_list({
+		expression,
+		TOK.expr_close,
+	}, {
+		TOK.expression,
+		'}',
+	})
+	if not ok then return parser.out(false) end
+
+	return true, list[1]
+end
+
+---@brief Syntax rule for string interpolation values
+string_interp = function(span)
+	return parser.any_of({
+		TOK.text,
+		expr,
+		inline_command,
+	}, {})
+end
+
+---@brief Syntax rule for strings
+string = function(span)
+	local ok, open = parser.accept(TOK.string_open)
+	if not ok then return parser.out(false) end
+
+	local list, close
+	ok, list = parser.zero_or_more(string_interp)
+	ok, close = parser.expect(TOK.string_close, open.text)
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = TOK.string_open,
+		text = open.text,
+		span = Span:merge(span, close.span),
+		children = list,
+	}
+end
+
+---@brief Syntax rule for inline command eval
+inline_command = function(span)
+	if not parser.accept(TOK.command_open) then return parser.out(false) end
+
+	local ok, child = parser.any_of({
+		command,
+		gosub_stmt,
+	}, {
+		TOK.command,
+		'gosub',
+	}, true)
+	if not ok then return parser.out(false) end
+
+	local e
+	ok, e = parser.expect(TOK.command_close, '}')
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = TOK.inline_command,
+		span = Span:merge(span, e.span),
+		children = { child },
+	}
+end
 
 ---@brief Syntax rule for command arguments
 argument = function()
@@ -70,7 +138,7 @@ argument = function()
 		TOK.text,
 		TOK.string,
 		TOK.expression,
-		TOK.inline_command,
+		'inline command eval',
 	})
 end
 
