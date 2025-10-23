@@ -73,7 +73,14 @@ match_stmt :=
 	| `match` argument `do` match_if_stmt+ else_smt
 
 match_if_stmt :=
-	| `if` argument `then` program `end`
+	| `if` match_argument `then` program `end`
+
+match_argument :=
+	| <text>
+	| string
+	| `{` (`>`|`<`|`>=`|`<=`|`=`|`!=`|`not`? `like`|`not`? `in`|`and`|`or`|`xor`) expression `}`
+	| `{` expression `}`
+	| `${` inline_command `}`
 
 alias_stmt :=
 	| `using` argument `as` argument
