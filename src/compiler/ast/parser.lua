@@ -216,7 +216,7 @@ local function peek(count)
 	local list = {}
 	for i = token_i, token_i + count - 1 do
 		local t = token_list[i]
-		if t then table.insert(list, t) end
+		if t then table.insert(list, t.id) end
 	end
 
 	return list
