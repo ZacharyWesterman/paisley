@@ -89,21 +89,23 @@ array = function(span)
 		}
 	end
 
-	local lhs, rhs, comma
-	ok, lhs = parser.accept(kv_pair)
-	if not ok then return parser.out(false) end
+	local list = {}
+	local comma, arg
+	while true do
+		ok, arg = parser.accept(kv_pair)
+		if not ok then break end
+		table.insert(list, arg)
+		ok, comma = parser.accept(TOK.op_comma)
+		if not ok then break end
+	end
 
-	--Not an array_concat expression
-	ok, comma = parser.accept(TOK.op_comma)
-	if not ok then return true, lhs end
-
-	--Trailing commas are allowed!
-	ok, rhs = parser.accept(array)
+	if #list == 0 then return parser.out(false) end
+	if not comma then return true, list[1] end
 
 	return true, {
 		id = TOK.array_concat,
-		span = Span:merge(span, (ok and rhs or comma).span),
-		children = ok and { lhs, rhs } or { lhs },
+		span = Span:merge(span, comma.span),
+		children = list,
 	}
 end
 
