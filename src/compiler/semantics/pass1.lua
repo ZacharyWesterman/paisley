@@ -410,7 +410,7 @@ return {
 				if token.children then
 					if token.children[1].id == TOK.text and #token.children == 1 then
 						token.value = token.children[1].text
-						token.children = nil
+						token.children = {}
 					end
 				elseif not token.value then
 					token.value = ''

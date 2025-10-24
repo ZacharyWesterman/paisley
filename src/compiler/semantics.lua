@@ -53,11 +53,9 @@ function SemanticAnalyzer(root, root_file)
 			end
 		end
 
-		if root.children then
-			for _, token in ipairs(root.children) do
-				recurse2(token, config, file)
-				if ERRORED then return end
-			end
+		for _, token in ipairs(root.children) do
+			recurse2(token, config, file)
+			if ERRORED then return end
 		end
 
 		local exit_methods = config.exit[root.id]
