@@ -358,6 +358,14 @@ comparison = function(span)
 	ok, rhs = exp(comparison)
 	if not ok then return parser.out(false) end
 
+	--DEPRECATED: Warn about old comparison operators
+	if op.text == '~=' or op.text == '==' then
+		local coerce = op.text == '==' and '=' or '!='
+		local msg = 'The operator `' ..
+			op.text .. '` is deprecated and will be removed in v2.0. Use `' .. coerce .. '` instead.'
+		parse_warning(op.span, msg, parser.filename())
+	end
+
 	return true, {
 		id = TOK.comparison,
 		text = op.text,
@@ -561,7 +569,7 @@ end
 ---Syntax rule for parentheses
 parens = function(span)
 	if not parser.accept(TOK.paren_open) then return parser.out(false) end
-	local ok, child = parser.expect(expression)
+	local ok, child = exp(expression)
 	if not ok then return parser.out(false) end
 	if not parser.expect(TOK.paren_close) then return parser.out(false) end
 
