@@ -295,7 +295,7 @@ function generate_bytecode(root, file)
 				emit(bc.push, nil)
 			end
 
-			if token.children[1].children then
+			if #token.children[1].children > 0 then
 				--Multi-var assignment is basically just getting the nth element of the array
 				local vars = { token.children[1].text }
 				for i = 1, #token.children[1].children do
@@ -844,7 +844,7 @@ function generate_bytecode(root, file)
 			if has_else then
 				local else_block = token.children[3]
 				if else_block.id == TOK.else_stmt then
-					if else_block.children and #else_block.children > 0 then
+					if #else_block.children > 0 then
 						enter(else_block.children[1])
 					end
 				else

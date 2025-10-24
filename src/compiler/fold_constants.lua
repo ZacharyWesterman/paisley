@@ -19,7 +19,7 @@ end
 ---@param token table
 ---@param file string?
 function FOLD_CONSTANTS(token, file)
-	if not token.children then return end
+	if #token.children == 0 then return end
 
 	local function check_if_nan_or_inf(token, file)
 		local inf = 1 / 0
@@ -335,7 +335,7 @@ function FOLD_CONSTANTS(token, file)
 			end
 		end
 	elseif token.id == TOK.length then
-		if c1.value ~= nil or c1.id == TOK.lit_null and (not c1.children or #c1.children == 0) then
+		if c1.value ~= nil or c1.id == TOK.lit_null and #c1.children == 0 then
 			if type(c1.value) ~= 'string' and type(c1.value) ~= 'table' then
 				parse_error(token.span, 'Length operator can only operate on strings and arrays', file)
 				token.value = #std.str(c1.value)

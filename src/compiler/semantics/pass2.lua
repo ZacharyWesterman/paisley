@@ -24,7 +24,7 @@ local function loop_exit(token, file)
 end
 
 local function cleanup_parens(token, file)
-	if not token.children or #token.children ~= 1 then return end
+	if #token.children ~= 1 then return end
 
 	local child = token.children[1]
 	for _, key in ipairs({ 'value', 'id', 'text', 'span', 'type' }) do
@@ -40,9 +40,7 @@ return {
 			--Move params of all function calls to be direct children
 			--(this makes syntax like `a.func(b)` be the same as `func(a,b)`)
 			function(token, file)
-				if not token.children then
-					token.children = {}
-				elseif #token.children > 0 then
+				if #token.children > 0 then
 					local kids = {}
 					for i = 1, #token.children do
 						local child = token.children[i]
@@ -134,7 +132,7 @@ return {
 						parse_error(token.children[2].span,
 							'The second parameter of "reduce(a,b)" must be a binary operator (e.g. + or *)', file)
 					end
-				elseif token.children then
+				else
 					for i = 1, #token.children do
 						local child = token.children[i]
 						if child.id >= TOK.op_plus and child.id <= TOK.op_arrow then

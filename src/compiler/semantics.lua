@@ -32,10 +32,8 @@ function SemanticAnalyzer(root, root_file)
 			operation(root, file)
 		end
 
-		if root.children then
-			for _, token in ipairs(root.children) do
-				recurse(token, token_ids, operation, on_exit, file)
-			end
+		for _, token in ipairs(root.children) do
+			recurse(token, token_ids, operation, on_exit, file)
 		end
 
 		if correct_token and on_exit ~= nil then
@@ -368,7 +366,7 @@ function SemanticAnalyzer(root, root_file)
 			return
 		end
 
-		if token.children then
+		if #token.children > 0 then
 			local found_correct_types = false
 
 			if signature.valid then
@@ -548,7 +546,7 @@ function SemanticAnalyzer(root, root_file)
 			local tp = nil
 			if ch and ch.type then tp = ch.type end
 
-			if var.children then
+			if #var.children > 0 then
 				local vars = { var.text }
 				for i = 1, #var.children do
 					table.insert(vars, var.children[i].text)
@@ -818,10 +816,8 @@ function SemanticAnalyzer(root, root_file)
 				else
 					--Variable declarations
 					if var.type then INFO.hint(var.span, 'type: ' .. TYPE_TEXT(var.type), file) end
-					if var.children then
-						for _, kid in ipairs(var.children) do
-							if kid.type then INFO.hint(kid.span, 'type: ' .. TYPE_TEXT(kid.type), file) end
-						end
+					for _, kid in ipairs(var.children) do
+						if kid.type then INFO.hint(kid.span, 'type: ' .. TYPE_TEXT(kid.type), file) end
 					end
 				end
 			end)
@@ -962,7 +958,7 @@ function SemanticAnalyzer(root, root_file)
 			--Check if the dynamic gosub could never possibly hit certain subroutines
 			---@type table|nil
 			local begins, ends, contains = nil, nil, {}
-			if kid and kid.children and kid.children[1] then
+			if kid and kid.children[1] then
 				begins = kid.children[1]
 				ends = kid.children[#kid.children]
 				for i = 2, #kid.children - 1 do

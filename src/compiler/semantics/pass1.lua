@@ -1,5 +1,5 @@
 local function break_continue(token, file)
-	if not token.children or #token.children == 0 then
+	if #token.children == 0 then
 		token.children = { {
 			id = TOK.lit_number,
 			text = '1',
@@ -34,7 +34,7 @@ local function subroutine_enter(token, file)
 				', col ' .. prev.span.from.col .. ')', file)
 		end
 
-		if not token.children or #token.children == 0 then
+		if #token.children == 0 then
 			token.ignore = true
 		end
 
@@ -208,7 +208,7 @@ return {
 				---@type Token[]
 				local kids = token.children
 				if not kids then return end
-				if kids[1].children then kids = kids[1].children end
+				if #kids[1].children > 0 then kids = kids[1].children end
 				for i = 1, #kids do
 					if kids and kids[i].id ~= TOK.text then
 						parse_error(kids[i].span, 'Expected only variable names after "delete" keyword', file)
@@ -458,7 +458,7 @@ return {
 				end
 
 				--Make sure there are no redundant variable assignments
-				if token.children[1].children then
+				if #token.children[1].children > 0 then
 					local vars = { [token.children[1].text] = true }
 					for i = 1, #token.children[1].children do
 						local child = token.children[1].children[i]
@@ -599,7 +599,7 @@ return {
 						return
 					end
 
-					if not node.children then break end
+					if #node.children == 0 then break end
 					node = node.children[1]
 					if not node then break end
 				end
