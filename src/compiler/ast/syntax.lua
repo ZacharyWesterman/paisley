@@ -46,6 +46,8 @@ local array
 local expression
 local inline_command
 local argument
+local match_argument
+local match_expr
 
 --Atoms
 local macro
@@ -1163,7 +1165,7 @@ match_if_stmt = function(span)
 	if not parser.accept(TOK.kwd_if) then return parser.out(false) end
 
 	local ok, list = parser.expect_list({
-		argument,
+		match_argument,
 		TOK.kwd_then,
 		program,
 		TOK.kwd_end,
@@ -1180,6 +1182,60 @@ match_if_stmt = function(span)
 		span = Span:merge(span, list[#list].span),
 		children = { list[1], list[3] },
 	}
+end
+
+---@brief Syntax rule for arguments inside `match` if statements. These allow binary expressions without a left operand.
+match_argument = function(span)
+	return parser.any_of({
+		TOK.text,
+		string,
+		match_expr,
+		inline_command,
+	}, {
+		TOK.text,
+		TOK.string,
+		TOK.expression,
+		'inline command eval',
+	})
+end
+
+---@brief Syntax rule for brace-enclosed expressions inside `match` statements. These allow binary expressions without a left operand.
+match_expr = function(span)
+	if not parser.accept(TOK.expr_open) then return parser.out(false) end
+
+	local ok, lhs_op, op, list
+
+	lhs_op, op = parser.any_of({
+		TOK.op_in,
+		TOK.op_like,
+		TOK.op_ge,
+		TOK.op_gt,
+		TOK.op_le,
+		TOK.op_lt,
+		TOK.op_eq,
+		TOK.op_ne,
+	}, {})
+
+	ok, list = parser.expect_list({
+		expression,
+		TOK.expr_close,
+	}, {
+		TOK.expression,
+		'}',
+	})
+	if not ok then return parser.out(false) end
+
+
+	if lhs_op then
+		return true, {
+			id = TOK.comparison,
+			text = op.text,
+			span = Span:merge(span, list[1].span),
+			children = { list[1] },
+		}
+	end
+
+	return true, list[1]
 end
 
 ---@brief Syntax rule for `using` statement
