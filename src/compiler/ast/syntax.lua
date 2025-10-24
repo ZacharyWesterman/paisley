@@ -90,17 +90,17 @@ array = function(span)
 	end
 
 	local list = {}
-	local comma, arg
+	local comma, arg, c_ok
 	while true do
 		ok, arg = parser.accept(kv_pair)
 		if not ok then break end
 		table.insert(list, arg)
-		ok, comma = parser.accept(TOK.op_comma)
-		if not ok then break end
+		c_ok, comma = parser.accept(TOK.op_comma)
+		if not c_ok then break end
 	end
 
 	if #list == 0 then return parser.out(false) end
-	if not comma then return true, list[1] end
+	if #list == 1 and not c_ok then return true, list[1] end
 
 	return true, {
 		id = TOK.array_concat,
@@ -261,18 +261,19 @@ end
 
 ---Syntax rule for string concatenation
 concat = function(span)
-	local ok, lhs, rhs
+	local ok, lhs, list
 
 	ok, lhs = exp(comparison)
 	if not ok then return parser.out(false) end
 
-	ok, rhs = parser.accept(comparison)
+	ok, list = parser.one_or_more(comparison)
 	if not ok then return true, lhs end
+	table.insert(list, 1, lhs)
 
 	return true, {
 		id = TOK.concat,
-		span = Span:merge(span, rhs.span),
-		children = { lhs, rhs },
+		span = Span:merge(span, list[#list].span),
+		children = list,
 	}
 end
 
