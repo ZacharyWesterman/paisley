@@ -76,29 +76,29 @@ end
 HIDE_ERRORS = _G['SUPPRESS_AST_ERRORS'] --[[/minify-delete]]
 
 local parser = SyntaxParser(tokens, file)
-while parser.fold() do end --Iterate on the syntax tree. Follows iterator-like behavior.
+local ast = parser()
 
 --[[minify-delete]]
 HIDE_ERRORS = false
 
 if _G['PRINT_AST'] and not _G['AST_AFTER_SEMANTIC'] then
-	print_tokens_recursive(parser.get()[1])
+	print_tokens_recursive(ast)
 	return
 end
 --[[/minify-delete]]
 
-if #parser.get() == 0 then
+if not ast.children then
 	output("{}", 1)
 else
 	--[[minify-delete]]
 	if COMPILER_DEBUG then
 		print_header('AST First Pass')
-		print_tokens_recursive(parser.get()[1])
+		print_tokens_recursive(ast)
 	end
 	--[[/minify-delete]]
 
 	--Analyze the AST and check for any errors
-	local root = SemanticAnalyzer(parser.get(), file)
+	local root = SemanticAnalyzer(ast, file)
 	--[[minify-delete]]
 	if _G['AST_AFTER_SEMANTIC'] then
 		print_tokens_recursive(root)

@@ -3,7 +3,7 @@ require 'src.compiler.syntax'
 require 'src.shared.json'
 
 local program = [[
-print {1*(2+3)}
+print {reduce(*)}
 ]]
 
 local tokens = {}
@@ -12,7 +12,7 @@ for i in lexer do
 	table.insert(tokens, i)
 end
 
-local parse = SyntaxParser(tokens).get
+local parse = SyntaxParser(tokens)
 
 local ast = parse()
-print_tokens_recursive(ast[1])
+print_tokens_recursive(ast)

@@ -3,11 +3,5 @@ local parse = require 'src.compiler.ast.syntax'
 
 function SyntaxParser(tokens, file)
 	p.set_token_list(tokens, file)
-
-	return {
-		fold = function() end, --KEPT FOR COMPATIBILITY
-		get = function()
-			return { parse() }
-		end,
-	}
+	return parse
 end

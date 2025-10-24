@@ -33,9 +33,9 @@ kwds = {
 
 ---@diagnostic disable-next-line
 opers = {
-	['for'] = TOK.kwd_for_expr,
-	['if'] = TOK.kwd_if_expr,
-	['else'] = TOK.kwd_else_expr,
+	['for'] = TOK.kwd_for,
+	['if'] = TOK.kwd_if,
+	['else'] = TOK.kwd_else,
 	['+'] = TOK.op_plus,
 	['-'] = TOK.op_minus,
 	['*'] = TOK.op_times,

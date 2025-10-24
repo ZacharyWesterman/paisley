@@ -7,7 +7,7 @@ ALIASES_TOPLEVEL = { {} }
 MACROS_TOPLEVEL = { {} }
 --[[/minify-delete]]
 
-function SemanticAnalyzer(tokens, root_file)
+function SemanticAnalyzer(root, root_file)
 	--[[minify-delete]]
 	SHOW_MULTIPLE_ERRORS = true
 	--[[/minify-delete]]
@@ -71,7 +71,18 @@ function SemanticAnalyzer(tokens, root_file)
 		end
 	end
 
-	local root = tokens[1] --At this point, there should only be one token, the root "program" token.
+	--Fill in missing node data, just to make sure all nodes behave the same
+	local function autofill(node)
+		if not node.text then node.text = '' end
+		if not node.children then
+			node.children = {}
+		else
+			for i = 1, #node.children do
+				autofill(node.children[i])
+			end
+		end
+	end
+	autofill(root)
 
 	--Make sure subroutines and file imports are top-level statements
 	--[[minify-delete]]
@@ -144,10 +155,9 @@ function SemanticAnalyzer(tokens, root_file)
 
 				--Parse into AST and add to the list.
 				local parser = SyntaxParser(tokens, filename)
-				while parser.fold() and not ERRORED do end
+				local ast = parser()
 
-				if not ERRORED and #parser.get() > 0 then
-					local ast = parser.get()[1]
+				if not ERRORED then
 					recurse(ast, { TOK.import_stmt }, import_file)
 					table.insert(new_asts, ast)
 				end

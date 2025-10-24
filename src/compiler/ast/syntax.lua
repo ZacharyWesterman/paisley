@@ -78,6 +78,26 @@ local binary_lassoc = function(lhs_symbol, oper_list, rhs_symbol, node_id)
 	}
 end
 
+local binary_ops = {
+	[TOK.op_plus] = true,
+	[TOK.op_minus] = true,
+	[TOK.op_times] = true,
+	[TOK.op_div] = true,
+	[TOK.op_idiv] = true,
+	[TOK.op_mod] = true,
+	[TOK.op_and] = true,
+	[TOK.op_or] = true,
+	[TOK.op_xor] = true,
+	[TOK.op_in] = true,
+	[TOK.op_like] = true,
+	[TOK.op_ge] = true,
+	[TOK.op_gt] = true,
+	[TOK.op_le] = true,
+	[TOK.op_lt] = true,
+	[TOK.op_eq] = true,
+	[TOK.op_ne] = true,
+}
+
 ---Syntax rule for array concatenation -> other expressions
 array = function(span)
 	--A single `,` by itself indicates an empty array.
@@ -92,6 +112,20 @@ array = function(span)
 	local list = {}
 	local comma, arg, c_ok
 	while true do
+		--Only allow operators as the last value in parens
+		local p = parser.peek(3)
+
+		--Binary operator is the last paren (for reduce() function)
+		if (p[2] == TOK.paren_close or (
+				p[2] == TOK.op_comma and p[3] == TOK.paren_close
+			)) and binary_ops[p[1]] then
+			table.insert(list, parser.t())
+			parser.accept(TOK.op_comma)
+			parser.accept(TOK.paren_close)
+			parser.nextsym()
+			break
+		end
+
 		ok, arg = parser.accept(kv_pair)
 		if not ok then break end
 		table.insert(list, arg)
@@ -147,7 +181,7 @@ ternary = function(span)
 	if not ok then return parser.out(false) end
 
 	--Just pass on higher-precedence expressions
-	ok, _ = parser.accept(TOK.kwd_if_expr)
+	ok, _ = parser.accept(TOK.kwd_if)
 	if not ok then return true, lhs end
 
 	ok, list = parser.expect_list({
@@ -176,7 +210,7 @@ list_comprehension = function(span)
 	if not ok then return parser.out(false) end
 
 	--Just pass on higher-precedence expressions
-	ok, _ = parser.accept(TOK.kwd_for_expr)
+	ok, _ = parser.accept(TOK.kwd_for)
 	if not ok then return true, lhs end
 
 	ok, list = parser.expect_list({
@@ -193,7 +227,7 @@ list_comprehension = function(span)
 	list = { list[1], list[3] }
 
 	--List filtering condition is optional
-	if parser.accept(TOK.kwd_if_expr) then
+	if parser.accept(TOK.kwd_if) then
 		local condition
 		ok, condition = exp(boolean)
 
@@ -478,7 +512,11 @@ func_call = function(span)
 	local ok, list = parser.expect_list({
 		TOK.variable,
 		TOK.paren_open,
-		expression,
+		function()
+			local ok, node = parser.accept(expression)
+			if not ok then return true, nil end
+			return ok, node
+		end,
 		TOK.paren_close,
 	}, {
 		TOK.variable,
@@ -492,7 +530,7 @@ func_call = function(span)
 		id = TOK.func_call,
 		text = list[1].text,
 		span = Span:merge(span, list[#list].span),
-		children = { list[3] },
+		children = (list[3].id == TOK.paren_close) and {} or { list[3] },
 	}
 end
 
