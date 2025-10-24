@@ -475,12 +475,45 @@ end
 dot = function(span)
 	--TODO: Dot-notation coerces into either indexing or function calls!
 
-	return binary_lassoc(
+	local ok, node = binary_lassoc(
 		value,
 		{ TOK.op_dot },
 		dot,
 		TOK.op_dot
 	)
+
+	--Dot-notation is just syntax sugar
+	--`a.b` = `a["b"]`
+	--`a.b(...) = `b(a, ...)`
+	if ok and node.id == TOK.op_dot then
+		local lhs = node.children[1]
+		local rhs = node.children[2]
+
+		if rhs.id == TOK.func_call then
+			--`a.b(...)`
+			table.insert(rhs.children, 1, lhs)
+			rhs.span = node.span
+			return ok, rhs
+		else
+			--`a.b`
+			if rhs.id ~= TOK.variable then
+				parser.ast_error(rhs, TOK.variable)
+				return parser.out(false)
+			end
+
+			rhs.id = TOK.text
+
+			return ok, {
+				id = TOK.index,
+				span = node.span,
+				children = {
+					lhs, rhs
+				}
+			}
+		end
+	end
+
+	return ok, node
 end
 
 ---Syntax rule for bottom-level expression values
@@ -534,11 +567,19 @@ func_call = function(span)
 	})
 	if not ok then return parser.out(false) end
 
+	--Make sure that arguments are direct children of the function call
+	local arg_list = {}
+	if list[3].id == TOK.array_concat then
+		arg_list = list[3].children
+	elseif list[3].id ~= TOK.paren_close then
+		arg_list = { list[3] }
+	end
+
 	return true, {
 		id = TOK.func_call,
 		text = list[1].text,
 		span = Span:merge(span, list[#list].span),
-		children = (list[3].id == TOK.paren_close) and {} or { list[3] },
+		children = arg_list,
 	}
 end
 
