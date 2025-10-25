@@ -135,12 +135,32 @@ array = function(span)
 	end
 
 	if #list == 0 then return parser.out(false) end
-	if #list == 1 and not c_ok then return true, list[1] end
+	if #list == 1 and not c_ok and list[1].id ~= TOK.key_value_pair then
+		return true, list[1]
+	end
+
+	--Check if any children are key-value pairs.
+	--If so, this is an object.
+	--Also make sure that object and array notation are not used together.
+	local obj, nonobj = false, false
+	for _, child in ipairs(list) do
+		if child.id == TOK.key_value_pair then
+			obj = child
+		else
+			nonobj = child
+		end
+		if obj and nonobj then
+			parse_error(Span:first(obj, nonobj),
+				'Invalid mixture of object and array notation. Expected a list of key-value pairs or expressions, but got both.',
+				parser.filename())
+			return parser.out(false)
+		end
+	end
 
 	return true, {
-		id = TOK.array_concat,
+		id = obj and TOK.object or TOK.array_concat,
 		span = Span:merge(span, comma.span),
-		children = list,
+		children = (obj and not obj.children) and {} or list,
 	}
 end
 

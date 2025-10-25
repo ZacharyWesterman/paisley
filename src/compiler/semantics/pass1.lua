@@ -573,25 +573,6 @@ return {
 			end,
 		},
 		[TOK.macro_ref] = { pop_scope },
-
-		[TOK.key_value_pair] = {
-			--Extract key-value pairs into objects
-			function(token, file)
-				if not token.inside_object then
-					local new_token = {
-						id = token.id,
-						span = token.span,
-						text = token.text,
-						children = token.children,
-						filename = token.filename,
-					}
-					token.id = TOK.object
-					token.text = '{}'
-					token.type = _G['TYPE_OBJECT']
-					token.children = { new_token }
-				end
-			end,
-		},
 	},
 
 	finally = function()

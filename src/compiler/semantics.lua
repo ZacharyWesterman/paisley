@@ -848,6 +848,7 @@ function SemanticAnalyzer(root, root_file)
 					id = TOK.var_assign,
 					text = var,
 					span = token.span,
+					children = {},
 				},
 				token.children[1],
 			}
@@ -865,6 +866,7 @@ function SemanticAnalyzer(root, root_file)
 					id = TOK.variable,
 					text = var,
 					span = else_branch.children[1].span,
+					children = {},
 				}
 			end
 
