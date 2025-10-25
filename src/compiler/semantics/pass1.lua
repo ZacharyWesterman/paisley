@@ -473,23 +473,6 @@ return {
 	},
 
 	exit = {
-		[TOK.program] = {
-			--Flatten "program" nodes so all statements are on the same level.
-			function(token, file)
-				local kids = {}
-				for i = 1, #token.children do
-					local child = token.children[i]
-					if child.id == TOK.program then
-						for k = 1, #child.children do table.insert(kids, child.children[k]) end
-					else
-						table.insert(kids, child)
-					end
-				end
-
-				token.children = kids
-			end,
-		},
-
 		[TOK.subroutine] = {
 			subroutine_exit,
 			aliases_exit,
