@@ -148,6 +148,11 @@ TOK = {
 	--[[/minify-delete]]
 
 	no_value = k(),
+
+	--Fake token IDs used for AST error reporting
+	argument = k(),
+	condition = k(),
+	number = k(),
 }
 
 require "src.compiler.span"
@@ -158,7 +163,7 @@ require "src.compiler.span"
 ---@field private meta_id TOK? ONLY used during AST generation! The ID this token was coerced into.
 ---@field text string The text from the input file that this token represents.
 ---@field value any The literal value that was calculated for this token, if any. Used for constant folding.
----@field children Token[]? A list of child nodes.
+---@field children Token[] A list of child nodes.
 ---@field type table? The data type that was deduced for this token, if any.
 ---@field inside_object boolean? If defined and true, this token is inside an object declaration.
 ---@field ignore boolean? If true, optimize this token away. Only defined on subroutine and variable definitions.
@@ -270,7 +275,7 @@ INFO = {
 function terminate()
 	--[[minify-delete]]
 	if true then
-		error()
+		os.exit(1)
 	else --[[/minify-delete]]
 		error('ERROR in user-supplied Paisley script.')
 		--[[minify-delete]]
@@ -320,7 +325,7 @@ function print_token(token, indent)
 	end
 
 	print((indent .. '%2d:%2d: %13s = %s%s'):format(token.span.from.line, token.span.from.col, id,
-		token.text:gsub('\n', '<nl>'):gsub('\x09', '<nl>'), meta))
+		(token.text or ''):gsub('\n', '<nl>'):gsub('\x09', '<nl>'), meta))
 end
 
 function print_tokens_recursive(root, indent)

@@ -42,3 +42,14 @@ function Span:merge(span1, span2)
 
 	return span
 end
+
+---Return the span that comes before the other.
+---@param span1 Span
+---@param span2 Span
+---@return Span
+function Span:first(span1, span2)
+	if span1.from.line == span2.from.line then
+		return span1.from.col < span2.from.col and span1 or span2
+	end
+	return span1.from.line < span2.from.line and span1 or span2
+end

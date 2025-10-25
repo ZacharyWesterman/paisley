@@ -164,7 +164,7 @@ else
 	print "some other number"
 end
 ```
-Note how, inside match statements, the top-level boolean operators (`=`, `!=`, `>`, `<`, `>=`, `<=`, `like`) don't have a left operand.
+Note how, inside match statements, the top-level boolean operators (`=`, `!=`, `>`, `<`, `>=`, `<=`, `in`, `like`) don't have a left operand.
 Instead, the left operand is implied to be the value of the match expression.
 If the operator is left out, then `=` is implied. e.g. `{3}` is the same as `{=3}`.
 

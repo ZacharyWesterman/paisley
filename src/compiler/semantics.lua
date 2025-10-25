@@ -7,7 +7,7 @@ ALIASES_TOPLEVEL = { {} }
 MACROS_TOPLEVEL = { {} }
 --[[/minify-delete]]
 
-function SemanticAnalyzer(tokens, root_file)
+function SemanticAnalyzer(root, root_file)
 	--[[minify-delete]]
 	SHOW_MULTIPLE_ERRORS = true
 	--[[/minify-delete]]
@@ -32,10 +32,8 @@ function SemanticAnalyzer(tokens, root_file)
 			operation(root, file)
 		end
 
-		if root.children then
-			for _, token in ipairs(root.children) do
-				recurse(token, token_ids, operation, on_exit, file)
-			end
+		for _, token in ipairs(root.children) do
+			recurse(token, token_ids, operation, on_exit, file)
 		end
 
 		if correct_token and on_exit ~= nil then
@@ -55,11 +53,9 @@ function SemanticAnalyzer(tokens, root_file)
 			end
 		end
 
-		if root.children then
-			for _, token in ipairs(root.children) do
-				recurse2(token, config, file)
-				if ERRORED then return end
-			end
+		for _, token in ipairs(root.children) do
+			recurse2(token, config, file)
+			if ERRORED then return end
 		end
 
 		local exit_methods = config.exit[root.id]
@@ -71,7 +67,18 @@ function SemanticAnalyzer(tokens, root_file)
 		end
 	end
 
-	local root = tokens[1] --At this point, there should only be one token, the root "program" token.
+	--Fill in missing node data, just to make sure all nodes behave the same
+	local function autofill(node)
+		if not node.text then node.text = '' end
+		if not node.children then
+			node.children = {}
+		else
+			for i = 1, #node.children do
+				autofill(node.children[i])
+			end
+		end
+	end
+	autofill(root)
 
 	--Make sure subroutines and file imports are top-level statements
 	--[[minify-delete]]
@@ -102,7 +109,7 @@ function SemanticAnalyzer(tokens, root_file)
 					end
 				end
 
-				if token.text:sub(1, 1) == '?' then
+				if (token.text or ''):sub(1, 1) == '?' then
 					parse_error(token.span, 'Subroutine name cannot begin with `?`', file)
 				end
 
@@ -144,10 +151,10 @@ function SemanticAnalyzer(tokens, root_file)
 
 				--Parse into AST and add to the list.
 				local parser = SyntaxParser(tokens, filename)
-				while parser.fold() and not ERRORED do end
+				local ast = parser()
 
-				if not ERRORED and #parser.get() > 0 then
-					local ast = parser.get()[1]
+				if not ERRORED then
+					autofill(ast)
 					recurse(ast, { TOK.import_stmt }, import_file)
 					table.insert(new_asts, ast)
 				end
@@ -358,7 +365,7 @@ function SemanticAnalyzer(tokens, root_file)
 			return
 		end
 
-		if token.children then
+		if #token.children > 0 then
 			local found_correct_types = false
 
 			if signature.valid then
@@ -538,7 +545,7 @@ function SemanticAnalyzer(tokens, root_file)
 			local tp = nil
 			if ch and ch.type then tp = ch.type end
 
-			if var.children then
+			if #var.children > 0 then
 				local vars = { var.text }
 				for i = 1, #var.children do
 					table.insert(vars, var.children[i].text)
@@ -808,10 +815,8 @@ function SemanticAnalyzer(tokens, root_file)
 				else
 					--Variable declarations
 					if var.type then INFO.hint(var.span, 'type: ' .. TYPE_TEXT(var.type), file) end
-					if var.children then
-						for _, kid in ipairs(var.children) do
-							if kid.type then INFO.hint(kid.span, 'type: ' .. TYPE_TEXT(kid.type), file) end
-						end
+					for _, kid in ipairs(var.children) do
+						if kid.type then INFO.hint(kid.span, 'type: ' .. TYPE_TEXT(kid.type), file) end
 					end
 				end
 			end)
@@ -843,6 +848,7 @@ function SemanticAnalyzer(tokens, root_file)
 					id = TOK.var_assign,
 					text = var,
 					span = token.span,
+					children = {},
 				},
 				token.children[1],
 			}
@@ -860,6 +866,7 @@ function SemanticAnalyzer(tokens, root_file)
 					id = TOK.variable,
 					text = var,
 					span = else_branch.children[1].span,
+					children = {},
 				}
 			end
 
@@ -952,7 +959,7 @@ function SemanticAnalyzer(tokens, root_file)
 			--Check if the dynamic gosub could never possibly hit certain subroutines
 			---@type table|nil
 			local begins, ends, contains = nil, nil, {}
-			if kid and kid.children and kid.children[1] then
+			if kid and kid.children[1] then
 				begins = kid.children[1]
 				ends = kid.children[#kid.children]
 				for i = 2, #kid.children - 1 do

@@ -19,7 +19,7 @@ end
 ---@param token table
 ---@param file string?
 function FOLD_CONSTANTS(token, file)
-	if not token.children then return end
+	if #token.children == 0 then return end
 
 	local function check_if_nan_or_inf(token, file)
 		local inf = 1 / 0
@@ -116,7 +116,7 @@ function FOLD_CONSTANTS(token, file)
 		if c1.value then
 			if #c1.value == 0 then
 				token.id = TOK.lit_null
-				token.children = nil
+				token.children = {}
 				token.text = tostring(nil)
 				return
 			end
@@ -163,7 +163,7 @@ function FOLD_CONSTANTS(token, file)
 
 			token.value = result
 			token.text = tostring(result)
-			token.children = nil
+			token.children = {}
 		else
 			--Even if the parameter is not constant, we can still deduce the output type based on the operator
 			if std.arrfind({ '+', '-', '/', '//', '%' }, c2.text, 1) > 0 then
@@ -257,7 +257,7 @@ function FOLD_CONSTANTS(token, file)
 		end
 
 		token.value = result
-		token.children = nil
+		token.children = {}
 		token.text = tostring(result)
 		token.id = TOK.lit_number
 	elseif token.id == TOK.comparison then
@@ -282,7 +282,7 @@ function FOLD_CONSTANTS(token, file)
 		end
 
 		token.value = result
-		token.children = nil
+		token.children = {}
 		token.text = tostring(result)
 		token.id = TOK.lit_boolean
 	elseif token.id == TOK.boolean then
@@ -320,13 +320,13 @@ function FOLD_CONSTANTS(token, file)
 			else
 				parse_error(token.span, 'COMPILER BUG: No constant folding rule for operator "' .. operator .. '"!', file)
 			end
-			token.children = nil
+			token.children = {}
 			token.text = tostring(token.value)
 		elseif operator ~= 'exists' then --Unary operators (just "not")
 			if c1.value ~= nil or c1.id == TOK.lit_null then
 				token.value = not c1.value or c1.value == 0 or c1.value == ''
 				token.id = TOK.lit_boolean
-				token.children = nil
+				token.children = {}
 				token.text = tostring(token.value)
 			elseif c1.id == TOK.boolean and c1.text == 'not' then
 				--Fold redundant "not" operators
@@ -335,7 +335,7 @@ function FOLD_CONSTANTS(token, file)
 			end
 		end
 	elseif token.id == TOK.length then
-		if c1.value ~= nil or c1.id == TOK.lit_null and (not c1.children or #c1.children == 0) then
+		if c1.value ~= nil or c1.id == TOK.lit_null and #c1.children == 0 then
 			if type(c1.value) ~= 'string' and type(c1.value) ~= 'table' then
 				parse_error(token.span, 'Length operator can only operate on strings and arrays', file)
 				token.value = #std.str(c1.value)
@@ -345,7 +345,7 @@ function FOLD_CONSTANTS(token, file)
 
 			token.id = TOK.lit_number
 			token.text = tostring(token.value)
-			token.children = nil
+			token.children = {}
 		end
 	elseif token.id == TOK.func_call then
 		if FUNC_OPERATIONS[token.text] then
@@ -402,7 +402,7 @@ function FOLD_CONSTANTS(token, file)
 						'COMPILER BUG: Folding of function "' .. token.text .. '" resulted in data of type "' .. tp ..
 						'"!', file)
 				end
-				token.children = nil
+				token.children = {}
 			end
 		elseif math[token.text] then
 			local val1, val2 = math[token.text](c1.value, c2 and c2.value)
@@ -419,7 +419,7 @@ function FOLD_CONSTANTS(token, file)
 				token.value = val1
 				token.text = tostring(val1)
 			end
-			token.children = nil
+			token.children = {}
 		end
 	elseif token.id == TOK.array_concat then
 		token.id = TOK.lit_array
@@ -437,7 +437,7 @@ function FOLD_CONSTANTS(token, file)
 			end
 		end
 		token.type = SIGNATURE(std.deep_type(token.value))
-		token.children = nil
+		token.children = {}
 	elseif token.id == TOK.array_slice then
 		token.type = _G['TYPE_ARRAY_NUMBER']
 		if #token.children == 1 then
@@ -460,7 +460,7 @@ function FOLD_CONSTANTS(token, file)
 			for i = start, stop do
 				table.insert(token.value --[[@as table]], i)
 			end
-			token.children = nil
+			token.children = {}
 			token.reduce_array_concat = true --If a slice operator is nested in an array_concat operation, merge the arrays
 		elseif stop - start >= std.MAX_ARRAY_LEN then
 			local msg = 'Attempt to create an array of ' ..
@@ -474,19 +474,19 @@ function FOLD_CONSTANTS(token, file)
 		token.id = TOK.lit_number
 		token.value = number_op(0, c1.value, function(a, b) return a - b end)
 		token.text = tostring(token.value)
-		token.children = nil
+		token.children = {}
 	elseif token.id == TOK.concat then
 		token.id = TOK.string_open
 		token.value = std.str(c1.value) .. std.str(c2.value)
 		token.text = token.value
-		token.children = nil
+		token.children = {}
 	elseif token.id == TOK.string_open then
 		token.value = ''
 		local i
 		for i = 1, #token.children do
 			token.value = token.value .. std.str(token.children[i].value)
 		end
-		token.children = nil
+		token.children = {}
 	elseif token.id == TOK.index then
 		local val = c1.value
 		local is_string = false
@@ -553,7 +553,7 @@ function FOLD_CONSTANTS(token, file)
 
 		token.value = result
 		token.type = std.deep_type(result)
-		token.children = nil
+		token.children = {}
 
 		local rs = {
 			string = TOK.string_open,
