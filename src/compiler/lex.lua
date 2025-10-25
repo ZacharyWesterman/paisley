@@ -556,6 +556,7 @@ function Lexer(text, file)
 								span = Span:new(line, col - 1, line, col + #this_str - 1),
 								text = this_str,
 								id = TOK.text,
+								children = {},
 							}
 							col = col + #this_str
 							return out
@@ -700,6 +701,7 @@ function Lexer(text, file)
 						id = tok_type,
 						value = real_value,
 						filename = file,
+						children = {},
 					}
 				end
 			else
