@@ -180,15 +180,11 @@ exponent :=
 	| length
 
 length :=
-	| `&` index
-	| index
+	| `&` dot_and_index
+	| dot_and_index
 
-index :=
-	| dot `[` expression `]`
-	| dot
-
-dot :=
-	| dot `.` value
+dot_and_index :=
+	| value (`.` value | `[` expression `]`)+
 	| value
 
 value :=

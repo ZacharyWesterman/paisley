@@ -26,8 +26,7 @@ local command
 
 --Expressions
 local value
-local dot
-local index
+local dot_and_index
 local length
 local exponent
 local negate
@@ -440,9 +439,9 @@ end
 
 ---Syntax rule for length
 length = function(span)
-	if not parser.accept(TOK.op_count) then return exp(index) end
+	if not parser.accept(TOK.op_count) then return exp(dot_and_index) end
 
-	local ok, child = exp(index)
+	local ok, child = exp(dot_and_index)
 	if not ok then return parser.out(false) end
 
 	return true, {
@@ -452,70 +451,60 @@ length = function(span)
 	}
 end
 
----Syntax rule for array indexing
-index = function(span)
+---Syntax rule for dot-notation and indexing
+dot_and_index = function(span)
 	local ok, lhs, rhs, c
-	ok, lhs = parser.accept(dot)
+	ok, lhs = parser.accept(value)
 	if not ok then return parser.out(false) end
 
-	if not parser.accept(TOK.index_open) then return true, lhs end
+	local node = lhs
 
-	ok, rhs = exp(expression)
-	if not ok then return parser.out(false) end
+	--Properly handle chained dot and indexing operations
+	while true do
+		if parser.accept(TOK.op_dot) then
+			ok, rhs = exp(value)
+			if not ok then return parser.out(false) end
 
-	ok, c = parser.expect(TOK.index_close, ']')
-	if not ok then return parser.out(false) end
+			--Dot-notation is just syntax sugar
+			--`a.b` = `a["b"]`
+			--`a.b(...) = `b(a, ...)`
+			if rhs.id == TOK.func_call then
+				--`a.b(...)`
+				table.insert(rhs.children, node)
+				node = rhs
+			elseif rhs.id == TOK.variable then
+				--`a.b` -> `a["b"]`
+				rhs.id = TOK.text
 
-	return true, {
-		id = TOK.index,
-		span = Span:merge(span, c.span),
-		children = { lhs, rhs },
-	}
-end
-
----Syntax rule for dot-notation
-dot = function(span)
-	--TODO: Dot-notation coerces into either indexing or function calls!
-
-	local ok, node = binary_lassoc(
-		value,
-		{ TOK.op_dot },
-		dot,
-		TOK.op_dot
-	)
-
-	--Dot-notation is just syntax sugar
-	--`a.b` = `a["b"]`
-	--`a.b(...) = `b(a, ...)`
-	if ok and node.id == TOK.op_dot then
-		local lhs = node.children[1]
-		local rhs = node.children[2]
-
-		if rhs.id == TOK.func_call then
-			--`a.b(...)`
-			table.insert(rhs.children, 1, lhs)
-			rhs.span = node.span
-			return ok, rhs
-		else
-			--`a.b`
-			if rhs.id ~= TOK.variable then
-				parser.ast_error(rhs, TOK.variable)
+				node = {
+					id = TOK.index,
+					text = '',
+					span = Span:merge(node.span, rhs.span),
+					children = { node, rhs },
+				}
+			else
+				--Dot-notation is not allowed with any other types of values
+				parser.ast_error(rhs, { TOK.variable, TOK.func_call })
 				return parser.out(false)
 			end
+		elseif parser.accept(TOK.index_open) then
+			ok, rhs = exp(expression)
+			if not ok then return parser.out(false) end
+			ok, c = parser.expect(TOK.index_close, ']')
+			if not ok then return parser.out(false) end
 
-			rhs.id = TOK.text
-
-			return ok, {
+			node = {
 				id = TOK.index,
-				span = node.span,
-				children = {
-					lhs, rhs
-				}
+				text = '',
+				span = Span:merge(node.span, c.span),
+				children = { node, rhs },
 			}
+		else
+			break
 		end
 	end
 
-	return ok, node
+	return true, node
 end
 
 ---Syntax rule for bottom-level expression values
