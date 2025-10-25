@@ -168,6 +168,7 @@ mult :=
 	| slice
 
 slice :=
+	| negate `:` `:`
 	| negate `:` slice
 	| negate
 

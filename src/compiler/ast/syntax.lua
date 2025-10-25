@@ -425,12 +425,29 @@ end
 
 ---Syntax rule for slices
 slice = function(span)
-	return binary_lassoc(
-		negate,
-		{ TOK.op_slice },
+	local ok, lhs, op, rhs
+
+	ok, lhs = parser.accept(negate)
+	if not ok then return parser.out(false) end
+
+	ok, op = parser.accept(TOK.op_slice)
+	if not ok then return true, lhs end
+
+	ok, rhs = parser.any_of({
+		TOK.op_slice,
 		slice,
-		TOK.array_slice
-	)
+	}, {
+		TOK.expression,
+		':',
+	})
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = TOK.array_slice,
+		text = op.text,
+		span = Span:merge(lhs.span, rhs.span),
+		children = rhs.id == TOK.op_slice and { lhs } or { lhs, rhs },
+	}
 end
 
 ---Syntax rule for negation
