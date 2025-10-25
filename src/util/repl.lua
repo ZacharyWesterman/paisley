@@ -751,10 +751,9 @@ for input_line in readline do
 
 		--Parse the tokens into an AST
 		local parser = SyntaxParser(token_cache)
-		while parser.fold() do if ERRORED then break end end
 
 		--Run semantic analysis
-		local root = nil
+		local root = parser()
 		if not ERRORED and #parser.get() > 0 then
 			root = parser.get()
 
