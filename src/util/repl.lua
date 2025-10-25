@@ -751,23 +751,22 @@ for input_line in readline do
 
 		--Parse the tokens into an AST
 		local parser = SyntaxParser(token_cache)
+		local ast = parser()
+		local root
 
 		--Run semantic analysis
-		local root = parser()
-		if not ERRORED and #parser.get() > 0 then
-			root = parser.get()
-
+		if not ERRORED then
 			--Reappend subroutine cache into program.
 			for _, subroutine_ast in pairs(subroutine_cache) do
-				root[1] = {
+				root = {
 					id = TOK.program,
 					span = root[1].span,
 					text = 'stmt_list',
-					children = { subroutine_ast, root[1], },
+					children = { subroutine_ast, root, },
 				}
 			end
 
-			root = SemanticAnalyzer(parser.get())
+			root = SemanticAnalyzer(ast)
 		end
 
 		--If we didn't hit any compile errors, then add any subroutines to the cache.
