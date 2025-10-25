@@ -1424,6 +1424,7 @@ import_stmt = function(span)
 		id = TOK.import_stmt,
 		span = Span:merge(span, list[#list].span),
 		value = files,
+		children = list,
 	}
 end
 --[[/minify-delete]]
