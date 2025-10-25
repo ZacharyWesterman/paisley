@@ -5,11 +5,11 @@ local function break_continue(token, file)
 			text = '1',
 			value = 1,
 			span = token.span,
+			children = {},
 		} }
 		return
 	end
 
-	token.children = token.children[1].children
 	local val = tonumber(token.children[1].text, 10)
 	if #token.children > 1 or val == nil or val < 1 then
 		parse_error(token.span, 'Only a constant positive integer is allowed as a parameter for "' .. token.text ..
@@ -186,12 +186,14 @@ return {
 							span = token.span,
 							id = TOK.variable,
 							text = '@',
+							children = {},
 						},
 						{
 							span = token.span,
 							id = TOK.lit_number,
 							text = tostring(index),
 							value = index,
+							children = {},
 						}
 					}
 				end
@@ -213,60 +215,6 @@ return {
 					if kids and kids[i].id ~= TOK.text then
 						parse_error(kids[i].span, 'Expected only variable names after "delete" keyword', file)
 					end
-				end
-				token.children = kids
-			end,
-		},
-
-		[TOK.array_concat] = {
-			--Fold nested array_concat tokens into a single array
-			function(token, file)
-				local function fold_children(node)
-					local kids = {}
-					if node.id == TOK.array_concat or node.id == TOK.object then
-						--If the node is an array_concat or object, fold its children
-						for _, kid in ipairs(node.children) do
-							for _, subkid in ipairs(fold_children(kid)) do
-								table.insert(kids, subkid)
-							end
-						end
-					else
-						--Otherwise, just return the node itself
-						table.insert(kids, node)
-					end
-					return kids
-				end
-
-				local kids = fold_children(token)
-
-				local is_object = false
-				local is_array = false
-				for _, child in ipairs(kids) do
-					if child.id ~= TOK.array_concat and child.id ~= TOK.object and not child.errored then
-						if child.id == TOK.key_value_pair then
-							is_object = true
-							child.inside_object = true
-							if #child.children == 0 and #kids > 1 then
-								parse_error(child.span, 'Missing key and value for object construct', file)
-								child.errored = true
-							end
-						else
-							is_array = true
-						end
-
-						if is_object and is_array then
-							parse_error(child.span,
-								'Ambiguous mixture of object and array constructs. Objects require key-value pairs for every element (e.g. `"key" => value`)',
-								file)
-							child.errored = true
-							break
-						end
-					end
-				end
-
-				if is_object then
-					token.id = TOK.object
-					token.type = _G['TYPE_OBJECT']
 				end
 				token.children = kids
 			end,
@@ -311,11 +259,13 @@ return {
 										id = TOK.text,
 										span = l.span,
 										text = i,
+										children = {},
 									},
 									{
 										id = TOK.text,
 										span = a.span,
 										text = alias:gsub('%*', i:sub(#label + 1)),
+										children = {},
 									}
 								},
 							})
@@ -407,7 +357,7 @@ return {
 		[TOK.string_open] = {
 			--Prep plain (non-interpolated) strings to allow constant folding
 			function(token, file)
-				if token.children then
+				if #token.children > 0 then
 					if token.children[1].id == TOK.text and #token.children == 1 then
 						token.value = token.children[1].text
 						token.children = {}
@@ -500,34 +450,14 @@ return {
 
 				--If function name begins with backslash, it's actually a gosub.
 
-				local function flatten_array_concats(node)
-					if node.id == TOK.array_concat then
-						local kids = {}
-						for _, kid in ipairs(node.children) do
-							for _, subkid in ipairs(flatten_array_concats(kid)) do
-								table.insert(kids, subkid)
-							end
-						end
-						return kids
-					else
-						return { node }
-					end
-				end
-
-				local kids = {}
-				for _, kid in ipairs(token.children or {}) do
-					for _, subkid in ipairs(flatten_array_concats(kid)) do
-						table.insert(kids, subkid)
-					end
-				end
-
 				---@type Token[]
-				table.insert(kids, 1, {
+				table.insert(token.children, 1, {
 					id = TOK.text,
 					text = token.text:sub(2),
 					span = token.span,
 					type = TYPE_STRING,
 					value = token.text:sub(2),
+					children = {},
 				})
 
 				token.text = '${'
@@ -536,7 +466,7 @@ return {
 					id = TOK.gosub_stmt,
 					text = 'gosub',
 					span = token.span,
-					children = kids,
+					children = token.children,
 				} }
 			end,
 		},

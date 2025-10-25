@@ -53,6 +53,7 @@ function SemanticAnalyzer(root, root_file)
 			end
 		end
 
+		if not root.children then print_tokens_recursive(root) end
 		for _, token in ipairs(root.children) do
 			recurse2(token, config, file)
 			if ERRORED then return end

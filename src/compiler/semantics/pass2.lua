@@ -37,26 +37,6 @@ return {
 	enter = {
 
 		[TOK.func_call] = {
-			--Move params of all function calls to be direct children
-			--(this makes syntax like `a.func(b)` be the same as `func(a,b)`)
-			function(token, file)
-				if #token.children > 0 then
-					local kids = {}
-					for i = 1, #token.children do
-						local child = token.children[i]
-						if child.id == TOK.array_concat then
-							for k = 1, #child.children do
-								table.insert(kids, child.children[k])
-							end
-						else
-							table.insert(kids, child)
-						end
-					end
-
-					token.children = kids
-				end
-			end,
-
 			--Validate function calls
 			function(token, file)
 				if token.text:sub(1, 1) == '\\' then return end

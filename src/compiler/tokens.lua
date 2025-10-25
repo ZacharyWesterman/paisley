@@ -163,7 +163,7 @@ require "src.compiler.span"
 ---@field private meta_id TOK? ONLY used during AST generation! The ID this token was coerced into.
 ---@field text string The text from the input file that this token represents.
 ---@field value any The literal value that was calculated for this token, if any. Used for constant folding.
----@field children Token[]? A list of child nodes.
+---@field children Token[] A list of child nodes.
 ---@field type table? The data type that was deduced for this token, if any.
 ---@field inside_object boolean? If defined and true, this token is inside an object declaration.
 ---@field ignore boolean? If true, optimize this token away. Only defined on subroutine and variable definitions.

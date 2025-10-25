@@ -470,7 +470,7 @@ dot_and_index = function(span)
 			--`a.b(...) = `b(a, ...)`
 			if rhs.id == TOK.func_call then
 				--`a.b(...)`
-				table.insert(rhs.children, node)
+				table.insert(rhs.children, 1, node)
 				node = rhs
 			elseif rhs.id == TOK.variable then
 				--`a.b` -> `a["b"]`

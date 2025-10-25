@@ -59,6 +59,7 @@ return {
 			type = TYPE_NUMBER,
 			value = std.MAX_ARRAY_LEN,
 			text = tostring(std.MAX_ARRAY_LEN),
+			children = {},
 		})
 	end,
 
@@ -73,6 +74,7 @@ return {
 				type = TYPE_NUMBER,
 				value = 1,
 				text = '1',
+				children = {},
 			},
 			{
 				id = TOK.func_call,
@@ -99,6 +101,7 @@ return {
 						type = TYPE_NUMBER,
 						value = 1,
 						text = '1',
+						chlidren = {},
 					},
 					token.children[1],
 				},
@@ -115,6 +118,7 @@ return {
 				id = TOK.lit_number,
 				span = token.span,
 				value = 1,
+				children = {},
 			},
 			{
 				id = TOK.func_call,
@@ -136,6 +140,7 @@ return {
 				type = TYPE_NUMBER,
 				value = 1,
 				text = '1',
+				children = {},
 			},
 			{
 				id = TOK.func_call,
@@ -162,6 +167,7 @@ return {
 						type = TYPE_NUMBER,
 						value = 1,
 						text = '1',
+						children = {},
 					},
 					token.children[1],
 				},
@@ -178,11 +184,13 @@ return {
 				id = TOK.lit_number,
 				span = token.span,
 				value = 16,
+				children = {},
 			},
 			{
 				id = TOK.lit_number,
 				span = token.span,
 				value = 0,
+				children = {},
 			}
 		}
 	end,
