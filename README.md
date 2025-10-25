@@ -173,20 +173,24 @@ Of course, like `if` statements, the `else` branch is optional and can be exclud
 ## Loops:
 While and For loops have a similar syntax to Lua:
 ```
+# While loop
 while {expression is truthy} do
 	...
 end
 
+# Iterator for loop
 for value in {expression} do
 	...
 end
 
+# Key-value for loop
 for key value in {pairs(object or array)} do
 	...
 end
 ```
 These are the only loop structures possible.
-Note that the middle loop type will iterate over all *values* in an array, and all *keys* in an object!
+Note that the iterator (middle) loop type will iterate over all *values* in an array, and all *keys* in an object!
+Also note that the key-value (bottom) loop **must** contain either `pairs()` or `chunk(2)`, to ensure that the key-value pairs are valid.
 
 If you want syntax similar to Lua's integer for loops (`for i = 1, 10 do ... end`), you can use something like `for i in {1:10} do ... end`.
 If you want an infinite loop, just use something like `while 1 do ... end` or `while {true} do ... end`.
@@ -553,13 +557,13 @@ So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` woul
 - Multi-line strings with interpoation, `"""some text"""`
 - Multi-line strings with NO interpolation, `'''some text'''`
 - Variables, `var_name`, `x`, etc.
-- `@`, the "parameter list" variable, an array containing any values passed to the current subroutine.
+- `@`, the "parameter list" variable, an array containing any values passed to the current subroutine. If used outside of a subroutine, it instead contains any arguments passed to the script.
 - `$`, the "command list" variable, an array containing the names of all allowed commands.
 - `_VARS`, the "variables" variable, an object that contains variable names and values.
 - `_VERSION`, the "version number" variable, a string formatted as `MAJOR.MINOR.PATCH`.
 - `_ENV`, the "environment variables" variable, an object containing string values. Note that unlike other variables, only individual keys of `_ENV` are allowed to be accessed, not the entire object.
-- Arrays, e.g. `(1,2,3,4,5)`
-- Objects, e.g. `("a" => 1, "b" => 2)`
+- Arrays, e.g. `(1,2,3,4,5)`. See [the docs for details](docs/arrays.md).
+- Objects, e.g. `("a" => 1, "b" => 2)`. See [the docs for details](docs/objects.md).
 
 ### Built-in functions:
 
@@ -626,7 +630,7 @@ print {${time}.clocktime()[1:3].join(":")}
 ```
 
 ### Built-in commands
-For ease of use and consistency, there are 6 built-in commands that will always be the same regardless of what the target environment is.
+For ease of use and consistency, there are 7 built-in commands that will always be the same regardless of what the target environment is.
 - `time`: Returns a number representing the clock time. If in a game engine, this is the in-game time. If on PC, this is the same as `systime`. Arguments are ignored.
 - `systime`: Returns a number representing the system time (seconds since midnight). Arguments are ignored.
 - `sysdate`: Returns a numeric array containing the system day, month, and year (in that order). Arguments are ignored.

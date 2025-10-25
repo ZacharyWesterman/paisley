@@ -10,11 +10,11 @@ In all other cases, values must be manually cast to different types by the progr
 - true and false - convert to `"1"` and `"0"` respectively.
 - numbers - convert to the usual decimal text representation.
 - arrays - for historical reasons, arrays are cast to space-delimited strings, e.g. `("a",123,"b")` is converted to `"a 123 b"`.
-- objects - for historical reasons, objects' values and keys are cast to space delimited strings, e.g. `{"a" => 1, "b" => 2}` is converted to `"a 1 b 2"`
+- objects - for historical reasons, objects' values and keys are cast to space-delimited strings, e.g. `{"a" => 1, "b" => 2}` is converted to `"a 1 b 2"`
 
 ### Casting to numbers
 
-- null - converts to zero
+- null - converts to zero.
 - true and false - convert to `1` and `0` respectively.
 - strings - convert to zero if not numeric, otherwise are converted using the usual decimal text representation.
 - arrays - always convert to zero.
@@ -27,3 +27,7 @@ In all other cases, values must be manually cast to different types by the progr
 - strings - empty strings convert to `false`, anything else is `true`.
 - arrays - empty arrays convert to `false`, anything else is `true`.
 - objects - empty objects convert to `false`, anything else is `true`.
+
+### Other type-casting
+
+Arrays and objects may be cast between each other, but nothing can be cast to an array or object (what would converting a number to an object even mean?). Instead, arrays and objects must be constructed using the supported syntax.
