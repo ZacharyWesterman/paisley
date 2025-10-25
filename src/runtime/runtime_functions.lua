@@ -11,6 +11,7 @@ NULL = {}
 
 --[[minify-delete]]
 require 'src.util.filesystem'
+--[[/minify-delete]]
 
 local function runtime_error(line, msg)
 	if msg:sub(1, 11) == 'RUNTIME BUG' then

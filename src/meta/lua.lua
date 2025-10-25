@@ -79,12 +79,12 @@ LUA = {
 	minify = function(text, standalone, remove_delete_blocks, print_progress)
 		local tokens = LUA.tokenize(text)
 
-		if standalone then
-			tokens = LUA.tokens.replace_requires(tokens, print_progress)
-		end
-
 		if remove_delete_blocks then
 			tokens = LUA.tokens.remove_delete_blocks(tokens)
+		end
+
+		if standalone then
+			tokens = LUA.tokens.replace_requires(tokens, print_progress, remove_delete_blocks)
 		end
 
 		tokens = LUA.tokens.remove_noinstall_blocks(tokens)
@@ -265,8 +265,9 @@ LUA = {
 		--- Recursively parse require statements and split into a function call and the rest of the program.
 		--- @param tokens LUA.Token[] The tokens to process.
 		--- @param print_progress boolean? Whether to print progress messages.
+		--- @param remove_delete_blocks boolean? Whether to remove blocks of code that are unused in the Plasma build.
 		--- @return LUA.Token[] new_tokens The processed tokens.
-		_extract_requires = function(tokens, print_progress)
+		_extract_requires = function(tokens, print_progress, remove_delete_blocks)
 			if print_progress then
 				io.stderr:write('.')
 			end
@@ -310,9 +311,12 @@ LUA = {
 						error('ERROR: File not found: ' .. file)
 					end
 					if not LUA.tokens._requires_cache[file] then
-						LUA.tokens._requires_cache[file] = {}
+						local t = LUA.tokenize(fp:read('*a'))
+						if remove_delete_blocks then
+							t = LUA.tokens.remove_delete_blocks(t)
+						end
 						LUA.tokens._requires_cache[file] = {
-							tokens = LUA.tokens._extract_requires(LUA.tokenize(fp:read('*a')), print_progress),
+							tokens = LUA.tokens._extract_requires(t, print_progress, remove_delete_blocks),
 							id = 'RQ' .. LUA.tokens._rqid,
 						}
 						LUA.tokens._rqid = LUA.tokens._rqid + 1
@@ -336,11 +340,17 @@ LUA = {
 		--- Replace all require calls with the appropriate file contents.
 		--- @param tokens LUA.Token[] The tokens to process.
 		--- @param print_progress boolean? Whether to print progress messages.
+		--- @param remove_delete_blocks boolean? Whether to remove blocks of code that are unused in the Plasma build.
 		--- @return LUA.Token[] new_tokens The processed tokens.
-		replace_requires = function(tokens, print_progress)
+		replace_requires = function(tokens, print_progress, remove_delete_blocks)
 			LUA.tokens._requires_cache = {}
 
-			local program = LUA.tokens._extract_requires(tokens, print_progress)
+			local t = tokens
+			if remove_delete_blocks then
+				t = LUA.tokens.remove_delete_blocks(t)
+			end
+
+			local program = LUA.tokens._extract_requires(tokens, print_progress, remove_delete_blocks)
 
 			local result = {}
 			for _, token_list in pairs(LUA.tokens._requires_cache) do

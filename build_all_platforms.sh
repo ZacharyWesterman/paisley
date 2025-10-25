@@ -11,3 +11,7 @@ echo
 # Build for Windows
 echo -e "\e[1;32mBuilding for Windows...\e[0m"
 ./paisley --compile-self=x86_64-w64-mingw32-gcc --output=build/paisley.exe
+
+echo
+echo -e "\e[1;32mDone!\e[0m"
+echo "Executables are under ${BASH_SOURCE[0]}/build/"
