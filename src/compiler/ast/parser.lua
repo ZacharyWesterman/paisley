@@ -227,6 +227,8 @@ return {
 	set_token_list = function(tokens, filename)
 		token_list = tokens
 		file_name = filename
+		last_token = nil
+		token_i = 0
 	end,
 	out = function(ok)
 		return ok, token

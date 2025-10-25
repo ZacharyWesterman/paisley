@@ -53,7 +53,6 @@ function SemanticAnalyzer(root, root_file)
 			end
 		end
 
-		if not root.children then print_tokens_recursive(root) end
 		for _, token in ipairs(root.children) do
 			recurse2(token, config, file)
 			if ERRORED then return end
@@ -110,7 +109,7 @@ function SemanticAnalyzer(root, root_file)
 					end
 				end
 
-				if token.text:sub(1, 1) == '?' then
+				if (token.text or ''):sub(1, 1) == '?' then
 					parse_error(token.span, 'Subroutine name cannot begin with `?`', file)
 				end
 
@@ -155,6 +154,7 @@ function SemanticAnalyzer(root, root_file)
 				local ast = parser()
 
 				if not ERRORED then
+					autofill(ast)
 					recurse(ast, { TOK.import_stmt }, import_file)
 					table.insert(new_asts, ast)
 				end

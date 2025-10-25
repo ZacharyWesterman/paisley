@@ -245,7 +245,7 @@ list_comprehension = function(span)
 	})
 	if not ok then return parser.out(false) end
 
-	list = { list[1], list[3] }
+	list = { lhs, list[1], list[3] }
 
 	--List filtering condition is optional
 	if parser.accept(TOK.kwd_if) then
