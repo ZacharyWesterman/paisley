@@ -219,7 +219,7 @@ ternary = function(span)
 	return true, {
 		id = TOK.ternary,
 		span = Span:merge(span, list[#list].span),
-		children = { lhs, list[1], list[3] },
+		children = { list[1], lhs, list[3] },
 	}
 end
 
