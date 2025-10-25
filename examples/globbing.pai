@@ -24,5 +24,5 @@ print
 #   echo $i
 # done
 
-# Note that file_glob does not work if the @plasma or @sandbox annotations
+# Note that file_glob does not work if the @ plasma or @ sandbox annotations
 # (or their respective compiler flags) are used, since file_glob interacts with the filesystem.
