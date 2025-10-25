@@ -706,7 +706,7 @@ if curses_installed then
 end
 
 
-printf('Paisley ' .. _G['VERSION'] .. ' interactive REPL.\n')
+printf('Paisley ' .. VERSION .. ' interactive REPL.\n')
 printf('Type `stop` or press Ctrl-D to quit.\n')
 prompt(false)
 

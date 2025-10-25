@@ -1432,7 +1432,7 @@ COMMANDS = {
 			PUSH(VARS)
 		elseif p1 == '_VERSION' then
 			--Version variable
-			PUSH(_G['VERSION'])
+			PUSH(VERSION)
 		else
 			local v = VARS[p1]
 			if v == NULL then PUSH(nil) else PUSH(v) end
