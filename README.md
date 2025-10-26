@@ -239,6 +239,32 @@ let a b c
 let foo = {null}
 ```
 
+### Variable Index Assignment
+
+Assignment of arrays, strings and objects can all be indexed to only alter sub-elements.
+As mentioned above, this uses the `let var{expr} = expr` syntax.
+
+However, some objects may be more deeply nested. For example, suppose you have a 2D array or a complex object:
+```
+let array = {
+	[1, 2, 3],
+	[4, 5, 6],
+}
+let object = {
+	"a" => {
+		"b" => {
+			"c" => 123,
+		}
+	}
+}
+```
+
+If you want to change `array[1][2]` from `2` to `8`, or `object.a.b.c` from `123` to `456`, just add extra values in the index field, separated by commas:
+```
+let array{1, 2} = 8
+let object{'a', 'b', 'c'} = 456
+```
+
 **REMEMBER:** All variables are global, so any "re-definition" of a variable just sets it to the new value.
 
 ### Variable Initialization:
