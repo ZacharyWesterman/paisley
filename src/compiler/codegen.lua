@@ -875,8 +875,6 @@ function generate_bytecode(root, file)
 			end
 
 			if token.dynamic then
-				local i
-				local end_label, label_var = LABEL_ID(), LABEL_ID()
 				codegen_rules.recur_push(token.children[1])
 				emit(bc.push_index)
 				emit(bc.call, 'jump', '?dynamic-gosub')
@@ -885,28 +883,22 @@ function generate_bytecode(root, file)
 					emit(bc.call, 'jump', EOF_LABEL)
 					emit(bc.label, '?dynamic-gosub')
 
-					local names, indexes = {}, {}
+					local lookup = std.object()
 					for name, index in pairs(labels) do
 						if name:sub(1, 1) ~= '?' then
-							table.insert(names, name)
-							table.insert(indexes, index - 1)
+							lookup[name] = index - 1
 						end
 					end
 
-					emit(bc.push, names)
+					emit(bc.push, lookup)
 					emit(bc.swap)
-					emit(bc.call, 'implode', 2)
-					emit(bc.call, 'index')
+					emit(bc.call, 'arrayindex')
 
 					--If the label doesn't exist in the program, leave zero on the stack, and go back to the caller.
 					local fail_label = LABEL_ID()
-					emit(bc.call, 'jumpiffalse', fail_label)
+					emit(bc.call, 'jumpifnil', fail_label)
 
 					--If the label DOES exist, jump to the appropriate index
-					emit(bc.push, indexes)
-					emit(bc.swap)
-					emit(bc.call, 'arrayindex')
-					emit(bc.push_index, 1) --+1 for the return address
 					emit(bc.call, 'jump') --JUMP without param will pop the param from the stack
 
 					--Then push TRUE and return to caller

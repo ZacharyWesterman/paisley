@@ -4,7 +4,7 @@ local config = {
 	description = "This is the Paisley compiler and runtime engine.\nhttps://github.com/ZacharyWesterman/paisley",
 	name = "Paisley",
 	exe = "paisley",
-	version = "1.18.0",
+	version = "1.18.1",
 }
 
 local options = {
@@ -82,7 +82,7 @@ if flags.plasma_build then
 			text = --[[build-replace=src/compiler.lua]] '' --[[/build-replace]]
 		elseif flags.plasma_build == 'runtime' then
 			text = 'VERSION = "' ..
-			config.version .. '"\n' .. --[[build-replace=src/runtime.lua]] '' --[[/build-replace]]
+				config.version .. '"\n' .. --[[build-replace=src/runtime.lua]] '' --[[/build-replace]]
 		end
 		--[[no-install]]
 	end
