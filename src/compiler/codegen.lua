@@ -231,17 +231,15 @@ function generate_bytecode(root, file)
 						not_used = false
 					end
 
-					if multivars then
-						for i = 1, #multivars do
-							if not multivars[i].is_referenced and multivars[i].text:sub(1, 1) ~= '_' then
-								table.insert(unused_vars, multivars[i].text)
-							else
-								not_used = false
-							end
+					for i = 1, #multivars do
+						if not multivars[i].is_referenced and multivars[i].text:sub(1, 1) ~= '_' then
+							table.insert(unused_vars, multivars[i].text)
+						else
+							not_used = false
 						end
 					end
 
-					if #unused_vars > 0 then
+					if #unused_vars > 0 and (#multivars == 0 or #unused_vars == #multivars + 1) then
 						local msg, plural, verb, pronoun = 'The value', '', 'is', { 'it', 'it' }
 						if #unused_vars > 1 then
 							plural = 's'
