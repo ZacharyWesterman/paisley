@@ -105,7 +105,8 @@ array = function(span)
 	local ok, _ = parser.accept(TOK.op_comma)
 	if ok then
 		return ok, {
-			id = TOK.array_concat,
+			id = TOK.lit_array,
+			value = std.array(),
 			span = span,
 		}
 	end
