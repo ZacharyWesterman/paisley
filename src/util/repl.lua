@@ -710,6 +710,7 @@ printf('Paisley ' .. VERSION .. ' interactive REPL.\n')
 printf('Type `stop` or press Ctrl-D to quit.\n')
 prompt(false)
 
+local in_expr = 0
 for input_line in readline do
 	ERRORED = false
 	SHOW_MULTIPLE_ERRORS = true
@@ -718,11 +719,14 @@ for input_line in readline do
 
 	for token in lexer do
 		if indent_tokens[token.id] then
-			indent = indent + 1
+			if in_expr == 0 then indent = indent + 1 end
 		elseif dedent_tokens[token.id] then
 			indent = math.max(0, indent - 1)
 		end
 		table.insert(token_cache, token)
+
+		if token.id == TOK.expr_open then in_expr = in_expr + 1 end
+		if token.id == TOK.expr_close then in_expr = in_expr - 1 end
 	end
 
 	if indent > 0 then
