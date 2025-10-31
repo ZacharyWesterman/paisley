@@ -202,6 +202,21 @@ ternary = function(span)
 	ok, lhs = exp(list_comprehension)
 	if not ok then return parser.out(false) end
 
+	--Special shorthand for trivial ternaries:
+	--`a else b` is the same as `a if a else b`.
+	local rhs
+	ok, rhs = parser.accept(TOK.kwd_else)
+	if ok then
+		ok, rhs = parser.expect(ternary, TOK.expression)
+		if not ok then return parser.out(false) end
+
+		return true, {
+			id = TOK.ternary,
+			span = Span:merge(lhs.span, rhs.span),
+			children = { lhs, lhs, rhs },
+		}
+	end
+
 	--Just pass on higher-precedence expressions
 	ok, _ = parser.accept(TOK.kwd_if)
 	if not ok then return true, lhs end
