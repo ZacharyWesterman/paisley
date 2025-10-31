@@ -124,6 +124,20 @@ function generate_bytecode(root, file)
 
 	local function is_const(token) return token.value ~= nil or token.id == TOK.lit_null end
 
+	local function nodes_identical(node1, node2)
+		if node1.id ~= node2.id or node1.text ~= node2.text or #node1.children ~= #node2.children then
+			return false
+		end
+
+		for i = 1, #node1.children do
+			if not nodes_identical(node1.children[i], node2.children[i]) then
+				return false
+			end
+		end
+
+		return true
+	end
+
 	local loop_term_labels = {}
 	local loop_begn_labels = {}
 
@@ -1068,17 +1082,49 @@ function generate_bytecode(root, file)
 
 		--TERNARY (X if Y else Z) operator
 		[TOK.ternary] = function(token, file)
+			local condition = token.children[1]
+			local if_true = token.children[2]
+			local if_false = token.children[3]
+
+			local true_cond_same = nodes_identical(condition, if_true)
+			local false_cond_same = nodes_identical(condition, if_false)
+			local true_false_same = nodes_identical(if_true, if_false)
+
+			--Evaluate the condition
+			codegen_rules.recur_push(condition)
+
+			if true_cond_same and false_cond_same then
+				--All the same, so ternary can be entirely optimized away
+				return
+			end
+
+			--If both branches are the same, just evaluate one without branching
+			if true_false_same then
+				emit(bc.pop)
+				codegen_rules.recur_push(if_true)
+				return
+			end
+
 			local else_label = LABEL_ID()
 			local endif_label = LABEL_ID()
 
-			codegen_rules.recur_push(token.children[1])
 			emit(bc.call, 'jumpiffalse', else_label)
-			emit(bc.pop)
-			codegen_rules.recur_push(token.children[2])
+
+			--Don't re-eval if conditional and true branch are identical
+			if not true_cond_same then
+				emit(bc.pop)
+				codegen_rules.recur_push(if_true)
+			end
+
 			emit(bc.call, 'jump', endif_label)
 			emit(bc.label, else_label)
-			emit(bc.pop)
-			codegen_rules.recur_push(token.children[3])
+
+			--Don't re-eval if conditional and false branche are identical
+			if not false_cond_same then
+				emit(bc.pop)
+				codegen_rules.recur_push(if_false)
+			end
+
 			emit(bc.label, endif_label)
 		end,
 

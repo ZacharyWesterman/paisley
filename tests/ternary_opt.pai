@@ -1,0 +1,19 @@
+# Check that trivial ternaries are optimized away
+
+let x = {,}
+
+# These should only calculate x[1] once (output opt)
+.{x[1] if x[1] else 'null'}
+.{'ok' if x[1] else x[1]}
+
+# This should be optimized to `bool(x[1])` (semantic opt)
+.{true if x[1] else false}
+
+# This should be optimized to `not bool(x[1])`
+.{false if x[1] else true}
+
+# This should evaluate the condition, but not do any jumping
+.{x[1] if false else x[1]}
+
+# This just evaluates the condition
+.{x[1] if x[1] else x[1]}
