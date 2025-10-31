@@ -59,24 +59,33 @@ local string_interp
 --Helpers for common use cases
 local nl = function() parser.skip(TOK.line_ending) end
 local exp = function(symbol) return parser.accept(symbol) end
-local binary_lassoc = function(lhs_symbol, oper_list, rhs_symbol, node_id)
-	local ok, lhs, op, rhs
 
-	ok, lhs = parser.accept(lhs_symbol)
+---Match a left-associative binary expression.
+---The trivial implementation of left-associativity has problems with recursion, so special handling is required.
+---Trivial implementation: `LHS := LHS <operator> RHS | RHS`
+---This implementation: `LHS := RHS (<operator> RHS)*`
+local binary_lassoc = function(symbol, oper_list, node_id)
+	local ok, node = parser.accept(symbol)
 	if not ok then return parser.out(false) end
 
-	ok, op = parser.any_of(oper_list, {})
-	if not ok then return true, lhs end
+	while ok do
+		local op, rhs
 
-	ok, rhs = parser.expect(rhs_symbol, TOK.expression)
-	if not ok then return parser.out(false) end
+		ok, op = parser.any_of(oper_list, {})
+		if not ok then break end
 
-	return true, {
-		id = node_id,
-		text = op.text,
-		span = Span:merge(lhs.span, rhs.span),
-		children = { lhs, rhs },
-	}
+		ok, rhs = parser.expect(symbol, TOK.expression)
+		if not ok then return parser.out(false) end
+
+		node = {
+			id = node_id,
+			text = op.text,
+			span = Span:merge(node.span, rhs.span),
+			children = { node, rhs },
+		}
+	end
+
+	return true, node
 end
 
 local binary_ops = {
@@ -404,7 +413,6 @@ add = function(span)
 			TOK.op_plus,
 			TOK.op_minus,
 		},
-		add,
 		TOK.add
 	)
 end
@@ -419,7 +427,6 @@ mult = function(span)
 			TOK.op_idiv,
 			TOK.op_mod,
 		},
-		mult,
 		TOK.multiply
 	)
 end
@@ -470,7 +477,6 @@ exponent = function(span)
 	return binary_lassoc(
 		length,
 		{ TOK.op_exponent },
-		exponent,
 		TOK.exponent
 	)
 end
