@@ -100,11 +100,7 @@ function generate_bytecode(root, file)
 
 		table.insert(instructions, { instruction_id, current_line, param1, param2 })
 
-		local instr_text = bc_get_key(instruction_id, bc)
-		local call_text = param1
-		if instruction_id == bc.call then call_text = bc_get_key(param1, CALL_CODES) end
-
-		if not instr_text then
+		if not bc_get_key(instruction_id, bc) then
 			parse_error(Span:new(current_line, 0, current_line, 0),
 				'COMPILER BUG: Unknown bytecode instruction with id ' .. instruction_id .. '!', file)
 		end
@@ -115,11 +111,17 @@ function generate_bytecode(root, file)
 	local function enter(token)
 		if not codegen_rules[token.id] then
 			parse_error(token.span,
-				'COMPILER BUG: Unable to generate bytecode for token of type "' .. token_text(token.id) .. '"!', file)
+				'COMPILER BUG: Unable to generate bytecode for token of type "' .. token_text(token.id) .. '"!',
+				token.filename or file)
 		end
+
+		local tmp = file
+		if token.filename then file = token.filename end
 
 		current_line = token.span.from.line
 		codegen_rules[token.id](token, file)
+
+		if token.filename then file = tmp end
 	end
 
 	local function is_const(token) return token.value ~= nil or token.id == TOK.lit_null end
