@@ -236,7 +236,7 @@ end
 function parse_warning(span, msg, file)
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then
-		INFO.warning(span, msg, file)
+		INFO.warning(span, msg:gsub('\n', ' '), file)
 	else
 		--[[/minify-delete]]
 		msg = span.from.line .. ', ' .. span.from.col .. ': ' .. msg

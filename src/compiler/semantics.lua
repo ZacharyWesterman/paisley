@@ -152,6 +152,7 @@ function SemanticAnalyzer(root, root_file)
 				--Parse into AST and add to the list.
 				local parser = SyntaxParser(tokens, filename)
 				local ast = parser()
+				ast.filename = filename
 
 				if not ERRORED then
 					autofill(ast)
@@ -697,13 +698,7 @@ function SemanticAnalyzer(root, root_file)
 		for _, decls in pairs(assigned_vars) do
 			for _, var_decl in pairs(decls) do
 				if not var_decl.is_referenced and not _G['EXPORT_LINES'][var_decl.span.from.line] then
-					local filename = root_file
-					if var_decl.filename then filename = var_decl.filename end
-					if var_decl.text:sub(1, 1) ~= '_' then
-						INFO.warning(var_decl.span,
-							'Variable is never used. To indicate that this is intentional, prefix with an underscore',
-							filename)
-					end
+					local filename = var_decl.filename or root_file
 					INFO.dead_code(var_decl.span, '', filename)
 				end
 			end
