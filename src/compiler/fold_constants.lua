@@ -212,7 +212,7 @@ function FOLD_CONSTANTS(token, file)
 		--Boolean 'and' and 'or' operators have short-circuiting behavior, so we may still be able to fold them if one child is constant.
 
 		--[[minify-delete]]
-		if _G['NO_SHORTCUT'] then return end
+		if _G['NO_SHORT_CIRCUIT'] then return end
 		--[[/minify-delete]]
 
 		local literal_value
@@ -334,6 +334,8 @@ function FOLD_CONSTANTS(token, file)
 				token.id, token.text, token.value, token.children = ch.id, ch.text, ch.value, ch.children
 			end
 		end
+	elseif token.id == TOK.bitwise then
+		parse_error(token.span, 'BITWISE OPERATORS ARE NOT IMPLEMENTED YET', file)
 	elseif token.id == TOK.length then
 		if c1.value ~= nil or c1.id == TOK.lit_null and #c1.children == 0 then
 			if type(c1.value) ~= 'string' and type(c1.value) ~= 'table' then

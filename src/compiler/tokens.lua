@@ -72,6 +72,7 @@ TOK = {
 	op_exclamation = k(),
 	op_dot = k(),
 	op_arrow = k(),
+	op_bitwise = k(),
 
 	--[[minify-delete]]
 	op_pipe_file_out = k(),
@@ -96,6 +97,7 @@ TOK = {
 	multiply = k(), -- multiplication or division
 	exponent = k(),
 	boolean = k(),
+	bitwise = k(),
 	index = k(),
 	array_concat = k(),
 	array_slice = k(),

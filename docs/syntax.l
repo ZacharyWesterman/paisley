@@ -78,7 +78,7 @@ match_if_stmt :=
 match_argument :=
 	| <text>
 	| string
-	| `{` (`>`|`<`|`>=`|`<=`|`=`|`!=`|`not`? `like`|`not`? `in`|`and`|`or`|`xor`) expression `}`
+	| `{` (`>`|`<`|`>=`|`<=`|`=`|`!=`|`not`? `like`|`not`? `in`|`bitwise`? `and`|`bitwise`? `or`|`bitwise`? `xor`) expression `}`
 	| `{` expression `}`
 	| `${` inline_command `}`
 
@@ -144,10 +144,10 @@ list_comprehension :=
 	| boolean
 
 boolean :=
-	| `not` boolean
-	| concat `and` boolean
-	| concat `or` boolean
-	| concat `xor` boolean
+	| `bitwise`? `not` boolean
+	| concat `bitwise`? `and` boolean
+	| concat `bitwise`? `or` boolean
+	| concat `bitwise`? `xor` boolean
 	| concat `exists`
 	| concat
 

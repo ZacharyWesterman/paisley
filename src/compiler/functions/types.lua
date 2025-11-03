@@ -1226,6 +1226,10 @@ TYPESIG = {
 	[TOK.list_comp] = {
 		out = 'array',
 	},
+	[TOK.bitwise] = {
+		out = 'number',
+		valid = { { 'number', 'number' } },
+	},
 }
 
 --Convert all type signatures in the above from strings to type signature objects.

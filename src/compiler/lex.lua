@@ -63,6 +63,7 @@ opers = {
 	['!='] = TOK.op_ne,
 	[','] = TOK.op_comma,
 	['.'] = TOK.op_dot,
+	['bitwise'] = TOK.op_bitwise,
 }
 
 local oper_block = {

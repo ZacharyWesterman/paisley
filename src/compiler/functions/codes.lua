@@ -138,6 +138,10 @@ CALL_CODES = {
 	timestamp = uid(),
 	fmod = uid(),
 	sorted = uid(),
+	bitwise_and = uid(),
+	bitwise_or = uid(),
+	bitwise_xor = uid(),
+	bitwise_not = uid(),
 	--[[minify-delete]]
 	---@note These functions have to be at the end of the list,
 	---because they are not available in sandboxed environments.

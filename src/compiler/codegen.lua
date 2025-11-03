@@ -162,7 +162,7 @@ function generate_bytecode(root, file)
 		CODE GENERATION RULES
 	]]
 	codegen_rules = {
-		--Shortcut for binary operations, since they're all basically the same from a code gen perspective
+		--Short circuit for binary operations, since they're all basically the same from a code gen perspective
 		binary_op = function(token, operation_name)
 			codegen_rules.recur_push(token.children[1])
 			codegen_rules.recur_push(token.children[2])
@@ -493,7 +493,7 @@ function generate_bytecode(root, file)
 				end,
 			}
 			--[[minify-delete]]
-			if _G['NO_SHORTCUT'] then shortcut = {} end
+			if _G['NO_SHORT_CIRCUIT'] then shortcut = {} end
 			--[[/minify-delete]]
 
 			if #token.children > 1 then
@@ -1041,7 +1041,7 @@ function generate_bytecode(root, file)
 						emit(bc.call, ops[op_id])
 					end
 
-					--Optimize ands and ors to shortcut out of the loop if possible
+					--Optimize ands and ors to short-circuit out of the loop if possible
 					if op_id == TOK.op_and then
 						emit(bc.call, 'jumpiffalse', loop_end_label)
 						emit(bc.call, 'jump', loop_beg_label)

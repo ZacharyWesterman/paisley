@@ -726,7 +726,7 @@ function SemanticAnalyzer(root, root_file)
 			recurse(root,
 				{ TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK
 					.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary, TOK
-					.list_comp, TOK.object, TOK.key_value_pair }, nil, FOLD_CONSTANTS)
+					.list_comp, TOK.object, TOK.key_value_pair, TOK.bitwise }, nil, FOLD_CONSTANTS)
 		end
 
 		--Set any variables we can
@@ -893,7 +893,7 @@ function SemanticAnalyzer(root, root_file)
 				recurse(root,
 					{ TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK
 						.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary,
-						TOK.list_comp, TOK.object, TOK.key_value_pair }, nil, FOLD_CONSTANTS)
+						TOK.list_comp, TOK.object, TOK.key_value_pair, TOK.bitwise }, nil, FOLD_CONSTANTS)
 			end
 		else
 			token.children = { condition, else_branch }
