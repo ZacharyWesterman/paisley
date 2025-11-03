@@ -1546,7 +1546,7 @@ COMMANDS = {
 					local cmd_text = cmd_array[i]
 					if cmd_text:sub(1, #_G['RAW_SH_TEXT_SENTINEL']) == _G['RAW_SH_TEXT_SENTINEL'] then
 						cmd_text = cmd_text:sub(#_G['RAW_SH_TEXT_SENTINEL'] + 1)
-						text = text .. cmd_text .. ' '
+						text = text .. cmd_text
 					else
 						cmd_text = cmd_text:gsub('\\', '\\\\'):gsub(
 							'"', '\\"'):gsub('%$', '\\$'):gsub('`', '\\`'):gsub('!', '\\!')
@@ -1554,6 +1554,7 @@ COMMANDS = {
 						if _G['WINDOWS'] then cmd_text = cmd_text:gsub('\\"', '`"') end
 						text = text .. '"' .. cmd_text .. '" '
 					end
+					print(text)
 				end
 				output_array({ cmd_name, text }, 9)
 				--[[/minify-delete]]

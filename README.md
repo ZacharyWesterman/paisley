@@ -696,10 +696,21 @@ Like Bash, the stdout of commands can be piped into other commands, or from and 
 ```
 echo "some text" > my_file.txt
 cat my_file.txt | grep "some"
+grep "something <<<"text input"
+grep "something" <"file input"
 ```
 There is one difference however, and it's that the stdout and stderr files are not called `1` and `2` respectively, instead they are `?` and `!` to remain consistent with other syntax. For example, to pipe stderr into a file:
 ```
 wget https://127.0.0.1/example !>my_file.txt
+```
+Also note that unlike in Bash, you must explicitly specify the input stream:
+```
+echo "text" >file.txt #This will not work!
+
+echo "text" ?>file.text #Pipes stdout into the file.
+echo "text" !>file.text #Pipes stderr into the file.
+echo "text" ?!>file.text #Pipes BOTH stdout and stderr into the file.
+echo "text" !>? #Pipes stderr to stdout.
 ```
 
 ## Comments

@@ -754,9 +754,69 @@ argument = function()
 end
 
 ---@brief Syntax rule for commands
-command = function()
-	local ok, list = parser.one_or_more(argument)
-	if not ok then return parser.out(false) end
+command = function(span)
+	local ok, list = true, {}
+	local arg
+	--[[minify-delete]]
+	local pipein = {
+		['?'] = '1',
+		['!'] = '2',
+		['?!'] = '',
+		['!?'] = '',
+	}
+	--[[/minify-delete]]
+
+	while true do
+		--[[minify-delete]]
+		local p = parser.peek(2)
+		if p[1] == TOK.op_pipe_text_in or p[1] == TOK.op_pipe_file_in then
+			local pipe = parser.t()
+			parser.nextsym()
+
+			ok, arg = parser.expect(argument, TOK.argument)
+			if not ok then return parser.out(false) end
+
+			pipe.id = TOK.op_pipe
+			table.insert(list, pipe)
+		elseif p[2] == TOK.op_pipe_file_out then
+			local lhs = parser.t()
+			parser.nextsym()
+
+			if lhs.id ~= TOK.text or not pipein[lhs.text] then
+				parse_error(lhs.span, 'Invalid redirect from "' .. lhs.text .. '". Expected `?`, `!`, or `?!`.',
+					parser.filename())
+				return parser.out(false)
+			end
+
+			local pipe = parser.t()
+			parser.nextsym()
+
+			ok, arg = parser.expect(argument, TOK.argument)
+			if not ok then return parser.out(false) end
+
+			lhs.id = TOK.op_pipe
+			lhs.text = pipein[lhs.text]
+			table.insert(list, lhs)
+
+			pipe.id = TOK.op_pipe
+			table.insert(list, pipe)
+
+			if arg.id == TOK.text and pipein[arg.text] then
+				arg.id = TOK.op_pipe
+				arg.text = '&' .. pipein[arg.text]
+			end
+		else
+			--[[/minify-delete]]
+
+			ok, arg = parser.any_of({ argument, TOK.op_pipe }, {})
+			if not ok then break end
+			--[[minify-delete]]
+		end
+		--[[/minify-delete]]
+
+		table.insert(list, arg)
+	end
+	if #list == 0 then return parser.out(false) end
 
 	return true, {
 		id = TOK.command,

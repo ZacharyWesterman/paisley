@@ -246,6 +246,7 @@ function SemanticAnalyzer(root, root_file)
 							text = bashcmd,
 							value = bashcmd,
 							type = _G['TYPE_STRING'],
+							children = {},
 						})
 					else
 						--[[/minify-delete]]
@@ -1016,29 +1017,12 @@ function SemanticAnalyzer(root, root_file)
 	end
 	--[[/minify-delete]]
 
-	--If using the PC build, make sure shell pipe operators do not get escaped.
-	--[[minify-delete]]
-	if not _G['RESTRICT_TO_PLASMA_BUILD'] then
-		recurse(root, { TOK.command }, function(token, file)
-			for i = 1, #token.children do
-				local c = token.children[i]
-				if c.id == TOK.text and c.text:match('[|<>]') then
-					c.id = TOK.raw_sh_text
-					c.text = _G['RAW_SH_TEXT_SENTINEL'] .. c.text:gsub('%!', '2'):gsub('%?', '1')
-					c.value = c.text
-				end
-			end
-		end)
-	end
-	--[[/minify-delete]]
-
 	--Lastly perform any extra optimizations, now that the code is fully validated.
 
 	--[[REMOVE DEAD CODE]]
 	config = require "src.compiler.semantics.dead_code"
 	recurse2(root, config, root_file)
 	config.finally()
-
 
 	--[[EXIT]]
 	if ERRORED then terminate() end

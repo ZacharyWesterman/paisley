@@ -1180,6 +1180,13 @@ function generate_bytecode(root, file)
 
 			emit(bc.label, end_label)
 		end,
+
+		--[[minify-delete]]
+		--Pipe operators are just text that don't get escaped when sent to command pipeline
+		[TOK.op_pipe] = function(token, file)
+			emit(bc.push, _G['RAW_SH_TEXT_SENTINEL'] .. token.text)
+		end,
+		--[[/minify-delete]]
 	}
 
 	enter(root)

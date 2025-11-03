@@ -96,13 +96,24 @@ import_stmt :=
 	| `require` text+
 
 command :=
-	| argument+
+	| (argument | pipeio)+
 
 argument :=
 	| <text>
 	| string
 	| `{` expression `}`
 	| `${` inline_command `}`
+
+pipeio :=
+	| `|` command
+	| stdio `>` (stdio | <text>)
+	| `<` argument
+	| `<<<` argument
+
+stdio :=
+	| `?`
+	| `!`
+	| `?!`
 
 inline_command :=
 	| gosub_stmt
