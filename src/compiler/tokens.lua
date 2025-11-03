@@ -73,6 +73,13 @@ TOK = {
 	op_dot = k(),
 	op_arrow = k(),
 
+	--[[minify-delete]]
+	op_pipe_file_out = k(),
+	op_pipe_file_in = k(),
+	op_pipe_text_in = k(),
+	op_pipe = k(),
+	--[[/minify-delete]]
+
 	paren_open = k(),
 	paren_close = k(),
 

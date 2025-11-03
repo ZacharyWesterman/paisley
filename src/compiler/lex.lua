@@ -287,11 +287,40 @@ function Lexer(text, file)
 					end
 				end
 
-				--non-quoted text
-				if not match then
-					match = text:match('^[^ \t\n\r"\'{};$]+')
-					if match then tok_type = TOK.text end
+				--[[minify-delete]]
+				if _G['RESTRICT_TO_PLASMA_BUILD'] then
+					--[[/minify-delete]]
+					--non-quoted text
+					if not match then
+						match = text:match('^[^ \t\n\r"\'{};$]+')
+						if match then tok_type = TOK.text end
+					end
+					--[[minify-delete]]
+				else
+					--pipe operators
+					if not match then
+						local ops = {
+							{ '<<<', TOK.op_pipe_text_in },
+							{ '<',   TOK.op_pipe_file_in },
+							{ '>',   TOK.op_pipe_file_out },
+							{ '|',   TOK.op_pipe },
+						}
+						for i = 1, #ops do
+							match = text:match('^' .. ops[i][1])
+							if match then
+								tok_type = ops[i][2]
+								break
+							end
+						end
+					end
+
+					--non-quoted text
+					if not match then
+						match = text:match('^[^ \t\n\r"\'{};$><|]+')
+						if match then tok_type = TOK.text end
+					end
 				end
+				--[[/minify-delete]]
 			elseif curr_scope == '{' or curr_scope == '(' or curr_scope == '[' then
 				--Parse rules when inside expressions
 
