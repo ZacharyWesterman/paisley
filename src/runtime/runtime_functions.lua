@@ -1554,7 +1554,6 @@ COMMANDS = {
 						if _G['WINDOWS'] then cmd_text = cmd_text:gsub('\\"', '`"') end
 						text = text .. '"' .. cmd_text .. '" '
 					end
-					print(text)
 				end
 				output_array({ cmd_name, text }, 9)
 				--[[/minify-delete]]
