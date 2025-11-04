@@ -90,7 +90,7 @@ function SemanticAnalyzer(root, root_file)
 		local tok_level = 0
 		recurse(root,
 			{ TOK.subroutine, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.if_stmt, TOK.for_stmt, TOK
-				.kv_for_stmt, TOK.while_stmt }, function(token, file)
+				.kv_for_stmt, TOK.while_stmt, TOK.scope_stmt }, function(token, file)
 				--[[minify-delete]]
 				if token.id == TOK.import_stmt then
 					found_import = true

@@ -1,0 +1,11 @@
+# The real value for pi is about 3.14
+define {!pi[3.14]}
+
+do
+	# But sometimes, 3 might be a good enough estimate
+	define {!pi[4]}
+
+	print "My estimate for pi is {!pi}"
+end
+
+print "The real value of pi is {!pi}"
