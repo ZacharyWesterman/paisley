@@ -509,6 +509,16 @@ function generate_bytecode(root, file)
 			end
 		end,
 
+		--BITWISE OPERATIONS
+		[TOK.bitwise] = function(token, file)
+			if #token.children > 1 then
+				codegen_rules.binary_op(token, 'bitwise_' .. token.text)
+			else
+				codegen_rules.recur_push(token.children[1])
+				emit(bc.call, 'bitwise_' .. token.text)
+			end
+		end,
+
 		--COMPARISON OPERATIONS (also boolean technically)
 		[TOK.comparison] = function(token, file)
 			local op = {

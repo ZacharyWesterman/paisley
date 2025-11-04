@@ -2,6 +2,6 @@
 
 void bitwise_not(Context &context) noexcept
 {
-	const auto &value = context.stack.pop();
-	context.stack.push(~(long)value.to_number());
+	const double value = ~(long)(context.stack.pop().to_number());
+	context.stack.push(value);
 }
