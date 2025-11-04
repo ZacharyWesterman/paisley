@@ -705,7 +705,7 @@ if curses_installed then
 	end
 end
 
-
+---@diagnostic disable-next-line
 printf('Paisley ' .. VERSION .. ' interactive REPL.\n')
 printf('Type `stop` or press Ctrl-D to quit.\n')
 prompt(false)
