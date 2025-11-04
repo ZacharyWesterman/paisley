@@ -101,14 +101,25 @@ return {
 
 				--For reduce() function, make sure that its second parameter is an operator!
 				if token.text == 'reduce' then
-					local correct = false
-					for i, k in pairs({ TOK.op_plus, TOK.op_minus, TOK.op_times, TOK.op_idiv, TOK.op_div, TOK.op_mod, TOK.op_and, TOK.op_or, TOK.op_xor, TOK.op_ge, TOK.op_gt, TOK.op_le, TOK.op_lt, TOK.op_eq, TOK.op_ne }) do
-						if token.children[2].id == k then
-							correct = true
-							break
-						end
-					end
-					if not correct then
+					local binary_ops = {
+						[TOK.op_plus] = true,
+						[TOK.op_minus] = true,
+						[TOK.op_times] = true,
+						[TOK.op_idiv] = true,
+						[TOK.op_div] = true,
+						[TOK.op_mod] = true,
+						[TOK.op_and] = true,
+						[TOK.op_or] = true,
+						[TOK.op_xor] = true,
+						[TOK.op_ge] = true,
+						[TOK.op_gt] = true,
+						[TOK.op_le] = true,
+						[TOK.op_lt] = true,
+						[TOK.op_eq] = true,
+						[TOK.op_ne] = true,
+						[TOK.op_bitwise] = true,
+					}
+					if not binary_ops[token.children[2].id] then
 						parse_error(token.children[2].span,
 							'The second parameter of "reduce(a,b)" must be a binary operator (e.g. + or *)', file)
 					end
@@ -125,32 +136,6 @@ return {
 								file)
 						end
 					end
-				end
-			end,
-		},
-
-		[TOK.match_stmt] = {
-			--Keep track of tokens directly inside match statements
-			function(token, file)
-				local body = token.children[2]
-				local kids = body.children
-				if not kids then return end
-				if body.id == TOK.if_stmt then kids = { body } end
-
-				for i = 1, #kids do
-					local expr = kids[i].children[1]
-					if expr.id == TOK.comparison then expr.in_match = true end
-				end
-			end,
-		},
-
-		[TOK.comparison] = {
-			--Make sure that comparisons (that aren't inside match statements) have 2 operands
-			function(token, file)
-				if token.in_match then return end
-				if #token.children < 2 then
-					parse_error(token.span,
-						'Operator `' .. token.text .. '` expected 2 operands, but got ' .. #token.children, file)
 				end
 			end,
 		},

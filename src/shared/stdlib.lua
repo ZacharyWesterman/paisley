@@ -745,7 +745,7 @@ std = {
 			return math.floor(r)
 		end
 
-		return (
+		return math.floor(
 			f(hi(a), hi(b), oper) * u32 +
 			f(lo(a), lo(b), oper)
 		)

@@ -1340,9 +1340,15 @@ end
 match_expr = function(span)
 	if not parser.accept(TOK.expr_open) then return parser.out(false) end
 
-	local ok, lhs_op, op, list
+	local ok, lhs_op, op, list, bitwise
 
-	lhs_op, op = parser.any_of({
+	bitwise, _ = parser.accept(TOK.op_bitwise)
+
+	lhs_op, op = parser.any_of(bitwise and {
+		TOK.op_and,
+		TOK.op_or,
+		TOK.op_xor,
+	} or {
 		TOK.op_in,
 		TOK.op_like,
 		TOK.op_ge,
@@ -1351,7 +1357,15 @@ match_expr = function(span)
 		TOK.op_lt,
 		TOK.op_eq,
 		TOK.op_ne,
-	}, {})
+		TOK.op_and,
+		TOK.op_or,
+		TOK.op_xor,
+	}, {
+		'and',
+		'or',
+		'xor',
+	}, bitwise)
+	if bitwise and not lhs_op then return parser.out(false) end
 
 	ok, list = parser.expect_list({
 		expression,
@@ -1362,10 +1376,9 @@ match_expr = function(span)
 	})
 	if not ok then return parser.out(false) end
 
-
 	if lhs_op then
 		return true, {
-			id = TOK.comparison,
+			id = bitwise and TOK.bitwise or TOK.comparison,
 			text = op.text,
 			span = Span:merge(span, list[1].span),
 			children = { list[1] },

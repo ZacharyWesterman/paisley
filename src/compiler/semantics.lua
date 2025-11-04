@@ -867,7 +867,7 @@ function SemanticAnalyzer(root, root_file)
 			end
 
 			local else_node = else_branch.children[1]
-			if else_node.id == TOK.comparison and #else_node.children < 2 then
+			if (else_node.id == TOK.comparison or else_node.id == TOK.bitwise) and #else_node.children < 2 then
 				--Handle special fuzzy match syntax like "if {> expr} then ... end", etc.
 				table.insert(else_node.children, 1, compare_node)
 			else

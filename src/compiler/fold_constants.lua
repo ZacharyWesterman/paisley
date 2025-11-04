@@ -125,7 +125,9 @@ function FOLD_CONSTANTS(token, file)
 			local result = c1.value[1]
 			for i = 2, #c1.value do
 				local v = c1.value[i]
-				if operator == '=' then
+				if c2.id == TOK.op_bitwise then
+					result = std.bitwise[operator](result, v)
+				elseif operator == '=' then
 					result = std.equal(result, v)
 				elseif operator == '<' then
 					result = std.compare(result, v, function(p1, p2) return p1 < p2 end)
