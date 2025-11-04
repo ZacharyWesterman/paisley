@@ -35,6 +35,7 @@ else_stmt :=
 	| `else` program `end`
 
 while_stmt :=
+	| `while` `do` program `end`
 	| `while` argument `do` program `end`
 
 for_stmt :=
