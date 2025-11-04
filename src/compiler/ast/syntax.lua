@@ -124,16 +124,35 @@ array = function(span)
 	local comma, arg, c_ok
 	while true do
 		--Only allow operators as the last value in parens
-		local p = parser.peek(3)
+		local p = parser.peek(4)
 
-		--Binary operator is the last paren (for reduce() function)
-		if (p[2] == TOK.paren_close or (
-				p[2] == TOK.op_comma and p[3] == TOK.paren_close
-			)) and binary_ops[p[1]] then
-			table.insert(list, parser.t())
-			parser.accept(TOK.op_comma)
-			parser.accept(TOK.paren_close)
+		if p[1] == TOK.op_bitwise and ((p[3] == TOK.op_comma and p[4] == TOK.paren_close) or p[3] == TOK.paren_close) then
+			--Accept bitwise ops as last param of reduce()
 			parser.nextsym()
+			ok, arg = parser.any_of({
+				TOK.op_and,
+				TOK.op_or,
+				TOK.op_xor,
+			}, { 'and', 'or', 'xor' }, true)
+			if not ok then return parser.out(false) end
+
+			parser.accept(TOK.op_comma)
+			if parser.peek(1)[1] ~= TOK.paren_close then return parser.out(false) end
+
+			table.insert(list, {
+				id = TOK.op_bitwise,
+				text = arg.text,
+				span = arg.span,
+			})
+
+			break
+		elseif binary_ops[p[1]] and ((p[2] == TOK.op_comma and p[3] == TOK.paren_close) or p[2] == TOK.paren_close) then
+			--Accept boolean ops as last param of reduce()
+			arg = parser.t()
+			parser.nextsym()
+			parser.accept(TOK.op_comma)
+			if parser.peek(1)[1] ~= TOK.paren_close then return parser.out(false) end
+			table.insert(list, arg)
 			break
 		end
 
@@ -290,19 +309,28 @@ end
 
 ---Syntax rule for boolean expressions
 boolean = function(span)
-	--`not` boolean
-	if parser.accept(TOK.op_not) then
-		local ok, child = exp(boolean)
+	local bitwise = parser.accept(TOK.op_bitwise)
+	local ok, child
+	if bitwise then
+		ok, _ = parser.expect(TOK.op_not, 'not')
+		if not ok then return parser.out(false) end
+	else
+		ok, _ = parser.accept(TOK.op_not)
+	end
+
+	--`bitwise not` or `not`
+	if ok then
+		ok, child = exp(boolean)
 		if not ok then return parser.out(false) end
 		return true, {
-			id = TOK.boolean,
+			id = bitwise and TOK.bitwise or TOK.boolean,
 			text = 'not',
 			span = Span:merge(span, child.span),
 			children = { child },
 		}
 	end
 
-	local ok, lhs, rhs, op
+	local lhs, rhs, op
 
 	--Just pass on higher-precedence expressions
 	ok, lhs = exp(concat)
@@ -319,20 +347,21 @@ boolean = function(span)
 		}
 	end
 
-	--binary boolean operations
+	bitwise = parser.accept(TOK.op_bitwise)
+
+	--binary boolean/bitwise operations
 	ok, op = parser.any_of({
 		TOK.op_and,
 		TOK.op_or,
 		TOK.op_xor,
-	}, {})
-
-	if not ok then return true, lhs end
+	}, {}, bitwise)
+	if not ok then return not bitwise, lhs end
 
 	ok, rhs = exp(boolean)
 	if not ok then return parser.out(false) end
 
 	return true, {
-		id = TOK.boolean,
+		id = bitwise and TOK.bitwise or TOK.boolean,
 		text = op.text,
 		span = Span:merge(span, rhs.span),
 		children = { lhs, rhs },
@@ -1311,9 +1340,15 @@ end
 match_expr = function(span)
 	if not parser.accept(TOK.expr_open) then return parser.out(false) end
 
-	local ok, lhs_op, op, list
+	local ok, lhs_op, op, list, bitwise
 
-	lhs_op, op = parser.any_of({
+	bitwise, _ = parser.accept(TOK.op_bitwise)
+
+	lhs_op, op = parser.any_of(bitwise and {
+		TOK.op_and,
+		TOK.op_or,
+		TOK.op_xor,
+	} or {
 		TOK.op_in,
 		TOK.op_like,
 		TOK.op_ge,
@@ -1322,7 +1357,15 @@ match_expr = function(span)
 		TOK.op_lt,
 		TOK.op_eq,
 		TOK.op_ne,
-	}, {})
+		TOK.op_and,
+		TOK.op_or,
+		TOK.op_xor,
+	}, {
+		'and',
+		'or',
+		'xor',
+	}, bitwise)
+	if bitwise and not lhs_op then return parser.out(false) end
 
 	ok, list = parser.expect_list({
 		expression,
@@ -1333,10 +1376,9 @@ match_expr = function(span)
 	})
 	if not ok then return parser.out(false) end
 
-
 	if lhs_op then
 		return true, {
-			id = TOK.comparison,
+			id = bitwise and TOK.bitwise or TOK.comparison,
 			text = op.text,
 			span = Span:merge(span, list[1].span),
 			children = { list[1] },

@@ -554,7 +554,8 @@ Expressions also give access to a full suite of operators and functions, listed 
 - *integer* division, `//` (divide then round down)
 - remainder/modulo, `%`
 - exponentiation, `^`, e.g. `a^3` raises `a` to the 3rd power.
-- boolean operators, `and`, `or`, `xor`, `not`. Note that the `and` and `or` operators can short-cut, i.e. given an expression `a and b`: if `a` is false, then the whole expression *can never be true*, so `b` is not even evaluated.
+- boolean operators, `and`, `or`, `xor`, `not`. Note that the `and` and `or` operators can short-circuit, i.e. given an expression `a and b`: if `a` is false, then the whole expression *can never be true*, so `b` is not even evaluated.
+- bitwise operators, `bitwise and`, `bitwise or`, `bitwise xor`, `bitwise not`. Unlike the boolean operators, these do not short-circuit.
 - comparison, `>`, `>=`, `<`, `<=`
 - comparison (equality), `=` or `==` (the latter is deprecated)
 - comparison (not equal), `!=` or `~=` (the latter is deprecated)

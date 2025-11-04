@@ -21,6 +21,7 @@ local function if_stmt_const(token, file)
 				id = id,
 				span = token.children[ix].span,
 				text = text,
+				children = {},
 			}
 			--[[minify-delete]]
 		end --[[/minify-delete]]

@@ -4,7 +4,7 @@ local config = {
 	description = "This is the Paisley compiler and runtime engine.\nhttps://github.com/ZacharyWesterman/paisley",
 	name = "Paisley",
 	exe = "paisley",
-	version = "1.18.5",
+	version = "1.18.6",
 }
 
 local options = {
@@ -19,7 +19,7 @@ local options = {
 	{ description = "Pretend that stdin input has the given filename",               long = "stdin",             type = "string", arg = "[FILE]" },
 	{ description = "Don't report errors in the syntax tree",                        long = "no-ast-errors" },
 	{ description = "Don't remove 'dead code' that will never get run",              long = "no-prune-dead-code" },
-	{ description = "Don't allow `and` and `or` expressions to shortcut",            long = "no-shortcut" },
+	{ description = "Don't allow `and` and `or` expressions to short-circuit",       long = "no-short-circuit" },
 	{ description = "Allow any subroutines to be redefined without error",           long = "allow-elision" },
 	{ description = "Print all generated tokens and then exit",                      long = "tokens" },
 	{ description = "Print the abstract syntax tree and then exit",                  long = "ast" },
@@ -245,7 +245,7 @@ WORKING_DIR = ''
 LSP_FILENAME = flags.stdin or ''
 KEEP_DEAD_CODE = flags.no_prune_dead_code
 ALLOW_SUBROUTINE_ELISION = flags.allow_elision
-NO_SHORTCUT = flags.no_shortcut
+NO_SHORT_CIRCUIT = flags.no_short_circuit
 COERCE_SHELL_CMDS = flags.shell
 PGM_ARGS = args --program arguments
 V6 = args       --program arguments

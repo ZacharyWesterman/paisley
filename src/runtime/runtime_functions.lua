@@ -1265,6 +1265,18 @@ local functions = {
 		PUSH(true)
 	end,
 
+	--BITWISE AND
+	function() PUSH(std.bitwise['and'](std.num(POP()), std.num(POP()))) end,
+
+	--BITWISE OR
+	function() PUSH(std.bitwise['or'](std.num(POP()), std.num(POP()))) end,
+
+	--BITWISE XOR
+	function() PUSH(std.bitwise['xor'](std.num(POP()), std.num(POP()))) end,
+
+	--BITWISE NOT
+	function() PUSH(std.bitwise['not'](std.num(POP()))) end,
+
 	--[[minify-delete]]
 	--CONVERT A DATETIME OBJECT TO A UNIX TIMESTAMP
 	function()
@@ -1432,6 +1444,7 @@ COMMANDS = {
 			PUSH(VARS)
 		elseif p1 == '_VERSION' then
 			--Version variable
+			---@diagnostic disable-next-line
 			PUSH(VERSION)
 		else
 			local v = VARS[p1]

@@ -125,7 +125,9 @@ function FOLD_CONSTANTS(token, file)
 			local result = c1.value[1]
 			for i = 2, #c1.value do
 				local v = c1.value[i]
-				if operator == '=' then
+				if c2.id == TOK.op_bitwise then
+					result = std.bitwise[operator](result, v)
+				elseif operator == '=' then
 					result = std.equal(result, v)
 				elseif operator == '<' then
 					result = std.compare(result, v, function(p1, p2) return p1 < p2 end)
@@ -212,7 +214,7 @@ function FOLD_CONSTANTS(token, file)
 		--Boolean 'and' and 'or' operators have short-circuiting behavior, so we may still be able to fold them if one child is constant.
 
 		--[[minify-delete]]
-		if _G['NO_SHORTCUT'] then return end
+		if _G['NO_SHORT_CIRCUIT'] then return end
 		--[[/minify-delete]]
 
 		local literal_value
@@ -332,6 +334,20 @@ function FOLD_CONSTANTS(token, file)
 				--Fold redundant "not" operators
 				local ch = c1.children[1]
 				token.id, token.text, token.value, token.children = ch.id, ch.text, ch.value, ch.children
+			end
+		end
+	elseif token.id == TOK.bitwise then
+		if c2 then --Binary operators
+			token.value, token.id = std.bitwise[operator](c1.value, c2.value), TOK.lit_number
+			token.children, token.text = {}, tostring(token.value)
+		elseif operator == 'not' then
+			if c1.value ~= nil then
+				token.value, token.id = std.bitwise[operator](c1.value), TOK.lit_number
+				token.children, token.text = {}, tostring(token.value)
+			elseif c1.id == TOK.bitwise and c1.text == 'not' then
+				--Fold redundant "bitwise not" operators
+				local ch = c1.children[1]
+				token.id, token.text, token.value, token.children = ch.id, ch.text, math.floor(ch.value), ch.children
 			end
 		end
 	elseif token.id == TOK.length then

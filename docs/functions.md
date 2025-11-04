@@ -29,6 +29,8 @@
   - Reduce an array to a single element based on a repeated binary operation. Valid operators are: +, -, *, /, %, //, and, or, xor.
 - `sort(list: array[any]) -> array[any]`
   - Sort an array in ascending order.
+- `sorted(list: array[any]) -> boolean`
+  - Check if an array is sorted in ascending order.
 - `splice(list: array[any], start: number, end: number, replacement: array[any]) -> array[any]`
   - Remove or replace elements from an array.
 - `sum(...: number|array[number]) -> number`
