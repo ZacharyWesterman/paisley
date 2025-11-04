@@ -981,15 +981,25 @@ end
 while_stmt = function(span)
 	if not parser.accept(TOK.kwd_while) then return parser.out(false) end
 
-	--`while` argument `do` program `end`
-	local ok, list = parser.expect_list({
-		argument,
+	local ok, arg, list
+
+	--`while` argument?
+	ok, arg = parser.accept(argument)
+	if not ok then
+		arg = {
+			id = TOK.lit_boolean,
+			value = true,
+			span = span,
+		}
+	end
+
+	--`while` argument? `do` program `end`
+	ok, list = parser.expect_list({
 		TOK.kwd_do,
 		program,
 		TOK.kwd_end,
 	}, {
-		TOK.argument,
-		'do',
+		ok and { TOK.argument, 'do' } or 'do',
 		{ TOK.program, 'end' },
 		'end',
 	}, TOK.line_ending)
@@ -999,7 +1009,7 @@ while_stmt = function(span)
 	return true, {
 		id = TOK.while_stmt,
 		span = Span:merge(span, list[#list].span),
-		children = { list[1], list[3] },
+		children = { arg, list[2] },
 	}
 end
 

@@ -164,17 +164,22 @@ else
 	print "some other number"
 end
 ```
-Note how, inside match statements, the top-level boolean operators (`=`, `!=`, `>`, `<`, `>=`, `<=`, `in`, `like`) don't have a left operand.
+Note how, inside match statements, the top-level boolean operators (`=`, `!=`, `>`, `<`, `>=`, `<=`, `in`, `like`, `and`, `or`, `xor`) and bitwise operators (`bitwise and`, `bitwise or`, `bitwise xor`) don't require a left operand.
 Instead, the left operand is implied to be the value of the match expression.
 If the operator is left out, then `=` is implied. e.g. `{3}` is the same as `{=3}`.
 
 Of course, like `if` statements, the `else` branch is optional and can be excluded.
 
 ## Loops:
-While and For loops have a similar syntax to Lua:
+While and For loops each have two variations:
 ```
 # While loop
 while {expression is truthy} do
+	...
+end
+
+# Infinite loop
+while do
 	...
 end
 
@@ -188,8 +193,8 @@ for key value in {pairs(object or array)} do
 	...
 end
 ```
-These are the only loop structures possible.
-Note that the iterator (middle) loop type will iterate over all *values* in an array, and all *keys* in an object!
+
+Note that the iterator (2nd from the bottom) loop type will iterate over all *values* in an array, and all *keys* in an object!
 Also note that the key-value (bottom) loop **must** contain either `pairs()` or `chunk(2)`, to ensure that the key-value pairs are valid.
 
 If you want syntax similar to Lua's integer for loops (`for i = 1, 10 do ... end`), you can use something like `for i in {1:10} do ... end`.
