@@ -855,7 +855,7 @@ function SemanticAnalyzer(root, root_file)
 			iter[i].children[3] = else_branch
 			else_branch = iter[i]
 
-			--Optimization: allow branch pruning if the
+			--Optimization: allow branch pruning if `match` argument value is known at compile time.
 			local compare_node = token.children[1]
 			if not constant then
 				compare_node = {
