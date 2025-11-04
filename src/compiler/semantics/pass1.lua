@@ -226,6 +226,8 @@ return {
 			push_scope,
 		},
 
+		[TOK.scope_stmt] = { push_scope },
+
 		[TOK.return_stmt] = { subroutine_enter },
 
 		[TOK.gosub_stmt] = {
@@ -477,6 +479,7 @@ return {
 			subroutine_exit,
 			aliases_exit,
 		},
+		[TOK.scope_stmt] = { pop_scope },
 		[TOK.return_stmt] = { subroutine_exit },
 
 		[TOK.if_stmt] = {

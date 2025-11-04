@@ -30,6 +30,15 @@ return {
 				end
 			end,
 		},
+
+
+		[TOK.scope_stmt] = {
+			--Convert scope blocks into regular program blocks.
+			--At this point, all semantic analysis is done for them.
+			function(token, file)
+				token.id = TOK.program
+			end,
+		}
 	},
 
 	exit = {},

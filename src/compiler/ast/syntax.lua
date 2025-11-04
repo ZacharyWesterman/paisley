@@ -22,6 +22,7 @@ local alias_stmt
 local try_stmt
 local stop_stmt
 local import_stmt
+local scope_stmt
 local command
 
 --Expressions
@@ -1563,6 +1564,20 @@ import_stmt = function(span)
 end
 --[[/minify-delete]]
 
+scope_stmt = function(span)
+	if not parser.accept(TOK.kwd_do) then return parser.out(false) end
+
+	local ok, node, e
+	_, node = parser.accept(program)
+	ok, e = parser.expect(TOK.kwd_end, 'end')
+
+	return ok, {
+		id = TOK.scope_stmt,
+		span = Span:merge(span, e.span),
+		children = node.children,
+	}
+end
+
 statement = function()
 	return parser.any_of({
 		TOK.line_ending,
@@ -1581,13 +1596,14 @@ statement = function()
 		try_stmt,
 		stop_stmt,
 		--[[minify-delete]] import_stmt, --[[/minify-delete]]
+		scope_stmt,
 		command,
 	}, {}, false)
 end
 
 ---@brief Syntax rule for a list of statements
 program = function()
-	local span = parser.t().span
+	local span = parser.t() and parser.t().span or Span:new(0, 0, 0, 0)
 	local ok, statements = parser.zero_or_more(statement)
 
 	local pgm = {

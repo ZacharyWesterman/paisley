@@ -144,6 +144,7 @@ TOK = {
 	uncache_stmt = k(),
 	alias_stmt = k(),
 	try_stmt = k(),
+	scope_stmt = k(),
 	statement = k(),
 
 	lit_array = k(), --This only gets created during constant folding
