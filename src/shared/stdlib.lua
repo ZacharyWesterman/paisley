@@ -721,4 +721,51 @@ std = {
 	end,
 
 	MAX_ARRAY_LEN = 32768, --Any larger than this and performance tanks
+
+	--Perform bitwise and/or/xor
+	_bitwise = function(a, b, oper)
+		local u32 = 2 ^ 32
+
+		local function lo(x)
+			return x % u32
+		end
+
+		local function hi(x)
+			--In some versions of Lua, 64-bit integers wrap around when divided,
+			--which is not what we want, so mod the result to just get the top 32 bits.
+			return math.floor(x / u32) % u32
+		end
+
+		local function f(a, b, oper)
+			local r, m, s = 0, 2 ^ 31, nil
+			repeat
+				s, a, b = a + b + m, a % m, b % m
+				r, m = r + m * oper % (s - a - b), m / 2
+			until m < 1
+			return math.floor(r)
+		end
+
+		return (
+			f(hi(a), hi(b), oper) * u32 +
+			f(lo(a), lo(b), oper)
+		)
+	end,
+
+	bitwise = {
+		['not'] = function(value)
+			return -math.floor(value) - 1
+		end,
+
+		['and'] = function(lhs, rhs)
+			return std._bitwise(lhs, rhs, 4)
+		end,
+
+		['or'] = function(lhs, rhs)
+			return std._bitwise(lhs, rhs, 1)
+		end,
+
+		['xor'] = function(lhs, rhs)
+			return std._bitwise(lhs, rhs, 3)
+		end,
+	},
 }

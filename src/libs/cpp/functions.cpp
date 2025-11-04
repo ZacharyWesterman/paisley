@@ -14,6 +14,10 @@
 #include "functions/b64_decode.hpp"
 #include "functions/b64_encode.hpp"
 #include "functions/beginswith.hpp"
+#include "functions/bitwise_and.hpp"
+#include "functions/bitwise_not.hpp"
+#include "functions/bitwise_or.hpp"
+#include "functions/bitwise_xor.hpp"
 #include "functions/bool.hpp"
 #include "functions/booland.hpp"
 #include "functions/boolnot.hpp"
@@ -277,6 +281,10 @@ const Function FUNCTIONS[] = {
 	timestamp,
 	fmod,
 	sorted,
+	bitwise_and,
+	bitwise_or,
+	bitwise_xor,
+	bitwise_not,
 
 	toepoch,
 	fromepoch,

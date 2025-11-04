@@ -335,7 +335,19 @@ function FOLD_CONSTANTS(token, file)
 			end
 		end
 	elseif token.id == TOK.bitwise then
-		parse_error(token.span, 'BITWISE OPERATORS ARE NOT IMPLEMENTED YET', file)
+		if c2 then --Binary operators
+			token.value, token.id = std.bitwise[operator](c1.value, c2.value), TOK.lit_number
+			token.children, token.text = {}, tostring(token.value)
+		elseif operator == 'not' then
+			if c1.value ~= nil then
+				token.value, token.id = std.bitwise[operator](c1.value), TOK.lit_number
+				token.children, token.text = {}, tostring(token.value)
+			elseif c1.id == TOK.bitwise and c1.text == 'not' then
+				--Fold redundant "bitwise not" operators
+				local ch = c1.children[1]
+				token.id, token.text, token.value, token.children = ch.id, ch.text, math.floor(ch.value), ch.children
+			end
+		end
 	elseif token.id == TOK.length then
 		if c1.value ~= nil or c1.id == TOK.lit_null and #c1.children == 0 then
 			if type(c1.value) ~= 'string' and type(c1.value) ~= 'table' then
