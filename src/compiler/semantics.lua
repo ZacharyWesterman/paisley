@@ -193,6 +193,7 @@ function SemanticAnalyzer(root, root_file)
 		TYPE ANNOTATIONS
 	]]
 	local variables = {}
+	local using_var_of_vars = false
 	local deduced_variable_types
 	local current_sub = nil
 	--[[minify-delete]]
@@ -430,13 +431,25 @@ function SemanticAnalyzer(root, root_file)
 		})
 	end
 
-	local function set_var(var, value)
+	local function set_var(var, name, value)
 		if not variables[var.text] then variables[var.text] = {} end
+
+		local v = variables[var.text][#variables[var.text]]
+		local singleton = not v or (not v.multiple or v.value == value)
+
 		variables[var.text][#variables[var.text]] = {
-			text = value,
+			text = name,
+			value = value,
+			multiple = not singleton,
 			line = var.span.from.line,
 			col = var.span.from.col,
 		}
+		var.value = singleton and value or nil
+	end
+
+	local function get_var(name)
+		local v = variables[name]
+		return v and v[#v] or nil
 	end
 
 	local function variable_assignment(token)
@@ -548,6 +561,7 @@ function SemanticAnalyzer(root, root_file)
 			if ch and ch.type then tp = ch.type end
 
 			if #var.children > 0 then
+				--Multi-variable assignment
 				local vars = { var.text }
 				for i = 1, #var.children do
 					table.insert(vars, var.children[i].text)
@@ -584,7 +598,8 @@ function SemanticAnalyzer(root, root_file)
 					end
 				end
 			elseif tp ~= nil then
-				set_var(var, tp)
+				--Single-variable assignment
+				set_var(var, tp, ch.value)
 				var.type = tp
 				deduced_variable_types = true
 			end
@@ -606,6 +621,16 @@ function SemanticAnalyzer(root, root_file)
 				token.type = _G['TYPE_ARRAY']
 			elseif token.text == '_VARS' then
 				token.type = _G['TYPE_OBJECT']
+				--Don't allow any variable pruning if _VARS is used;
+				--In that case, we want to make sure that any vars the programmer set *are* actually set!
+				if not using_var_of_vars then
+					for _, list in pairs(variables) do
+						for _, var in pairs(list) do
+							var.multiple = true
+						end
+					end
+					using_var_of_vars = true
+				end
 			elseif token.text == '_VERSION' then
 				token.type = _G['TYPE_STRING']
 			elseif token.text == '_ENV' then
@@ -711,22 +736,27 @@ function SemanticAnalyzer(root, root_file)
 		CONSTANT FOLDING AND TYPE DEDUCTIONS
 	]]
 	deduced_variable_types = true
-	while deduced_variable_types do
+	while deduced_variable_types and not ERRORED do
 		deduced_variable_types = false
 
 		--First pass at deducing all types
-		recurse(root,
-			{ TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK
-				.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK
-				.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.inline_command, TOK.command, TOK.return_stmt, TOK
-				.subroutine }, type_precheck, type_checking)
+		if not ERRORED then
+			recurse(root,
+				{ TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK
+					.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK
+					.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.inline_command, TOK.command, TOK.return_stmt, TOK
+					.subroutine }, type_precheck, type_checking)
+		end
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
 		if not ERRORED then
 			recurse(root,
 				{ TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK
 					.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary, TOK
-					.list_comp, TOK.object, TOK.key_value_pair, TOK.bitwise }, nil, FOLD_CONSTANTS)
+					.list_comp, TOK.object, TOK.key_value_pair, TOK.bitwise, TOK.variable }, nil,
+				function(token, file)
+					FOLD_CONSTANTS(token, file, get_var)
+				end)
 		end
 
 		--Set any variables we can
@@ -734,8 +764,6 @@ function SemanticAnalyzer(root, root_file)
 			recurse(root, { TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.variable, TOK.try_stmt },
 				variable_assignment, variable_unassignment)
 		end
-
-		if ERRORED then break end
 	end
 
 	if not ERRORED then

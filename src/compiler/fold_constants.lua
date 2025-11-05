@@ -18,7 +18,17 @@ end
 ---AST: Fold constants
 ---@param token table
 ---@param file string?
-function FOLD_CONSTANTS(token, file)
+---@param get_var fun(name: any?): table?
+function FOLD_CONSTANTS(token, file, get_var)
+	--Optimization: Variables can be pruned if the var is only assigned to one value.
+	if token.id == TOK.variable then
+		local var = get_var(token.text)
+		if var and not var.multiple then
+			token.value = var.value
+		end
+		return
+	end
+
 	if #token.children == 0 then return end
 
 	local function check_if_nan_or_inf(token, file)

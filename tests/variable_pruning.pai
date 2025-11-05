@@ -1,0 +1,7 @@
+let x = 123
+
+if {not x} then
+	print "Test variable pruning!"
+end
+
+print {x}
