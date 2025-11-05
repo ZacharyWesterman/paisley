@@ -5,3 +5,6 @@ if {not x} then
 end
 
 print {x}
+
+print {y}
+let y = 1

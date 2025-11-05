@@ -735,6 +735,12 @@ function SemanticAnalyzer(root, root_file)
 	--[[
 		CONSTANT FOLDING AND TYPE DEDUCTIONS
 	]]
+	--Set any variables we can
+	if not ERRORED then
+		recurse(root, { TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.variable, TOK.try_stmt },
+			variable_assignment, variable_unassignment)
+	end
+
 	deduced_variable_types = true
 	while deduced_variable_types and not ERRORED do
 		deduced_variable_types = false

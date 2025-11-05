@@ -24,7 +24,17 @@ function FOLD_CONSTANTS(token, file, get_var)
 	if token.id == TOK.variable then
 		local var = get_var(token.text)
 		if var and not var.multiple then
-			token.value = var.value
+			local f = token.span.from
+			if var.line < f.line or (var.line == f.line and var.col < f.col) then
+				--If the variable is assigned before it is used, use that value.
+				token.value = var.value
+			else
+				--Otherwise, use null.
+				token.id = TOK.lit_null
+			end
+		elseif var == nil then
+			--Variable is never assigned, just use null
+			token.id = TOK.lit_null
 		end
 		return
 	end
