@@ -1,10 +1,14 @@
-let x = 123
 
-if {not x} then
-	print "Test variable pruning!"
-end
+# This will be pruned to just "print 123"
+let x = {2 ^ 4 - 1}
 
 print {x}
 
-print {y}
-let y = 1
+
+# This will not be pruned, because we're not sure if y is always defined before it's used
+subroutine a
+	print {y}
+end
+
+let y = 123
+gosub a

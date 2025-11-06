@@ -122,6 +122,7 @@ local function get_macro(name)
 end
 
 local tok_level = 0
+local scope_ids = { 0 }
 local function pop_scope(token, file)
 	if token.id == TOK.macro then
 		macros[#macros][token.text] = {
@@ -142,6 +143,7 @@ local function pop_scope(token, file)
 		--Make sure macros are only referenced in the appropriate scope, never outside the scope they're defined.
 		table.remove(macros)
 		tok_level = tok_level - 1
+		table.remove(scope_ids)
 	end
 end
 
@@ -155,6 +157,7 @@ local function push_scope(token, file)
 		table.insert(macros, {})
 		--Make sure macros are only referenced in the appropriate scope, never outside the scope they're defined.
 		tok_level = tok_level + 1
+		table.insert(scope_ids, scope_ids[#scope_ids] + 1)
 	end
 end
 
@@ -197,6 +200,11 @@ return {
 						}
 					}
 				end
+			end,
+
+			--Set the scope of the variable
+			function(token, file)
+				token.scope = scope_ids[#scope_ids]
 			end,
 		},
 
@@ -427,6 +435,13 @@ return {
 			end
 		},
 
+		[TOK.var_assign] = {
+			--Set the scope of the variable assignment
+			function(token, file)
+				token.scope = scope_ids[#scope_ids]
+			end,
+		},
+
 		[TOK.uncache_stmt] = {
 			--Make sure `break cache` refers to an existing subroutine
 			function(token, file)
@@ -478,6 +493,7 @@ return {
 		[TOK.subroutine] = {
 			subroutine_exit,
 			aliases_exit,
+			pop_scope,
 		},
 		[TOK.scope_stmt] = { pop_scope },
 		[TOK.return_stmt] = { subroutine_exit },

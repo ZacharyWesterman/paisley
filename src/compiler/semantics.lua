@@ -432,19 +432,41 @@ function SemanticAnalyzer(root, root_file)
 	end
 
 	local function set_var(var, name, value)
-		if not variables[var.text] then variables[var.text] = {} end
+		local v = variables[var.text]
+		if not v then
+			v = {}
+			variables[var.text] = v
+		end
 
-		local v = variables[var.text][#variables[var.text]]
-		local singleton = not v or (not v.multiple or v.value == value)
+		--The first assignment
+		if #v == 0 then
+			table.insert(v, {
+				text = name,
+				value = value,
+				multiple = false,
+				decls = { [var] = true },
+				span = var.span,
+				scope = var.scope,
+			})
+			var.multiple = false
+			var.value = value
+			return
+		end
 
-		variables[var.text][#variables[var.text]] = {
-			text = name,
-			value = value,
-			multiple = not singleton,
-			line = var.span.from.line,
-			col = var.span.from.col,
-		}
-		var.value = singleton and value or nil
+		v = v[#v]
+		--A new assignment
+		if not v.decls[var] then
+			if v.value ~= value then
+				v.multiple = true
+			end
+
+			v.decls[var] = true
+			if v.multiple then
+				for i, _ in pairs(v.decls) do i.value = nil end
+			else
+				var.value = value
+			end
+		end
 	end
 
 	local function get_var(name)
@@ -609,7 +631,7 @@ function SemanticAnalyzer(root, root_file)
 			local tp = variables[token.text]
 			if tp then
 				local tp1 = tp[#tp]
-				if tp1.line > token.span.from.line or (tp1.line == token.span.from.line and tp1.col > token.span.from.col) then
+				if Span:first(tp1.span, token.span) == token.span then
 					if #tp < 2 then return end
 					token.type = tp[#tp - 1].text
 				else
@@ -627,6 +649,11 @@ function SemanticAnalyzer(root, root_file)
 					for _, list in pairs(variables) do
 						for _, var in pairs(list) do
 							var.multiple = true
+							var.value = nil
+							for decl, _ in pairs(var.decls) do
+								decl.multiple = true
+								decl.value = nil
+							end
 						end
 					end
 					using_var_of_vars = true
@@ -742,6 +769,7 @@ function SemanticAnalyzer(root, root_file)
 	end
 
 	deduced_variable_types = true
+	local run_again = true
 	while deduced_variable_types and not ERRORED do
 		deduced_variable_types = false
 
@@ -769,6 +797,11 @@ function SemanticAnalyzer(root, root_file)
 		if not ERRORED then
 			recurse(root, { TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.variable, TOK.try_stmt },
 				variable_assignment, variable_unassignment)
+		end
+
+		if not deduced_variable_types and run_again then
+			deduced_variable_types = true
+			run_again = false
 		end
 	end
 
