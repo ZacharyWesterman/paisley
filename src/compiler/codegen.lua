@@ -275,6 +275,11 @@ function generate_bytecode(root, file)
 					--None of the variables are used, so don't generate the code for them.
 					if not_used then return end
 				end
+
+				--Optimization: prune variables if they're only assigned to one value
+				--At this point, all uses of the variable have been replaced with constants literals.
+				if v1.value then return end
+
 				--[[minify-delete]]
 			end
 			--[[/minify-delete]]
