@@ -40,9 +40,6 @@ function FOLD_CONSTANTS(token, file, get_var)
 			if Span:first(token.span, var.span) == var.span then
 				--If the variable is assigned before it is used, use that value.
 				token.value = var.value
-			else
-				--Otherwise, use null.
-				token.id = TOK.lit_null
 			end
 		end
 		return
@@ -230,8 +227,7 @@ function FOLD_CONSTANTS(token, file, get_var)
 	--If this token does not contain only constant children, we cannot fold it.
 	local non_const_ct = 0
 	for i = 1, #token.children do
-		local ch = token.children[i]
-		if ch.value == nil and ch.id ~= TOK.lit_null then
+		if not_const(token.children[i]) then
 			non_const_ct = non_const_ct + 1
 		end
 	end

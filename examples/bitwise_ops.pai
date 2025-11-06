@@ -1,0 +1,8 @@
+
+# bitwise or on 1011, 0100 = 1111
+let x = {0b1011 bitwise or 0b0100}
+print "0b{x.to_base(2, 4)}" 
+
+# bitwise not of X = -X - 1
+let x = {10}
+print "bitwise not of ({x}={x.to_base(2, 8)}) -> ({bitwise not x}={(bitwise not x).to_base(2, 8)})"
