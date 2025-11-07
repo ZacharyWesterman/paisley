@@ -46,6 +46,8 @@ local function printf(text, color)
 	io.flush()
 end
 
+function terminate() end
+
 function output(value, port)
 	if port == 1 then
 		--continue program

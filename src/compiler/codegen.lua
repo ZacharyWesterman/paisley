@@ -1258,9 +1258,9 @@ function generate_bytecode(root, file)
 				if labels[instr[ix]] == nil then
 					parse_error(Span:new(instr[2], 0, instr[2], 0),
 						'COMPILER BUG: Attempt to reference unknown label of ID "' .. std.str(instr[ix]) .. '"!', file)
+				else
+					instr[ix] = labels[instr[ix]] - 1
 				end
-
-				instr[ix] = labels[instr[ix]] - 1
 			end
 		end
 
