@@ -1088,7 +1088,10 @@ function generate_bytecode(root, file)
 				codegen_rules.recur_push(token.children[i])
 			end
 
-			emit(bc.call, 'implode', #token.children)
+			--"bool()" is actually a built-in AND a single-param function.
+			if token.text ~= 'bool' then
+				emit(bc.call, 'implode', #token.children)
+			end
 			emit(bc.call, token.text)
 		end,
 

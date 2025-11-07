@@ -90,3 +90,14 @@ subroutine math.flagify
 		.floor()
 	}
 end
+
+
+#[[
+@export
+@brief Convert an unsigned integer into a bit field.
+@param num number An integer, treated as if it were unsigned.
+@return array[boolean] A list of 32 bits, with the most-significant bits first.
+#]]
+subroutine math.bits
+	return {bool(@1 bitwise and 2^i) for i in reverse(0:31)}
+end
