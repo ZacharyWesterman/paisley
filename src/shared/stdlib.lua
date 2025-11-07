@@ -486,6 +486,8 @@ std = {
 	to_base = function(number, base, pad_width)
 		local FRACT_DIGITS = 6
 		local FRACT_MIN = 0.000001
+		local negative = number < 0
+		if negative then number = -number end
 
 		base = math.min(36, math.max(2, math.floor(base)))
 		pad_width = math.max(0, math.floor(pad_width))
@@ -519,9 +521,9 @@ std = {
 
 		--Pad to the specified width
 		if #result < pad_width then
-			result = string.rep('0', pad_width - #result) .. result
+			result = string.rep('0', pad_width - #result - (negative and 1 or 0)) .. result
 		end
-		return result
+		return (negative and '-' or '') .. result
 	end,
 
 	---Convert a numeric string of any base (in the range 2-36) into a number.
