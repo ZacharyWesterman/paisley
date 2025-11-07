@@ -533,6 +533,9 @@ std = {
 	---@param base number The base of the number, clamped to [2,36] and rounded down.
 	---@return number
 	from_base = function(text, base)
+		local negative = text:sub(1, 1) == '-'
+		if negative then text = text:sub(2) end
+
 		base = math.min(36, math.max(2, math.floor(base)))
 		local radix = text:find('.', 1, true) or (#text + 1)
 
@@ -567,7 +570,7 @@ std = {
 			place = place * base
 		end
 
-		return integer_part + fractional_part
+		return (negative and -1 or 1) * (integer_part + fractional_part)
 	end,
 
 	---@brief Check if two values are strictly equal.
