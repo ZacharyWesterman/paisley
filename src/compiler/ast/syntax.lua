@@ -512,6 +512,7 @@ negate = function(span)
 
 	return true, {
 		id = TOK.negate,
+		text = '-',
 		span = Span:merge(span, child.span),
 		children = { child },
 	}
@@ -535,6 +536,7 @@ length = function(span)
 
 	return true, {
 		id = TOK.length,
+		text = '&',
 		span = Span:merge(span, child.span),
 		children = { child },
 	}
