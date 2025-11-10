@@ -37,7 +37,7 @@ The ethos behind Paisley was *not* to create a particularly fast language (most 
 ## Installing Paisley
 
 Required Dependencies to run:
-- *At least* `lua5.1` for basic functionality. However, if you want to use create standalone applications, `lua5.3` or greater is required.
+- *At least* `lua5.1` for basic functionality. However, if you want to create standalone applications, `lua5.3` or greater is required.
 
 Required dependencies to build standalone applications:
 - `lua5.3` or greater.
