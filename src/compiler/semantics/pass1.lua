@@ -504,8 +504,23 @@ return {
 			aliases_exit,
 			pop_scope,
 			--Make sure key-value for loops always have some mutation of `pairs()` or `chunk()` in the expression.
+			--An array literal that contains pairs (e.g. `((1,2), (3,4))`) is also valid.
 			function(token, file)
 				local node = token.children[3]
+
+				if node.id == TOK.lit_array then
+					print_token(node)
+					--An array literal that looks like a pairs() result is totally valid.
+					local ok = true
+					for _, i in pairs(node.value) do
+						if std.type(i) ~= 'array' or #i == 0 then
+							ok = false
+							break
+						end
+					end
+					if ok then return end
+				end
+
 				while true do
 					if node.id == TOK.func_call and (node.text == 'pairs' or node.text == 'chunk') then
 						if node.text == 'chunk' then
@@ -526,6 +541,7 @@ return {
 					if not node then break end
 				end
 
+				print_tokens_recursive(token)
 				parse_error(token.children[3].span,
 					'Expression in key-value for loop must contain `pairs()` or `chunk()`', file)
 			end,
