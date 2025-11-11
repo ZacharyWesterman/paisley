@@ -14,6 +14,7 @@ FS = {
 		zlib = soft_require('zlib'),
 		curses = soft_require('curses'),
 		socket = soft_require('socket'),
+		signal = soft_require('posix.signal'),
 	},
 
 	disable_rocks = function()
