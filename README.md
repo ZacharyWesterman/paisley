@@ -140,7 +140,7 @@ if {expression is truthy} else
 end
 ```
 
-Note that, unlike Lua's `elseif` keyword, the appropriate "else if" keyword in Paisley is `elif`. Also keep in mind that if statements convert the expression to a boolean, and so use a few rules to test an expression's truthiness: false, null, zero, empty strings, empty arrays and empty objects are all falsey, everything else is truthy.
+Keep in mind that `if` statements convert the expression to a boolean, and so use a few rules to test an expression's truthiness: false, null, zero, empty strings, empty arrays and empty objects are all falsey, everything else is truthy.
 See [the type-casting docs](docs/type-casting.md) for more info on truthiness and other type-casting rules.
 
 There is also the `match` structure, which is similar to c-like languages' `switch/case` structure (or Rust's `match`). This structure is included to allow for more readable logic with less repeated code.
