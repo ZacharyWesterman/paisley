@@ -509,7 +509,6 @@ return {
 				local node = token.children[3]
 
 				if node.id == TOK.lit_array then
-					print_token(node)
 					--An array literal that looks like a pairs() result is totally valid.
 					local ok = true
 					for _, i in pairs(node.value) do
