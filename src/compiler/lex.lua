@@ -673,10 +673,19 @@ function Lexer(text, file)
 
 				--variable assignment operator (end of variable declaration)
 				if not match then
-					match = text:match('^=')
-					if match then
-						tok_type = TOK.op_assign
-						table.remove(scopes)
+					local assign_ops = {
+						'^=',
+						'^[%+%-%*/%.]=',
+						'^//=',
+					}
+
+					for _, i in ipairs(assign_ops) do
+						match = text:match(i)
+						if match then
+							tok_type = TOK.op_assign
+							table.remove(scopes)
+							break
+						end
 					end
 				end
 

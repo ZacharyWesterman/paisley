@@ -422,16 +422,17 @@ function SemanticAnalyzer(root, root_file)
 		end
 	end
 
-	local function push_var(var, value)
+	local function push_var(var, datatype)
 		if not variables[var] then variables[var] = {} end
 		table.insert(variables[var], {
-			text = value,
+			text = var.text,
 			line = var.span.from.line,
 			col = var.span.from.col,
+			type = datatype,
 		})
 	end
 
-	local function set_var(var, name, value)
+	local function set_var(var, datatype, value)
 		local v = variables[var.text]
 		if not v then
 			v = {}
@@ -441,12 +442,13 @@ function SemanticAnalyzer(root, root_file)
 		--The first assignment
 		if #v == 0 then
 			table.insert(v, {
-				text = name,
+				text = var.text,
 				value = value,
 				multiple = false,
 				decls = { [var] = true },
 				span = var.span,
 				scope = var.scope,
+				type = datatype,
 			})
 			var.multiple = false
 			var.value = value
@@ -460,9 +462,14 @@ function SemanticAnalyzer(root, root_file)
 				v.multiple = true
 			end
 
+			v.type = MERGE_TYPES(v.type, var.type)
+
 			v.decls[var] = true
 			if v.multiple then
-				for i, _ in pairs(v.decls) do i.value = nil end
+				for i, _ in pairs(v.decls) do
+					i.value = nil
+					i.multiple = true
+				end
 			else
 				var.value = value
 			end
@@ -633,9 +640,9 @@ function SemanticAnalyzer(root, root_file)
 				local tp1 = tp[#tp]
 				if Span:first(tp1.span, token.span) == token.span then
 					if #tp < 2 then return end
-					token.type = tp[#tp - 1].text
+					token.type = tp[#tp - 1].type
 				else
-					token.type = tp[#tp].text
+					token.type = tp[#tp].type
 				end
 			elseif token.text == '$' then
 				token.type = _G['TYPE_ARRAY_STRING']

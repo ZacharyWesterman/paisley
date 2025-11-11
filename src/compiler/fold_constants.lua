@@ -24,7 +24,12 @@ function FOLD_CONSTANTS(token, file, get_var)
 	if token.id == TOK.variable then
 		local var = get_var(token.text)
 
-		if var and not var.multiple then
+		if not var then return end
+
+		if var.multiple then
+			--Don't optimize away if there are multiple (non-same) assignments of the variable
+			token.value = nil
+		else
 			--This only applies if the variable is used inside the same scope as it was defined.
 			if var.scope ~= token.scope then
 				for decl, _ in pairs(var.decls) do

@@ -407,16 +407,6 @@ return {
 		[TOK.let_stmt] = {
 			--Make variable assignment make sense, removing quirks of AST generation.
 			function(token, file)
-				local body = token.children[2]
-				if body and body.id == TOK.command then
-					if #body.children > 1 then
-						body.id = TOK.array_concat
-						body.text = '[]'
-					else
-						token.children[2] = body.children[1]
-					end
-				end
-
 				--Make sure there are no redundant variable assignments
 				if #token.children[1].children > 0 then
 					local vars = { [token.children[1].text] = true }

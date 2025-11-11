@@ -321,6 +321,24 @@ function generate_bytecode(root, file)
 					table.insert(vars, token.children[1].children[i].text)
 				end
 
+				--Check if the argument is an array.
+				emit(bc.copy, 0)
+				emit(bc.call, 'implode', 1)
+				emit(bc.call, 'type')
+				emit(bc.push, 'array')
+				emit(bc.call, 'notequal')
+
+				local type_label = LABEL_ID()
+				emit(bc.call, 'jumpiffalse', type_label)
+
+				--If not, convert it to an array with 1 element in it
+				emit(bc.swap)
+				emit(bc.call, 'implode', 1)
+				emit(bc.swap)
+
+				emit(bc.label, type_label)
+				emit(bc.pop)
+
 				for i = 1, #vars do
 					if token.children[2] then
 						if i < #vars then emit(bc.copy, 0) end

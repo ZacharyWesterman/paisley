@@ -244,6 +244,15 @@ let a b c
 let foo = {null}
 ```
 
+Like in other languages, there is also a shorthand syntax for reassigning a variable based on its previous value:
+```
+let x += 1 # Add 1 to x
+let x -= 1 # Subtract 1 from x
+let x *= 2 # Multiply x by 2
+let x /= 2 # Divide x by 2
+let x //= 2 # Integer-divide x by 2
+```
+
 ### Variable Index Assignment
 
 Assignment of arrays, strings and objects can all be indexed to only alter sub-elements.
