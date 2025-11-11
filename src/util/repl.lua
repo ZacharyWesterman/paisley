@@ -762,13 +762,7 @@ for input_line in readline do
 		if not ERRORED then
 			--Reappend subroutine cache into program.
 			for _, subroutine_ast in pairs(subroutine_cache) do
-				print_token(subroutine_ast)
-				root = {
-					id = TOK.program,
-					span = root[1].span,
-					text = 'stmt_list',
-					children = { subroutine_ast, root, },
-				}
+				table.insert(ast.children, subroutine_ast)
 			end
 
 			root = SemanticAnalyzer(ast)
@@ -780,15 +774,16 @@ for input_line in readline do
 			--Since Paisley requires all subroutines to be defined at the top level
 			--(and program nodes get flattened), we don't have to do a full recursive search.
 			--Just check if the root node IS or CONTAINS subroutines.
-			if root.id == TOK.subroutine then
-				subroutine_cache[root.text] = root
-			elseif root.id == TOK.program then
-				for i = 1, #root.children do
-					if root.children[i].id == TOK.subroutine then
-						subroutine_cache[root.children[i].text] = root.children[i]
+			local function cache_subroutines(node)
+				if node.id == TOK.subroutine then
+					subroutine_cache[node.text] = node
+				elseif node.id == TOK.program then
+					for i = 1, #node.children do
+						cache_subroutines(node.children[i])
 					end
 				end
 			end
+			cache_subroutines(root)
 		end
 
 		--Generate bytecode
