@@ -1151,6 +1151,26 @@ let_stmt = function(span)
 		children = { list[1] },
 	}
 
+	local function math_assign_sugar(var, op, rhs)
+		local id = (op.text == '+=' or op.text == '-=') and TOK.add or TOK.multiply
+
+		return {
+			id = id,
+			text = op.text:sub(1, #op.text - 1),
+			span = op.span,
+			children = {
+				{
+					id = TOK.variable,
+					text = var.text,
+					span = var.span,
+				},
+				rhs,
+			},
+		}
+	end
+
+	local op
+
 	if #list > 1 then
 		if is_initial then
 			--Multi-assignment is not allowed with `initial` statement
@@ -1181,8 +1201,14 @@ let_stmt = function(span)
 			end
 
 			--Indexed assignment MUST have an `=` operator after it.
-			if not parser.expect(TOK.op_assign, '=') then
+			ok, op = parser.expect(TOK.op_assign, '=')
+			if not ok then
 				return parser.out(false)
+			end
+
+			--Must be only an assignment
+			if op.text ~= '=' then
+				parse_error(op.span, 'Indexed math-assignment is not supported yet!', parser.filename())
 			end
 
 			--and then at least one value
@@ -1202,18 +1228,43 @@ let_stmt = function(span)
 	--and the second just defines them and assigns null.
 	--`let` ... `=` ...
 	--`let` ...
-	ok, child = parser.accept(TOK.op_assign)
+	ok, op = parser.accept(TOK.op_assign)
 	if not ok then
 		if is_initial then
 			--A value must be given in `initial` statement
-			parser.ast_error(child, '=')
+			parser.ast_error(op, '=')
 			return parser.out(false)
 		end
 		return true, node
 	end
 
+	if op.text ~= '=' then
+		if is_initial then
+			parse_error(op.span, 'Reassignment of a variable\'s `initial` value is impossible', parser.filename())
+			return parser.out(false)
+		end
+		if #list > 1 then
+			parse_error(op.span, 'Math-assignment cannot be performed on multi-variable assignment', parser.filename())
+			return parser.out(false)
+		end
+	end
+
 	ok, child = parser.expect(command, 'argument(s)')
 	if not ok then return parser.out(false) end
+
+	--Make variable assignment make sense, removing quirks of AST generation.
+	if #child.children > 1 then
+		child.id = TOK.array_concat
+		child.text = '[]'
+	else
+		child = child.children[1]
+	end
+
+	--Apply syntax sugar for math-assignment
+	if op.text ~= '=' then
+		child = math_assign_sugar(list[1], op, child)
+	end
+
 	table.insert(node.children, child)
 
 	return true, node
