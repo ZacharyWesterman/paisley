@@ -4,7 +4,7 @@ local config = {
 	description = "This is the Paisley compiler and runtime engine.\nhttps://github.com/ZacharyWesterman/paisley",
 	name = "Paisley",
 	exe = "paisley",
-	version = "1.18.9",
+	version = "1.18.10",
 }
 
 local options = {
@@ -40,6 +40,7 @@ local options = {
 	{ description = "Allow unrecognized commands to coerce to shell exec",           long = "shell",             short = "l" },
 	{ description = "Disable features/cmds that could affect the system (e.g. `?`)", long = "sandbox" },
 	{ description = "List the recommended Lua packages to be installed",             long = "rocks" },
+	{ description = "Disable usage of auxilliary Lua libraries",                     long = "no-rocks" },
 	{ description = "The input file, or `-` to read from stdin",                     name = "input",             type = "string" },
 	--[[no-install]]
 	{ description = "Compile the Paisley application into a standalone executable",  long = "install" },
@@ -59,6 +60,9 @@ package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])') or '.') .. '/?.
 
 require 'src.util.argparse'
 local flags, args = ARG.parse_and_validate(options, config)
+
+--Disable auxilliary Lua libraries
+if flags.no_rocks then FS.disable_rocks() end
 
 --Generate compiler or runtime text for the Plasma build
 if flags.plasma_build then

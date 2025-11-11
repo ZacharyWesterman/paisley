@@ -14,7 +14,14 @@ FS = {
 		zlib = soft_require('zlib'),
 		curses = soft_require('curses'),
 		socket = soft_require('socket'),
+		signal = soft_require('posix.signal'),
 	},
+
+	disable_rocks = function()
+		for key, _ in pairs(FS.rocks) do
+			FS.rocks[key] = nil
+		end
+	end,
 
 	script_real_path = function()
 		local path = arg[0]

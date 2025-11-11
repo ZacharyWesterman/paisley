@@ -24,7 +24,6 @@ ALLOWED_COMMANDS = V3
 require "src.shared.builtin_commands"
 
 --[[SETUP FOR RUNTIME]]
-local socket_installed, socket = pcall(require, 'socket')
 ENDED = false
 
 local line_no = 0
@@ -65,8 +64,8 @@ function output(value, port)
 		local date = os.date('*t', os.time())
 		local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
 
-		if socket_installed then
-			sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
+		if FS.rocks.socket then
+			sec_since_midnight = sec_since_midnight + (math.floor(FS.rocks.socket.gettime() * 1000) % 1000 / 1000)
 		end
 
 		V5 = sec_since_midnight --command return value
@@ -80,8 +79,8 @@ function output(value, port)
 			local date = os.date('*t', os.time())
 			local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
 
-			if socket_installed then
-				sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
+			if FS.rocks.socket then
+				sec_since_midnight = sec_since_midnight + (math.floor(FS.rocks.socket.gettime() * 1000) % 1000 / 1000)
 			end
 
 			V5 = sec_since_midnight --command return value
@@ -201,9 +200,8 @@ ALLOWED_COMMANDS = tmp
 
 INTERRUPT = true
 USER_SIGINT = false
-local signal_installed, signal = pcall(require, 'posix.signal')
-if signal_installed then
-	signal.signal(signal.SIGINT, function(signum)
+if FS.rocks.signal then
+	FS.rocks.signal.signal(FS.rocks.signal.SIGINT, function(signum)
 		io.write('\n')
 		if INTERRUPT then os.exit(128 + signum) end
 		USER_SIGINT = true
@@ -233,7 +231,7 @@ local token_cache = {}
 local subroutine_cache = {} --Keep cache of all subroutines the user creates
 local lexer, append_text = Lexer('')
 
-local curses_installed, curses = pcall(require, 'curses')
+local curses = FS.rocks.curses
 
 --Default readline, used when curses is not installed
 local function readline()
@@ -257,7 +255,7 @@ end
 
 --If curses is installed, use that for REPL
 --It gives better terminal control
-if curses_installed then
+if curses then
 	local stdscr = curses.initscr()
 	curses.echo(false)
 	stdscr:scrollok(true)
@@ -668,7 +666,7 @@ if curses_installed then
 	---@param text string|nil
 	print = function(text)
 		if text ~= nil then
-			if curses_installed then
+			if curses then
 				local sections = {}
 				local current_color = nil
 
@@ -764,12 +762,7 @@ for input_line in readline do
 		if not ERRORED then
 			--Reappend subroutine cache into program.
 			for _, subroutine_ast in pairs(subroutine_cache) do
-				root = {
-					id = TOK.program,
-					span = root[1].span,
-					text = 'stmt_list',
-					children = { subroutine_ast, root, },
-				}
+				table.insert(ast.children, subroutine_ast)
 			end
 
 			root = SemanticAnalyzer(ast)
@@ -781,15 +774,16 @@ for input_line in readline do
 			--Since Paisley requires all subroutines to be defined at the top level
 			--(and program nodes get flattened), we don't have to do a full recursive search.
 			--Just check if the root node IS or CONTAINS subroutines.
-			if root.id == TOK.subroutine then
-				subroutine_cache[root.text] = root
-			elseif root.id == TOK.program then
-				for i = 1, #root.children do
-					if root.children[i].id == TOK.subroutine then
-						subroutine_cache[root.children[i].text] = root.children[i]
+			local function cache_subroutines(node)
+				if node.id == TOK.subroutine then
+					subroutine_cache[node.text] = node
+				elseif node.id == TOK.program then
+					for i = 1, #node.children do
+						cache_subroutines(node.children[i])
 					end
 				end
 			end
+			cache_subroutines(root)
 		end
 
 		--Generate bytecode
