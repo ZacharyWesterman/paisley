@@ -16,6 +16,12 @@ FS = {
 		socket = soft_require('socket'),
 	},
 
+	disable_rocks = function()
+		for key, _ in pairs(FS.rocks) do
+			FS.rocks[key] = nil
+		end
+	end,
+
 	script_real_path = function()
 		local path = arg[0]
 

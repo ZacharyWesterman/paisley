@@ -24,7 +24,6 @@ ALLOWED_COMMANDS = V3
 require "src.shared.builtin_commands"
 
 --[[SETUP FOR RUNTIME]]
-local socket_installed, socket = pcall(require, 'socket')
 ENDED = false
 
 local line_no = 0
@@ -65,8 +64,8 @@ function output(value, port)
 		local date = os.date('*t', os.time())
 		local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
 
-		if socket_installed then
-			sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
+		if FS.rocks.socket then
+			sec_since_midnight = sec_since_midnight + (math.floor(FS.rocks.socket.gettime() * 1000) % 1000 / 1000)
 		end
 
 		V5 = sec_since_midnight --command return value
@@ -80,8 +79,8 @@ function output(value, port)
 			local date = os.date('*t', os.time())
 			local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
 
-			if socket_installed then
-				sec_since_midnight = sec_since_midnight + (math.floor(socket.gettime() * 1000) % 1000 / 1000)
+			if FS.rocks.socket then
+				sec_since_midnight = sec_since_midnight + (math.floor(FS.rocks.socket.gettime() * 1000) % 1000 / 1000)
 			end
 
 			V5 = sec_since_midnight --command return value
@@ -201,9 +200,8 @@ ALLOWED_COMMANDS = tmp
 
 INTERRUPT = true
 USER_SIGINT = false
-local signal_installed, signal = pcall(require, 'posix.signal')
-if signal_installed then
-	signal.signal(signal.SIGINT, function(signum)
+if FS.rocks.signal then
+	FS.rocks.signal.signal(FS.rocks.signal.SIGINT, function(signum)
 		io.write('\n')
 		if INTERRUPT then os.exit(128 + signum) end
 		USER_SIGINT = true
@@ -233,7 +231,7 @@ local token_cache = {}
 local subroutine_cache = {} --Keep cache of all subroutines the user creates
 local lexer, append_text = Lexer('')
 
-local curses_installed, curses = pcall(require, 'curses')
+local curses = FS.rocks.curses
 
 --Default readline, used when curses is not installed
 local function readline()
@@ -257,7 +255,7 @@ end
 
 --If curses is installed, use that for REPL
 --It gives better terminal control
-if curses_installed then
+if curses then
 	local stdscr = curses.initscr()
 	curses.echo(false)
 	stdscr:scrollok(true)
@@ -668,7 +666,7 @@ if curses_installed then
 	---@param text string|nil
 	print = function(text)
 		if text ~= nil then
-			if curses_installed then
+			if curses then
 				local sections = {}
 				local current_color = nil
 
@@ -764,6 +762,7 @@ for input_line in readline do
 		if not ERRORED then
 			--Reappend subroutine cache into program.
 			for _, subroutine_ast in pairs(subroutine_cache) do
+				print_token(subroutine_ast)
 				root = {
 					id = TOK.program,
 					span = root[1].span,
