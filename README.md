@@ -198,7 +198,6 @@ Note that the iterator (2nd from the bottom) loop type will iterate over all *va
 Also note that the key-value (bottom) loop **must** contain either `pairs()` or `chunk(2)`, to ensure that the key-value pairs are valid.
 
 If you want syntax similar to Lua's integer for loops (`for i = 1, 10 do ... end`), you can use something like `for i in {1:10} do ... end`.
-If you want an infinite loop, just use something like `while 1 do ... end` or `while {true} do ... end`.
 
 ## Variable Assignment:
 Variable assignment always starts with `let`, e.g.
