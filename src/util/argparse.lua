@@ -6,6 +6,10 @@ ARG = {
 		os.exit(1)
 	end,
 
+	warn = function(msg)
+		io.stderr:write("Warning: " .. msg .. "\n")
+	end,
+
 	help = function(options, config)
 		local function print_option(option)
 			local str = ""
@@ -251,6 +255,10 @@ ARG = {
 		if (flags.standalone or flags.target or flags.output) and not flags.cpp_precompile and flags.cpp_clean then
 			ARG.error(
 				'The `--cpp-clean` flag should be used either by itself or with `--cpp-precompile`, to remove precompiled C++ object files.')
+		end
+
+		if flags.format and (flags.repl or flags.install or flags.plasma_build or flags.cpp_precompile or flags.cpp_clean or flags.introspect or flags.standalone or flags.language_server) then
+			ARG.warn('Using `--format` outputs formatted code, so any other build process flags are ignored!')
 		end
 
 		if flags.introspect or flags.repl --[[no-install]] or flags.install --[[/no-install]] or flags.plasma_build or flags.cpp_precompile or flags.cpp_clean then

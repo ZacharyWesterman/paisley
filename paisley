@@ -4,18 +4,17 @@ local config = {
 	description = "This is the Paisley compiler and runtime engine.\nhttps://github.com/ZacharyWesterman/paisley",
 	name = "Paisley",
 	exe = "paisley",
-	version = "1.18.12",
+	version = "1.18.13",
 }
 
 local options = {
+	{ description = "The input file, or `-` to read from stdin",                     name = "input",             type = "string" },
 	{ description = "Prints help information",                                       long = "help",              short = "h" },
 	{ description = "Prints version information",                                    long = "version",           short = "V" },
 	{ description = "The next parameter is the output file (use `-` for stdout)",    long = "output",            short = "o",     type = "string" },
 	{ description = "Start the Paisley runtime as an interactive REPL",              long = "repl",              short = "r" },
 	{ description = "Output bytecode instead of running the script",                 long = "bytecode",          short = "b" },
 	{ description = "Pretty-print bytecode output",                                  long = "pretty",            short = "p" },
-	{ description = "Validate the program, but don't run it",                        long = "dry-run" },
-	{ description = "Output detailed info in an easy-to-parse format",               long = "language-server" },
 	{ description = "Pretend that stdin input has the given filename",               long = "stdin",             type = "string", arg = "[FILE]" },
 	{ description = "Don't report errors in the syntax tree",                        long = "no-ast-errors" },
 	{ description = "Don't remove 'dead code' that will never get run",              long = "no-prune-dead-code" },
@@ -41,7 +40,10 @@ local options = {
 	{ description = "Disable features/cmds that could affect the system (e.g. `?`)", long = "sandbox" },
 	{ description = "List the recommended Lua packages to be installed",             long = "rocks" },
 	{ description = "Disable usage of auxilliary Lua libraries",                     long = "no-rocks" },
-	{ description = "The input file, or `-` to read from stdin",                     name = "input",             type = "string" },
+	{ description = "Validate the program, but don't run it",                        long = "dry-run" },
+	{ description = "Output detailed info in an easy-to-parse format",               long = "language-server" },
+	{ description = "Format the given program input, then exit",                     long = "format" },
+	{ description = "If formatting, set the indent to the given string",             long = "indent",            type = "string", arg = "[INDENT]",         default = "\t" },
 	--[[no-install]]
 	{ description = "Compile the Paisley application into a standalone executable",  long = "install" },
 	{ description = "Compile the main executable with the given compiler",           long = "compile-self",      type = "string", arg = "[PGM]" },
@@ -60,6 +62,38 @@ package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])') or '.') .. '/?.
 
 require 'src.util.argparse'
 local flags, args = ARG.parse_and_validate(options, config)
+
+print(flags.format, '>>' .. flags.indent .. '<<')
+if flags.format then
+	local input_file = table.remove(args, 1)
+	local input_text
+	if input_file ~= '-' then
+		local fp = io.open(input_file, 'rb')
+		if not fp then
+			error('Error: Cannot open file `' .. input_file .. '`.')
+		end
+		input_text = fp:read('*a')
+		fp:close()
+	else
+		input_text = io.read('*a')
+	end
+
+	local format = require 'src.util.format'
+	local output_text = format(input_text)
+
+	if flags.output and flags.output ~= '-' then
+		local fp = io.open(flags.output, 'wb')
+		if not fp then
+			error('Error: Failed to write to file: ' .. flags.output)
+		end
+		fp:write(output_text)
+		fp:close()
+	else
+		print(output_text)
+	end
+
+	os.exit(0)
+end
 
 --Disable auxilliary Lua libraries
 if flags.no_rocks then FS.disable_rocks() end
