@@ -63,7 +63,6 @@ package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])') or '.') .. '/?.
 require 'src.util.argparse'
 local flags, args = ARG.parse_and_validate(options, config)
 
-print(flags.format, '>>' .. flags.indent .. '<<')
 if flags.format then
 	local input_file = table.remove(args, 1)
 	local input_text

@@ -136,11 +136,12 @@ Iterator generates tokens of the form:
 	col: int,
 }
 --]]
----@param text string
----@param file string?
+---@param text string The text to tokenize.
+---@param file string? The name of the processed file.
+---@param keep_comments boolean? If true, keep comments in the list of output tokens.
 ---@return function iterator An iterator that fetches the next token when run.
 ---@return function append_text A function for appending text to the input dynamically.
-function Lexer(text, file)
+function Lexer(text, file, keep_comments)
 	local line = 1
 	local col = 1
 	local scopes = {}
@@ -194,7 +195,7 @@ function Lexer(text, file)
 				if not match then
 					match = text:match('^#%[%[')
 					if match then
-						tok_ignore = true
+						tok_ignore = not keep_comments
 						match = text:match('^#%[%[.-#%]%]')
 						if not match then match = text:match('^#%[%[.*') end
 						--[[minify-delete]]
@@ -207,7 +208,7 @@ function Lexer(text, file)
 				if not match then
 					match = text:match('^#[^\n]*')
 					if match then
-						tok_ignore = true
+						tok_ignore = not keep_comments
 						--[[minify-delete]]
 						process_comment_annotations(match)
 						--[[/minify-delete]]
@@ -341,7 +342,7 @@ function Lexer(text, file)
 				if not match then
 					match = text:match('^#%[%[')
 					if match then
-						tok_ignore = true
+						tok_ignore = not keep_comments
 						match = text:match('^#%[%[.-#%]%]')
 						if not match then match = text:match('^#%[%[.*') end
 						--[[minify-delete]]
@@ -354,7 +355,7 @@ function Lexer(text, file)
 				if not match then
 					match = text:match('^#[^\n]*')
 					if match then
-						tok_ignore = true
+						tok_ignore = not keep_comments
 						--[[minify-delete]]
 						process_comment_annotations(match)
 						--[[/minify-delete]]
