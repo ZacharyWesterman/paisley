@@ -1655,7 +1655,7 @@ statement = function()
 end
 
 ---@brief Syntax rule for a list of statements
-program = function( --[[minify-delete]] _, keep_misc --[[/minify-delete]])
+program = function()
 	local span = parser.t() and parser.t().span or Span:new(0, 0, 0, 0)
 	local ok, statements = parser.zero_or_more(statement)
 
@@ -1684,9 +1684,9 @@ end
 
 
 ---@brief Parse the list of tokens into an AST.
-return function( --[[minify-delete]] keep_misc_tokens --[[/minify-delete]])
+return function()
 	parser.nextsym()
-	local ok, node = program( --[[minify-delete]] nil, keep_misc_tokens --[[/minify-delete]])
+	local ok, node = program()
 
 	if parser.t() then
 		parser.ast_error(parser.t())
