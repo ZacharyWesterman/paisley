@@ -78,7 +78,7 @@ if flags.format then
 	end
 
 	local format = require 'src.util.format'
-	local output_text = format(input_text)
+	local output_text = format(input_text, flags.indent or '\t')
 
 	if flags.output and flags.output ~= '-' then
 		local fp = io.open(flags.output, 'wb')

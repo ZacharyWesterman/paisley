@@ -1651,7 +1651,6 @@ statement = function()
 		--[[minify-delete]] import_stmt, --[[/minify-delete]]
 		scope_stmt,
 		command,
-		--[[minify-delete]] TOK.no_value, --[[/minify-delete]]
 	}, {}, false)
 end
 
