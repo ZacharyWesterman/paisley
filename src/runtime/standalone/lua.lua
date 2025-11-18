@@ -1,3 +1,5 @@
+local json = require "src.shared.json"
+
 ---@diagnostic disable-next-line
 STANDALONE.lua = {
 	--- Generate a standalone Lua program from a given Paisley bytecode.

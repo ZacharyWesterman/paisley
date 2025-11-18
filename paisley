@@ -329,6 +329,8 @@ local m = V1:match('^#![^\n]*\n')
 local paisley_src = V1
 if m then paisley_src = V1:sub(#m + 1) end
 
+local json = require "src.shared.json"
+
 --Check if we were given compressed bytecode
 if FS.is_zlib_compressed(paisley_src) then
 	if not FS.rocks.zlib then

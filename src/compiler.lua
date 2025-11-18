@@ -116,6 +116,7 @@ if COMPILER_DEBUG then
 end
 --[[/minify-delete]]
 
+local json = require "src.shared.json"
 output(json.stringify(bytecode), 1)
 
 --[[minify-delete]]

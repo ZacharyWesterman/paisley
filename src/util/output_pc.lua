@@ -1,4 +1,5 @@
 require "src.util.filesystem"
+local json = require "src.shared.json"
 
 local line_no = 0
 local CMD_LAST_RESULT = {

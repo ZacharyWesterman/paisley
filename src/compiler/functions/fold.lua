@@ -1,3 +1,5 @@
+local json = require "src.shared.json"
+
 FUNC_OPERATIONS = {
 	bytes = function(number, count)
 		local result = {}
@@ -170,10 +172,10 @@ FUNC_OPERATIONS = {
 	end,
 
 	json_encode = function(data, token, file)
-		local indent = nil
+		local indent
 		if data[2] then indent = 2 end
 
-		local result, err = json.stringify(data[1], indent, true)
+		local result, err = json.stringify(data[1], indent)
 
 		if err ~= nil then
 			parse_error(token.span, err, file)
