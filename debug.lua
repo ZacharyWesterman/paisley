@@ -128,6 +128,7 @@ if LFS_INSTALLED and dir ~= nil then
 end
 
 require "src.compiler"
+local json = require "src.shared.json"
 
 print_header('Raw Bytecode')
 print(TRANSFER)
