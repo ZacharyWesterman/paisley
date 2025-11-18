@@ -13,6 +13,8 @@ NULL = {}
 require 'src.util.filesystem'
 --[[/minify-delete]]
 
+local json = require "src.shared.json"
+
 local function runtime_error(line, msg)
 	if msg:sub(1, 11) == 'RUNTIME BUG' then
 		msg = msg .. '\nTHIS IS A BUG IN THE PAISLEY COMPILER, PLEASE REPORT IT!'
@@ -564,7 +566,7 @@ local functions = {
 		local indent = nil
 		if std.bool(v[2]) then indent = 2 end
 
-		local res, err = json.stringify(v[1], indent, true)
+		local res, err = json.stringify(v[1], indent)
 		if err ~= nil then
 			runtime_error(line, err)
 		end

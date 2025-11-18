@@ -1,36 +1,255 @@
 --[[
-	Methods:
-		json.parse(text) to parse a JSON string into data.
-		json.stringify(data, [indent]) to convert data into a JSON string. Text will only be pretty-printed if indent is specified.
+A single-file Lua library for handling JSON serialization.
 --]]
 
+---Parse a JSON string representation into arbitrary data.
+---Will error if the JSON string is invalid.
+---@param text string The JSON string to parse.
+---@param return_error boolean|nil If true, return the error as a second parameter. Otherwise halts program execution on error.
+---@return any, string|nil
+local function json_parse(text, return_error)
+	local line = 1
+	local col = 1
+	local tokens = {}
 
-json = {
+	local _tok = {
+		literal = 0,
+		comma = 1,
+		colon = 2,
+		lbrace = 3,
+		rbrace = 4,
+		lbracket = 5,
+		rbracket = 6,
+	}
+
+	local newtoken = function(value, kind)
+		return {
+			value = value,
+			kind = kind,
+			line = line,
+			col = col,
+		}
+	end
+
+	local function json_msg(msg)
+		return 'JSON parse error at [' .. line .. ':' .. col .. ']: ' .. msg
+	end
+
+	local do_error = function(msg)
+		error(json_msg(msg))
+	end
+
+	if return_error then
+		do_error = function(msg)
+			return nil, json_msg(msg)
+		end
+	end
+
+	--Split JSON string into tokens
+	local in_string = false
+	local escaped = false
+	local i = 1
+	local this_token = ''
+	local paren_stack = {}
+	while i <= #text do
+		local chr = text:sub(i, i)
+
+		col = col + 1
+		if chr == '\n' then
+			line = line + 1
+			col = 0
+			if in_string then
+				return do_error('Unexpected line ending inside string.')
+			end
+		elseif in_string then
+			if escaped then
+				if chr == 'n' then chr = '\n' end
+				if chr == 't' then chr = '\t' end
+				this_token = this_token .. chr
+				escaped = false
+			elseif chr == '\\' and text:sub(i + 1, i + 1) ~= 'u' then
+				--Don't mangle unicode sequences... we usually can't render those, so just leave them as-is.
+				--All others can be handled properly.
+				escaped = true
+			elseif chr == '"' then
+				--End string, append token
+				table.insert(tokens, newtoken(this_token, _tok.literal))
+				this_token = ''
+				in_string = false
+			else
+				this_token = this_token .. chr
+			end
+		elseif chr == '[' then
+			table.insert(tokens, newtoken(chr, _tok.lbracket))
+			table.insert(paren_stack, chr)
+		elseif chr == ']' then
+			table.insert(tokens, newtoken(chr, _tok.rbracket))
+			if #paren_stack == 0 then return do_error('Unexpected closing bracket "]".') end
+			if table.remove(paren_stack) ~= '[' then return do_error('Bracket mismatch (expected "}", got "]").') end
+		elseif chr == '{' then
+			table.insert(tokens, newtoken(chr, _tok.lbrace))
+			table.insert(paren_stack, chr)
+		elseif chr == '}' then
+			table.insert(tokens, newtoken(chr, _tok.rbrace))
+			if #paren_stack == 0 then return do_error('Unexpected closing brace "}".') end
+			if table.remove(paren_stack) ~= '{' then return do_error('Brace mismatch (expected "]", got "}").') end
+		elseif chr == ':' then
+			table.insert(tokens, newtoken(chr, _tok.colon))
+		elseif chr == ',' then
+			table.insert(tokens, newtoken(chr, _tok.comma))
+		elseif chr:match('%s') then
+			--Ignore white space outside of strings
+		elseif chr == '"' then
+			--Start a string token
+			in_string = true
+		elseif chr == 't' and text:sub(i, i + 3) == 'true' then
+			table.insert(tokens, newtoken(true, _tok.literal))
+			i = i + 3
+		elseif chr == 'f' and text:sub(i, i + 4) == 'false' then
+			table.insert(tokens, newtoken(false, _tok.literal))
+			i = i + 4
+		elseif chr == 'n' and text:sub(i, i + 3) == 'null' then
+			table.insert(tokens, newtoken(nil, _tok.literal))
+			i = i + 3
+		else
+			local num = text:match('^%-?%d+%.?%d*[eE][-+]?%d+', i)
+			if not num then
+				num = text:match('^%-?%d+%.?%d*', i)
+			end
+
+			if not num then
+				return do_error('Invalid character "' .. chr .. '".')
+			else
+				table.insert(tokens, newtoken(tonumber(num), _tok.literal))
+				i = i + #num - 1
+			end
+		end
+
+		i = i + 1 --Next char
+	end
+
+	if in_string then
+		col = col - #this_token
+		return do_error('Unterminated string.')
+	end
+
+	if #paren_stack > 0 then
+		local last = table.remove(paren_stack)
+		if last == '[' then
+			return do_error('No terminating "]" bracket.')
+		else
+			return do_error('No terminating "}" brace.')
+		end
+	end
+
+	local lex_error = function(token, msg)
+		line = token.line
+		col = token.col
+		local r1, r2 = do_error(msg)
+		return r1, nil, r2
+	end
+
+	--Now that the JSON data is confirmed to only have valid tokens, condense the tokens into valid data
+	--Note that at this point, braces are guaranteed to be in the right order and matching open/close braces.
+	local function lex(i)
+		local this_object
+		local this_token = tokens[i]
+
+		if this_token.kind == _tok.literal then
+			return this_token.value, i
+		elseif this_token.kind == _tok.lbracket then
+			--Generate array-like tables
+			this_object = setmetatable({}, { is_array = true })
+			i = i + 1
+			this_token = tokens[i]
+
+			while this_token.kind ~= _tok.rbracket do
+				local value
+				value, i = lex(i)
+				table.insert(this_object, value)
+				this_token = tokens[i + 1]
+				if this_token.kind == _tok.comma then
+					i = i + 1
+				elseif this_token.kind ~= _tok.rbracket then
+					return lex_error(this_token, 'Unexpected token "' .. this_token.value ..
+						'" (expected "," or "]").')
+				end
+				i = i + 1
+				this_token = tokens[i]
+			end
+			return this_object, i
+		elseif this_token.kind == _tok.lbrace then
+			--Generate object-like tables
+			this_object = setmetatable({}, { is_array = false })
+			i = i + 1
+			this_token = tokens[i]
+
+			while this_token.kind ~= _tok.rbrace do
+				--Only exact keys are allowed‚ no objects as keys
+				if this_token.kind ~= _tok.literal then
+					return lex_error(this_token, 'Unexpected token "' .. this_token.value .. '" (expected literal).')
+				end
+				local key = this_token.value
+
+				this_token = tokens[i + 1]
+				if this_token.kind ~= _tok.colon then
+					return lex_error(this_token, 'Unexpected token "' .. this_token.value .. '" (expected ":").')
+				end
+
+				this_object[key], i = lex(i + 2)
+				this_token = tokens[i + 1]
+				if this_token.kind == _tok.comma then
+					i = i + 1
+				elseif this_token.kind ~= _tok.rbrace then
+					return lex_error(this_token, 'Unexpected token "' .. this_token.value ..
+						'" (expected "," or "}").')
+				end
+				i = i + 1
+				this_token = tokens[i]
+			end
+			return this_object, i
+		else
+			return lex_error(this_token, 'Unexpected token "' .. this_token.value .. '".')
+		end
+	end
+
+	if #tokens == 0 then return nil end
+	local r1, r2, r3 = lex(1)
+	return r1, r3
+end
+
+return {
 	---Convert arbitrary data into a JSON string representation.
 	---Will error if data is something that cannot be serialized, such as a function, userdata or thread.
 	---@param data any The data to serialize.
 	---@param indent integer|nil The number of spaces to indent on each scope change.
-	---@param return_error boolean|nil If true, return the error as a second parameter. Otherwise halts program execution on error.
 	---@return string, string|nil
-	stringify = function(data, indent, return_error)
-		local function __stringify(data, indent, __indent)
-			local tp = type(data)
+	stringify = function(data, indent)
+		local repl_chars = {
+			{ '\\', '\\\\' },
+			{ '\"', '\\"' },
+			{ '\n', '\\n' },
+			{ '\t', '\\t' },
+		}
 
-			if tp == 'table' then
+		local serialize
+
+		local methods = {
+			table = function(data, indent_level)
 				local next_indent
 
-				if indent ~= nil then
-					if __indent == nil then __indent = 0 end
-					next_indent = indent + __indent
+				if indent_level then
+					next_indent = indent_level + (indent or 0)
 				end
 
-				--Check if a table is an array or an object
+				--Check if table is explicitly flagged as an array/object
 				local is_array = true
 				local meta = getmetatable(data)
 				if meta and meta.is_array ~= nil then
 					is_array = meta.is_array
 				else
-					for key, value in pairs(data) do
+					--If not, assume tables with non-numeric keys are objects
+					for key, _ in pairs(data) do
 						if type(key) ~= 'number' then
 							is_array = false
 							break
@@ -38,6 +257,7 @@ json = {
 					end
 				end
 
+				--Serialize the data
 				local result = ''
 				if is_array then
 					if indent ~= nil and #data > 0 then
@@ -47,7 +267,7 @@ json = {
 					end
 
 					for key = 1, #data do
-						local str = __stringify(data[key], indent, next_indent)
+						local str = serialize(data[key], next_indent)
 						if key ~= #data then str = str .. ',' end
 						if indent ~= nil then
 							result = result .. (' '):rep(next_indent) .. str .. '\n'
@@ -57,7 +277,7 @@ json = {
 					end
 
 					if indent ~= nil and #data > 0 then
-						return result .. (' '):rep(__indent) .. ']'
+						return result .. (' '):rep(indent_level) .. ']'
 					else
 						return result .. ']'
 					end
@@ -72,8 +292,8 @@ json = {
 					if indent ~= nil then colon = ': ' end
 					local ct = 0
 					for key, value in pairs(data) do
-						local str = __stringify(tostring(key), indent, next_indent) ..
-							colon .. __stringify(value, indent, next_indent)
+						local str = serialize(tostring(key), next_indent) ..
+							colon .. serialize(value, next_indent)
 						if indent ~= nil then
 							if ct > 0 then result = result .. ',\n' end
 							result = result .. (' '):rep(next_indent) .. str
@@ -85,260 +305,50 @@ json = {
 					end
 
 					if indent ~= nil and next(data) ~= nil then
-						return result .. '\n' .. (' '):rep(__indent) .. '}'
+						return result .. '\n' .. (' '):rep(indent_level) .. '}'
 					else
 						return result .. '}'
 					end
 				end
-			elseif tp == 'string' then
-				local repl_chars = {
-					{ '\\', '\\\\' },
-					{ '\"', '\\"' },
-					{ '\n', '\\n' },
-					{ '\t', '\\t' },
-				}
-				local result = data
-				local i
-				for i = 1, #repl_chars do
-					result = result:gsub(repl_chars[i][1], repl_chars[i][2])
+			end,
+
+			string = function(data)
+				for _, repl in ipairs(repl_chars) do
+					data = data:gsub(repl[1], repl[2])
 				end
-				return '"' .. result .. '"'
-			elseif tp == 'number' then
-				return tostring(data)
-			elseif data == true then
-				return 'true'
-			elseif data == false then
-				return 'false'
-			elseif data == nil then
-				return 'null'
-			else
-				--If an unsupported type, just convert to a string.
-				return '"<' .. tp .. '>"'
-			end
-		end
+				return '"' .. data .. '"'
+			end,
 
-		return __stringify(data, indent)
-	end,
+			number = tostring,
 
-	---Parse a JSON string representation into arbitrary data.
-	---Will error if the JSON string is invalid.
-	---@param text string The JSON string to parse.
-	---@param return_error boolean|nil If true, return the error as a second parameter. Otherwise halts program execution on error.
-	---@return any, string|nil
-	parse = function(text, return_error)
-		local line = 1
-		local col = 1
-		local tokens = {}
+			boolean = function(data)
+				return data and 'true' or 'false'
+			end,
 
-		local _tok = {
-			literal = 0,
-			comma = 1,
-			colon = 2,
-			lbrace = 3,
-			rbrace = 4,
-			lbracket = 5,
-			rbracket = 6,
+			['nil'] = function() return 'null' end,
 		}
 
-		local newtoken = function(value, kind)
-			return {
-				value = value,
-				kind = kind,
-				line = line,
-				col = col,
-			}
-		end
-
-		local do_error = function(msg)
-			error('JSON parse error at [' .. line .. ':' .. col .. ']: ' .. msg)
-		end
-
-		if return_error then
-			do_error = function(msg)
-				return nil, 'JSON parse error at [' .. line .. ':' .. col .. ']: ' .. msg
-			end
-		end
-
-		--Split JSON string into tokens
-		local in_string = false
-		local escaped = false
-		local i = 1
-		local this_token = ''
-		local paren_stack = {}
-		while i <= #text do
-			local chr = text:sub(i, i)
-
-			col = col + 1
-			if chr == '\n' then
-				line = line + 1
-				col = 0
-				if in_string then
-					return do_error('Unexpected line ending inside string.')
-				end
-			elseif in_string then
-				if escaped then
-					if chr == 'n' then chr = '\n' end
-					if chr == 't' then chr = '\t' end
-					this_token = this_token .. chr
-					escaped = false
-				elseif chr == '\\' and text:sub(i + 1, i + 1) ~= 'u' then
-					--Don't mangle unicode sequences... we usually can't render those, so just leave them as-is.
-					--All others can be handled properly.
-					escaped = true
-				elseif chr == '"' then
-					--End string, append token
-					table.insert(tokens, newtoken(this_token, _tok.literal))
-					this_token = ''
-					in_string = false
-				else
-					this_token = this_token .. chr
-				end
-			elseif chr == '[' then
-				table.insert(tokens, newtoken(chr, _tok.lbracket))
-				table.insert(paren_stack, chr)
-			elseif chr == ']' then
-				table.insert(tokens, newtoken(chr, _tok.rbracket))
-				if #paren_stack == 0 then return do_error('Unexpected closing bracket "]".') end
-				if table.remove(paren_stack) ~= '[' then return do_error('Bracket mismatch (expected "}", got "]").') end
-			elseif chr == '{' then
-				table.insert(tokens, newtoken(chr, _tok.lbrace))
-				table.insert(paren_stack, chr)
-			elseif chr == '}' then
-				table.insert(tokens, newtoken(chr, _tok.rbrace))
-				if #paren_stack == 0 then return do_error('Unexpected closing brace "}".') end
-				if table.remove(paren_stack) ~= '{' then return do_error('Brace mismatch (expected "]", got "}").') end
-			elseif chr == ':' then
-				table.insert(tokens, newtoken(chr, _tok.colon))
-			elseif chr == ',' then
-				table.insert(tokens, newtoken(chr, _tok.comma))
-			elseif chr:match('%s') then
-				--Ignore white space outside of strings
-			elseif chr == '"' then
-				--Start a string token
-				in_string = true
-			elseif chr == 't' and text:sub(i, i + 3) == 'true' then
-				table.insert(tokens, newtoken(true, _tok.literal))
-				i = i + 3
-			elseif chr == 'f' and text:sub(i, i + 4) == 'false' then
-				table.insert(tokens, newtoken(false, _tok.literal))
-				i = i + 4
-			elseif chr == 'n' and text:sub(i, i + 3) == 'null' then
-				table.insert(tokens, newtoken(nil, _tok.literal))
-				i = i + 3
+		serialize = function(data, indent_level)
+			local method = methods[type(data)]
+			if method then
+				return method(data, indent_level)
 			else
-				local num = text:match('^%-?%d+%.?%d*[eE][-+]?%d+', i)
-				if not num then
-					num = text:match('^%-?%d+%.?%d*', i)
-				end
-
-				if not num then
-					return do_error('Invalid character "' .. chr .. '".')
-				else
-					table.insert(tokens, newtoken(tonumber(num), _tok.literal))
-					i = i + #num - 1
-				end
-			end
-
-			i = i + 1 --Next char
-		end
-
-		if in_string then
-			col = col - #this_token
-			return do_error('Unterminated string.')
-		end
-
-		if #paren_stack > 0 then
-			local last = table.remove(paren_stack)
-			if last == '[' then
-				return do_error('No terminating "]" bracket.')
-			else
-				return do_error('No terminating "}" brace.')
+				--If an unsupported type, just convert to a string.
+				return '"<' .. type(data) .. '>"'
 			end
 		end
 
-		local lex_error = function(token, msg)
-			line = token.line
-			col = token.col
-			local r1, r2 = do_error(msg)
-			return r1, nil, r2
-		end
-
-		--Now that the JSON data is confirmed to only have valid tokens, condense the tokens into valid data
-		--Note that at this point, braces are guaranteed to be in the right order and matching open/close braces.
-		local function lex(i)
-			local this_object
-			local this_token = tokens[i]
-
-			if this_token.kind == _tok.literal then
-				return this_token.value, i
-			elseif this_token.kind == _tok.lbracket then
-				--Generate array-like tables
-				this_object = setmetatable({}, { is_array = true })
-				i = i + 1
-				this_token = tokens[i]
-
-				while this_token.kind ~= _tok.rbracket do
-					local value
-					value, i = lex(i)
-					table.insert(this_object, value)
-					this_token = tokens[i + 1]
-					if this_token.kind == _tok.comma then
-						i = i + 1
-					elseif this_token.kind ~= _tok.rbracket then
-						return lex_error(this_token, 'Unexpected token "' .. this_token.value ..
-							'" (expected "," or "]").')
-					end
-					i = i + 1
-					this_token = tokens[i]
-				end
-				return this_object, i
-			elseif this_token.kind == _tok.lbrace then
-				--Generate object-like tables
-				this_object = setmetatable({}, { is_array = false })
-				i = i + 1
-				this_token = tokens[i]
-
-				while this_token.kind ~= _tok.rbrace do
-					--Only exact keys are allowed‚ no objects as keys
-					if this_token.kind ~= _tok.literal then
-						return lex_error(this_token, 'Unexpected token "' .. this_token.value .. '" (expected literal).')
-					end
-					local key = this_token.value
-
-					this_token = tokens[i + 1]
-					if this_token.kind ~= _tok.colon then
-						return lex_error(this_token, 'Unexpected token "' .. this_token.value .. '" (expected ":").')
-					end
-
-					this_object[key], i = lex(i + 2)
-					this_token = tokens[i + 1]
-					if this_token.kind == _tok.comma then
-						i = i + 1
-					elseif this_token.kind ~= _tok.rbrace then
-						return lex_error(this_token, 'Unexpected token "' .. this_token.value ..
-							'" (expected "," or "}").')
-					end
-					i = i + 1
-					this_token = tokens[i]
-				end
-				return this_object, i
-			else
-				return lex_error(this_token, 'Unexpected token "' .. this_token.value .. '".')
-			end
-		end
-
-		if #tokens == 0 then return nil end
-		local r1, r2, r3 = lex(1)
-		return r1, r3
+		return serialize(data, indent and 0)
 	end,
 
+	parse = json_parse,
 
 	---Check if a JSON string is valid.
 	---Returns false and a descriptive error message if the text contains invalid JSON, or true if valid.
 	---@param text string The JSON string to parse.
 	---@return boolean, string|nil
 	verify = function(text)
-		local res, err = json.parse(text, true)
+		local res, err = json_parse(text, true)
 		if err ~= nil then
 			return false, err
 		end

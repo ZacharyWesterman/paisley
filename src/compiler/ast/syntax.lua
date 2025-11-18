@@ -180,7 +180,7 @@ array = function(span)
 			nonobj = child
 		end
 		if obj and nonobj then
-			parse_error(Span:first(obj, nonobj),
+			parse_error(Span:first(obj.span, nonobj.span),
 				'Invalid mixture of object and array notation. Expected a list of key-value pairs or expressions, but got both.',
 				parser.filename())
 			return parser.out(false)

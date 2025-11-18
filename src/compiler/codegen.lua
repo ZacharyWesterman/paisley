@@ -22,6 +22,7 @@ local bc = {
 }
 
 require "src.compiler.functions.codes"
+local json = require "src.shared.json"
 
 local function bc_get_key(code, lookup)
 	for k, i in pairs(lookup) do

@@ -70,7 +70,7 @@ FS = {
 	end,
 
 	is_paisley_bytecode = function(text)
-		require 'src.shared.json'
+		local json = require 'src.shared.json'
 
 		--Trim whitespace
 		text = text:gsub('^%s*(.-)%s*$', '%1')

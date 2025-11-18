@@ -4,7 +4,7 @@ local config = {
 	description = "This is the Paisley compiler and runtime engine.\nhttps://github.com/ZacharyWesterman/paisley",
 	name = "Paisley",
 	exe = "paisley",
-	version = "1.18.13",
+	version = "1.18.14",
 }
 
 local options = {
@@ -328,6 +328,8 @@ end
 local m = V1:match('^#![^\n]*\n')
 local paisley_src = V1
 if m then paisley_src = V1:sub(#m + 1) end
+
+local json = require "src.shared.json"
 
 --Check if we were given compressed bytecode
 if FS.is_zlib_compressed(paisley_src) then

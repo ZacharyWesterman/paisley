@@ -20,6 +20,8 @@ require "src.compiler.fold_constants"
 require "src.compiler.semantics"
 require "src.compiler.codegen"
 
+local json = require "src.shared.json"
+
 ALLOWED_COMMANDS = V3
 require "src.shared.builtin_commands"
 
