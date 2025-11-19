@@ -1,4 +1,5 @@
 local json = require "src.shared.json"
+local fs = require 'src.util.filesystem'
 
 ---@diagnostic disable-next-line
 STANDALONE.lua = {
@@ -17,8 +18,8 @@ STANDALONE.lua = {
 		V1 = "]] .. json.stringify(bytecode):
 		gsub('\\', '\\\\'):gsub('"', '\\"'):gsub('\n', '\\n') .. '"'
 
-		local prefix = --[[build-replace=src/util/output_pc.lua]] FS.open('src/util/output_pc.lua', true):read('*all') --[[/build-replace]]
-		local text = --[[build-replace=src/runtime.lua]] FS.open('src/runtime.lua', true):read('*all') --[[/build-replace]]
+		local prefix = --[[build-replace=src/util/output_pc.lua]] fs.open('src/util/output_pc.lua', true):read('*all') --[[/build-replace]]
+		local text = --[[build-replace=src/runtime.lua]] fs.open('src/runtime.lua', true):read('*all') --[[/build-replace]]
 		local postfix = [[
 		while true do
 			RUN()
@@ -106,11 +107,11 @@ STANDALONE.lua = {
 		end
 
 		local export_flag = '-Wl,-E'
-		if FS.os.windows or compiler:find('mingw') then
+		if fs.os.windows or compiler:find('mingw') then
 			export_flag = '-Wl,--export-all-symbols'
 		end
 
-		local command = compiler .. ' -I' .. FS.libs_dir .. 'lua/' .. version ..
+		local command = compiler .. ' -I' .. fs.libs_dir .. 'lua/' .. version ..
 			' -o ' .. output_file .. ' ' .. c_filename .. ' -lm  ' .. export_flag
 
 		io.stderr:write('[Compiling for Lua ' .. version .. ']\n')

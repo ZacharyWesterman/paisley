@@ -60,8 +60,8 @@ package.initial = {
 package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])') or '.') .. '/?.lua'
 --[[/no-install]]
 
-require 'src.util.argparse'
-local flags, args = ARG.parse_and_validate(options, config)
+local arg = require 'src.util.argparse'
+local flags, args = arg.parse_and_validate(options, config)
 
 if flags.format then
 	local input_file = table.remove(args, 1)
@@ -94,8 +94,10 @@ if flags.format then
 	os.exit(0)
 end
 
+local fs = require 'src.util.filesystem'
+
 --Disable auxilliary Lua libraries
-if flags.no_rocks then FS.disable_rocks() end
+if flags.no_rocks then fs.disable_rocks() end
 
 --Generate compiler or runtime text for the Plasma build
 if flags.plasma_build then
@@ -104,7 +106,7 @@ if flags.plasma_build then
 	require 'src.shared.stdlib'
 
 	--[[no-install]]
-	local fp = FS.open('src/' .. flags.plasma_build .. '.lua', true)
+	local fp = fs.open('src/' .. flags.plasma_build .. '.lua', true)
 	if not fp then
 		error('Error: Failed to open `src/' .. flags.plasma_build .. '.lua` for reading.')
 	end
@@ -158,7 +160,7 @@ require 'src.meta.lua'
 require 'src.runtime.standalone.all'
 
 local function compile_self_to(output_file, compiler_name)
-	local fp = FS.open('paisley', true)
+	local fp = fs.open('paisley', true)
 	if not fp then
 		error('Error: Failed to open `paisley` for reading.')
 	end
@@ -170,7 +172,7 @@ local function compile_self_to(output_file, compiler_name)
 	local m = text:match('^#![^\n]*\n')
 	if m then text = text:sub(#m + 1) end
 
-	if FS.os.windows then
+	if fs.os.windows then
 		error('Error: Standalone executables are not yet supported on Windows.')
 	end
 
@@ -202,7 +204,7 @@ if flags.install then
 
 	io.stderr:write('Installing libraries and stdlib...\n')
 
-	if FS.os.windows then
+	if fs.os.windows then
 		error('Compiling standalone executables is not yet supported on Windows.')
 		-- local fp = io.open(os.getenv('APPDATA') .. '\\paisley\\paisley.lua', 'wb')
 	else
@@ -296,7 +298,7 @@ error = function(msg)
 	os.exit(1)
 end
 
-if flags.compress and not FS.rocks.zlib then
+if flags.compress and not fs.rocks.zlib then
 	error('Error: `zlib` dependency is not installed. Cannot output compressed bytecode.')
 end
 
@@ -332,12 +334,12 @@ if m then paisley_src = V1:sub(#m + 1) end
 local json = require "src.shared.json"
 
 --Check if we were given compressed bytecode
-if FS.is_zlib_compressed(paisley_src) then
-	if not FS.rocks.zlib then
+if fs.is_zlib_compressed(paisley_src) then
+	if not fs.rocks.zlib then
 		error('Error: Cannot read compressed bytecode, zlib dependency is not installed.')
 	end
 
-	local inflated, err = FS.rocks.zlib.inflate()(paisley_src)
+	local inflated, err = fs.rocks.zlib.inflate()(paisley_src)
 	if inflated then
 		V1 = ''
 		require "src.compiler" --include important stuff, but don't actually compile anything.
@@ -347,7 +349,7 @@ if FS.is_zlib_compressed(paisley_src) then
 	else
 		error('Error during decompression: ' .. err)
 	end
-elseif FS.is_paisley_bytecode(paisley_src) then
+elseif fs.is_paisley_bytecode(paisley_src) then
 	local bc = paisley_src
 	V1 = ''
 	require "src.compiler"
@@ -450,7 +452,7 @@ local text = json.stringify(bytecode)
 
 --Compress bytecode if requested.
 if flags.compress then
-	local deflated, err = FS.rocks.zlib.deflate()(text, 'finish')
+	local deflated, err = fs.rocks.zlib.deflate()(text, 'finish')
 	if deflated then
 		text = deflated
 	else
@@ -476,7 +478,7 @@ if flags.output ~= '-' then
 	fp:write(text)
 	fp:close()
 
-	if not FS.os.windows then
+	if not fs.os.windows then
 		-- Make the file executable
 		os.execute('chmod +x ' .. flags.output)
 	end

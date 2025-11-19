@@ -3,7 +3,9 @@ local function soft_require(module)
 	if success then return result end
 end
 
-FS = {
+local fs
+
+fs = {
 	os = {
 		windows = package.config:sub(1, 1) == '\\',
 		linux = package.config:sub(1, 1) == '/',
@@ -18,15 +20,15 @@ FS = {
 	},
 
 	disable_rocks = function()
-		for key, _ in pairs(FS.rocks) do
-			FS.rocks[key] = nil
+		for key, _ in pairs(fs.rocks) do
+			fs.rocks[key] = nil
 		end
 	end,
 
 	script_real_path = function()
 		local path = arg[0]
 
-		if FS.os.windows then
+		if fs.os.windows then
 			local ffi_installed, ffi = pcall(require, 'ffi')
 
 			if not ffi_installed then return '' end
@@ -59,14 +61,14 @@ FS = {
 
 	open = function(filename, exec_dir)
 		if exec_dir then
-			return io.open(FS.exec_dir .. filename, "r")
+			return io.open(fs.exec_dir .. filename, "r")
 		else
-			return io.open(FS.working_dir .. filename, "r")
+			return io.open(fs.working_dir .. filename, "r")
 		end
 	end,
 
 	open_lib = function(filename, mode)
-		return io.open(FS.libs_dir .. filename, mode)
+		return io.open(fs.libs_dir .. filename, mode)
 	end,
 
 	is_paisley_bytecode = function(text)
@@ -80,7 +82,7 @@ FS = {
 	end,
 
 	is_zlib_compressed = function(text)
-		if not FS.rocks.zlib then return false end
+		if not fs.rocks.zlib then return false end
 
 		local header = text:sub(1, 2)
 		if #header < 2 then return false end
@@ -95,28 +97,28 @@ FS = {
 	end,
 
 	stdlib = function(require_path)
-		if FS.exec_dir == nil then return nil, require_path end
+		if fs.exec_dir == nil then return nil, require_path end
 
 		local fname = 'stdlib/' .. require_path:gsub('%.', '/') .. '.pai'
-		local fp = FS.open(fname, true)
+		local fp = fs.open(fname, true)
 		if not fp then
 			fname = fname .. 'sley'
-			fp = FS.open(fname, true)
+			fp = fs.open(fname, true)
 		end
 
-		return fp, FS.exec_dir .. fname
+		return fp, fs.exec_dir .. fname
 	end,
 
 	cd = function(path)
-		if FS.rocks.lfs then
-			FS.rocks.lfs.chdir(path)
-			FS.working_dir = FS.rocks.lfs.currentdir() .. '/'
+		if fs.rocks.lfs then
+			fs.rocks.lfs.chdir(path)
+			fs.working_dir = fs.rocks.lfs.currentdir() .. '/'
 		end
 	end,
 
 	pwd = function(path)
-		if FS.rocks.lfs then
-			return FS.rocks.lfs.currentdir()
+		if fs.rocks.lfs then
+			return fs.rocks.lfs.currentdir()
 		end
 	end,
 
@@ -140,7 +142,7 @@ FS = {
 			local dir, file_pattern = split_path(pattern)
 			local matches = {}
 
-			for file in FS.rocks.lfs.dir(dir) do
+			for file in fs.rocks.lfs.dir(dir) do
 				if file ~= "." and file ~= ".." and match_pattern(file, file_pattern) then
 					local path = (dir .. "/" .. file):gsub("//", "/")
 					if pattern:sub(1, 2) ~= './' and path:sub(1, 2) == './' then
@@ -153,7 +155,7 @@ FS = {
 			return matches
 		end
 
-		if not FS.rocks.lfs then return {} end
+		if not fs.rocks.lfs then return {} end
 		return glob(pattern)
 	end,
 
@@ -246,7 +248,7 @@ FS = {
 	--- @return boolean success true if the directory was successfully deleted, false otherwise.
 	dir_delete = function(path, recursive)
 		local command
-		if FS.os.windows then
+		if fs.os.windows then
 			command = recursive and 'rmdir /s /q "%s"' or 'rmdir "%s"'
 		else
 			command = recursive and 'rm -rf "%s"' or 'rmdir "%s"'
@@ -260,8 +262,8 @@ FS = {
 	--- @return table|nil contents A table of filenames in the directory, or nil if the directory does not exist or is not readable.
 	dir_list = function(path)
 		local contents = std.array()
-		local lfs = FS.rocks.lfs
-		if not lfs or not FS.file_exists(path) then return contents end
+		local lfs = fs.rocks.lfs
+		if not lfs or not fs.file_exists(path) then return contents end
 
 		for filename in lfs.dir(path) do
 			if filename ~= "." and filename ~= ".." then
@@ -275,7 +277,7 @@ FS = {
 	--- @param path string The path of the file to check.
 	--- @return string|nil filetype The type of the file: "file", "directory", "other", or nil if the path does not exist.
 	file_type = function(path)
-		local lfs = FS.rocks.lfs
+		local lfs = fs.rocks.lfs
 		if not lfs then return nil end
 
 		local attr = lfs.attributes(path)
@@ -294,7 +296,7 @@ FS = {
 	--- @param path string The path of the file to check.
 	--- @return table|nil info A table containing file attributes, or nil if the path does not exist.
 	file_stat = function(path)
-		local lfs = FS.rocks.lfs
+		local lfs = fs.rocks.lfs
 		if not lfs then return nil end
 		local attr = lfs.attributes(path)
 		std.set_table_type(attr, false)
@@ -307,8 +309,8 @@ FS = {
 	--- @param overwrite boolean If true, overwrite the destination file if it exists.
 	--- @return boolean success true if the file was successfully copied, false otherwise.
 	file_copy = function(src, dest, overwrite)
-		if not FS.file_exists(src) then return false end
-		if FS.file_exists(dest) and not overwrite then return false end
+		if not fs.file_exists(src) then return false end
+		if fs.file_exists(dest) and not overwrite then return false end
 
 		local input = io.open(src, "rb")
 		if not input then return false end
@@ -331,7 +333,7 @@ FS = {
 	--- @param overwrite boolean If true, overwrite the destination file if it exists.
 	--- @return boolean success true if the file was successfully moved, false otherwise.
 	file_move = function(src, dest, overwrite)
-		if not overwrite and FS.file_exists(dest) then return false end
+		if not overwrite and fs.file_exists(dest) then return false end
 
 		local success = os.rename(src, dest)
 		return success
@@ -341,20 +343,22 @@ FS = {
 --Setup filesystem constants
 
 --[[no-install]]
-FS.exec_dir = FS.script_real_path():match("(.*[/\\])") or ""
-FS.libs_dir = FS.exec_dir .. 'src/libs/'
+fs.exec_dir = fs.script_real_path():match("(.*[/\\])") or ""
+fs.libs_dir = fs.exec_dir .. 'src/libs/'
 if false then
 	--[[/no-install]]
-	if FS.os.windows then
-		FS.exec_dir = os.getenv('APPDATA') .. '\\paisley\\'
-		FS.libs_dir = FS.exec_dir .. 'libs\\'
+	if fs.os.windows then
+		fs.exec_dir = os.getenv('APPDATA') .. '\\paisley\\'
+		fs.libs_dir = fs.exec_dir .. 'libs\\'
 	else
-		FS.exec_dir = '/usr/local/share/paisley/'
-		FS.libs_dir = '/usr/local/lib/paisley/'
+		fs.exec_dir = '/usr/local/share/paisley/'
+		fs.libs_dir = '/usr/local/lib/paisley/'
 	end
 	--[[no-install]]
 end
 --[[/no-install]]
 
-FS.working_dir = FS.exec_dir
-if FS.rocks.lfs then FS.working_dir = FS.rocks.lfs.currentdir() .. '/' end
+fs.working_dir = fs.exec_dir
+if fs.rocks.lfs then fs.working_dir = fs.rocks.lfs.currentdir() .. '/' end
+
+return fs

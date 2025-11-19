@@ -1,4 +1,4 @@
-require "src.util.filesystem"
+local fs = require "src.util.filesystem"
 local json = require "src.shared.json"
 
 local line_no = 0
@@ -32,8 +32,8 @@ function output(value, port)
 		local date = os.date('*t', os.time())
 		local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
 
-		if FS.rocks.socket then
-			sec_since_midnight = sec_since_midnight + (math.floor(FS.rocks.socket.gettime() * 1000) % 1000 / 1000)
+		if fs.rocks.socket then
+			sec_since_midnight = sec_since_midnight + (math.floor(fs.rocks.socket.gettime() * 1000) % 1000 / 1000)
 		end
 
 		V5 = sec_since_midnight --command return value
@@ -47,8 +47,8 @@ function output(value, port)
 			local date = os.date('*t', os.time())
 			local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
 
-			if FS.rocks.socket then
-				sec_since_midnight = sec_since_midnight + (math.floor(FS.rocks.socket.gettime() * 1000) % 1000 / 1000)
+			if fs.rocks.socket then
+				sec_since_midnight = sec_since_midnight + (math.floor(fs.rocks.socket.gettime() * 1000) % 1000 / 1000)
 			end
 
 			V5 = sec_since_midnight --command return value
@@ -102,7 +102,7 @@ function output(value, port)
 		cmd = pipe
 
 		--Stash working dir
-		local old_dir = FS.pwd()
+		local old_dir = fs.pwd()
 
 		local program = io.popen(cmd, 'r')
 		if program then
@@ -144,7 +144,7 @@ function output(value, port)
 		--Restore working dir
 		if CMD_LAST_RESULT['='] == true and value[2]:sub(1, 5) == '"cd" ' then
 			WORKING_DIR = WORKING_DIR .. '/' .. value[2]:sub(7):match('^[^"]+')
-			FS.cd(WORKING_DIR)
+			fs.cd(WORKING_DIR)
 		end
 	else
 		print(port, json.stringify(value))
