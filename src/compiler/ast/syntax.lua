@@ -1584,6 +1584,8 @@ import_stmt = function(span)
 		return io.open(fname), fname .. '.paisley'
 	end
 
+	local fs = require 'src.util.filesystem'
+
 	--For each file in the list,
 	for i = 1, #list do
 		local orig_filename = list[i].text
@@ -1595,7 +1597,7 @@ import_stmt = function(span)
 		if fp == nil then
 			local fname
 			---@diagnostic disable-next-line
-			fp, fname = _G['FS'].stdlib(orig_filename)
+			fp, fname = fs.stdlib(orig_filename)
 			if fp then filename = fname end
 		end
 

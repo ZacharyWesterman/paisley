@@ -1,3 +1,5 @@
+local fs = require 'src.util.filesystem'
+
 ---@diagnostic disable-next-line
 STANDALONE.cpp = {
 	--- Generate a standalone C++ program from a given Paisley bytecode.
@@ -65,12 +67,10 @@ STANDALONE.cpp = {
 	--- @param output_file string The output file path.
 	--- @return boolean success Whether the compilation was successful.
 	compile = function(program_text, output_file)
-		require 'src.util.filesystem'
-
 		local cc = STANDALONE.require_cpp_compiler()
 		local make = STANDALONE.require_make()
 
-		local temp_file = FS.open_lib('cpp/PAISLEY_BYTECODE.cpp', 'w')
+		local temp_file = fs.open_lib('cpp/PAISLEY_BYTECODE.cpp', 'w')
 
 		if not temp_file then
 			error('Error: Could not open PAISLEY_BYTECODE.hpp for writing.\nAre you sure the directory is writable?')
@@ -80,10 +80,10 @@ STANDALONE.cpp = {
 		temp_file:write(program_text)
 		temp_file:close()
 
-		local success = os.execute(make .. ' -C ' .. FS.libs_dir .. 'cpp -j32')
+		local success = os.execute(make .. ' -C ' .. fs.libs_dir .. 'cpp -j32')
 
 		if success then
-			os.execute('mv ' .. FS.libs_dir .. 'cpp/standalone_binary ' .. output_file)
+			os.execute('mv ' .. fs.libs_dir .. 'cpp/standalone_binary ' .. output_file)
 			return true
 		end
 
@@ -97,7 +97,7 @@ STANDALONE.cpp = {
 		local cc = STANDALONE.require_cpp_compiler()
 		local make = STANDALONE.require_make()
 
-		local success = os.execute(make .. ' objects -C ' .. FS.libs_dir .. 'cpp -j32')
+		local success = os.execute(make .. ' objects -C ' .. fs.libs_dir .. 'cpp -j32')
 
 		if not success then
 			error('Error: Could not precompile the C++ runtime.\nAre you sure the directory is writable?')
@@ -111,7 +111,7 @@ STANDALONE.cpp = {
 	clean = function()
 		local make = STANDALONE.require_make()
 
-		local success = os.execute(make .. ' clean -C ' .. FS.libs_dir .. 'cpp')
+		local success = os.execute(make .. ' clean -C ' .. fs.libs_dir .. 'cpp')
 
 		if not success then
 			error('Error: Could not clean the C++ runtime.\nAre you sure the directory is writable?')

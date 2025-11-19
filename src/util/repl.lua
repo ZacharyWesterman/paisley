@@ -21,6 +21,7 @@ require "src.compiler.semantics"
 require "src.compiler.codegen"
 
 local json = require "src.shared.json"
+local fs = require 'src.util.filesystem'
 
 ALLOWED_COMMANDS = V3
 require "src.shared.builtin_commands"
@@ -66,8 +67,8 @@ function output(value, port)
 		local date = os.date('*t', os.time())
 		local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
 
-		if FS.rocks.socket then
-			sec_since_midnight = sec_since_midnight + (math.floor(FS.rocks.socket.gettime() * 1000) % 1000 / 1000)
+		if fs.rocks.socket then
+			sec_since_midnight = sec_since_midnight + (math.floor(fs.rocks.socket.gettime() * 1000) % 1000 / 1000)
 		end
 
 		V5 = sec_since_midnight --command return value
@@ -81,8 +82,8 @@ function output(value, port)
 			local date = os.date('*t', os.time())
 			local sec_since_midnight = date.hour * 3600 + date.min * 60 + date.sec
 
-			if FS.rocks.socket then
-				sec_since_midnight = sec_since_midnight + (math.floor(FS.rocks.socket.gettime() * 1000) % 1000 / 1000)
+			if fs.rocks.socket then
+				sec_since_midnight = sec_since_midnight + (math.floor(fs.rocks.socket.gettime() * 1000) % 1000 / 1000)
 			end
 
 			V5 = sec_since_midnight --command return value
@@ -202,8 +203,8 @@ ALLOWED_COMMANDS = tmp
 
 INTERRUPT = true
 USER_SIGINT = false
-if FS.rocks.signal then
-	FS.rocks.signal.signal(FS.rocks.signal.SIGINT, function(signum)
+if fs.rocks.signal then
+	fs.rocks.signal.signal(fs.rocks.signal.SIGINT, function(signum)
 		io.write('\n')
 		if INTERRUPT then os.exit(128 + signum) end
 		USER_SIGINT = true
@@ -233,7 +234,7 @@ local token_cache = {}
 local subroutine_cache = {} --Keep cache of all subroutines the user creates
 local lexer, append_text = Lexer('')
 
-local curses = FS.rocks.curses
+local curses = fs.rocks.curses
 
 --Default readline, used when curses is not installed
 local function readline()

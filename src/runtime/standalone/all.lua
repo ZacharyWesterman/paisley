@@ -6,6 +6,8 @@ local function find_compiler(compilers)
 	end
 end
 
+local fs = require 'src.util.filesystem'
+
 STANDALONE = {
 	--- Get the C compiler to use for compiling the standalone program.
 	--- If no C compiler is found, an error is thrown.
@@ -47,7 +49,7 @@ STANDALONE = {
 	end,
 
 	compress_executable = function(executable)
-		if FS.os.windows then
+		if fs.os.windows then
 			error('Error: Compression of standalone binaries is not supported on Windows (requires gzexe).')
 		end
 
