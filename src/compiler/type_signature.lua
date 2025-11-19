@@ -227,15 +227,17 @@ end
 ---@param tp table A type signature object.
 ---@return string signature A type signature string representation.
 function TYPE_TEXT(tp)
-	local result = ''
+	local result = {}
 	for key, val in pairs(tp) do
-		if #result > 0 then result = result .. '|' end
-		result = result .. key
+		local text = key
 		if val.subtypes then
-			result = result .. '[' .. TYPE_TEXT(val.subtypes) .. ']'
+			text = text .. '[' .. TYPE_TEXT(val.subtypes) .. ']'
 		end
+		table.insert(result, text)
 	end
-	return result
+
+	table.sort(result)
+	return table.concat(result, '|')
 end
 
 --[[minify-delete]]
