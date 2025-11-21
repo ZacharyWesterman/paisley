@@ -11,9 +11,12 @@ FUNC := $(wildcard $(addsuffix *.hpp, functions/))
 FTXT := $(patsubst %,\n#include "%",$(wildcard $(addsuffix *.hpp, functions/)))
 FNAM := $(patsubst functions/%.hpp,%,$(wildcard $(addsuffix *.hpp, functions/)))
 
-.PHONY: all clean objects
+.PHONY: all clean objects verify
 
-all: $(EXE)
+all: verify $(EXE)
+
+verify: verify_cpp_parity.sh
+	./$^
 
 objects: $(OBJS)
 
