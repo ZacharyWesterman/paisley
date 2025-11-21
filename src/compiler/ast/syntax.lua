@@ -1216,6 +1216,14 @@ let_stmt = function(span)
 			ok, ch2 = parser.expect(command, 'argument(s)')
 			if not ok then return parser.out(false) end
 
+			--Make variable assignment make sense, removing quirks of AST generation.
+			if #ch2.children > 1 then
+				ch2.id = TOK.array_concat
+				ch2.text = '[]'
+			else
+				ch2 = ch2.children[1]
+			end
+
 			table.insert(node.children, ch2)
 			table.insert(node.children, child)
 
