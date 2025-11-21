@@ -70,13 +70,15 @@ INTROSPECT = {
 		end
 	end,
 
-	functions = function(func_list)
+	functions = function(func_list, show_synonyms)
 		ALLOWED_COMMANDS = V3 or {}
 		require 'src.shared.stdlib'
 		require 'src.compiler.type_signature'
 		require 'src.compiler.tokens'
 		require 'src.compiler.semantics'
 		local FUNCSIG = require "src.compiler.semantics.signature"
+		local synonyms = require 'src.compiler.semantics.synonyms'
+		synonyms.reduce = true
 
 		local funcs = {}
 		for key, _ in pairs(BUILTIN_FUNCS) do table.insert(funcs, key) end
@@ -111,14 +113,19 @@ INTROSPECT = {
 				else
 					funcsig = funcsig .. TYPE_TEXT(TYPESIG[key].out)
 				end
-				print(funcsig)
-				print('    ' .. TYPESIG[key].description)
-				print()
+
+				if show_synonyms == nil or (show_synonyms == (synonyms[key] ~= nil)) then
+					print(funcsig)
+					print('    ' .. TYPESIG[key].description)
+					print()
+				end
 			end
 		else
 			--Just list the functions
 			for i = 1, #funcs do
-				print(funcs[i])
+				if show_synonyms == nil or (show_synonyms == (synonyms[funcs[i]] ~= nil)) then
+					print(funcs[i])
+				end
 			end
 		end
 	end,

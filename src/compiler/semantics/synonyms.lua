@@ -109,7 +109,7 @@ return {
 		}
 	end,
 
-	asec = function(token)
+	sec = function(token)
 		--Convert "sec(x)" into "1 / cos(x)"
 		token.text = '/'
 		token.id = TOK.multiply
@@ -125,6 +125,30 @@ return {
 				span = token.span,
 				text = 'cos',
 				children = token.children,
+			},
+		}
+	end,
+
+	asec = function(token)
+		--Convert "asec(x)" into "acos(1 / x)"
+		token.text = 'acos'
+		token.id = TOK.func_call
+		token.children = {
+			{
+				id = TOK.multiply,
+				span = token.span,
+				text = '/',
+				children = {
+					{
+						id = TOK.lit_number,
+						span = token.span,
+						type = TYPE_NUMBER,
+						value = 1,
+						text = '1',
+						children = {},
+					},
+					token.children[1],
+				},
 			},
 		}
 	end,

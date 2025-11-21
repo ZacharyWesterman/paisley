@@ -12,10 +12,13 @@ if [ ! -e "$cmd" ]; then
 	cmd=paisley
 fi
 
-# Make sure that all functions have a cpp implementation
-$cmd --introspect --functions | while read -r i; do
+# Make sure that all functions have a cpp implementation (except synonym funcs)
+failed=0
+while read -r i; do
 	if [ ! -e functions/"$i".cpp ]; then
 		>&2 echo -e "\e[1;31mERROR:\e[0m Missing C++ implementation of \`$i\` function."
-		exit 1
+		failed=1
 	fi
-done
+done < <($cmd --introspect --functions --synonyms=none)
+
+exit $failed

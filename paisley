@@ -24,18 +24,19 @@ local options = {
 	{ description = "Print the abstract syntax tree and then exit",                  long = "ast" },
 	{ description = "Print the AST after semantic analysis and then exit",           long = "ast-sem" },
 	{ description = "Restrict to only features available in the Plasma build",       long = "plasma" },
-	{ description = "Generate runtime or compiler text for the Plasma build",        long = "plasma-build",      type = "string", arg = "[TYPE]",           options = { "compiler", "runtime" } },
+	{ description = "Generate runtime or compiler text for the Plasma build",        long = "plasma-build",      type = "string", arg = "[TYPE]",              options = { "compiler", "runtime" } },
 	{ description = "Print introspective data about the Paisley language",           long = "introspect" },
 	{ description = "If introspecting, list all functions",                          long = "functions" },
+	{ description = "If introspecting functions, show or exclude synonym functions", long = "synonyms",          type = "string", options = { "only", "none" } },
 	{ description = "If introspecting, list all commands",                           long = "commands" },
-	{ description = "Define an existing command on the target device",               short = "c",                type = "array",  name = "external_cmds",   composite = true,                   arg = "[CMD]" },
-	{ description = "If introspecting, output details about the function",           short = "if",               type = "array",  name = "introspect_func", composite = true,                   arg = "[FUNC_NAME]" },
-	{ description = "If introspecting, output details about the command",            short = "ic",               type = "array",  name = "introspect_cmds", composite = true,                   arg = "[CMD_NAME]" },
+	{ description = "Define an existing command on the target device",               short = "c",                type = "array",  name = "external_cmds",      composite = true,                   arg = "[CMD]" },
+	{ description = "If introspecting, output details about the function",           short = "if",               type = "array",  name = "introspect_func",    composite = true,                   arg = "[FUNC_NAME]" },
+	{ description = "If introspecting, output details about the command",            short = "ic",               type = "array",  name = "introspect_cmds",    composite = true,                   arg = "[CMD_NAME]" },
 	{ description = "Output a standalone binary (or source code if no output file)", long = "standalone",        short = "s" },
 	{ description = "Precompile C++ runtime object files",                           long = "cpp-precompile" },
 	{ description = "Remove precompiled C++ object files",                           long = "cpp-clean" },
 	{ description = "Compress bytecode or standalone output with zlib compression",  long = "compress",          short = "z" },
-	{ description = "Choose a specific language to compile the standalone binary",   long = "target",            type = "string", arg = "[TARGET]",         options = { "lua", "cpp" } },
+	{ description = "Choose a specific language to compile the standalone binary",   long = "target",            type = "string", arg = "[TARGET]",            options = { "lua", "cpp" } },
 	{ description = "Allow unrecognized commands to coerce to shell exec",           long = "shell",             short = "l" },
 	{ description = "Disable features/cmds that could affect the system (e.g. `?`)", long = "sandbox" },
 	{ description = "List the recommended Lua packages to be installed",             long = "rocks" },
@@ -43,7 +44,7 @@ local options = {
 	{ description = "Validate the program, but don't run it",                        long = "dry-run" },
 	{ description = "Output detailed info in an easy-to-parse format",               long = "language-server" },
 	{ description = "Format the given program input, then exit",                     long = "format" },
-	{ description = "If formatting, set the indent to the given string",             long = "indent",            type = "string", arg = "[INDENT]",         default = "\t" },
+	{ description = "If formatting, set the indent to the given string",             long = "indent",            type = "string", arg = "[INDENT]",            default = "\t" },
 	--[[no-install]]
 	{ description = "Compile the Paisley application into a standalone executable",  long = "install" },
 	{ description = "Compile the main executable with the given compiler",           long = "compile-self",      type = "string", arg = "[PGM]" },
@@ -268,7 +269,10 @@ if flags.introspect then
 		INTROSPECT.commands(flags.introspect_cmds)
 	end
 	if flags.functions or flags.introspect_func then
-		INTROSPECT.functions(flags.introspect_func)
+		local show_syn
+		if flags.synonyms == 'only' then show_syn = true end
+		if flags.synonyms == 'none' then show_syn = false end
+		INTROSPECT.functions(flags.introspect_func, show_syn)
 	end
 
 	os.exit(0)
