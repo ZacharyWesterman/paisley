@@ -97,7 +97,7 @@ STANDALONE.cpp = {
 		local cc = STANDALONE.require_cpp_compiler()
 		local make = STANDALONE.require_make()
 
-		local success = os.execute(make .. ' objects -C ' .. fs.libs_dir .. 'cpp -j32')
+		local success = os.execute(make .. ' verify objects -C ' .. fs.libs_dir .. 'cpp -j32')
 
 		if not success then
 			error('Error: Could not precompile the C++ runtime.\nAre you sure the directory is writable?')
