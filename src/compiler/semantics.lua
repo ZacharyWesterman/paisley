@@ -127,7 +127,7 @@ function SemanticAnalyzer(root, root_file)
 	--Have to repeatedly do this until all dependencies are accounted for
 	--[[minify-delete]]
 	local imported_files = {} --Keep track of imported files, make sure there are no circular dependencies
-	local function import_file(node)
+	local function import_file(node, file)
 		local new_asts = {}
 		for i = 1, #node.value do
 			local filename = node.value[i]
@@ -138,6 +138,11 @@ function SemanticAnalyzer(root, root_file)
 				parse_error(node.span, 'COMPILER BUG: Imported file "' .. filename .. '" exists but also doesn\'t exist?',
 					root_file)
 				break
+			end
+
+			if _G['LANGUAGE_SERVER'] then
+				--Print the filename that is imported.
+				INFO.hint(node.children[i].span, node.value[i], file)
 			end
 
 			if imported_files[filename] then
@@ -753,7 +758,6 @@ function SemanticAnalyzer(root, root_file)
 		end
 	end)
 	--[[minify-delete]]
-	--TODO: MAKE SURE CORRECT FILE!!!
 	if _G['LANGUAGE_SERVER'] then
 		for _, decls in pairs(assigned_vars) do
 			for _, var_decl in pairs(decls) do
@@ -824,155 +828,6 @@ function SemanticAnalyzer(root, root_file)
 	-- After type checking, run one more pass on the AST to adjust synonym functions and so on.
 	config = require "src.compiler.semantics.pass3"
 	recurse2(root, config, root_file)
-
-	--If running as language server, print type info for any variable declarations or command calls.
-	--[[minify-delete]]
-	if _G['LANGUAGE_SERVER'] then
-		recurse(root, { TOK.let_stmt, TOK.for_stmt, TOK.kv_for_stmt, TOK.inline_command, TOK.command, TOK.subroutine },
-			function(token, file)
-				local var = token.children[1]
-				if token.id == TOK.inline_command or token.id == TOK.command then
-					local cmd = var
-					if token.id == TOK.inline_command then cmd = cmd.children[1] end
-
-					if cmd.value then
-						if var.id == TOK.gosub_stmt then
-							if labels[cmd.text] then
-								INFO.hint(cmd.span,
-									'Subroutine `' ..
-									cmd.text ..
-									'` defined on line ' ..
-									labels[cmd.text].span.from.line .. ', col ' .. labels[cmd.text].span.from.col, file)
-								local tp = labels[cmd.text].type
-								if EXACT_TYPE(tp, TYPE_NULL) then
-									INFO.info(cmd.span,
-										'Subroutine `' ..
-										cmd.text ..
-										'` always returns null, so using an inline command eval here is not helpful',
-										file)
-								elseif tp then
-									INFO.hint(cmd.span, 'returns: ' .. TYPE_TEXT(tp), file)
-								end
-							end
-						else
-							local tp
-							if ALLOWED_COMMANDS[cmd.value] then
-								tp = ALLOWED_COMMANDS[cmd.value]
-							else
-								tp = BUILTIN_COMMANDS[cmd.value]
-							end
-
-							if token.id == TOK.command and tp then
-								INFO.hint(cmd.span, _G['CMD_DESCRIPTION'][cmd.text], file)
-								---@diagnostic disable-next-line
-								INFO.hint(cmd.span, 'returns: ' .. TYPE_TEXT(tp), file)
-							end
-
-							if token.id == TOK.inline_command and EXACT_TYPE(tp, TYPE_NULL) then
-								INFO.info(cmd.span,
-									'Command `' ..
-									cmd.text ..
-									'` always returns null, so using an inline command eval here is not helpful', file)
-							end
-						end
-					end
-				elseif token.id == TOK.subroutine then
-					if token.type then INFO.hint(token.span, 'returns: ' .. TYPE_TEXT(token.type), file) end
-				elseif token.id == TOK.kv_for_stmt then
-					if var.type then INFO.hint(var.span, 'type: ' .. TYPE_TEXT(var.type), file) end
-					var = token.children[2]
-					if var.type then INFO.hint(var.span, 'type: ' .. TYPE_TEXT(var.type), file) end
-				else
-					--Variable declarations
-					if var.type then INFO.hint(var.span, 'type: ' .. TYPE_TEXT(var.type), file) end
-					for _, kid in ipairs(var.children) do
-						if kid.type then INFO.hint(kid.span, 'type: ' .. TYPE_TEXT(kid.type), file) end
-					end
-				end
-			end)
-	end
-	--[[/minify-delete]]
-
-	--Restructure match statements into an equivalent if/elif/else block.
-	recurse(root, { TOK.match_stmt }, function(token, file)
-		local iter = { token.children[2] }
-		if iter[1].id == TOK.program then iter = iter[1].children end
-
-		if iter == nil then
-			parse_error(token.span, 'COMPILER BUG: Match statement has no comparison branches!', file)
-			return
-		end
-
-		local constant = token.children[1].value ~= nil or token.children[1].id == TOK.lit_null
-
-		token.id = TOK.program
-		local var = LABEL_ID()
-
-		---@type Token
-		local condition = {
-			id = TOK.let_stmt,
-			text = 'let',
-			span = token.span,
-			children = {
-				{
-					id = TOK.var_assign,
-					text = var,
-					span = token.span,
-					children = {},
-				},
-				token.children[1],
-			}
-		}
-
-		local else_branch = token.children[3]
-		for i = #iter, 1, -1 do
-			iter[i].children[3] = else_branch
-			else_branch = iter[i]
-
-			--Optimization: allow branch pruning if `match` argument value is known at compile time.
-			local compare_node = token.children[1]
-			if not constant then
-				compare_node = {
-					id = TOK.variable,
-					text = var,
-					span = else_branch.children[1].span,
-					children = {},
-				}
-			end
-
-			local else_node = else_branch.children[1]
-			if (else_node.id == TOK.comparison or else_node.id == TOK.bitwise) and #else_node.children < 2 then
-				--Handle special fuzzy match syntax like "if {> expr} then ... end", etc.
-				table.insert(else_node.children, 1, compare_node)
-			else
-				--Default behavior is to insert "=" operator.
-				else_branch.children[1] = {
-					id = TOK.comparison,
-					text = '=',
-					span = else_node.span,
-					children = {
-						compare_node,
-						else_node,
-					},
-				}
-			end
-		end
-
-		if constant then
-			token.children = { else_branch }
-
-			--If branch condition is constant, try to fold constants one more time.
-			--This improves performance at runtime, and can allow branches to be pruned at compile time.
-			if not ERRORED then
-				recurse(root,
-					{ TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK
-						.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary,
-						TOK.list_comp, TOK.object, TOK.key_value_pair, TOK.bitwise }, nil, FOLD_CONSTANTS)
-			end
-		else
-			token.children = { condition, else_branch }
-		end
-	end)
 
 	--Check if subroutines are even used
 	--We also keep track of what subroutines each subroutine references.
@@ -1072,24 +927,95 @@ function SemanticAnalyzer(root, root_file)
 		end
 	end)
 
-	--Warn if subroutines are not used.
+	--Print language server information.
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then
-		recurse(root, { TOK.subroutine }, function(token, file)
-			if not token.is_referenced and not _G['EXPORT_LINES'][token.span.from.line] then
-				local span = {
-					from = token.span.from,
-					to = {
-						line = token.span.to.line,
-						col = token.span.to.col - 4,
-					}
-				}
-
-				INFO.dead_code(span, 'Subroutine `' .. token.text .. '` is never used.', file)
-			end
-		end)
+		config = require "src.compiler.semantics.lsp_info"
+		config.init(labels)
+		recurse2(root, config, root_file)
 	end
 	--[[/minify-delete]]
+
+	--Restructure match statements into an equivalent if/elif/else block.
+	recurse(root, { TOK.match_stmt }, function(token, file)
+		local iter = { token.children[2] }
+		if iter[1].id == TOK.program then iter = iter[1].children end
+
+		if iter == nil then
+			parse_error(token.span, 'COMPILER BUG: Match statement has no comparison branches!', file)
+			return
+		end
+
+		local constant = token.children[1].value ~= nil or token.children[1].id == TOK.lit_null
+
+		token.id = TOK.program
+		local var = LABEL_ID()
+
+		---@type Token
+		local condition = {
+			id = TOK.let_stmt,
+			text = 'let',
+			span = token.span,
+			children = {
+				{
+					id = TOK.var_assign,
+					text = var,
+					span = token.span,
+					children = {},
+				},
+				token.children[1],
+			}
+		}
+
+		local else_branch = token.children[3]
+		for i = #iter, 1, -1 do
+			iter[i].children[3] = else_branch
+			else_branch = iter[i]
+
+			--Optimization: allow branch pruning if `match` argument value is known at compile time.
+			local compare_node = token.children[1]
+			if not constant then
+				compare_node = {
+					id = TOK.variable,
+					text = var,
+					span = else_branch.children[1].span,
+					children = {},
+				}
+			end
+
+			local else_node = else_branch.children[1]
+			if (else_node.id == TOK.comparison or else_node.id == TOK.bitwise) and #else_node.children < 2 then
+				--Handle special fuzzy match syntax like "if {> expr} then ... end", etc.
+				table.insert(else_node.children, 1, compare_node)
+			else
+				--Default behavior is to insert "=" operator.
+				else_branch.children[1] = {
+					id = TOK.comparison,
+					text = '=',
+					span = else_node.span,
+					children = {
+						compare_node,
+						else_node,
+					},
+				}
+			end
+		end
+
+		if constant then
+			token.children = { else_branch }
+
+			--If branch condition is constant, try to fold constants one more time.
+			--This improves performance at runtime, and can allow branches to be pruned at compile time.
+			if not ERRORED then
+				recurse(root,
+					{ TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK
+						.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary,
+						TOK.list_comp, TOK.object, TOK.key_value_pair, TOK.bitwise }, nil, FOLD_CONSTANTS)
+			end
+		else
+			token.children = { condition, else_branch }
+		end
+	end)
 
 	--Lastly perform any extra optimizations, now that the code is fully validated.
 
