@@ -134,6 +134,33 @@ local function pop_scope(token, file)
 		if not macro then
 			parse_error(token.span, 'Macro "' .. token.text .. '" is not defined in the current scope', file)
 		else
+			--[[minify-delete]]
+			if _G['LANGUAGE_SERVER'] then
+				local info, text = {}, ''
+
+				--Print macro value if it's a simple literal
+				text = '**' .. token.text .. '**'
+				if macro.node.value ~= nil or macro.node.id == TOK.lit_null then
+					local json = require "src.shared.json"
+					text = text .. ' = ' .. json.stringify(macro.node.value)
+				end
+				table.insert(info, text)
+
+				--Print macro definition location
+				text = '*'
+				local fname = macro.node.filename or file
+				if fname and fname ~= file then
+					text = text .. fname .. ' : '
+				else
+					text = text .. 'Defined on line '
+				end
+				text = text .. macro.node.span.from.line .. '*'
+				table.insert(info, text)
+
+				if #info > 0 then INFO.hint(token.span, table.concat(info, '\n'), file) end
+			end
+			--[[/minify-delete]]
+
 			--Macro is defined, so replace it with the appropriate node
 			for _, i in ipairs({ 'text', 'span', 'id', 'value', 'type', 'children' }) do
 				token[i] = macro.node[i]
@@ -232,6 +259,11 @@ return {
 			subroutine_enter,
 			aliases_enter,
 			push_scope,
+			--[[minify-delete]]
+			function(token, filename)
+				token.filename = filename
+			end,
+			--[[/minify-delete]]
 		},
 
 		[TOK.scope_stmt] = { push_scope },

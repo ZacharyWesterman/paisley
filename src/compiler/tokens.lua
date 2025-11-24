@@ -267,6 +267,7 @@ end
 --[[minify-delete]]
 local function lsp_msg(span, msg, loglevel, file)
 	if file == INFO.root_file or not _G['LANGUAGE_SERVER'] or not INFO.root_file then
+		msg = msg:gsub('\n', '\\n')
 		print(loglevel .. ',' ..
 			(span.from.line - 1) .. ',' .. span.from.col .. ',' .. (span.to.line - 1) .. ',' .. span.to.col .. '|' .. msg)
 	end
