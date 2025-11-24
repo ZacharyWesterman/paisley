@@ -794,7 +794,8 @@ function SemanticAnalyzer(root, root_file)
 		end
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
-		if not ERRORED then
+		--Don't fold if in language server mode, as folding can optimize away structures that we want to report info on.
+		if not ERRORED --[[minify-delete]] and not _G['LANGUAGE_SERVER'] --[[/minify-delete]] then
 			recurse(root,
 				{ TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK
 					.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary, TOK
