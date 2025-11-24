@@ -1358,7 +1358,7 @@ match_stmt = function(span)
 		children = {
 			list[1],
 			list[3],
-			list[4].id == TOK.else_stmt and list[4] or {
+			list[4] or {
 				id = TOK.program,
 				span = list[4].span,
 			},
