@@ -68,7 +68,8 @@ return {
 		[TOK.func_call] = {
 			function(token, filename)
 				local name = token.text
-				local funcsig = vscode.color(name, vscode.theme.func) .. '(' .. FUNCSIG(name, true) .. ') &rArr; '
+				local funcsig = '**' ..
+				vscode.color(name, vscode.theme.func) .. '**(' .. FUNCSIG(name, true) .. ') &rArr; '
 				if name == 'reduce' then
 					funcsig = funcsig .. 'bool|number'
 				elseif TYPESIG[name].out == 1 then
