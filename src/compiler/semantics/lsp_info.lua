@@ -6,15 +6,21 @@ local FUNCSIG = require "src.compiler.semantics.signature"
 local config = {
 	labels = {},
 }
-
 local vscode = require "src.util.vscode"
+
+local kwds = require "src.compiler.keywords"
+local keywords = {}
+for key, val in pairs(kwds) do
+	keywords[val] = key
+end
 
 local function return_text(type)
 	return '\n**Returns:** ' .. TYPE_TEXT(type, true)
 end
 
-local function data_type(type)
-	return '**Type:** ' .. TYPE_TEXT(type, true)
+local function data_type(var, type)
+	return vscode.color(var, vscode.theme.var) .. ': ' ..
+		(type and TYPE_TEXT(type, true) or vscode.color('unknown', vscode.theme.gray))
 end
 
 local function command_lsp(token, filename)
@@ -28,7 +34,7 @@ local function command_lsp(token, filename)
 				local tp = config.labels[cmd.text].type
 				if EXACT_TYPE(tp, TYPE_NULL) then
 					INFO.info(cmd.span,
-						'The subroutine `' ..
+						'The ' .. keywords[TOK.kwd_subroutine] .. ' `' ..
 						cmd.text ..
 						'` always returns null, so using an inline command eval here is not helpful',
 						filename)
@@ -69,7 +75,7 @@ return {
 			function(token, filename)
 				local name = token.text
 				local funcsig = '**' ..
-				vscode.color(name, vscode.theme.func) .. '**(' .. FUNCSIG(name, true) .. ') &rArr; '
+					vscode.color(name, vscode.theme.func) .. '**(' .. FUNCSIG(name, true) .. ') &rArr; '
 				if name == 'reduce' then
 					funcsig = funcsig .. 'bool|number'
 				elseif TYPESIG[name].out == 1 then
@@ -101,7 +107,9 @@ return {
 				token = token.children[1]
 				if config.labels[token.text] then
 					--Print subroutine signature
-					local text = '## ' .. vscode.color(token.text, vscode.theme.sub)
+					local text = '## ' ..
+						vscode.color(keywords[TOK.kwd_subroutine], vscode.theme.keyword) ..
+						' ' .. vscode.color(token.text, vscode.theme.sub)
 
 					local tp = config.labels[token.text].type
 					if tp then
@@ -126,7 +134,9 @@ return {
 		--Print information about subroutine definitions
 		[TOK.subroutine] = {
 			function(token, filename)
-				local text = '## ' .. vscode.color(token.text, vscode.theme.sub)
+				local text = '## ' ..
+					vscode.color(keywords[TOK.kwd_subroutine], vscode.theme.keyword) ..
+					' ' .. vscode.color(token.text, vscode.theme.sub)
 				if token.type then
 					text = text .. return_text(token.type)
 				end
@@ -156,7 +166,9 @@ return {
 						}
 					}
 
-					INFO.dead_code(span, 'Subroutine `' .. token.text .. '` is never used.', filename)
+					INFO.dead_code(span,
+						'The ' .. keywords[TOK.kwd_subroutine] .. ' `' .. token.text .. '` is never used.',
+						filename)
 				end
 			end,
 		},
@@ -164,32 +176,33 @@ return {
 		[TOK.kv_for_stmt] = {
 			function(token, filename)
 				local var = token.children[1]
-				if var.type then INFO.hint(var.span, data_type(var.type), filename) end
+				INFO.hint(var.span, data_type(var.text, var.type), filename)
 				var = token.children[2]
-				if var.type then INFO.hint(var.span, data_type(var.type), filename) end
+				INFO.hint(var.span, data_type(var.text, var.type), filename)
 			end,
 		},
 
 		[TOK.for_stmt] = {
 			function(token, filename)
 				local var = token.children[1]
-				if var.type then INFO.hint(var.span, data_type(var.type), filename) end
+				INFO.hint(var.span, data_type(var.text, var.type), filename)
 			end,
 		},
 
 		[TOK.let_stmt] = {
 			function(token, filename)
 				local var = token.children[1]
-				if var.type then INFO.hint(var.span, data_type(var.type), filename) end
+				INFO.hint(var.span, data_type(var.text, var.type), filename)
 				for _, kid in ipairs(var.children) do
-					if kid.type then INFO.hint(kid.span, data_type(kid.type), filename) end
+					INFO.hint(kid.span, data_type(kid.text, kid.type), filename)
 				end
 			end,
 		},
 
 		[TOK.variable] = {
 			function(token, filename)
-				if token.type then INFO.hint(token.span, data_type(token.type), filename) end
+				local text = data_type(token.text, token.type)
+				INFO.hint(token.span, text, filename)
 			end,
 		},
 	},

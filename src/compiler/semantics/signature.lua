@@ -18,7 +18,15 @@ return function(func_name --[[minify-delete]], colorize --[[minify-delete]])
 	local param_ct = BUILTIN_FUNCS[func_name]
 	local params = ''
 	if param_ct == -1 then
-		params = '...: ' .. _type_text(TYPESIG[func_name].valid, func_name)
+		local arg_name = '...'
+		--[[minify-delete]]
+		if colorize then
+			local vscode = require "src.util.vscode"
+			arg_name = '**' .. vscode.color(' ... ', vscode.theme.var) .. '**'
+		end
+		--[[/minify-delete]]
+		params = arg_name .. ': ' ..
+			_type_text(TYPESIG[func_name].valid, func_name --[[minify-delete]], nil, colorize --[[/minify-delete]])
 	elseif param_ct ~= 0 then
 		for i = 1, math.abs(param_ct) do
 			--[[minify-delete]]

@@ -22,6 +22,8 @@ require "src.compiler.codegen"
 
 local json = require "src.shared.json"
 local fs = require 'src.util.filesystem'
+local kwds = require "src.compiler.keywords"
+local opers = require "src.compiler.operators"
 
 ALLOWED_COMMANDS = V3
 require "src.shared.builtin_commands"

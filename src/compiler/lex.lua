@@ -2,69 +2,8 @@ require "src.compiler.tokens"
 require "src.compiler.escape_codes"
 require "src.shared.stdlib"
 
----@diagnostic disable-next-line
-kwds = {
-	['for'] = TOK.kwd_for,
-	['while'] = TOK.kwd_while,
-	['in'] = TOK.kwd_in,
-	['do'] = TOK.kwd_do,
-	['if'] = TOK.kwd_if,
-	['then'] = TOK.kwd_then,
-	['elif'] = TOK.kwd_elif,
-	['else'] = TOK.kwd_else,
-	['end'] = TOK.kwd_end,
-	['continue'] = TOK.kwd_continue,
-	['break'] = TOK.kwd_break,
-	['delete'] = TOK.kwd_delete,
-	['subroutine'] = TOK.kwd_subroutine,
-	['gosub'] = TOK.kwd_gosub,
-	['return'] = TOK.kwd_return,
-	['let'] = TOK.kwd_let,
-	['initial'] = TOK.kwd_initial,
-	['stop'] = TOK.kwd_stop,
-	['match'] = TOK.kwd_match,
-	['cache'] = TOK.kwd_cache,
-	['using'] = TOK.kwd_using,
-	['as'] = TOK.kwd_as,
-	--[[minify-delete]]['require'] = TOK.kwd_import_file, --[[/minify-delete]]
-	['try'] = TOK.kwd_try,
-	['catch'] = TOK.kwd_catch,
-}
-
----@diagnostic disable-next-line
-opers = {
-	['for'] = TOK.kwd_for,
-	['if'] = TOK.kwd_if,
-	['else'] = TOK.kwd_else,
-	['+'] = TOK.op_plus,
-	['-'] = TOK.op_minus,
-	['*'] = TOK.op_times,
-	['//'] = TOK.op_idiv,
-	['/'] = TOK.op_div,
-	['%'] = TOK.op_mod,
-	['^'] = TOK.op_exponent,
-	[':'] = TOK.op_slice,
-	['&'] = TOK.op_count,
-	['not'] = TOK.op_not,
-	['and'] = TOK.op_and,
-	['or'] = TOK.op_or,
-	['xor'] = TOK.op_xor,
-	['in'] = TOK.op_in,
-	['exists'] = TOK.op_exists,
-	['like'] = TOK.op_like,
-	['=>'] = TOK.op_arrow,
-	['>='] = TOK.op_ge,
-	['>'] = TOK.op_gt,
-	['<='] = TOK.op_le,
-	['<'] = TOK.op_lt,
-	['=='] = TOK.op_eq,
-	['='] = TOK.op_eq,
-	['~='] = TOK.op_ne,
-	['!='] = TOK.op_ne,
-	[','] = TOK.op_comma,
-	['.'] = TOK.op_dot,
-	['bitwise'] = TOK.op_bitwise,
-}
+local kwds = require "src.compiler.keywords"
+local opers = require "src.compiler.operators"
 
 local oper_block = {
 	['/'] = { '/' },
