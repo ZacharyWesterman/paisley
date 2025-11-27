@@ -466,7 +466,6 @@ function Lexer(text, file, keep_comments)
 							n = tonumber(m:sub(3, #m), 16)
 							tp = 'hexadecimal '
 						elseif numtype == 'c' then
-							print('octal number ', m:sub(3, #m))
 							n = tonumber(m:sub(3, #m), 8)
 							tp = 'octal '
 						elseif numtype == 'b' then
