@@ -6,17 +6,25 @@ local FUNCSIG = require "src.compiler.semantics.signature"
 local config = {
 	labels = {},
 }
+local vscode = require "src.util.vscode"
 
-local function color(text, color)
-	return '<span style="color:' .. color .. '">' .. text .. '</span>'
+local kwds = require "src.compiler.keywords"
+local keywords = {}
+for key, val in pairs(kwds) do
+	keywords[val] = key
 end
 
-local function return_text(type)
-	return '\n**Returns:** *' .. TYPE_TEXT(type) .. '*'
+local function return_text(type, desc)
+	local text = '\n**Returns:** '
+	if desc then text = text .. '\n  (' end
+	text = text .. TYPE_TEXT(type, true)
+	if desc then text = text .. ') ' .. desc end
+	return text
 end
 
-local function data_type(type)
-	return '**Type:** *' .. TYPE_TEXT(type) .. '*'
+local function data_type(var, type)
+	return vscode.color(var, vscode.theme.var) .. ': ' ..
+		(type and TYPE_TEXT(type, true) or vscode.color('unknown', vscode.theme.gray))
 end
 
 local function command_lsp(token, filename)
@@ -30,7 +38,7 @@ local function command_lsp(token, filename)
 				local tp = config.labels[cmd.text].type
 				if EXACT_TYPE(tp, TYPE_NULL) then
 					INFO.info(cmd.span,
-						'The subroutine `' ..
+						'The ' .. keywords[TOK.kwd_subroutine] .. ' `' ..
 						cmd.text ..
 						'` always returns null, so using an inline command eval here is not helpful',
 						filename)
@@ -46,7 +54,7 @@ local function command_lsp(token, filename)
 
 			if token.id == TOK.command and tp then
 				local text = '## ' ..
-					cmd.text .. '\n' .. CMD_DESCRIPTION[cmd.text] .. return_text(tp)
+					vscode.color(cmd.text, vscode.theme.command) .. '\n' .. CMD_DESCRIPTION[cmd.text] .. return_text(tp)
 				INFO.hint(cmd.span, text, filename)
 			end
 
@@ -60,6 +68,49 @@ local function command_lsp(token, filename)
 	end
 end
 
+local function subroutine_text(token)
+	local text = '## ' ..
+		vscode.color(keywords[TOK.kwd_subroutine], vscode.theme.keyword) ..
+		' ' .. vscode.color(token.text, vscode.theme.sub)
+
+	local tags = {}
+	if token.memoize then table.insert(tags, 'memoized') end
+	if token.tags.private then table.insert(tags, 'private') end
+	if token.tags.export then table.insert(tags, 'exported') end
+	if token.tags.elide then table.insert(tags, 'elision allowed') end
+	if #tags > 0 then
+		text = text .. '\n*' .. vscode.color(table.concat(tags, ', '), vscode.theme.gray) .. '*'
+	end
+
+	if token.tags.text then
+		text = text .. '\n' .. token.tags.text
+	end
+
+	if token.tags.params then
+		text = text .. '\n**Params**:'
+		for i, param in ipairs(token.tags.params) do
+			text = text .. '\n' .. i .. '. '
+			if param.name then
+				text = text .. '**' .. param.name .. '** '
+			end
+			local tp = SIGNATURE(param.type or 'any', true)
+			text = text .. '(' .. TYPE_TEXT(tp, true) .. ')'
+			if param.desc then text = text .. ' ' .. param.desc end
+		end
+	end
+
+	if token.tags.returns then
+		--Print return info
+		local retn = token.tags.returns
+		local tp = SIGNATURE(retn.type, true)
+		text = text .. return_text(tp, retn.desc)
+	elseif token.type then
+		text = text .. return_text(token.type)
+	end
+
+	return text
+end
+
 return {
 	init = function(labels)
 		config.labels = labels
@@ -70,7 +121,8 @@ return {
 		[TOK.func_call] = {
 			function(token, filename)
 				local name = token.text
-				local funcsig = name .. '(' .. FUNCSIG(name) .. ') -> '
+				local funcsig = '**' ..
+					vscode.color(name, vscode.theme.func) .. '**(' .. FUNCSIG(name, true) .. ') &rArr; '
 				if name == 'reduce' then
 					funcsig = funcsig .. 'bool|number'
 				elseif TYPESIG[name].out == 1 then
@@ -81,17 +133,11 @@ return {
 					end
 					funcsig = funcsig .. std.join(types, '|', TYPE_TEXT)
 				else
-					funcsig = funcsig .. TYPE_TEXT(TYPESIG[name].out)
+					funcsig = funcsig .. TYPE_TEXT(TYPESIG[name].out, true)
 				end
 
-				local text = '**' .. funcsig .. '**\n' .. TYPESIG[name].description
-				INFO.hint({
-					from = token.span.from,
-					to = {
-						line = token.span.from.line,
-						col = token.span.from.col + #name - 1,
-					}
-				}, text, filename)
+				local text = funcsig .. '\n' .. TYPESIG[name].description
+				INFO.hint(token.span, text, filename)
 			end,
 		},
 
@@ -108,12 +154,7 @@ return {
 				token = token.children[1]
 				if config.labels[token.text] then
 					--Print subroutine signature
-					local text = '## ' .. token.text
-
-					local tp = config.labels[token.text].type
-					if tp then
-						text = text .. return_text(tp)
-					end
+					local text = subroutine_text(config.labels[token.text])
 
 					--Print subroutine location
 					text = text .. '\n\n*'
@@ -133,11 +174,6 @@ return {
 		--Print information about subroutine definitions
 		[TOK.subroutine] = {
 			function(token, filename)
-				local text = '## ' .. token.text
-				if token.type then
-					text = text .. return_text(token.type)
-				end
-
 				local to_col = 9999
 				if token.children[1].span.from.line == token.span.from.line then
 					to_col = token.children[1].span.from.col - 1
@@ -149,7 +185,7 @@ return {
 						line = token.span.from.line,
 						col = to_col,
 					}
-				}, text, filename)
+				}, subroutine_text(token), filename)
 			end,
 
 			--Warn if the subroutine is never used
@@ -163,7 +199,9 @@ return {
 						}
 					}
 
-					INFO.dead_code(span, 'Subroutine `' .. token.text .. '` is never used.', filename)
+					INFO.dead_code(span,
+						'The ' .. keywords[TOK.kwd_subroutine] .. ' `' .. token.text .. '` is never used.',
+						filename)
 				end
 			end,
 		},
@@ -171,32 +209,33 @@ return {
 		[TOK.kv_for_stmt] = {
 			function(token, filename)
 				local var = token.children[1]
-				if var.type then INFO.hint(var.span, data_type(var.type), filename) end
+				INFO.hint(var.span, data_type(var.text, var.type), filename)
 				var = token.children[2]
-				if var.type then INFO.hint(var.span, data_type(var.type), filename) end
+				INFO.hint(var.span, data_type(var.text, var.type), filename)
 			end,
 		},
 
 		[TOK.for_stmt] = {
 			function(token, filename)
 				local var = token.children[1]
-				if var.type then INFO.hint(var.span, data_type(var.type), filename) end
+				INFO.hint(var.span, data_type(var.text, var.type), filename)
 			end,
 		},
 
 		[TOK.let_stmt] = {
 			function(token, filename)
 				local var = token.children[1]
-				if var.type then INFO.hint(var.span, data_type(var.type), filename) end
+				INFO.hint(var.span, data_type(var.text, var.type), filename)
 				for _, kid in ipairs(var.children) do
-					if kid.type then INFO.hint(kid.span, data_type(kid.type), filename) end
+					INFO.hint(kid.span, data_type(kid.text, kid.type), filename)
 				end
 			end,
 		},
 
 		[TOK.variable] = {
 			function(token, filename)
-				if token.type then INFO.hint(token.span, data_type(token.type), filename) end
+				local text = data_type(token.text, token.type)
+				INFO.hint(token.span, text, filename)
 			end,
 		},
 	},

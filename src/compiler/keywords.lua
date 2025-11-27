@@ -1,0 +1,28 @@
+return {
+	--Keywords
+	['for'] = TOK.kwd_for,
+	['while'] = TOK.kwd_while,
+	['in'] = TOK.kwd_in,
+	['do'] = TOK.kwd_do,
+	['if'] = TOK.kwd_if,
+	['then'] = TOK.kwd_then,
+	['elif'] = TOK.kwd_elif,
+	['else'] = TOK.kwd_else,
+	['end'] = TOK.kwd_end,
+	['continue'] = TOK.kwd_continue,
+	['break'] = TOK.kwd_break,
+	['delete'] = TOK.kwd_delete,
+	['subroutine'] = TOK.kwd_subroutine,
+	['gosub'] = TOK.kwd_gosub,
+	['return'] = TOK.kwd_return,
+	['let'] = TOK.kwd_let,
+	['initial'] = TOK.kwd_initial,
+	['stop'] = TOK.kwd_stop,
+	['match'] = TOK.kwd_match,
+	['cache'] = TOK.kwd_cache,
+	['using'] = TOK.kwd_using,
+	['as'] = TOK.kwd_as,
+	--[[minify-delete]]['require'] = TOK.kwd_import_file, --[[/minify-delete]]
+	['try'] = TOK.kwd_try,
+	['catch'] = TOK.kwd_catch,
+}
