@@ -1105,7 +1105,7 @@ subroutine = function(span)
 	return true, {
 		id = TOK.subroutine,
 		text = list[1].text,
-		span = Span:merge(span, list[3].span),
+		span = list[1].span,
 		children = { list[2] },
 		memoize = memoize,
 	}
