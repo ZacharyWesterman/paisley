@@ -226,18 +226,28 @@ end
 ---This is useful for error reporting and debug purposes.
 ---@param tp table A type signature object.
 ---@return string signature A type signature string representation.
-function TYPE_TEXT(tp)
+function TYPE_TEXT(tp --[[minify-delete]], colorize --[[minify-delete]])
 	local result = {}
 	for key, val in pairs(tp) do
 		local text = key
 		if val.subtypes then
-			text = text .. '[' .. TYPE_TEXT(val.subtypes) .. ']'
+			text = text ..
+				'[' .. TYPE_TEXT(val.subtypes) .. ']'
 		end
 		table.insert(result, text)
 	end
 
 	table.sort(result)
-	return table.concat(result, '|')
+	local str = table.concat(result, '|')
+
+	--[[minify-delete]]
+	if colorize then
+		local vscode = require "src.util.vscode"
+		str = vscode.color(str, vscode.theme.type)
+	end
+	--[[minify-delete]]
+
+	return str
 end
 
 --[[minify-delete]]

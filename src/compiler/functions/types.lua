@@ -123,7 +123,7 @@ TYPESIG = {
 		valid = { { 'number' } },
 		out = 'array[number]',
 		--[[minify-delete]]
-		params = { 'value' },
+		params = { 'value', 'byte_ct' },
 		description = 'Split a number into bytes. The number is interpreted as an unsigned 32-bit integer.',
 		category = 'characters',
 		--[[/minify-delete]]
@@ -372,7 +372,7 @@ TYPESIG = {
 		valid = { { 'any', 'boolean' } },
 		out = 'string',
 		--[[minify-delete]]
-		params = { 'data' },
+		params = { 'data', 'pretty' },
 		description = 'Serialize data to a JSON string.',
 		category = 'encoding',
 		--[[/minify-delete]]

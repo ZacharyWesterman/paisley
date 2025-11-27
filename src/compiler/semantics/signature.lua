@@ -1,12 +1,12 @@
 require 'src.shared.json'
 
-local function _type_text(type_signature, func_name, position)
+local function _type_text(type_signature, func_name, position --[[minify-delete]], colorize --[[minify-delete]])
 	if not type_signature then return 'any' end
 
 	local types = {}
 	for j, k in ipairs(type_signature) do
 		---@diagnostic disable-next-line
-		local key = TYPE_TEXT(k[((position or 1) - 1) % #k + 1])
+		local key = TYPE_TEXT(k[((position or 1) - 1) % #k + 1] --[[minify-delete]], colorize --[[minify-delete]])
 		if key and std.arrfind(types, key, 1) == 0 then table.insert(types, key) end
 	end
 	if func_name == 'reduce' and position == 2 then types[1] = 'operator' end
@@ -14,7 +14,7 @@ local function _type_text(type_signature, func_name, position)
 end
 
 --Helper func for generating func_call error messages.
-return function(func_name)
+return function(func_name --[[minify-delete]], colorize --[[minify-delete]])
 	local param_ct = BUILTIN_FUNCS[func_name]
 	local params = ''
 	if param_ct == -1 then
@@ -23,13 +23,18 @@ return function(func_name)
 		for i = 1, math.abs(param_ct) do
 			--[[minify-delete]]
 			if TYPESIG[func_name].params and TYPESIG[func_name].params[i] then
-				params = params .. TYPESIG[func_name].params[i]
+				if colorize then
+					local vscode = require "src.util.vscode"
+					params = params .. vscode.color(TYPESIG[func_name].params[i], vscode.theme.var)
+				else
+					params = params .. TYPESIG[func_name].params[i]
+				end
 			else
 				--[[/minify-delete]]
 				params = params .. string.char(96 + i)
 				--[[minify-delete]]
 			end
-			params = params .. ': ' .. _type_text(TYPESIG[func_name].valid, func_name, i)
+			params = params .. ': ' .. _type_text(TYPESIG[func_name].valid, func_name, i, colorize)
 			--[[/minify-delete]]
 
 			--Indicate that some parameters are optional.

@@ -660,7 +660,7 @@ func_call = function(span)
 	return true, {
 		id = TOK.func_call,
 		text = list[1].text,
-		span = Span:merge(span, list[#list].span),
+		span = span,
 		children = arg_list,
 	}
 end

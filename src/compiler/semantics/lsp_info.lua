@@ -7,16 +7,14 @@ local config = {
 	labels = {},
 }
 
-local function color(text, color)
-	return '<span style="color:' .. color .. '">' .. text .. '</span>'
-end
+local vscode = require "src.util.vscode"
 
 local function return_text(type)
-	return '\n**Returns:** *' .. TYPE_TEXT(type) .. '*'
+	return '\n**Returns:** ' .. TYPE_TEXT(type, true)
 end
 
 local function data_type(type)
-	return '**Type:** *' .. TYPE_TEXT(type) .. '*'
+	return '**Type:** ' .. TYPE_TEXT(type, true)
 end
 
 local function command_lsp(token, filename)
@@ -46,7 +44,7 @@ local function command_lsp(token, filename)
 
 			if token.id == TOK.command and tp then
 				local text = '## ' ..
-					cmd.text .. '\n' .. CMD_DESCRIPTION[cmd.text] .. return_text(tp)
+					vscode.color(cmd.text, vscode.theme.command) .. '\n' .. CMD_DESCRIPTION[cmd.text] .. return_text(tp)
 				INFO.hint(cmd.span, text, filename)
 			end
 
@@ -70,7 +68,7 @@ return {
 		[TOK.func_call] = {
 			function(token, filename)
 				local name = token.text
-				local funcsig = name .. '(' .. FUNCSIG(name) .. ') -> '
+				local funcsig = vscode.color(name, vscode.theme.func) .. '(' .. FUNCSIG(name, true) .. ') &rArr; '
 				if name == 'reduce' then
 					funcsig = funcsig .. 'bool|number'
 				elseif TYPESIG[name].out == 1 then
@@ -81,17 +79,11 @@ return {
 					end
 					funcsig = funcsig .. std.join(types, '|', TYPE_TEXT)
 				else
-					funcsig = funcsig .. TYPE_TEXT(TYPESIG[name].out)
+					funcsig = funcsig .. TYPE_TEXT(TYPESIG[name].out, true)
 				end
 
-				local text = '**' .. funcsig .. '**\n' .. TYPESIG[name].description
-				INFO.hint({
-					from = token.span.from,
-					to = {
-						line = token.span.from.line,
-						col = token.span.from.col + #name - 1,
-					}
-				}, text, filename)
+				local text = funcsig .. '\n' .. TYPESIG[name].description
+				INFO.hint(token.span, text, filename)
 			end,
 		},
 
@@ -108,7 +100,7 @@ return {
 				token = token.children[1]
 				if config.labels[token.text] then
 					--Print subroutine signature
-					local text = '## ' .. token.text
+					local text = '## ' .. vscode.color(token.text, vscode.theme.sub)
 
 					local tp = config.labels[token.text].type
 					if tp then
@@ -133,7 +125,7 @@ return {
 		--Print information about subroutine definitions
 		[TOK.subroutine] = {
 			function(token, filename)
-				local text = '## ' .. token.text
+				local text = '## ' .. vscode.color(token.text, vscode.theme.sub)
 				if token.type then
 					text = text .. return_text(token.type)
 				end
