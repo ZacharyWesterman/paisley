@@ -170,7 +170,6 @@ require "src.compiler.span"
 ---@class (exact) Token
 ---@field span Span The range of text this token spans.
 ---@field id TOK The token ID.
----@field private meta_id TOK? ONLY used during AST generation! The ID this token was coerced into.
 ---@field text string The text from the input file that this token represents.
 ---@field value any The literal value that was calculated for this token, if any. Used for constant folding.
 ---@field children Token[] A list of child nodes.
@@ -182,6 +181,7 @@ require "src.compiler.span"
 ---@field memoize boolean? If true, memoize (cache) calls to this subroutine.
 ---@field filename string? The name of the file that this token came from.
 ---@field in_match boolean? If true, this is a boolean operator directly inside a "match" statement
+---@field tags table? Defined on subroutines only, and contains parsed documentation comments.
 Token = {}
 
 --[[minify-delete]]

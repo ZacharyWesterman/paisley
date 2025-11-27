@@ -21,15 +21,26 @@ literals = {
 
 --[[minify-delete]]
 EXPORT_LINES = {}
-EXPORT_NEXT_TOKEN = false
 ELIDE_LINES = {}
-ELIDE_NEXT_TOKEN = false
+local NEXT_TAGS = {}
 
 ---Some comments can give hints about what commands exist, and suppress "unknown command" errors.
 ---Process these annotations.
 ---@param text string The comment text to process, including the leading # character.
 local function process_comment_annotations(text)
 	local comment_text = text:upper()
+
+	NEXT_TAGS.mark = true
+
+	local function append_text(text, brief)
+		if NEXT_TAGS.text then
+			text = NEXT_TAGS.text .. '\n'
+		end
+		text = text:gsub('#%[%[', ''):gsub('#%]%]', ''):gsub('^#', '')
+		if brief then text = text:gsub('@[bB][rR][iI][eE][fF]', '') end
+
+		NEXT_TAGS.text = text
+	end
 
 	for i in comment_text:gmatch('@[%w_]+') do
 		if i == '@COMMANDS' then
@@ -54,10 +65,59 @@ local function process_comment_annotations(text)
 			--Allow script to specify that no file system access is allowed
 			SHELL_RESTRICT()
 			FUNC_SANDBOX_RESTRICT()
-		elseif _G['LANGUAGE_SERVER'] and i == '@EXPORT' then
-			EXPORT_NEXT_TOKEN = true
+		elseif i == '@EXPORT' then
+			NEXT_TAGS.export = true
 		elseif i == '@ALLOW_ELISION' then
-			ELIDE_NEXT_TOKEN = true
+			NEXT_TAGS.elide = true
+		elseif i == '@PRIVATE' then
+			NEXT_TAGS.private = true
+		elseif i == '@BRIEF' then
+			append_text(text, true)
+		elseif i == '@PARAM' then
+			local t = text:match('@[pP][aA][rR][aA][mM]%s*(.*%S)')
+			local name, type, desc
+
+			name = t:match('^%S*')
+			if name then
+				t = t:sub(#name + 1):match('^%s*(.*%S)')
+				type = t:match('^%S*')
+			end
+
+			if type then
+				desc = t:sub(#type + 1):match('^%s*(.*%S)')
+			end
+
+			if name then
+				if not NEXT_TAGS.params then NEXT_TAGS.params = {} end
+				if name:match('^%d+$') then
+					NEXT_TAGS.params[tonumber(name)] = {
+						type = type,
+						desc = desc,
+					}
+				else
+					table.insert(NEXT_TAGS.params, {
+						name = name,
+						type = type,
+						desc = desc,
+					})
+				end
+			end
+
+
+			-- if not NEXT_TAGS.params then NEXT_TAGS.params = {} end
+			-- table.insert(NEXT_TAGS.params, text)
+		elseif i == '@RETURN' then
+			local t = text:match('@[rR][eE][tT][uU][rR][nN]%s*(.*%S)')
+			local type_text = t:match('^[^%s]+')
+			if type_text then
+				local type_desc = t:sub(#type_text + 1):gsub('#]]', ''):match('^%s*(.*%S)')
+				NEXT_TAGS.returns = {
+					type = type_text,
+					desc = type_desc,
+				}
+			end
+		else
+			append_text(text)
 		end
 	end
 end
@@ -138,7 +198,9 @@ function Lexer(text, file, keep_comments)
 						match = text:match('^#%[%[.-#%]%]')
 						if not match then match = text:match('^#%[%[.*') end
 						--[[minify-delete]]
-						process_comment_annotations(match)
+						for m in match:gmatch('[^\n]+') do
+							process_comment_annotations(m)
+						end
 						--[[/minify-delete]]
 					end
 				end
@@ -149,7 +211,9 @@ function Lexer(text, file, keep_comments)
 					if match then
 						tok_ignore = not keep_comments
 						--[[minify-delete]]
-						process_comment_annotations(match)
+						for m in match:gmatch('[^\n]+') do
+							process_comment_annotations(m)
+						end
 						--[[/minify-delete]]
 					end
 				end
@@ -661,20 +725,7 @@ function Lexer(text, file, keep_comments)
 
 				text = text:sub(#match + 1, #text)
 				if not tok_ignore then
-					--[[minify-delete]]
-					if EXPORT_NEXT_TOKEN and tok_type ~= TOK.line_ending then
-						EXPORT_LINES[line] = true
-						EXPORT_NEXT_TOKEN = false
-					end
-
-					if ELIDE_NEXT_TOKEN and tok_type ~= TOK.line_ending then
-						ELIDE_LINES[line] = true
-						ELIDE_NEXT_TOKEN = false
-					end
-					--[[/minify-delete]]
-
-					---@type Token
-					return {
+					local token = {
 						span = Span:new(line, col - #match - 1, line, col - 1),
 						text = match,
 						id = tok_type,
@@ -682,6 +733,24 @@ function Lexer(text, file, keep_comments)
 						filename = file,
 						children = {},
 					}
+
+					--[[minify-delete]]
+					if NEXT_TAGS.mark and tok_type ~= TOK.line_ending then
+						if NEXT_TAGS.export then
+							EXPORT_LINES[line] = true
+						end
+
+						if NEXT_TAGS.elide then
+							ELIDE_LINES[line] = true
+						end
+
+						token.tags = NEXT_TAGS
+						NEXT_TAGS = {}
+					end
+					--[[/minify-delete]]
+
+					---@type Token
+					return token
 				end
 			else
 				parse_error(Span:new(line, col, line, col), 'Unexpected character "' .. text:sub(1, 1) .. '"', file)

@@ -14,8 +14,12 @@ for key, val in pairs(kwds) do
 	keywords[val] = key
 end
 
-local function return_text(type)
-	return '\n**Returns:** ' .. TYPE_TEXT(type, true)
+local function return_text(type, desc)
+	local text = '\n**Returns:** '
+	if desc then text = text .. '\n  (' end
+	text = text .. TYPE_TEXT(type, true)
+	if desc then text = text .. ') ' .. desc end
+	return text
 end
 
 local function data_type(var, type)
@@ -64,6 +68,49 @@ local function command_lsp(token, filename)
 	end
 end
 
+local function subroutine_text(token)
+	local text = '## ' ..
+		vscode.color(keywords[TOK.kwd_subroutine], vscode.theme.keyword) ..
+		' ' .. vscode.color(token.text, vscode.theme.sub)
+
+	local tags = {}
+	if token.memoize then table.insert(tags, 'memoized') end
+	if token.tags.private then table.insert(tags, 'private') end
+	if token.tags.export then table.insert(tags, 'exported') end
+	if token.tags.elide then table.insert(tags, 'elision allowed') end
+	if #tags > 0 then
+		text = text .. '\n*' .. vscode.color(table.concat(tags, ', '), vscode.theme.gray) .. '*'
+	end
+
+	if token.tags.text then
+		text = text .. '\n' .. token.tags.text
+	end
+
+	if token.tags.params then
+		text = text .. '\n**Params**:'
+		for i, param in ipairs(token.tags.params) do
+			text = text .. '\n' .. i .. '. '
+			if param.name then
+				text = text .. '**' .. param.name .. '** '
+			end
+			local tp = SIGNATURE(param.type or 'any', true)
+			text = text .. '(' .. TYPE_TEXT(tp, true) .. ')'
+			if param.desc then text = text .. ' ' .. param.desc end
+		end
+	end
+
+	if token.tags.returns then
+		--Print return info
+		local retn = token.tags.returns
+		local tp = SIGNATURE(retn.type, true)
+		text = text .. return_text(tp, retn.desc)
+	elseif token.type then
+		text = text .. return_text(token.type)
+	end
+
+	return text
+end
+
 return {
 	init = function(labels)
 		config.labels = labels
@@ -107,14 +154,7 @@ return {
 				token = token.children[1]
 				if config.labels[token.text] then
 					--Print subroutine signature
-					local text = '## ' ..
-						vscode.color(keywords[TOK.kwd_subroutine], vscode.theme.keyword) ..
-						' ' .. vscode.color(token.text, vscode.theme.sub)
-
-					local tp = config.labels[token.text].type
-					if tp then
-						text = text .. return_text(tp)
-					end
+					local text = subroutine_text(config.labels[token.text])
 
 					--Print subroutine location
 					text = text .. '\n\n*'
@@ -134,13 +174,6 @@ return {
 		--Print information about subroutine definitions
 		[TOK.subroutine] = {
 			function(token, filename)
-				local text = '## ' ..
-					vscode.color(keywords[TOK.kwd_subroutine], vscode.theme.keyword) ..
-					' ' .. vscode.color(token.text, vscode.theme.sub)
-				if token.type then
-					text = text .. return_text(token.type)
-				end
-
 				local to_col = 9999
 				if token.children[1].span.from.line == token.span.from.line then
 					to_col = token.children[1].span.from.col - 1
@@ -152,7 +185,7 @@ return {
 						line = token.span.from.line,
 						col = to_col,
 					}
-				}, text, filename)
+				}, subroutine_text(token), filename)
 			end,
 
 			--Warn if the subroutine is never used

@@ -1080,13 +1080,16 @@ end
 subroutine = function(span)
 	local memoize = false
 
-	if parser.accept(TOK.kwd_cache) then
+	local kwd_ok, kwd = parser.accept(TOK.kwd_cache)
+
+	if kwd_ok then
 		memoize = true
 		if not parser.expect(TOK.kwd_subroutine, 'subroutine') then
 			return parser.out(false)
 		end
 	else
-		if not parser.accept(TOK.kwd_subroutine) then
+		kwd_ok, kwd = parser.accept(TOK.kwd_subroutine)
+		if not kwd_ok then
 			return parser.out(false)
 		end
 	end
@@ -1108,6 +1111,7 @@ subroutine = function(span)
 		span = list[1].span,
 		children = { list[2] },
 		memoize = memoize,
+		--[[minify-delete]] tags = kwd.tags or {}, --[[/minify-delete]]
 	}
 end
 
