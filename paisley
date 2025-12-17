@@ -448,6 +448,7 @@ if flags.standalone then
 
 	if flags.compress then STANDALONE.compress_executable(flags.output) end
 
+	io.stderr:write(string.char(27) .. '[1;32mSuccess!' .. string.char(27) .. '[0m\n')
 	os.exit(0)
 end
 

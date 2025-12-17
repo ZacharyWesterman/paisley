@@ -1,12 +1,12 @@
 require 'src.shared.json'
 
-local function _type_text(type_signature, func_name, position --[[minify-delete]], colorize --[[minify-delete]])
+local function _type_text(type_signature, func_name, position --[[minify-delete]], colorize --[[/minify-delete]])
 	if not type_signature then return 'any' end
 
 	local types = {}
 	for j, k in ipairs(type_signature) do
 		---@diagnostic disable-next-line
-		local key = TYPE_TEXT(k[((position or 1) - 1) % #k + 1] --[[minify-delete]], colorize --[[minify-delete]])
+		local key = TYPE_TEXT(k[((position or 1) - 1) % #k + 1] --[[minify-delete]], colorize --[[/minify-delete]])
 		if key and std.arrfind(types, key, 1) == 0 then table.insert(types, key) end
 	end
 	if func_name == 'reduce' and position == 2 then types[1] = 'operator' end
@@ -14,7 +14,7 @@ local function _type_text(type_signature, func_name, position --[[minify-delete]
 end
 
 --Helper func for generating func_call error messages.
-return function(func_name --[[minify-delete]], colorize --[[minify-delete]])
+return function(func_name --[[minify-delete]], colorize --[[/minify-delete]])
 	local param_ct = BUILTIN_FUNCS[func_name]
 	local params = ''
 	if param_ct == -1 then

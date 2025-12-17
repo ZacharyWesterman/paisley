@@ -87,7 +87,6 @@ STANDALONE.cpp = {
 
 		if success then
 			os.execute('mv ' .. fs.libs_dir .. 'cpp/standalone_binary ' .. output_file)
-			io.stderr:write('Success!\n')
 			return true
 		end
 

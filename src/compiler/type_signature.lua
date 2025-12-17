@@ -226,7 +226,7 @@ end
 ---This is useful for error reporting and debug purposes.
 ---@param tp table A type signature object.
 ---@return string signature A type signature string representation.
-function TYPE_TEXT(tp --[[minify-delete]], colorize --[[minify-delete]])
+function TYPE_TEXT(tp --[[minify-delete]], colorize --[[/minify-delete]])
 	local result = {}
 	for key, val in pairs(tp) do
 		local text = key
@@ -245,7 +245,7 @@ function TYPE_TEXT(tp --[[minify-delete]], colorize --[[minify-delete]])
 		local vscode = require "src.util.vscode"
 		str = vscode.color(str, vscode.theme.type)
 	end
-	--[[minify-delete]]
+	--[[/minify-delete]]
 
 	return str
 end
