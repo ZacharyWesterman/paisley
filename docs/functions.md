@@ -65,7 +65,7 @@
 ## Characters
 - `ascii(character: string) -> number`
   - Convert a character to its ASCII value. Only the first character is considered, all others are ignored.
-- `bytes(value: number, b: number) -> array[number]`
+- `bytes(value: number, byte_ct: number) -> array[number]`
   - Split a number into bytes. The number is interpreted as an unsigned 32-bit integer.
 - `char(ascii_code: number) -> string`
   - Convert an ASCII number to a character. If outside of the range 0-255, an empty string is returned. Non-integers are rounded down.
@@ -79,7 +79,7 @@
   - Convert a string to base64.
 - `json_decode(text: string) -> any`
   - Deserialize data from a JSON string.
-- `json_encode(data: any [, b: boolean]) -> string`
+- `json_encode(data: any [, pretty: boolean]) -> string`
   - Serialize data to a JSON string.
 - `json_valid(text: any) -> boolean`
   - Check if a JSON string is formatted correctly.
@@ -235,6 +235,8 @@
   - Convert a number to a hexadecimal string. This is identical to `to_base(value, 16, 0)`.
 - `join(list: array[any], delim: string) -> string`
   - Join an array into a single string with a delimiter between elements.
+- `len(iterable: array[any]|string) -> number`
+  - Get the length of a string or array.
 - `lower(text: string) -> string`
   - Convert a string to lowercase.
 - `lpad(text: string, pad_char: string, width: number) -> string`

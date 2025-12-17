@@ -1033,6 +1033,15 @@ TYPESIG = {
 		category = 'arrays',
 		--[[/minify-delete]]
 	},
+	len = {
+		valid = { { 'array' }, { 'string' } },
+		out = 'number',
+		--[[minify-delete]]
+		params = { 'iterable' },
+		description = 'Get the length of a string or array.',
+		category = 'strings',
+		--[[/minify-delete]]
+	},
 	--[[minify-delete]]
 	toepoch = {
 		valid = { { 'object' } },

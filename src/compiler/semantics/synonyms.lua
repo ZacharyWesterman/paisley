@@ -218,4 +218,9 @@ return {
 			}
 		}
 	end,
+
+	len = function(token)
+		--Convert "len(x)" into old length operator
+		token.id = TOK.length
+	end,
 }
