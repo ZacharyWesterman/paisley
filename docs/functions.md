@@ -125,6 +125,8 @@
   - Find the index of the nth occurrence of a value in an array or string.
 - `index(iterable: array[any]|string, value: any|string) -> number`
   - Find the index of the first occurrence of a value in an array or string.
+- `len(iterable: array[any]|string) -> number`
+  - Get the length of a string or array.
 - `reverse(iter: array[any]|string) -> any`
   - Reverse an array or a string.
 
@@ -235,8 +237,6 @@
   - Convert a number to a hexadecimal string. This is identical to `to_base(value, 16, 0)`.
 - `join(list: array[any], delim: string) -> string`
   - Join an array into a single string with a delimiter between elements.
-- `len(iterable: array[any]|string) -> number`
-  - Get the length of a string or array.
 - `lower(text: string) -> string`
   - Convert a string to lowercase.
 - `lpad(text: string, pad_char: string, width: number) -> string`

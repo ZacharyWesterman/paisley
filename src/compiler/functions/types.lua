@@ -1039,7 +1039,7 @@ TYPESIG = {
 		--[[minify-delete]]
 		params = { 'iterable' },
 		description = 'Get the length of a string or array.',
-		category = 'strings',
+		category = 'iterables',
 		--[[/minify-delete]]
 	},
 	--[[minify-delete]]
