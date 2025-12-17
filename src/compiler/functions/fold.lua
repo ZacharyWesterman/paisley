@@ -478,6 +478,9 @@ FUNC_OPERATIONS = {
 		return true
 	end,
 
+	len = function(iterable)
+		return #iterable
+	end,
 
 	--[[minify-delete]]
 	toepoch = function(datetime)
