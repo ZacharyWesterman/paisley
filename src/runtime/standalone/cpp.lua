@@ -70,6 +70,9 @@ STANDALONE.cpp = {
 		local cc = STANDALONE.require_cpp_compiler()
 		local make = STANDALONE.require_make()
 
+		io.stderr:write('Precompiling c++ runtime... ')
+		STANDALONE.cpp.precompile()
+
 		local temp_file = fs.open_lib('cpp/PAISLEY_BYTECODE.cpp', 'w')
 
 		if not temp_file then
@@ -80,10 +83,11 @@ STANDALONE.cpp = {
 		temp_file:write(program_text)
 		temp_file:close()
 
-		local success = os.execute(make .. ' -C ' .. fs.libs_dir .. 'cpp -j32')
+		local success = os.execute(make .. ' -C ' .. fs.libs_dir .. 'cpp -j16 CC=' .. cc)
 
 		if success then
 			os.execute('mv ' .. fs.libs_dir .. 'cpp/standalone_binary ' .. output_file)
+			io.stderr:write('Success!\n')
 			return true
 		end
 
@@ -97,12 +101,45 @@ STANDALONE.cpp = {
 		local cc = STANDALONE.require_cpp_compiler()
 		local make = STANDALONE.require_make()
 
-		local success = os.execute(make .. ' verify objects -C ' .. fs.libs_dir .. 'cpp -j32')
+		local errmsg = 'Error: Could not precompile the C++ runtime.\nAre you sure the directory is writable?'
 
-		if not success then
-			error('Error: Could not precompile the C++ runtime.\nAre you sure the directory is writable?')
+		-- Count the number of files that will be compiled.
+		local handle = io.popen(make .. ' objects -C ' .. fs.libs_dir .. 'cpp -n CC=' .. cc, 'r')
+		if not handle then
+			error(errmsg)
 			return false
 		end
+		local total = 0
+		for line in handle:lines() do
+			local _, ct = line:gsub(cc:gsub('+', '%%+'), '')
+			if ct > 0 then total = total + 1 end
+		end
+
+		-- Run the make command
+		handle = io.popen(make .. ' verify objects -C ' .. fs.libs_dir .. 'cpp -j16', 'r')
+		if not handle then
+			error(errmsg)
+			return false
+		end
+
+		if total == 0 then
+			local _ = handle:read('a')
+			io.stderr:write('Nothing to do.\n')
+		else
+			io.stderr:write('\n')
+
+			-- Show progress
+			local i = 1
+			for line in handle:lines() do
+				local percent = math.floor(i / total * 100)
+				io.stderr:write('\rCompiling object code, ' .. i .. '/' .. total .. ' (' .. percent .. '%)')
+				local _, ct = line:gsub(cc:gsub('+', '%%+'), '')
+				if ct > 0 then i = i + 1 end
+			end
+
+			io.stderr:write('\nFinished compiling object code.\n')
+		end
+
 
 		return true
 	end,
@@ -111,7 +148,7 @@ STANDALONE.cpp = {
 	clean = function()
 		local make = STANDALONE.require_make()
 
-		local success = os.execute(make .. ' clean -C ' .. fs.libs_dir .. 'cpp')
+		local success = os.execute(make .. ' clean -C ' .. fs.libs_dir .. 'cpp >/dev/null')
 
 		if not success then
 			error('Error: Could not clean the C++ runtime.\nAre you sure the directory is writable?')

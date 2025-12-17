@@ -239,10 +239,10 @@ end
 
 if flags.cpp_clean then
 	require 'src.runtime.standalone.all'
-	io.stderr:write('Removing precompiled C++ runtime object files...\n')
 	local result = STANDALONE.cpp.clean()
 	if not flags.cpp_precompile then
 		if result then
+			io.stderr:write('Removed precompiled C++ runtime object files.\n')
 			os.exit(0)
 		else
 			os.exit(1)
@@ -252,7 +252,7 @@ end
 
 if flags.cpp_precompile then
 	require 'src.runtime.standalone.all'
-	io.stderr:write('Precompiling C++ runtime...\n')
+	io.stderr:write('Precompiling C++ runtime... ')
 	if STANDALONE.cpp.precompile() then
 		os.exit(0)
 	else
