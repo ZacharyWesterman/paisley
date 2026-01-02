@@ -1,4 +1,4 @@
-while 1 do
+while do
 	let time_parts = { ${time}.clocktime() }
 	let time_padded = {i.str().lpad('0', 2) for i in time_parts}
 	let time_string = "{time_padded[1]}:{time_padded[2]}:{time_padded[3]}"

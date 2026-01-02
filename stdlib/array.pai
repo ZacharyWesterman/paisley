@@ -6,8 +6,8 @@
 #]]
 subroutine array.zip
 	return {
-		(@[i][index] for i in 1:&@)
-		for index in (1:max(&i for i in @))
+		(@[i][index] for i in 1:len(@))
+		for index in (1:max(len(i) for i in @))
 	}
 end
 
@@ -60,7 +60,7 @@ subroutine array.permute
 	let _array = {@1.reverse()}
 	
 	# Find the largest index _k such that _array[_k] < _array[_k + 1]. If no such index exists, the permutation is the last permutation.
-	let _k = {&_array - 1}
+	let _k = {len(_array) - 1}
 	while {_k and _array[_k] < _array[_k + 1]} do
 		let _k = {_k - 1}
 	end
@@ -71,7 +71,7 @@ subroutine array.permute
 	end
 	
 	# Find the largest index _l greater than _k such that _array[_k] < _array[_l].
-	let _l = {&_array}
+	let _l = {len(_array)}
 	while {_l and _array[_k] < _array[_l]} do
 		let _l = {_l - 1}
 	end
