@@ -215,15 +215,7 @@ return {
 			--Warn if the subroutine is never used
 			function(token, filename)
 				if not token.is_referenced and not EXPORT_LINES[token.span.from.line] then
-					local span = {
-						from = token.span.from,
-						to = {
-							line = token.span.to.line,
-							col = token.span.to.col - 4,
-						}
-					}
-
-					INFO.dead_code(span,
+					INFO.dead_code(token.span,
 						'The ' .. keywords[TOK.kwd_subroutine] .. ' `' .. token.text .. '` is never used.',
 						filename)
 				end
