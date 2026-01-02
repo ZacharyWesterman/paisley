@@ -271,9 +271,7 @@ return {
 			arg_error('Introspection flags can only be used with `--introspect`.')
 		end
 
-		if not flags.standalone and flags.target then
-			arg_error('The `--target` flag doesn\'t make sense without `--standalone`.')
-		end
+		if flags.target then flags.standalone = true end
 
 		if #positional < 1 then
 			arg_error(
