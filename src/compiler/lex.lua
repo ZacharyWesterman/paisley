@@ -27,22 +27,33 @@ local NEXT_TAGS = {}
 ---Some comments can give hints about what commands exist, and suppress "unknown command" errors.
 ---Process these annotations.
 ---@param text string The comment text to process, including the leading # character.
-local function process_comment_annotations(text)
+local function process_comment_annotations(text, line)
 	local comment_text = text:upper()
 
-	NEXT_TAGS.mark = true
+	local _, line_ct = text:gsub('\n', '\n')
 
-	local function append_text(text, brief)
-		if NEXT_TAGS.text then
-			text = NEXT_TAGS.text .. '\n'
-		end
-		text = text:gsub('#%[%[', ''):gsub('#%]%]', ''):gsub('^#', '')
-		if brief then text = text:gsub('@[bB][rR][iI][eE][fF]', '') end
-
-		NEXT_TAGS.text = text
+	-- Forget annotations if there's a blank line of non-comment space
+	if NEXT_TAGS.line and NEXT_TAGS.line + 1 < line then
+		NEXT_TAGS = {}
 	end
 
-	for i in comment_text:gmatch('@[%w_]+') do
+	NEXT_TAGS.mark = true
+	NEXT_TAGS.line = line + line_ct
+
+	local function process_text(text, brief)
+		text = text:gsub('#%[%[', ''):gsub('#%]%]', ''):gsub('^#', '')
+		if brief then text = text:gsub('@[bB][rR][iI][eE][fF][ \t]*', '') end
+		return text
+	end
+
+	local function append_text(text, brief)
+		local result = NEXT_TAGS.text and (NEXT_TAGS.text .. '\n') or ''
+		result = result .. process_text(text, brief)
+		NEXT_TAGS.text = result
+	end
+
+	for line in comment_text:gmatch('[^\n]+') do
+		local i = line:match('@[a-zA-Z_]+')
 		if i == '@COMMANDS' then
 			local msg = text:match('@[cC][oO][mM][mM][aA][nN][dD][sS][^%w_]([^\n]*)')
 			if msg then
@@ -102,10 +113,6 @@ local function process_comment_annotations(text)
 					})
 				end
 			end
-
-
-			-- if not NEXT_TAGS.params then NEXT_TAGS.params = {} end
-			-- table.insert(NEXT_TAGS.params, text)
 		elseif i == '@RETURN' then
 			local t = text:match('@[rR][eE][tT][uU][rR][nN]%s*(.*%S)')
 			local type_text = t:match('^[^%s]+')
@@ -199,7 +206,7 @@ function Lexer(text, file, keep_comments)
 						if not match then match = text:match('^#%[%[.*') end
 						--[[minify-delete]]
 						for m in match:gmatch('[^\n]+') do
-							process_comment_annotations(m)
+							process_comment_annotations(m, line)
 						end
 						--[[/minify-delete]]
 					end
@@ -212,7 +219,7 @@ function Lexer(text, file, keep_comments)
 						tok_ignore = not keep_comments
 						--[[minify-delete]]
 						for m in match:gmatch('[^\n]+') do
-							process_comment_annotations(m)
+							process_comment_annotations(m, line)
 						end
 						--[[/minify-delete]]
 					end
@@ -349,7 +356,7 @@ function Lexer(text, file, keep_comments)
 						match = text:match('^#%[%[.-#%]%]')
 						if not match then match = text:match('^#%[%[.*') end
 						--[[minify-delete]]
-						process_comment_annotations(match)
+						process_comment_annotations(match, line)
 						--[[/minify-delete]]
 					end
 				end
@@ -360,7 +367,7 @@ function Lexer(text, file, keep_comments)
 					if match then
 						tok_ignore = not keep_comments
 						--[[minify-delete]]
-						process_comment_annotations(match)
+						process_comment_annotations(match, line)
 						--[[/minify-delete]]
 					end
 				end

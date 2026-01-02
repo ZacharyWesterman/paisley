@@ -233,6 +233,7 @@ return {
 					token.text = 'env_get'
 					token.type = nil
 					token.value = nil
+					token.span = token.children[1].span
 					token.children = { token.children[2] }
 				end
 			end,
