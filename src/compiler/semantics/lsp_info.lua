@@ -123,9 +123,7 @@ return {
 				local name = token.text
 				local funcsig = '**' ..
 					vscode.color(name, vscode.theme.func) .. '**(' .. FUNCSIG(name, true) .. ') &rArr; '
-				if name == 'reduce' then
-					funcsig = funcsig .. 'bool|number'
-				elseif TYPESIG[name].out == 1 then
+				if TYPESIG[name].out == 1 then
 					--Return type is the same as 1st param
 					local types = {}
 					for i, k in ipairs(TYPESIG[name].valid) do

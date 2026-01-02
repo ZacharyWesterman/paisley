@@ -61,6 +61,18 @@ end
 --Unlike other structures, these do respect scope.
 local aliases = { {} }
 
+local function find_label(alias_name)
+	--Check for an alias that matches (reverse order, so most recent first)
+	for i = #aliases, 1, -1 do
+		local a = aliases[i][alias_name]
+		if a then
+			--If one matches, use it.
+			return a
+		end
+	end
+end
+
+
 --[[minify-delete]]
 if _G['REPL'] then
 	aliases = { ALIASES_TOPLEVEL }
@@ -84,15 +96,9 @@ local function aliases_enter(token, file)
 		end
 	elseif token.id == TOK.gosub_stmt then
 		--Check for an alias that matches
-		for i = #aliases, 1, -1 do
-			local c = token.children[1]
-			local a = aliases[i][c.text]
-			if a then
-				--If one matches, use it.
-				c.text = a
-				break
-			end
-		end
+		local c = token.children[1]
+		local a = find_label(c.text)
+		if a then c.text = a end
 	else
 		table.insert(aliases, {})
 	end
@@ -507,6 +513,17 @@ return {
 					span = token.span,
 					children = token.children,
 				} }
+			end,
+
+			function(token, file)
+				if token.text ~= 'reduce' then return end
+
+				local op = token.children[2]
+				if op.id == TOK.variable and op.text:sub(1, 1) == '\\' then
+					--Check for an alias that matches
+					local a = find_label(op.text:sub(2))
+					if a then op.text = '\\' .. a end
+				end
 			end,
 		},
 	},

@@ -9,7 +9,7 @@ local function _type_text(type_signature, func_name, position --[[minify-delete]
 		local key = TYPE_TEXT(k[((position or 1) - 1) % #k + 1] --[[minify-delete]], colorize --[[/minify-delete]])
 		if key and std.arrfind(types, key, 1) == 0 then table.insert(types, key) end
 	end
-	if func_name == 'reduce' and position == 2 then types[1] = 'operator' end
+	if func_name == 'reduce' and position == 2 then types[1] = 'operator|funcname|subname' end
 	return std.join(types, '|')
 end
 

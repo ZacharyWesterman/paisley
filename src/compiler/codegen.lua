@@ -392,8 +392,9 @@ function generate_bytecode(root, file)
 
 		--STRING CONCAT
 		[TOK.concat] = function(token, file)
-			codegen_rules.recur_push(token.children[1])
-			if token.children[2] then codegen_rules.recur_push(token.children[2]) end
+			for _, child in ipairs(token.children) do
+				codegen_rules.recur_push(child)
+			end
 			emit(bc.call, 'concat', #token.children)
 		end,
 
@@ -1027,13 +1028,13 @@ function generate_bytecode(root, file)
 			--Handle the reduce() function differently.
 			--It's actually a loop that acts on all the elements.
 			if token.text == 'reduce' then
-				local op_id = token.children[2].id
+				local op = token.children[2]
 
-				if op_id == TOK.op_plus then
+				if op.id == TOK.op_plus then
 					--built-in function for sum of list elements
 					token.text = 'sum'
 					token.children[2] = nil
-				elseif op_id == TOK.op_times then
+				elseif op.id == TOK.op_times then
 					--built-in function for multiplying list elements
 					token.text = 'mult'
 					token.children[2] = nil
@@ -1051,10 +1052,25 @@ function generate_bytecode(root, file)
 					emit(bc.swap)
 					emit(bc.call, 'jumpifnil', loop_end_label)
 
-					if op_id == TOK.op_idiv then
+					if op.id == TOK.op_idiv then
 						emit(bc.call, 'div')
 						emit(bc.call, 'implode', 1)
 						emit(bc.call, 'floor')
+					elseif op.id == TOK.func_ref then
+						emit(bc.call, 'implode', 2)
+						emit(bc.call, op.text)
+					elseif op.id == TOK.op_bitwise then
+						local ops = {
+							['and'] = 'bitwise_and',
+							['or'] = 'bitwise_or',
+							['xor'] = 'bitwise_xor',
+						}
+						emit(bc.call, ops[op.text])
+					elseif op.id == TOK.sub_ref then
+						emit(bc.call, 'implode', 2)
+						emit(bc.push_index)
+						emit(bc.call, 'jump', op.text)
+						emit(bc.push_cmd_result)
 					else
 						local ops = {
 							[TOK.op_plus] = 'add',
@@ -1072,14 +1088,14 @@ function generate_bytecode(root, file)
 							[TOK.op_lt] = 'greater',
 							[TOK.op_le] = 'greaterequal',
 						}
-						emit(bc.call, ops[op_id])
+						emit(bc.call, ops[op.id])
 					end
 
 					--Optimize ands and ors to short-circuit out of the loop if possible
-					if op_id == TOK.op_and then
+					if op.id == TOK.op_and then
 						emit(bc.call, 'jumpiffalse', loop_end_label)
 						emit(bc.call, 'jump', loop_beg_label)
-					elseif op_id == TOK.op_or then
+					elseif op.id == TOK.op_or then
 						emit(bc.call, 'jumpiffalse', loop_beg_label)
 						emit(bc.call, 'jump', loop_end_label)
 					else
@@ -1087,7 +1103,7 @@ function generate_bytecode(root, file)
 					end
 
 					emit(bc.label, loop_end_label)
-					if op_id == TOK.op_and or op_id == TOK.op_or then
+					if op.id == TOK.op_and or op.id == TOK.op_or then
 						emit(bc.pop_until_null, 1) --Leave the top value on the stack
 					else
 						emit(bc.pop)

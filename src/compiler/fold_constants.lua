@@ -144,6 +144,52 @@ function FOLD_CONSTANTS(token, file, get_var)
 
 	--Another unique case: the reduce() function takes an operator as the second parameter, not a value
 	if token.id == TOK.func_call and token.text == 'reduce' then
+		if c2.id == TOK.sub_ref then
+			-- Can't fold if using a subroutine to reduce the values.
+			return
+		end
+
+		local fn = FUNC_OPERATIONS[c2.text]
+		local param_ct = BUILTIN_FUNCS[c2.text]
+		if c2.id == TOK.func_ref then
+			-- Can't check types yet.
+			if not c1.type then return end
+
+			local fn_types = TYPESIG[c2.text].valid
+			local arg_tp = GET_SUBTYPES(c1.type)
+
+			local valid = false
+			local invalid_arg = 1
+			for _, params in ipairs(fn_types) do
+				valid = true
+				for i, param_tp in ipairs(params) do
+					if not SIMILAR_TYPE(arg_tp, param_tp) then
+						valid = false
+						invalid_arg = i
+						break
+					end
+				end
+				if valid then break end
+			end
+
+			if not valid then
+				local FUNCSIG = require "src.compiler.semantics.signature"
+
+				local msg = 'Cannot `reduce(' .. TYPE_TEXT(c1.type) .. ', ...)`'
+				msg = msg .. ' with the function `' .. c2.text .. '(' .. FUNCSIG(c2.text) .. ')`'
+				msg = msg .. ' because parameter ' .. invalid_arg .. ' of ' .. c2.text
+				msg = msg .. ' is incompatible with type `' .. TYPE_TEXT(arg_tp) .. '`.'
+				parse_error(c2.span, msg, file)
+				return
+			end
+
+			if not fn then
+				--Cannot fold if using a non-deterministic
+				--built-in function to reduce the values.
+				return
+			end
+		end
+
 		if c1.value then
 			if #c1.value == 0 then
 				token.id = TOK.lit_null
@@ -156,7 +202,14 @@ function FOLD_CONSTANTS(token, file, get_var)
 			local result = c1.value[1]
 			for i = 2, #c1.value do
 				local v = c1.value[i]
-				if c2.id == TOK.op_bitwise then
+
+				if c2.id == TOK.func_ref then
+					if param_ct < 0 then
+						result = fn({ result, v }, token, file)
+					else
+						result = fn(result, v, token, file)
+					end
+				elseif c2.id == TOK.op_bitwise then
 					result = std.bitwise[operator](result, v)
 				elseif operator == '=' then
 					result = std.equal(result, v)
@@ -197,13 +250,6 @@ function FOLD_CONSTANTS(token, file, get_var)
 			token.value = result
 			token.text = tostring(result)
 			token.children = {}
-		else
-			--Even if the parameter is not constant, we can still deduce the output type based on the operator
-			if std.arrfind({ '+', '-', '/', '//', '%' }, c2.text, 1) > 0 then
-				token.type = _G['TYPE_NUMBER']
-			elseif std.arrfind({ '=', '<', '<=', '>', '>=', '!=', 'and', 'or', 'xor' }, c2.text, 1) > 0 then
-				token.type = _G['TYPE_BOOLEAN']
-			end
 		end
 		return
 	end
