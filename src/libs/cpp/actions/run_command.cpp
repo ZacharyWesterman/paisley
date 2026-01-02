@@ -49,12 +49,13 @@ void run_command(VirtualMachine &vm)
 			msg += value[i];
 		}
 
-		auto &stream = (command == "stderr") ? std::cerr : std::cout;
-		stream << msg;
 		if (command == "print")
 		{
-			stream << std::endl;
+			msg += "\n";
 		}
+
+		auto &stream = (command == "stderr") ? std::cerr : std::cout;
+		stream << msg << std::flush;
 
 		vm.last_cmd_result = Null();
 	}
