@@ -111,34 +111,58 @@ local function subroutine_text(token)
 	return text
 end
 
+local function func_call_lsp(token, filename)
+	local name = token.text
+	local funcsig = '**' ..
+		vscode.color(name, vscode.theme.func) .. '**(' .. FUNCSIG(name, true) .. ') &rArr; '
+	if TYPESIG[name].out == 1 then
+		--Return type is the same as 1st param
+		local types = {}
+		for i, k in ipairs(TYPESIG[name].valid) do
+			table.insert(types, k[1])
+		end
+		funcsig = funcsig .. std.join(types, '|', TYPE_TEXT)
+	else
+		funcsig = funcsig .. TYPE_TEXT(TYPESIG[name].out, true)
+	end
+
+	local text = funcsig .. '\n' .. TYPESIG[name].description
+	INFO.hint(token.span, text, filename)
+end
+
 return {
 	init = function(labels)
 		config.labels = labels
 	end,
 
 	enter = {
-		--Print info about each built-in function
-		[TOK.func_call] = {
+		[TOK.sub_ref] = {
 			function(token, filename)
-				local name = token.text
-				local funcsig = '**' ..
-					vscode.color(name, vscode.theme.func) .. '**(' .. FUNCSIG(name, true) .. ') &rArr; '
-				if name == 'reduce' then
-					funcsig = funcsig .. 'bool|number'
-				elseif TYPESIG[name].out == 1 then
-					--Return type is the same as 1st param
-					local types = {}
-					for i, k in ipairs(TYPESIG[name].valid) do
-						table.insert(types, k[1])
-					end
-					funcsig = funcsig .. std.join(types, '|', TYPE_TEXT)
-				else
-					funcsig = funcsig .. TYPE_TEXT(TYPESIG[name].out, true)
-				end
+				if not config.labels[token.text] then return end
+				--Print subroutine signature
+				local text = subroutine_text(config.labels[token.text])
 
-				local text = funcsig .. '\n' .. TYPESIG[name].description
+				--Print subroutine location
+				text = text .. '\n\n*'
+				local fname = config.labels[token.text].filename or filename
+				if fname and fname ~= INFO.root_file then
+					text = text .. fname .. ' : '
+				else
+					text = text .. 'Defined on line '
+				end
+				text = text .. config.labels[token.text].span.from.line .. '*'
+
 				INFO.hint(token.span, text, filename)
 			end,
+		},
+
+		[TOK.func_ref] = {
+			func_call_lsp,
+		},
+
+		--Print info about each built-in function
+		[TOK.func_call] = {
+			func_call_lsp,
 		},
 
 		--Print info about each command

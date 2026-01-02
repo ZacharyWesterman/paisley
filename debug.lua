@@ -317,16 +317,18 @@ if RUN_PROGRAM then
 		end
 
 		print()
-		print_header('BEG STACK')
+		print_header('DATA STACK')
 		for i = 1, #STACK do
 			if STACK[i] == NULL then print('null') else print(std.debug_str(STACK[i])) end
 		end
-		print_header('END STACK / BEG VARS')
+		print_header('CALL STACK')
+		for i = 1, #INSTR_STACK do
+			print(std.debug_str(INSTR_STACK[i]))
+		end
+		print_header('VARIABLES')
 		for key, value in pairs(VARS) do
 			print(key .. ' = ' .. std.debug_str(value))
 		end
-		print_header('END VARS')
-
 
 		io.flush()
 

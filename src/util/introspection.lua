@@ -101,9 +101,7 @@ INTROSPECT = {
 			for i = 1, #func_list do
 				local key = func_list[i]
 				local funcsig = key .. '(' .. FUNCSIG(key) .. ') -> '
-				if key == 'reduce' then
-					funcsig = funcsig .. 'bool|number'
-				elseif TYPESIG[key].out == 1 then
+				if TYPESIG[key].out == 1 then
 					--Return type is the same as 1st param
 					local types = {}
 					for i, k in ipairs(TYPESIG[key].valid) do

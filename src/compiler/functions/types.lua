@@ -468,10 +468,11 @@ TYPESIG = {
 	},
 	reduce = {
 		valid = { { 'array', 'any' } },
+		out = 'any',
 		--[[minify-delete]]
 		params = { 'list', 'op' },
 		description =
-		'Reduce an array to a single element based on a repeated binary operation. Valid operators are: +, -, *, /, %, //, and, or, xor.',
+		'Reduce an array to a single element based on a repeated binary operation. The `op` param may be a binary operator, the name of a 2-argument function, or the name of a subroutine (written like `\\sub_name`).',
 		category = 'arrays',
 		--[[/minify-delete]]
 	},

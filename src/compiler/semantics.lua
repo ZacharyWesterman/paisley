@@ -191,6 +191,7 @@ function SemanticAnalyzer(root, root_file)
 	local labels = config.finally()
 
 	config = require "src.compiler.semantics.pass2"
+	config.set(labels)
 	recurse2(root, config, root_file)
 	local FUNCSIG = config.finally()
 
@@ -212,6 +213,7 @@ function SemanticAnalyzer(root, root_file)
 
 	local function type_checking(token, file)
 		local signature
+		local override_tp
 
 		--Unlike other tokens, "command" tokens only need the first child to be constant for us to deduce the type
 		if token.id == TOK.inline_command or token.id == TOK.command then
@@ -369,6 +371,19 @@ function SemanticAnalyzer(root, root_file)
 				parse_error(token.span, 'The `' .. token.text .. '` function cannot be used in the Plasma build.', file)
 			end
 			--[[/minify-delete]]
+
+			if token.text == 'reduce' then
+				local op = token.children[2]
+				if op.id == TOK.func_ref then
+					override_tp = TYPESIG[op.text].out
+				elseif op.id == TOK.op_bitwise then
+					override_tp = _G['TYPE_NUMBER']
+				elseif std.arrfind({ '+', '-', '/', '//', '%' }, op.text, 1) > 0 then
+					override_tp = _G['TYPE_NUMBER']
+				elseif std.arrfind({ '=', '<', '<=', '>', '>=', '!=', 'and', 'or', 'xor' }, op.text, 1) > 0 then
+					override_tp = _G['TYPE_BOOLEAN']
+				end
+			end
 		else
 			return
 		end
@@ -425,6 +440,8 @@ function SemanticAnalyzer(root, root_file)
 		else
 			token.type = signature.out
 		end
+
+		if override_tp then token.type = override_tp end
 	end
 
 	local function push_var(var, datatype)

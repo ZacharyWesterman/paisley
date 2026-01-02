@@ -151,11 +151,13 @@ TOK = {
 	lit_object = k(),
 	object = k(),
 
-	subroutine_label = k(), --This is only a temporary token to make subroutine construction unambiguous. It does not show up in a finalized AST.
 	--[[minify-delete]]
 	import_stmt = k(),
 	raw_sh_text = k(), --This only exists for the PC build. It basically just tells Paisley to not enclose that part of the command in quotes.
 	--[[/minify-delete]]
+
+	func_ref = k(),
+	sub_ref = k(),
 
 	no_value = k(),
 
