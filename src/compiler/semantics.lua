@@ -186,6 +186,21 @@ function SemanticAnalyzer(root, root_file)
 
 	--[[PERFORM COMPILER PASSES]]
 
+
+	--[[minify-delete]]
+	recurse(root, { TOK.command }, function(token, file)
+		local ch = token.children[1]
+		local function r(t)
+			if t.id == TOK.macro then t.tags = ch.tags end
+			if not t.children then return end
+			for _, child in ipairs(t.children) do
+				r(child)
+			end
+		end
+		if ch.tags then r(token) end
+	end)
+	--[[/minify-delete]]
+
 	local config = require "src.compiler.semantics.pass1"
 	recurse2(root, config, root_file)
 	local labels = config.finally()
@@ -949,7 +964,7 @@ function SemanticAnalyzer(root, root_file)
 	--[[minify-delete]]
 	if _G['LANGUAGE_SERVER'] then
 		config = require "src.compiler.semantics.lsp_info"
-		config.init(labels)
+		config.init(labels, variables)
 		recurse2(root, config, root_file)
 	end
 	--[[/minify-delete]]

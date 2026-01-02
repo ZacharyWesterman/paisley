@@ -133,8 +133,49 @@ local function pop_scope(token, file)
 	if token.id == TOK.macro then
 		macros[#macros][token.text] = {
 			level = tok_level,
-			node = token.children[1]
+			node = token.children[1],
+			--[[minify-delete]]
+			tags = token.tags,
+			--[[/minify-delete]]
 		}
+
+		--[[minify-delete]]
+		if _G['LANGUAGE_SERVER'] then
+			local info, text = {}, ''
+			local node = token.children[1]
+
+			local vscode = require "src.util.vscode"
+
+			--Print macro value if it's a simple literal
+			text = vscode.color('**' .. token.text .. '**', vscode.theme.sub)
+			if node.value ~= nil or node.id == TOK.lit_null then
+				local json = require "src.shared.json"
+				text = text .. ' = ' .. json.stringify(node.value)
+			end
+			table.insert(info, text)
+
+			--Print comment annotations if any.
+			if token.tags then
+				local t = token.tags.text
+				if t and #t > 0 then
+					table.insert(info, t)
+				end
+			end
+
+			--Print macro definition location
+			text = '*'
+			local fname = node.filename or file
+			if fname and fname ~= file then
+				text = text .. fname .. ' : '
+			else
+				text = text .. 'Defined on line '
+			end
+			text = text .. node.span.from.line .. '*'
+			table.insert(info, text)
+
+			if #info > 0 then INFO.hint(token.span, table.concat(info, '\n'), file) end
+		end
+		--[[/minify-delete]]
 	elseif token.id == TOK.macro_ref then
 		local macro = get_macro(token.text)
 		if not macro then
@@ -144,13 +185,23 @@ local function pop_scope(token, file)
 			if _G['LANGUAGE_SERVER'] then
 				local info, text = {}, ''
 
+				local vscode = require "src.util.vscode"
+
 				--Print macro value if it's a simple literal
-				text = '**' .. token.text .. '**'
+				text = vscode.color('**' .. token.text .. '**', vscode.theme.sub)
 				if macro.node.value ~= nil or macro.node.id == TOK.lit_null then
 					local json = require "src.shared.json"
 					text = text .. ' = ' .. json.stringify(macro.node.value)
 				end
 				table.insert(info, text)
+
+				--Print comment annotations if any.
+				if macro.tags then
+					local t = macro.tags.text
+					if t and #t > 0 then
+						table.insert(info, t)
+					end
+				end
 
 				--Print macro definition location
 				text = '*'

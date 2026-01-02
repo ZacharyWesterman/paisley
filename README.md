@@ -632,10 +632,10 @@ Along with the regular arithmetic operators, there are also ternary and array-re
 - Multi-line strings with NO interpolation, `'''some text'''`
 - Variables, `var_name`, `x`, etc.
 - `@`, the "parameter list" variable, an array containing any values passed to the current subroutine. If used outside of a subroutine, it instead contains any arguments passed to the script.
-- `$`, the "command list" variable, an array containing the names of all allowed commands.
-- `_VARS`, the "variables" variable, an object that contains variable names and values.
+- `$`, the "command list" variable, an array containing the names of all the commands the current script has access to.
+- `_VARS`, the "variables" variable, an object that contains the names and values of all variables in the current script as key-value pairs.
 - `_VERSION`, the "version number" variable, a string formatted as `MAJOR.MINOR.PATCH`.
-- `_ENV`, the "environment variables" variable, an object containing string values. Note that unlike other variables, only individual keys of `_ENV` are allowed to be accessed, not the entire object.
+- `_ENV`, the "environment variables" variable, an object that reads an environment variable when indexed. Note that unlike other variables, only individual keys of `_ENV` are allowed to be accessed, not the entire object.
 - Arrays, e.g. `(1,2,3,4,5)`. See [the docs for details](docs/arrays.md).
 - Objects, e.g. `("a" => 1, "b" => 2)`. See [the docs for details](docs/objects.md).
 

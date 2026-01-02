@@ -1153,7 +1153,9 @@ let_stmt = function(span)
 		text = is_initial and 'initial' or 'let',
 		span = Span:merge(span, list[#list].span),
 		children = { list[1] },
+		tags = child.tags,
 	}
+	list[1].tags = child.tags
 
 	local function math_assign_sugar(var, op, rhs)
 		local id = (op.text == '+=' or op.text == '-=') and TOK.add or TOK.multiply
