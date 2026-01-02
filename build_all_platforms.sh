@@ -14,4 +14,4 @@ echo -e "\e[1;32mBuilding for Windows...\e[0m"
 
 echo
 echo -e "\e[1;32mDone!\e[0m"
-echo "Executables are under ${BASH_SOURCE[0]}/build/"
+echo "Executables are under $(dirname "${BASH_SOURCE[0]}")/build/"
