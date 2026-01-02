@@ -5,7 +5,7 @@ require color
 @brief Create a new image.
 @param width number The width of the image.
 @param height number The height of the image.
-@param color array[number] An optional RGB color array to fill the image with. Default is black: {0, 0, 0}.
+@param color array[number] An optional RGBA color to fill the image with. Defaults to black, `(0,0,0,0)`.
 @return image A new image object.
 @export
 #]]
@@ -26,7 +26,7 @@ subroutine image.new
 end
 
 #@brief Convert an image into a bitmap format (BMP) string.
-#@param image array[array[number]] The image to convert.
+#@param image array[array[number]] The RGBA color image to convert.
 #@return string A string containing the BMP representation of the image.
 #@export
 subroutine image.bitmap
@@ -66,7 +66,6 @@ subroutine image.bitmap
 	).join("")}
 
 	# Generate pixel data (bottom-up)
-    # We'll create a simple pattern: red varies with x, green varies with y, blue constant
 	let _pixel_data = {,}
 	for _row in {_image.reverse()} do
 		for _pixel in {_row} do

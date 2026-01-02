@@ -1,3 +1,9 @@
+#[[
+@export
+@brief Serialize a 32-bit integer to a 4-byte string.
+@param value number The integer to serialize.
+@return string A string of 4 bytes.
+#]]
 subroutine serialize.int
 	return {
 		(
