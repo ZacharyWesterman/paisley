@@ -136,6 +136,7 @@ local function pop_scope(token, file)
 			node = token.children[1],
 			--[[minify-delete]]
 			tags = token.tags,
+			filename = token.filename or file,
 			--[[/minify-delete]]
 		}
 
@@ -161,17 +162,6 @@ local function pop_scope(token, file)
 					table.insert(info, t)
 				end
 			end
-
-			--Print macro definition location
-			text = '*'
-			local fname = node.filename or file
-			if fname and fname ~= file then
-				text = text .. fname .. ' : '
-			else
-				text = text .. 'Defined on line '
-			end
-			text = text .. node.span.from.line .. '*'
-			table.insert(info, text)
 
 			if #info > 0 then INFO.hint(token.span, table.concat(info, '\n'), file) end
 		end
@@ -205,7 +195,7 @@ local function pop_scope(token, file)
 
 				--Print macro definition location
 				text = '*'
-				local fname = macro.node.filename or file
+				local fname = macro.filename or file
 				if fname and fname ~= file then
 					text = text .. fname .. ' : '
 				else
