@@ -64,6 +64,7 @@ local function json_parse(text, return_error)
 		elseif in_string then
 			if escaped then
 				if chr == 'n' then chr = '\n' end
+				if chr == 'r' then chr = '\r' end
 				if chr == 't' then chr = '\t' end
 				this_token = this_token .. chr
 				escaped = false
@@ -228,6 +229,7 @@ return {
 		local repl_chars = {
 			{ '\\', '\\\\' },
 			{ '\"', '\\"' },
+			{ '\r', '\\r' },
 			{ '\n', '\\n' },
 			{ '\t', '\\t' },
 		}
