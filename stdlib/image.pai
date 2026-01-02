@@ -32,7 +32,7 @@ end
 subroutine image.bitmap
 	let _image = {@1}
 
-	let _width = {len(_image)[1]}
+	let _width = {len(_image[1])}
 	let _height = {len(_image)}
 
 	# Row bytes and padding
