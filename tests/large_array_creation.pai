@@ -8,15 +8,15 @@ for x in {1:100} do
 end
 
 print "Large array created."
-print "Array size: {&large_array}"
+print "Array size: {len(large_array)}"
 
 print "Changing each element in array..."
 
-for i in {1:&large_array} do
+for i in {1:len(large_array)} do
 	let large_array{i} = {20, 30}
 end
 
 print "Array modified."
-print "Array size: {&large_array}"
+print "Array size: {len(large_array)}"
 print "First element: {large_array[1]}"
-print "Last element: {large_array[&large_array]}"
+print "Last element: {large_array[len(large_array)]}"
