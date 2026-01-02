@@ -1,6 +1,7 @@
+# Common color definitions.
 define {
 	!white[0xffffffff.bytes(4)]
-	!black[0x00000000.bytes(4)]
+	!black[0x000000ff.bytes(4)]
 	!red[0xff0000ff.bytes(4)]
 	!green[0x00ff00ff.bytes(4)]
 	!blue[0x0000ffff.bytes(4)]
@@ -17,7 +18,7 @@ define {
 subroutine color.hex_to_rgba
 	let _color = {@1[(2 if @1[1] = '#' else 1)::]}
 	
-	if {(&_color != 6 and &_color != 8) or _color not like '^[0-9a-fA-F]+$'} then
+	if {(len(_color) != 6 and len(_color) != 8) or _color not like '^[0-9a-fA-F]+$'} then
 		error "Invalid hex color code: {@1}"
 	end
 
@@ -35,7 +36,7 @@ end
 subroutine color.rgba_to_hex
 	let _color = {@.flatten().frombytes()}
 	# Append alpha value of 255 if not provided
-	if {&_color < 4} then let _color{} = {0xff} end
+	if {len(_color) < 4} then let _color{} = {0xff} end
 	return "#{_color.to_base(16, 8)}"
 end
 

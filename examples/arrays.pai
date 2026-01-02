@@ -34,7 +34,7 @@ print {shuffle(array)} # prints something like "{3, 5, 1, 4, 2}"
 # Note that shuffling is the same as selecting
 # as many random elements as there are in the array.
 # (and under the hood, it's the exact same function)
-print {random_elements(array, &array)}
+print {random_elements(array, len(array))}
 
 # Reverse an array
 let reversed_array = {reverse(array)}

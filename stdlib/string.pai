@@ -5,10 +5,10 @@
 # @return string A string with the specified length, truncated and appended with the suffix if necessary.
 # @export
 subroutine string.truncate
-	if {&@1 <= @2} then return {@1} end
+	if {len(@1) <= @2} then return {@1} end
 	
 	return {
-		@1[1:(@2 - &(@3 if @3 else "..."))]
+		@1[1:(@2 - len(@3 if @3 else "..."))]
 		(@3 if @3 else "...")
 	}
 end
@@ -206,7 +206,7 @@ subroutine string.ordinal
 
 	for _k _v in {pairs(_repl)} do
 		if {_r.endswith(_k)} then
-			let _r = {_r[1:(&_r - &_k)] _v}
+			let _r = {_r[1:(len(_r) - len(_k))] _v}
 			delete _k _v _repl
 			return {_r}
 		end
@@ -214,8 +214,8 @@ subroutine string.ordinal
 
 	delete _k _v _repl
 
-	if {_r[&_r] = 'y'} then
-		return {_r[1:(&_r-1)] 'ieth'}
+	if {_r[len(_r)] = 'y'} then
+		return {_r[1:(len(_r)-1)] 'ieth'}
 	end
 
 	return {_r 'th'}

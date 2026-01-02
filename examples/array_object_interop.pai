@@ -24,6 +24,6 @@ print {json_encode(new_object, true)}  # Pretty-print the object as JSON
 
 # Of course, you could also construct the object the long way, by iterating over the array.
 let new_object = {=>}
-for i in {i for i in 1:&data if i % 2 = 0} do
+for i in {i for i in 1:len(data) if i % 2 = 0} do
     let new_object{data[i]} = {data[i + 1]}
 end

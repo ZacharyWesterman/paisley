@@ -15,4 +15,4 @@ while {list} do
 	let count = {count + 1}
 end
 
-print "Generated {count} permutations for a {&orig} element array."
+print "Generated {count} permutations for a {len(orig)} element array."
