@@ -534,6 +534,9 @@ length = function(span)
 	local ok, child = exp(dot_and_index)
 	if not ok then return parser.out(false) end
 
+	local msg = 'The operator `&` is deprecated and will be removed in v2.0. Use the `len()` function instead.'
+	parse_warning(span, msg, parser.filename())
+
 	return true, {
 		id = TOK.length,
 		text = '&',
