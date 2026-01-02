@@ -46,6 +46,7 @@ return {
 			--Validate function calls
 			function(token, file)
 				if token.text:sub(1, 1) == '\\' then return end
+				if token.text == 'env_get' then return end
 
 				local func = BUILTIN_FUNCS[token.text]
 
