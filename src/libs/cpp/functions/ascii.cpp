@@ -2,7 +2,7 @@
 
 void ascii(Context &context) noexcept
 {
-	// Convert a number to a character.
+	// Convert a character to a number.
 	auto param = std::get<std::vector<Value>>(context.stack.pop())[0];
-	context.stack.push(std::string(1, static_cast<char>(param.to_number())));
+	context.stack.push(static_cast<double>(param.to_string()[0]));
 }

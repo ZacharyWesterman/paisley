@@ -8,10 +8,12 @@ void bytes(Context &context) noexcept
 	const int num_bytes = params[1].to_number();
 
 	std::vector<Value> bytes;
-	for (int i = 0; i < num_bytes; ++i)
+	bytes.reserve(num_bytes);
+
+	for (int offset = (num_bytes - 1) * 8; offset >= 0; offset -= 8)
 	{
-		bytes.push_back(value % 256);
-		value /= 256;
+		const long byte = (value >> offset) & 0xff;
+		bytes.push_back(byte);
 	}
 
 	context.stack.push(bytes);
