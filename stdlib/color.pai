@@ -49,7 +49,7 @@ end
 @export
 #]]
 subroutine color.blend
-	return {floor(i) for i in lerp(@3 if @3 else 0.5, @1, @2)}
+	return {sqrt(i[1]^2 * @3 + i[2]^2 * (1 - @3)) for i in interleave(@1, @2).chunk(2)}
 end
 
 #[[
