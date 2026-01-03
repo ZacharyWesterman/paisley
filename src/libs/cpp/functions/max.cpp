@@ -10,16 +10,19 @@ void max(Context &context) noexcept
 
 	for (const Value &value : params)
 	{
+
 		if (std::holds_alternative<std::vector<Value>>(value))
 		{
 			for (const Value &inner_value : std::get<std::vector<Value>>(value))
 			{
 				result = std::max(result, inner_value.to_number());
+				found_value = true;
 			}
 		}
 		else
 		{
 			result = std::max(result, value.to_number());
+			found_value = true;
 		}
 	}
 

@@ -15,11 +15,13 @@ void min(Context &context) noexcept
 			for (const Value &inner_value : std::get<std::vector<Value>>(value))
 			{
 				result = std::min(result, inner_value.to_number());
+				found_value = true;
 			}
 		}
 		else
 		{
 			result = std::min(result, value.to_number());
+			found_value = true;
 		}
 	}
 
