@@ -620,6 +620,17 @@ function SemanticAnalyzer(root, root_file)
 			if #token.children > 2 then
 				--Don't deduce types for let statements that are updating variables.
 				--Those don't define what the variable's actual type is.
+
+				--However, do indicate that the variable changes dynamically and can't be optimized away.
+				for _, v in pairs(variables[var.text] or {}) do
+					v.multiple = true
+					v.value = nil
+					for decl, _ in pairs(v.decls) do
+						decl.multiple = true
+						decl.value = nil
+					end
+				end
+
 				return
 			end
 

@@ -278,7 +278,7 @@ function generate_bytecode(root, file)
 				end
 
 				--Optimization: prune variables if they're only assigned to one value
-				--At this point, all uses of the variable have been replaced with constants literals.
+				--At this point, all uses of the variable have been replaced with constant literals.
 				if v1.value then return end
 
 				--[[minify-delete]]
