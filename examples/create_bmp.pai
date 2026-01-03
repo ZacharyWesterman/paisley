@@ -1,31 +1,27 @@
 require image
 require math
 
-let image = {,}
 let height = 100
 let width = 100
 
 print "Creating image..."
 
-# Fill with a gradient pattern
-for y in {1:height} do
-	let row = {,}
-	for x in {1:width} do
-		let radius = {dist((x / width, y / height), (0.5, 0.5)).clamp(0, 1)}
-		let angle = {atan2(y - height / 2, x - width / 2)}
+# arrange RGB values in a rainbow ring around the center
+# radius (0.0-1.0) affects brightness
+# angle affects color
+# @param x number The horizontal coordinate in the image.
+# @param y number The vertical coordinate in the image.
+subroutine pixel
+	let x y = {@}
+	let radius = {dist((x / width, y / height), (0.5, 0.5)).clamp(0, 1)}
+	let angle = {atan2(y - height / 2, x - width / 2)}
 
-		# arrange RGB values in a rainbow ring around the center
-		# radius (0.0-1.0) affects brightness
-		# angle affects color
+	let r g b = {(0.5 + 0.5 * sin(angle + i * 2 * !pi / 3)) * 255 for i in 0:2}
 
-		let r = {(0.5 + 0.5 * sin(angle + 0 * 2 * !pi / 3)) * 255}
-		let g = {(0.5 + 0.5 * sin(angle + 1 * 2 * !pi / 3)) * 255}
-		let b = {(0.5 + 0.5 * sin(angle + 2 * 2 * !pi / 3)) * 255}
-
-		let row{} = {\color.blend((r, g, b, 0xff), !black, radius)} # RGBA values. Alpha is always 255 (opaque)
-	end
-	let image{} = {row}
+	return {\color.blend((r, g, b, 0xff), !black, radius)} # RGBA values. Alpha is always 255 (opaque)
 end
+
+let image = {(\pixel(x, y) for x in 1:width) for y in 1:height}
 
 print "Image created."
 
