@@ -1,5 +1,4 @@
 #include "update.hpp"
-#include <iostream>
 
 void update(Context &context) noexcept
 {

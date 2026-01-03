@@ -1,5 +1,4 @@
 #include "random_weighted.hpp"
-#include <iostream>
 
 void random_weighted(Context &context) noexcept
 {
@@ -22,7 +21,6 @@ void random_weighted(Context &context) noexcept
 	for (size_t i = 0; i < length; i++)
 	{
 		cumulative += weights[i].to_number();
-		std::cout << r << " " << cumulative << std::endl;
 		if (r < cumulative)
 		{
 			context.stack.push(array[i]);

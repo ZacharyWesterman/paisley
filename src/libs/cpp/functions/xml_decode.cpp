@@ -6,8 +6,6 @@
 #include <stack>
 #include <unordered_map>
 
-#include <iostream>
-
 #include "../replace.hpp"
 
 // Token types

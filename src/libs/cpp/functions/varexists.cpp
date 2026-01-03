@@ -1,5 +1,4 @@
 #include "varexists.hpp"
-#include <iostream>
 
 void varexists(Context &context) noexcept
 {

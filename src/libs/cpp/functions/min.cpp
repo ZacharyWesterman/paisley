@@ -6,7 +6,7 @@ void min(Context &context) noexcept
 	auto params = std::get<std::vector<Value>>(context.stack.pop());
 
 	bool found_value = false;
-	double result = std::numeric_limits<double>::min();
+	double result = std::numeric_limits<double>::max();
 
 	for (const Value &value : params)
 	{

@@ -1,7 +1,5 @@
 #include "from_base.hpp"
 
-#include <iostream>
-
 int from_base(char c) noexcept
 {
 	if (c >= '0' && c <= '9')
@@ -41,7 +39,6 @@ void from_base(Context &context) noexcept
 	}
 
 	double place = base;
-	std::cout << "fract_text: " << fract_text << "\n";
 	for (char c : fract_text)
 	{
 		double digit = from_base(c);
