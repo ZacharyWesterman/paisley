@@ -567,6 +567,29 @@ return {
 				end
 			end,
 		},
+
+		[TOK.multiply] = {
+			function(token, file)
+				if token.text ~= '%%' then return end
+
+				token.text = '='
+				token.id = TOK.comparison
+				token.children = {
+					{
+						id = TOK.multiply,
+						text = '%',
+						span = token.span,
+						children = token.children,
+					},
+					{
+						id = TOK.lit_number,
+						span = token.span,
+						value = 0,
+						children = {},
+					},
+				}
+			end,
+		},
 	},
 
 	exit = {

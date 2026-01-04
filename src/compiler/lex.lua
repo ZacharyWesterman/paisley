@@ -10,6 +10,7 @@ local oper_block = {
 	['>'] = { '=' },
 	['<'] = { '=' },
 	['='] = { '=', '>' },
+	['%'] = { '%' },
 }
 
 ---@diagnostic disable-next-line

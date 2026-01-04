@@ -9,6 +9,7 @@ return {
 	['//'] = TOK.op_idiv,
 	['/'] = TOK.op_div,
 	['%'] = TOK.op_mod,
+	['%%'] = TOK.op_divisible,
 	['^'] = TOK.op_exponent,
 	[':'] = TOK.op_slice,
 	['&'] = TOK.op_count,

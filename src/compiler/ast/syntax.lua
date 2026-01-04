@@ -471,6 +471,7 @@ mult = function(span)
 			TOK.op_div,
 			TOK.op_idiv,
 			TOK.op_mod,
+			TOK.op_divisible,
 		},
 		TOK.multiply
 	)
