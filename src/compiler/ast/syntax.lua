@@ -421,6 +421,9 @@ comparison = function(span)
 		local msg = 'The operator `' ..
 			op.text .. '` is deprecated and will be removed in v2.0. Use `' .. coerce .. '` instead.'
 		parse_warning(op.span, msg, parser.filename())
+
+		--Adjust to be non-deprecated operators
+		op.text = (op.text == '~=') and '!=' or '='
 	end
 
 	return true, {
