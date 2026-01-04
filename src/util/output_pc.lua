@@ -62,7 +62,7 @@ function output(value, port)
 		if cmd == 'stdout' then
 			io.write(args)
 		elseif cmd == 'stderr' then
-			io.write(io.stderr, args)
+			io.stderr:write(args)
 		elseif cmd == 'stdin' then
 			V5 = io.read('*l')
 		elseif cmd == 'clear' then
