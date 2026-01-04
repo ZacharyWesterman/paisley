@@ -1,0 +1,16 @@
+if {not @1 or @1 not like '^%d+$' or int(@1) = 0} then
+	stderr "ERROR: Please input a positive number.\n"
+	stop
+end
+
+for i in {1:int(@1)} do
+	if {i % 15 = 0} then
+		print fizzbuzz
+	elif {i % 5 = 0} then
+		print buzz
+	elif {i % 3 = 0} then
+		print fizz
+	else
+		print {i}
+	end
+end
