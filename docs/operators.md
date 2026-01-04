@@ -5,13 +5,13 @@ Operator precedence in Paisley follows the table below, from higher to lower pri
 `.`&emsp;`[]`<br>
 `&`<br>
 `^`<br>
-`-` (unary)<br>
+`-`&emsp;`not`&emsp;`bitwise not`&emsp;(unary operators)<br>
 `:`<br>
 `*`&emsp;`/`&emsp;`//`&emsp;`%`<br>
 `+`&emsp;`-`<br>
 `>`&emsp;`<`&emsp;`>=`&emsp;`<=`&emsp;`=`&emsp;`!=`&emsp;`in`&emsp;`like`&emsp;`not in`&emsp;`not like`<br>
 string concatenation `a b` (two expressions separated by a space)<br>
-`exists`&emsp;`not`&emsp;`and`&emsp;`or`&emsp;`xor` and any `bitwise` versions of the latter 4.<br>
+`exists`&emsp;`and`&emsp;`or`&emsp;`xor` and any `bitwise` versions of the latter 4.<br>
 `a for b in c`&emsp;`a for b in c if d`<br>
 `a else b`&emsp;&emsp;&emsp; `a if b else c`<br>
 `=>`<br>
