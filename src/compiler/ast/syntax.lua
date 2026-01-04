@@ -31,6 +31,8 @@ local dot_and_index
 local length
 local exponent
 local negate
+local not_oper
+local unary
 local slice
 local mult
 local add
@@ -310,28 +312,7 @@ end
 
 ---Syntax rule for boolean expressions
 boolean = function(span)
-	local bitwise = parser.accept(TOK.op_bitwise)
-	local ok, child
-	if bitwise then
-		ok, _ = parser.expect(TOK.op_not, 'not')
-		if not ok then return parser.out(false) end
-	else
-		ok, _ = parser.accept(TOK.op_not)
-	end
-
-	--`bitwise not` or `not`
-	if ok then
-		ok, child = exp(boolean)
-		if not ok then return parser.out(false) end
-		return true, {
-			id = bitwise and TOK.bitwise or TOK.boolean,
-			text = 'not',
-			span = Span:merge(span, child.span),
-			children = { child },
-		}
-	end
-
-	local lhs, rhs, op
+	local lhs, rhs, op, ok, bitwise
 
 	--Just pass on higher-precedence expressions
 	ok, lhs = exp(concat)
@@ -480,7 +461,7 @@ end
 slice = function(span)
 	local ok, lhs, op, rhs
 
-	ok, lhs = parser.accept(negate)
+	ok, lhs = parser.accept(unary)
 	if not ok then return parser.out(false) end
 
 	ok, op = parser.accept(TOK.op_slice)
@@ -503,16 +484,43 @@ slice = function(span)
 	}
 end
 
+unary = function(span)
+	return parser.any_of({ negate, not_oper, exponent }, {})
+end
+
 ---Syntax rule for negation
 negate = function(span)
-	if not parser.accept(TOK.op_minus) then return exp(exponent) end
+	if not parser.accept(TOK.op_minus) then return parser.out(false) end
 
-	local ok, child = exp(negate)
+	local ok, child = exp(unary)
 	if not ok then return parser.out(false) end
 
 	return true, {
 		id = TOK.negate,
 		text = '-',
+		span = Span:merge(span, child.span),
+		children = { child },
+	}
+end
+
+---Syntax rule for `not` operator
+not_oper = function(span)
+	local bitwise = parser.accept(TOK.op_bitwise)
+	local ok, child
+	if bitwise then
+		ok, _ = parser.expect(TOK.op_not, 'not')
+	else
+		ok, _ = parser.accept(TOK.op_not)
+	end
+
+	if not ok then return parser.out(false) end
+
+	--`bitwise not` or `not`
+	ok, child = exp(unary)
+	if not ok then return parser.out(false) end
+	return true, {
+		id = bitwise and TOK.bitwise or TOK.boolean,
+		text = 'not',
 		span = Span:merge(span, child.span),
 		children = { child },
 	}
