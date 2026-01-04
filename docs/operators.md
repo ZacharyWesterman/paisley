@@ -7,7 +7,7 @@ Operator precedence in Paisley follows the table below, from higher to lower pri
 `^`<br>
 `-`&emsp;`not`&emsp;`bitwise not`&emsp;(unary operators)<br>
 `:`<br>
-`*`&emsp;`/`&emsp;`//`&emsp;`%`<br>
+`*`&emsp;`/`&emsp;`//`&emsp;`%`&nbsp;`%%`<br>
 `+`&emsp;`-`<br>
 `>`&emsp;`<`&emsp;`>=`&emsp;`<=`&emsp;`=`&emsp;`!=`&emsp;`in`&emsp;`like`&emsp;`not in`&emsp;`not like`<br>
 string concatenation `a b` (two expressions separated by a space)<br>
@@ -26,6 +26,7 @@ string concatenation `a b` (two expressions separated by a space)<br>
 - division, `/`
 - *integer* division, `//` (divide then round down)
 - remainder/modulo, `%`
+- divisibility, `%%`. Returns true if the right operand evenly divides the left operand. (That is, `a %% b` is the same as `a % b = 0`)
 - exponentiation, `^`, e.g. `a^3` raises `a` to the 3rd power.
 - boolean operators, `and`, `or`, `xor`, `not`. Note that the `and` and `or` operators can short-circuit, i.e. given an expression `a and b`: if `a` is false, then the whole expression *can never be true*, so `b` is not even evaluated.
 - bitwise operators, `bitwise and`, `bitwise or`, `bitwise xor`, `bitwise not`. Unlike the boolean operators, these do not short-circuit.

@@ -52,6 +52,7 @@ TOK = {
 	op_idiv = k(),
 	op_div = k(),
 	op_mod = k(),
+	op_divisible = k(),
 	op_exponent = k(),
 	op_slice = k(),
 	op_count = k(),
