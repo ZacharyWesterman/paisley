@@ -32,4 +32,5 @@ return {
 	[','] = TOK.op_comma,
 	['.'] = TOK.op_dot,
 	['bitwise'] = TOK.op_bitwise,
+	['?'] = TOK.op_question,
 }

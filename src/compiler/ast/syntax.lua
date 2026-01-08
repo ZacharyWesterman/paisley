@@ -228,23 +228,48 @@ end
 
 ---Syntax rule for ternary -> other expressions
 ternary = function(span)
-	local ok, lhs, list
+	local ok, lhs, rhs, list, nullish
 
 	ok, lhs = exp(list_comprehension)
 	if not ok then return parser.out(false) end
 
-	--Special shorthand for trivial ternaries:
+	-- Check if there's `?else` or `else`, for fallback ternaries.
+	ok, nullish = parser.accept(TOK.op_question)
+	if ok then
+		ok, rhs = parser.expect(TOK.kwd_else, 'else')
+		if not ok then return parser.out(false) end
+	else
+		ok, rhs = parser.accept(TOK.kwd_else)
+	end
+
+	--Special shorthand for false-fallback or null-fallback ternaries:
 	--`a else b` is the same as `a if a else b`.
-	local rhs
-	ok, rhs = parser.accept(TOK.kwd_else)
 	if ok then
 		ok, rhs = parser.expect(ternary, TOK.expression)
 		if not ok then return parser.out(false) end
 
+		local condition = lhs
+		if nullish then
+			condition = {
+				id = TOK.comparison,
+				text = '!=',
+				span = lhs.span,
+				children = {
+					lhs,
+					{
+						id = TOK.lit_null,
+						text = 'null',
+						span = lhs.span,
+						children = {},
+					},
+				},
+			}
+		end
+
 		return true, {
 			id = TOK.ternary,
 			span = Span:merge(lhs.span, rhs.span),
-			children = { lhs, lhs, rhs },
+			children = { condition, lhs, rhs },
 		}
 	end
 
