@@ -1,0 +1,9 @@
+# The following features will work in v1.X, but should spit out a deprecation warning.
+# They will NOT work in v2 and forward!
+
+# Using `len()` is preferred over the `&` operator for getting string/array length.
+print {&(0:9)}
+
+# Using `==` and `~=` are holdovers from the early days where parity with Lua syntax was desired...
+# not the case anymore, so now `=` and `!=` are preferred, respectively
+print {1 == 2 or 1 ~= 3}
