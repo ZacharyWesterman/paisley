@@ -145,7 +145,6 @@ list_comprehension :=
 	| boolean
 
 boolean :=
-	| `bitwise`? `not` boolean
 	| concat `bitwise`? `and` boolean
 	| concat `bitwise`? `or` boolean
 	| concat `bitwise`? `xor` boolean
@@ -178,16 +177,17 @@ mult :=
 	| slice `/` mult
 	| slice `//` mult
 	| slice `%` mult
+	| slice `%%` mult
 	| slice
 
 slice :=
-	| negate `:` `:`
-	| negate `:` slice
-	| negate
+	| unary `:` `:`
+	| unary `:` slice
+	| unary
 
-negate :=
-	| `-` negate
-	| exponent
+unary :=
+	| `bitwise`? `not` exponent
+	| `-` exponent
 
 exponent :=
 	| length `^` exponent
