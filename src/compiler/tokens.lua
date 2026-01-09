@@ -74,6 +74,7 @@ TOK = {
 	op_dot = k(),
 	op_arrow = k(),
 	op_bitwise = k(),
+	op_question = k(),
 
 	--[[minify-delete]]
 	op_pipe_file_out = k(),

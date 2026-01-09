@@ -135,6 +135,7 @@ kv_pair :=
 	| `=>`
 
 ternary :=
+	| list_comprehension `else` `?` ternary
 	| list_comprehension `else` ternary
 	| list_comprehension `if` list_comprehension `else` ternary
 	| list_comprehension
@@ -198,7 +199,10 @@ length :=
 	| dot_and_index
 
 dot_and_index :=
-	| value (`.` value | `[` expression `]`)+
+	| value `.` value
+	| value `[` expression `]`
+	| value `?` `.` value
+	| value `?` `[` expression `]`
 	| value
 
 value :=

@@ -1,0 +1,4 @@
+# Each line will just print "null"
+print {null?[1].type()}
+print {null?.x.type()}
+print {null ?else 'null'}
