@@ -199,7 +199,10 @@ length :=
 	| dot_and_index
 
 dot_and_index :=
-	| value (`.` value | `[` expression `]`)+
+	| value `.` value
+	| value `[` expression `]`
+	| value `?` `.` value
+	| value `?` `[` expression `]`
 	| value
 
 value :=

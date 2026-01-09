@@ -228,19 +228,20 @@ end
 
 ---Syntax rule for ternary -> other expressions
 ternary = function(span)
-	local ok, lhs, rhs, list, nullish
+	local ok, lhs, rhs, list
 
 	ok, lhs = exp(list_comprehension)
 	if not ok then return parser.out(false) end
 
 	-- Check if there's `?else` or `else`, for fallback ternaries.
-	ok, nullish = parser.accept(TOK.op_question)
-	if ok then
-		ok, rhs = parser.expect(TOK.kwd_else, 'else')
-		if not ok then return parser.out(false) end
-	else
-		ok, rhs = parser.accept(TOK.kwd_else)
+	local p = parser.peek(2)
+	local nullish = false
+	if p[1] == TOK.op_question and p[2] == TOK.kwd_else then
+		nullish = true
+		parser.nextsym()
 	end
+
+	ok, rhs = parser.accept(TOK.kwd_else)
 
 	--Special shorthand for false-fallback or null-fallback ternaries:
 	--`a else b` is the same as `a if a else b`.
@@ -592,6 +593,13 @@ dot_and_index = function(span)
 
 	--Properly handle chained dot and indexing operations
 	while true do
+		local p = parser.peek(2)
+		local nullish = false
+		if p[1] == TOK.op_question and p[2] ~= TOK.kwd_else then
+			nullish = true
+			parser.nextsym()
+		end
+
 		if parser.accept(TOK.op_dot) then
 			ok, rhs = exp(value)
 			if not ok then return parser.out(false) end
@@ -630,8 +638,44 @@ dot_and_index = function(span)
 				span = Span:merge(node.span, c.span),
 				children = { node, rhs },
 			}
+		elseif nullish then
+			-- If `?` operator was found, REQUIRE either dot-notation or indexing.
+			-- (at this point, we also know that it's NOT `?else` null-coalescing)
+			parser.ast_error(parser.t(), { '.', '[' })
+			return parser.out(false)
 		else
 			break
+		end
+
+		if nullish then
+			-- Convert `a?[b]` into `a[b] if a != null else null`
+
+			---@diagnostic disable-next-line
+			node.null_coalesce = true
+
+			local nul = {
+				id = TOK.lit_null,
+				text = 'null',
+				span = lhs.span,
+				children = {},
+			}
+
+			local condition = {
+				id = TOK.comparison,
+				text = '!=',
+				span = lhs.span,
+				children = {
+					node.children[1],
+					nul,
+				},
+			}
+
+			node = {
+				id = TOK.ternary,
+				text = '?',
+				span = Span:merge(lhs.span, rhs.span),
+				children = { condition, node, nul },
+			}
 		end
 	end
 

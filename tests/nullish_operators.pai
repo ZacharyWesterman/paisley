@@ -1,4 +1,2 @@
-let a = {null}
-let b = {123}
-
-print {a ?else 'null'}
+print {null?.x.type()}
+# print c.x = {c?.x ?else 'null'}

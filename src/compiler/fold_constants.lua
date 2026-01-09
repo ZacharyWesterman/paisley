@@ -586,7 +586,14 @@ function FOLD_CONSTANTS(token, file, get_var)
 			is_string = true
 			val = std.split(val, '')
 		elseif type(val) ~= 'table' then
-			parse_error(token.span, 'Cannot get subset of a value of type "' .. std.type(val) .. '"', file)
+			if token.null_coalesce and val == nil then
+				token.value = nil
+				token.id = TOK.lit_null
+				token.children = {}
+				return
+			end
+
+			parse_error(token.span, 'Cannot index a value of type "' .. std.type(val) .. '"', file)
 		end
 
 		if c2.unterminated then

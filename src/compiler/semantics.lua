@@ -343,6 +343,9 @@ function SemanticAnalyzer(root, root_file)
 			local t1, t2 = token.children[1].type, token.children[2].type
 			if t1 and t2 then
 				if not SIMILAR_TYPE(t1, _G['TYPE_INDEXABLE']) then
+					if token.null_coalesce and token.children[1].value == nil then
+						return
+					end
 					parse_error(token.children[1].span,
 						'Cannot index a value of type `' ..
 						TYPE_TEXT(t1) .. '`. Type must be `string`, `array`, or `object`', file)
