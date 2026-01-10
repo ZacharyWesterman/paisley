@@ -170,6 +170,7 @@ TOK = {
 }
 
 require "src.compiler.span"
+local log = require 'src.log'
 
 ---@class (exact) Token
 ---@field span Span The range of text this token spans.
@@ -222,14 +223,7 @@ function parse_error(span, msg, file)
 				msg = (span.from.line .. ', ' .. span.from.col .. ': ' .. msg)
 			end
 
-			--[[minify-delete]]
-			if true then
-				print('\27[0;31mERROR:\27[0m ' .. msg)
-			else
-				--[[/minify-delete]]
-				print(msg)
-				--[[minify-delete]]
-			end
+			log.error(msg)
 		end
 	end
 	--[[/minify-delete]]

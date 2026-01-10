@@ -1,4 +1,5 @@
 local fs = require 'src.util.filesystem'
+local log = require 'src.log'
 
 ---@diagnostic disable-next-line
 STANDALONE.cpp = {
@@ -20,7 +21,7 @@ STANDALONE.cpp = {
 
 		local function escape_str(str)
 			return '"' ..
-			str:gsub('\\', '\\\\'):gsub('\n', '\\n'):gsub('\r', '\\r'):gsub('"', '\\"'):gsub('\0', '\\0') .. '"s'
+				str:gsub('\\', '\\\\'):gsub('\n', '\\n'):gsub('\r', '\\r'):gsub('"', '\\"'):gsub('\0', '\\0') .. '"s'
 		end
 
 		local function value_to_cpp(value)
@@ -71,20 +72,20 @@ STANDALONE.cpp = {
 		local cc = STANDALONE.require_cpp_compiler()
 		local make = STANDALONE.require_make()
 
-		io.stderr:write('Precompiling c++ runtime... ')
+		log.info('Precompiling c++ runtime... ', false)
 		STANDALONE.cpp.precompile()
 
 		local temp_file = fs.open_lib('cpp/PAISLEY_BYTECODE.cpp', 'w')
 
 		if not temp_file then
-			error('Error: Could not open PAISLEY_BYTECODE.hpp for writing.\nAre you sure the directory is writable?')
+			log.error('Could not open PAISLEY_BYTECODE.hpp for writing. Are you sure the directory is writable?')
 			return false
 		end
 
 		temp_file:write(program_text)
 		temp_file:close()
 
-		local success = os.execute(make .. ' -C ' .. fs.libs_dir .. 'cpp -j16 CC=' .. cc)
+		local success = os.execute(make .. ' --no-print-directory -C ' .. fs.libs_dir .. 'cpp -j16 CC=' .. cc)
 
 		if success then
 			os.execute('mv ' .. fs.libs_dir .. 'cpp/standalone_binary ' .. output_file)
@@ -101,12 +102,12 @@ STANDALONE.cpp = {
 		local cc = STANDALONE.require_cpp_compiler()
 		local make = STANDALONE.require_make()
 
-		local errmsg = 'Error: Could not precompile the C++ runtime.\nAre you sure the directory is writable?'
+		local errmsg = 'Could not precompile the C++ runtime. Are you sure the directory is writable?'
 
 		-- Count the number of files that will be compiled.
-		local handle = io.popen(make .. ' objects -C ' .. fs.libs_dir .. 'cpp -n CC=' .. cc, 'r')
+		local handle = io.popen(make .. ' --no-print-directory objects -C ' .. fs.libs_dir .. 'cpp -n CC=' .. cc, 'r')
 		if not handle then
-			error(errmsg)
+			log.error(errmsg)
 			return false
 		end
 		local total = 0
@@ -116,9 +117,9 @@ STANDALONE.cpp = {
 		end
 
 		-- Run the make command
-		handle = io.popen(make .. ' verify objects -C ' .. fs.libs_dir .. 'cpp -j16', 'r')
+		handle = io.popen(make .. ' --no-print-directory verify objects -C ' .. fs.libs_dir .. 'cpp -j16', 'r')
 		if not handle then
-			error(errmsg)
+			log.error(errmsg)
 			return false
 		end
 
@@ -134,7 +135,7 @@ STANDALONE.cpp = {
 				local percent = math.floor(i / total * 100)
 				io.stderr:write('\rCompiling object code, ' .. i .. '/' .. total .. ' (' .. percent .. '%)')
 				local _, ct = line:gsub(cc:gsub('+', '%%+'), '')
-				if ct > 0 then i = i + 1 end
+				if ct > 0 and i < total then i = i + 1 end
 			end
 
 			io.stderr:write('\nFinished compiling object code.\n')
@@ -148,10 +149,10 @@ STANDALONE.cpp = {
 	clean = function()
 		local make = STANDALONE.require_make()
 
-		local success = os.execute(make .. ' clean -C ' .. fs.libs_dir .. 'cpp >/dev/null')
+		local success = os.execute(make .. ' --no-print-directory clean -C ' .. fs.libs_dir .. 'cpp >/dev/null')
 
 		if not success then
-			error('Error: Could not clean the C++ runtime.\nAre you sure the directory is writable?')
+			log.error('Could not clean the C++ runtime. Are you sure the directory is writable?')
 			return false
 		end
 

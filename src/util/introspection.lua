@@ -1,3 +1,5 @@
+local log = require 'src.log'
+
 INTROSPECT = {
 	text_table = function(data)
 		local widths, text = {}, ''
@@ -49,7 +51,8 @@ INTROSPECT = {
 					break
 				end
 				if not BUILTIN_COMMANDS[key] and not ALLOWED_COMMANDS[key] then
-					error('ERROR: `' .. key .. '` is not a built-in or user-defined command.')
+					log.error('`' .. key .. '` is not a built-in or user-defined command.')
+					os.exit(1)
 				end
 			end
 
@@ -94,7 +97,8 @@ INTROSPECT = {
 				end
 
 				if not BUILTIN_FUNCS[key] then
-					error('ERROR: `' .. key .. '` is not a built-in function.')
+					log.error('`' .. key .. '` is not a built-in function.')
+					os.exit(1)
 				end
 			end
 

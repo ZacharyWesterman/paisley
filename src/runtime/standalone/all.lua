@@ -7,6 +7,7 @@ local function find_compiler(compilers)
 end
 
 local fs = require 'src.util.filesystem'
+local log = require 'src.log'
 
 STANDALONE = {
 	--- Get the C compiler to use for compiling the standalone program.
@@ -16,7 +17,8 @@ STANDALONE = {
 		local cc = find_compiler({ 'cc', 'gcc', 'clang', 'mingw32-gcc' })
 
 		if not cc then
-			error('ERROR: No C compiler found. Please install a C compiler to compile the standalone program.')
+			log.error('No C compiler found. Please install a C compiler to compile the standalone program.')
+			os.exit(1)
 		end
 
 		return cc
@@ -29,7 +31,8 @@ STANDALONE = {
 		local cc = find_compiler({ 'c++', 'g++', 'clang++', 'mingw32-g++' })
 
 		if not cc then
-			error('ERROR: No C++ compiler found. Please install a C++ compiler to compile the standalone program.')
+			log.error('No C++ compiler found. Please install a C++ compiler to compile the standalone program.')
+			os.exit(1)
 		end
 
 		return cc
@@ -42,7 +45,8 @@ STANDALONE = {
 		local make = find_compiler({ 'make' })
 
 		if not make then
-			error('ERROR: No Make program found. Please install Make to compile the standalone program.')
+			log.error('No Make program found. Please install Make to compile the standalone program.')
+			os.exit(1)
 		end
 
 		return make
@@ -50,7 +54,8 @@ STANDALONE = {
 
 	compress_executable = function(executable)
 		if fs.os.windows then
-			error('Error: Compression of standalone binaries is not supported on Windows (requires gzexe).')
+			log.error('Compression of standalone binaries is not supported on Windows (requires gzexe).')
+			os.exit(1)
 		end
 
 		--Move the file to a temporary location so that we can compress it.
@@ -66,5 +71,5 @@ STANDALONE = {
 	end,
 }
 
-require 'src.runtime.standalone.lua'
+require 'src.runtime.standalone.c'
 require 'src.runtime.standalone.cpp'

@@ -1,8 +1,9 @@
 local json = require "src.shared.json"
 local fs = require 'src.util.filesystem'
+local log = require 'src.log'
 
 ---@diagnostic disable-next-line
-STANDALONE.lua = {
+STANDALONE.c = {
 	--- Generate a standalone Lua program from a given Paisley bytecode.
 	--- which can be run without the need for the Paisley interpreter.
 	--- @param bytecode table Paisley bytecode.
@@ -95,8 +96,9 @@ STANDALONE.lua = {
 		local c_filename = os.tmpname() .. '.c'
 		local c_file = io.open(c_filename, 'wb')
 		if not c_file then
-			error(
+			log.error(
 				'ERROR: Failed to open temporary C file for writing!. THIS IS MOST LIKELY A BUG IN THE COMPILER.')
+			os.exit(1)
 		end
 
 		c_file:write(c_code)
@@ -114,8 +116,7 @@ STANDALONE.lua = {
 		local command = compiler .. ' -I' .. fs.libs_dir .. 'lua/' .. version ..
 			' -o ' .. output_file .. ' ' .. c_filename .. ' -lm  ' .. export_flag
 
-		io.stderr:write('[Compiling for Lua ' .. version .. ']\n')
-		io.stderr:write(command .. '\n')
+		log.info('Targeting Lua ' .. version .. '...')
 
 		local result = os.execute(command)
 

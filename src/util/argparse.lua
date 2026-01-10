@@ -1,12 +1,13 @@
 local fs = require 'src.util.filesystem'
+local log = require 'src.log'
 
 local function arg_error(msg)
-	io.stderr:write("Error: " .. msg .. "\n")
+	log.error(msg)
 	os.exit(1)
 end
 
 local function arg_warn(msg)
-	io.stderr:write("Warning: " .. msg .. "\n")
+	log.warn(msg)
 end
 
 local function arg_help(options, config)
@@ -237,6 +238,10 @@ return {
 
 		--[[no-install]]
 		if flags.compile_self then
+			if flags.bundle_self then
+				arg_error('Cannot use `--compile-self` and `--bundle-self` together; it must be one or the other.')
+			end
+
 			if flags.install then
 				arg_error('Cannot use `--compile-self` and `--install` together; it must be one or the other.')
 			end
@@ -272,6 +277,10 @@ return {
 		end
 
 		if flags.target then flags.standalone = true end
+
+		if flags.standalone and not flags.output then
+			arg_error('Must specify an output file eith `--output` when building standalone applications.')
+		end
 
 		if #positional < 1 then
 			arg_error(
