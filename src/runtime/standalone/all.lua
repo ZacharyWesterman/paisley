@@ -73,3 +73,4 @@ STANDALONE = {
 
 require 'src.runtime.standalone.c'
 require 'src.runtime.standalone.cpp'
+require 'src.runtime.standalone.lua'

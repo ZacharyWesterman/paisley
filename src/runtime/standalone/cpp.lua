@@ -133,12 +133,13 @@ STANDALONE.cpp = {
 			local i = 1
 			for line in handle:lines() do
 				local percent = math.floor(i / total * 100)
-				io.stderr:write('\rCompiling object code, ' .. i .. '/' .. total .. ' (' .. percent .. '%)')
+				log.info('Compiling object code, ' .. i .. '/' .. total .. ' (' .. percent .. '%)\r', false)
 				local _, ct = line:gsub(cc:gsub('+', '%%+'), '')
 				if ct > 0 and i < total then i = i + 1 end
 			end
 
-			io.stderr:write('\nFinished compiling object code.\n')
+			log.info()
+			log.info('Finished compiling object code.')
 		end
 
 

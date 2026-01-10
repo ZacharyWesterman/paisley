@@ -1,3 +1,4 @@
+local log = require 'src.log'
 LUA = {
 	---@class (exact) LUA.Token
 	---@field text string
@@ -63,7 +64,8 @@ LUA = {
 			end
 
 			if not found then
-				error('ERROR When parsing Lua code: Unexpected character: `' .. text:sub(1, 1) .. '`.')
+				log.error('When parsing Lua code: Unexpected character: `' .. text:sub(1, 1) .. '`.')
+				os.exit(1)
 			end
 		end
 
@@ -89,14 +91,16 @@ LUA = {
 
 		tokens = LUA.tokens.remove_noinstall_blocks(tokens)
 
-		if print_progress then io.stderr:write('\nInserting helper files...') end
+		if print_progress then
+			io.stderr:write('\n')
+			log.info('Inserting helper files...', false)
+		end
 		tokens = LUA.tokens.replace_build_replace_blocks(tokens, print_progress)
 
 		tokens = LUA.tokens.strip(tokens)
 
 		if print_progress then io.stderr:write('\n') end
 		local result = LUA.tokens.join(tokens, print_progress)
-		if print_progress then io.stderr:write('\n') end
 
 		return result
 	end,
@@ -183,7 +187,7 @@ LUA = {
 				prev = token
 
 				if print_progress and i % 100 == 0 then
-					io.stderr:write('\rGenerating text... ' .. math.floor(i / #tokens * 100) .. '%')
+					log.info('Generating text... ' .. math.floor(i / #tokens * 100) .. '%\r', false)
 				end
 
 				if #buffer > 4096 then
@@ -194,7 +198,7 @@ LUA = {
 			text = text .. buffer
 
 			if print_progress then
-				io.stderr:write('\rGenerating text... 100%\n')
+				log.info('Generating text... 100%')
 			end
 			return text
 		end,

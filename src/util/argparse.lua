@@ -252,6 +252,10 @@ return {
 
 			return flags, positional
 		end
+
+		if flags.bundle_self then
+			return flags, positional
+		end
 		--[[/no-install]]
 
 		if (flags.standalone or flags.target or flags.output) and flags.cpp_precompile then

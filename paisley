@@ -164,7 +164,7 @@ require 'src.util.filesystem'
 require 'src.meta.lua'
 require 'src.runtime.standalone.all'
 
-local function compile_self_to(output_file, compiler_name)
+local function compile_self_to(output_file, compiler_name, binary)
 	local fp = fs.open('paisley', true)
 	if not fp then
 		log.error('Failed to open `paisley` for reading.')
@@ -178,9 +178,11 @@ local function compile_self_to(output_file, compiler_name)
 	local m = text:match('^#![^\n]*\n')
 	if m then text = text:sub(#m + 1) end
 
-	if fs.os.windows then
-		log.error('Standalone executables are not yet supported on Windows.')
-		os.exit(1)
+	if binary then
+		if fs.os.windows then
+			log.error('Standalone executables are not yet supported on Windows.')
+			os.exit(1)
+		end
 	end
 
 	local fp = (flags.output == '-') and io.stdout or io.open(output_file, 'wb')
@@ -191,12 +193,13 @@ local function compile_self_to(output_file, compiler_name)
 	end
 	fp:close()
 
-	io.stderr:write('Concatenating Lua files...')
+	log.info('Concatenating Lua files...', false)
 	text = LUA.minify(text, true, false, true)
-	io.stderr:write('\n')
 
-	io.stderr:write('Compiling Lua into an executable...\n')
-	local compiler = _G['STANDALONE'].c
+	if binary then
+		log.info('Compiling Lua into an executable...')
+	end
+	local compiler = binary and _G['STANDALONE'].c or _G['STANDALONE'].lua
 	local result = compiler.compile(text, output_file, compiler_name)
 
 	if not result then
@@ -241,11 +244,16 @@ if flags.install then
 end
 
 if flags.compile_self then
-	compile_self_to(flags.output, flags.compile_self)
+	compile_self_to(flags.output, flags.compile_self, true)
+	io.stderr:write(string.char(27) .. '[1;32mSuccess!' .. string.char(27) .. '[0m\n')
 	os.exit(0)
 end
 
-if flags.bundle_self then end
+if flags.bundle_self then
+	compile_self_to(flags.output, '', false)
+	io.stderr:write(string.char(27) .. '[1;32mSuccess!' .. string.char(27) .. '[0m\n')
+	os.exit(0)
+end
 
 --[[/no-install]]
 

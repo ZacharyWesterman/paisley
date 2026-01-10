@@ -97,7 +97,7 @@ STANDALONE.c = {
 		local c_file = io.open(c_filename, 'wb')
 		if not c_file then
 			log.error(
-				'ERROR: Failed to open temporary C file for writing!. THIS IS MOST LIKELY A BUG IN THE COMPILER.')
+				'Failed to open temporary C file for writing!. THIS IS MOST LIKELY A BUG IN THE COMPILER.')
 			os.exit(1)
 		end
 
