@@ -36,7 +36,7 @@ local options = {
 	{ description = "Precompile C++ runtime object files",                           long = "cpp-precompile" },
 	{ description = "Remove precompiled C++ object files",                           long = "cpp-clean" },
 	{ description = "Compress bytecode or standalone output with zlib compression",  long = "compress",          short = "z" },
-	{ description = "Choose a specific language to compile the standalone binary",   long = "target",            type = "string", arg = "[TARGET]",            options = { "lua", "cpp" } },
+	{ description = "Choose a specific language to compile the standalone binary",   long = "target",            type = "string", arg = "[TARGET]",            options = { "lua", "c", "cpp" } },
 	{ description = "Allow unrecognized commands to coerce to shell exec",           long = "shell",             short = "l" },
 	{ description = "Disable features/cmds that could affect the system (e.g. `?`)", long = "sandbox" },
 	{ description = "List the recommended Lua packages to be installed",             long = "rocks" },
@@ -47,7 +47,8 @@ local options = {
 	{ description = "If formatting, set the indent to the given string",             long = "indent",            type = "string", arg = "[INDENT]",            default = "\t" },
 	--[[no-install]]
 	{ description = "Compile the Paisley application into a standalone executable",  long = "install" },
-	{ description = "Compile the main executable with the given compiler",           long = "compile-self",      type = "string", arg = "[PGM]" },
+	{ description = "Compile the main executable with the given compiler",           long = "compile-self",      type = "string", arg = "[COMPILER]" },
+	{ description = "Bundle the main executable into a single Lua file and exit",    long = "bundle-self" },
 	--[[/no-install]]
 }
 
@@ -61,6 +62,7 @@ package.initial = {
 package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])') or '.') .. '/?.lua'
 --[[/no-install]]
 
+local log = require 'src.log'
 local arg = require 'src.util.argparse'
 local flags, args = arg.parse_and_validate(options, config)
 
@@ -70,7 +72,8 @@ if flags.format then
 	if input_file ~= '-' then
 		local fp = io.open(input_file, 'rb')
 		if not fp then
-			error('Error: Cannot open file `' .. input_file .. '`.')
+			log.error('Cannot open file `' .. input_file .. '`.')
+			os.exit(1)
 		end
 		input_text = fp:read('*a')
 		fp:close()
@@ -84,7 +87,8 @@ if flags.format then
 	if flags.output and flags.output ~= '-' then
 		local fp = io.open(flags.output, 'wb')
 		if not fp then
-			error('Error: Failed to write to file: ' .. flags.output)
+			log.error('Failed to write to file: ' .. flags.output)
+			os.exit(1)
 		end
 		fp:write(output_text)
 		fp:close()
@@ -109,7 +113,8 @@ if flags.plasma_build then
 	--[[no-install]]
 	local fp = fs.open('src/' .. flags.plasma_build .. '.lua', true)
 	if not fp then
-		error('Error: Failed to open `src/' .. flags.plasma_build .. '.lua` for reading.')
+		log.error('Failed to open `src/' .. flags.plasma_build .. '.lua` for reading.')
+		os.exit(1)
 	end
 
 	local text = (flags.plasma_build == 'runtime' and 'VERSION = "' .. config.version .. '"\n' or '') .. fp:read('*all')
@@ -128,7 +133,7 @@ if flags.plasma_build then
 	end
 	--[[/no-install]]
 
-	io.stderr:write('Concatenating Lua files...')
+	log.info('Concatenating Lua files...', false)
 	text = LUA.minify(text, true, true, true)
 	io.stderr:write('\n')
 
@@ -143,11 +148,10 @@ if flags.plasma_build then
 	prefix = prefix .. '--[[This build has been minified to reduce file size]]\n'
 	text = prefix .. text
 
-	-- io.stderr:write('Compiling Lua into bytecode...\n')
-	-- text = LUA.compile(text)
 	local fp = io.open(flags.output, 'wb')
 	if not fp then
-		error('Error: Failed to write to file `' .. flags.output .. '`.')
+		log.error('Failed to write to file `' .. flags.output .. '`.')
+		os.exit(1)
 	end
 	fp:write(text)
 	fp:close()
@@ -160,10 +164,11 @@ require 'src.util.filesystem'
 require 'src.meta.lua'
 require 'src.runtime.standalone.all'
 
-local function compile_self_to(output_file, compiler_name)
+local function compile_self_to(output_file, compiler_name, binary)
 	local fp = fs.open('paisley', true)
 	if not fp then
-		error('Error: Failed to open `paisley` for reading.')
+		log.error('Failed to open `paisley` for reading.')
+		os.exit(1)
 	end
 
 	local text = fp:read('*all')
@@ -173,26 +178,33 @@ local function compile_self_to(output_file, compiler_name)
 	local m = text:match('^#![^\n]*\n')
 	if m then text = text:sub(#m + 1) end
 
-	if fs.os.windows then
-		error('Error: Standalone executables are not yet supported on Windows.')
+	if binary then
+		if fs.os.windows then
+			log.error('Standalone executables are not yet supported on Windows.')
+			os.exit(1)
+		end
 	end
 
-	local fp = io.open(output_file, 'wb')
+	local fp = (flags.output == '-') and io.stdout or io.open(output_file, 'wb')
 	if not fp then
-		error('Error: Failed to open `' .. output_file .. '` for writing. Try running with `sudo`.')
+		log.error('Failed to open `' ..
+			output_file .. '` for writing. The directory may not exist, or you may not have sufficient permissions.')
+		os.exit(1)
 	end
 	fp:close()
 
-	io.stderr:write('Concatenating Lua files...')
+	log.info('Concatenating Lua files...', false)
 	text = LUA.minify(text, true, false, true)
-	io.stderr:write('\n')
 
-	io.stderr:write('Compiling Lua into an executable...\n')
-	local compiler = _G['STANDALONE'].lua
+	if binary then
+		log.info('Compiling Lua into an executable...')
+	end
+	local compiler = binary and _G['STANDALONE'].c or _G['STANDALONE'].lua
 	local result = compiler.compile(text, output_file, compiler_name)
 
 	if not result then
-		io.stderr:write('\nError: Failed to compile `' .. output_file .. '`!\n')
+		io.stderr:write('\n')
+		log.error('Failed to compile `' .. output_file .. '`!')
 		os.exit(1)
 	end
 end
@@ -232,9 +244,17 @@ if flags.install then
 end
 
 if flags.compile_self then
-	compile_self_to(flags.output, flags.compile_self)
+	compile_self_to(flags.output, flags.compile_self, true)
+	io.stderr:write(string.char(27) .. '[1;32mSuccess!' .. string.char(27) .. '[0m\n')
 	os.exit(0)
 end
+
+if flags.bundle_self then
+	compile_self_to(flags.output, '', false)
+	io.stderr:write(string.char(27) .. '[1;32mSuccess!' .. string.char(27) .. '[0m\n')
+	os.exit(0)
+end
+
 --[[/no-install]]
 
 if flags.cpp_clean then
@@ -252,7 +272,7 @@ end
 
 if flags.cpp_precompile then
 	require 'src.runtime.standalone.all'
-	io.stderr:write('Precompiling C++ runtime... ')
+	log.info('Precompiling C++ runtime... ', false)
 	if STANDALONE.cpp.precompile() then
 		os.exit(0)
 	else
@@ -298,12 +318,12 @@ VERSION = config.version
 ENDED = false
 
 error = function(msg)
-	if msg then io.stderr:write(msg .. '\n') end
+	if msg then log.error(msg) end
 	os.exit(1)
 end
 
 if flags.compress and not fs.rocks.zlib then
-	error('Error: `zlib` dependency is not installed. Cannot output compressed bytecode.')
+	error('`zlib` dependency is not installed. Cannot output compressed bytecode.')
 end
 
 if flags.repl then
@@ -326,7 +346,7 @@ else
 	if file then
 		V1 = file:read('*all')
 	else
-		error('Error: Cannot open file `' .. V2 .. '`.')
+		error('Cannot open file `' .. V2 .. '`.')
 	end
 end
 
@@ -340,7 +360,7 @@ local json = require "src.shared.json"
 --Check if we were given compressed bytecode
 if fs.is_zlib_compressed(paisley_src) then
 	if not fs.rocks.zlib then
-		error('Error: Cannot read compressed bytecode, zlib dependency is not installed.')
+		error('Cannot read compressed bytecode, zlib dependency is not installed.')
 	end
 
 	local inflated, err = fs.rocks.zlib.inflate()(paisley_src)
@@ -351,7 +371,7 @@ if fs.is_zlib_compressed(paisley_src) then
 		--We'll instead be running raw bytecode.
 		bytecode = json.parse(inflated)
 	else
-		error('Error during decompression: ' .. err)
+		error('Decompression failed: ' .. err)
 	end
 elseif fs.is_paisley_bytecode(paisley_src) then
 	local bc = paisley_src
@@ -420,17 +440,17 @@ end
 if flags.standalone then
 	require 'src.runtime.standalone.all'
 
-	local target = flags.target or 'lua'
+	local target = flags.target or 'cpp'
 
 	---@type table<string, function>
 	---@diagnostic disable-next-line
 	local compiler = STANDALONE[target]
 
 	if not compiler then
-		error('Error: Compilation to target `' .. target .. '` has not been implemented.')
+		error('Compilation to target `' .. target .. '` has not been implemented.')
 	end
 
-	io.stderr:write('Generating code for target `' .. target .. '`...\n')
+	log.info('Generating code for target `' .. target .. '`...')
 	local text = compiler.generate(bytecode)
 
 	if not flags.output or flags.output == '-' then
@@ -438,11 +458,12 @@ if flags.standalone then
 		os.exit(0)
 	end
 
-	io.stderr:write('Compiling to `' .. flags.output .. '`...\n')
+	log.info('Compiling to `' .. flags.output .. '`...')
 	local result = compiler.compile(text, flags.output)
 
 	if not result then
-		io.stderr:write('\nError: Failed to compile `' .. flags.output .. '`!\n')
+		io.stderr:write('\n')
+		log.error('Failed to compile `' .. flags.output .. '`!')
 		os.exit(1)
 	end
 
@@ -461,7 +482,8 @@ if flags.compress then
 	if deflated then
 		text = deflated
 	else
-		error('Error during compression: ' .. err)
+		log.error('Compression failed: ' .. err)
+		os.exit(1)
 	end
 end
 
@@ -478,7 +500,7 @@ if flags.output ~= '-' then
 	text = header .. '--\n' .. text
 	local fp = io.open(flags.output, 'wb')
 	if not fp then
-		error('Error: Failed to write to file: ' .. flags.output)
+		error('Failed to write to file: ' .. flags.output)
 	end
 	fp:write(text)
 	fp:close()

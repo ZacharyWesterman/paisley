@@ -16,7 +16,7 @@ FNAM := $(patsubst functions/%.hpp,%,$(wildcard $(addsuffix *.hpp, functions/)))
 all: verify $(EXE)
 
 verify: verify_cpp_parity.sh
-	./$^
+	@./$^
 
 objects: $(OBJS)
 
@@ -24,11 +24,10 @@ clean:
 	rm -f $(OBJS) $(EXE) PAISLEY_BYTECODE.cpp
 
 $(EXE): PAISLEY_BYTECODE.o $(OBJS)
-	@echo Linking...
 	@$(CXX) $(CXXFLAGS) -o $@ $^ -lcrypto
 
 PAISLEY_BYTECODE.o : PAISLEY_BYTECODE.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
 
 main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
