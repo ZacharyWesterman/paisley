@@ -440,7 +440,7 @@ end
 if flags.standalone then
 	require 'src.runtime.standalone.all'
 
-	local target = flags.target or 'lua'
+	local target = flags.target or 'cpp'
 
 	---@type table<string, function>
 	---@diagnostic disable-next-line
