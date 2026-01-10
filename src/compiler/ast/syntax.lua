@@ -1252,7 +1252,12 @@ let_stmt = function(span)
 	list[1].tags = child.tags
 
 	local function math_assign_sugar(var, op, rhs)
-		local id = (op.text == '+=' or op.text == '-=') and TOK.add or TOK.multiply
+		local id = TOK.multiply
+		if op.text == '+=' or op.text == '-=' then
+			id = TOK.add
+		elseif op.text == '.=' then
+			id = TOK.concat
+		end
 
 		return {
 			id = id,

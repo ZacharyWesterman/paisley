@@ -36,6 +36,7 @@ string concatenation `a b` (two expressions separated by a space)<br>
 - check for whether variables are set, `exists` (e.g. `x exists`)
 - string or array length, `&` (e.g. `&variable`)
 - array slicing, `:`. Note that slices are inclusive of both their upper and lower bounds (e.g. `0:5` gives `(0,1,2,3,4,5)`)
+  - Note that when slicing an array or a string, it's possible to replace the second number with a colon, to indicate that the slice should go from the start index all the way to the end of the string or array. So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` would result in `(4,3,2,1)`, etc.
 - array listing, `,` (e.g. `1,2,3` is an array with 3 elements, `(1,)` is an array with 1 element, `(,)` has 0 elements, etc). You can combine this with slicing, e.g. `1,3:5,9` gives `(1,3,4,5,9)`.
 - pattern matching, `like`, checks whether a string matches a given pattern (e.g. `"123" like "%d+"` gives `true`).
 - array searching `in` (e.g. `3 in (1,2,4,5,6)` gives `false`)
@@ -46,6 +47,5 @@ string concatenation `a b` (two expressions separated by a space)<br>
 - null fallback operator, `val1 ?else val2`. Results in `val1` if val1 is *not null*, otherwise results in `val2`. Syntax sugar for `val1 if val1 != null else val2`.
 - non-null fallback operator, `val1 ?then val2`. Results in `val2` if val1 is *not null*, otherwise results in `val1`. Syntax sugar for `val1 if val1 = null else val2`.
 - Indexing, `[]`. Like most languages, this lets you get an element from a string, array, or object (e.g. `"string"[2]` gives "t", `('a','b','c')[3]` gives "c", and `('a'=>'v1', 'b'=>'v2')['a']` gives "v1"), however Paisley also lets you select multiple items at once in a single index expression. E.g. `"abcde"[2,5,5]` gives "bee", `"abcde"[1:3]` gives "abc", `(6,7,8,9,0)[3,1,5]` gives `(8,6,0)`.
+- dot-notation, `.`. This is purely syntax sugar. When used with functions, the left side of the dot is treated as the first argument to the function, e.g. `val1.func(val2, ...)` = `func(val1, val2, ...)`. When used with identifiers, a dot is shorthand for object indexing, e.g. `obj.attr` = `obj["attr"]`.
 
-An extra note on slices: when slicing an array or a string, it's possible to replace the second number with a colon, to indicate that the slice should go from the start index all the way to the end of the string or array.
-So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` would result in `(4,3,2,1)`, etc.
