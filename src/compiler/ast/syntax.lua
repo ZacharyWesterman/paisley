@@ -228,7 +228,7 @@ end
 
 ---Syntax rule for ternary -> other expressions
 ternary = function(span)
-	local ok, lhs, rhs, list
+	local ok, op, lhs, rhs, list
 
 	ok, lhs = exp(list_comprehension)
 	if not ok then return parser.out(false) end
@@ -236,12 +236,15 @@ ternary = function(span)
 	-- Check if there's `?else` or `else`, for fallback ternaries.
 	local p = parser.peek(2)
 	local nullish = false
-	if p[1] == TOK.op_question and p[2] == TOK.kwd_else then
+	if p[1] == TOK.op_question and (
+			p[2] == TOK.kwd_else or
+			p[2] == TOK.kwd_then
+		) then
 		nullish = true
 		parser.nextsym()
 	end
 
-	ok, rhs = parser.accept(TOK.kwd_else)
+	ok, op = parser.any_of({ TOK.kwd_else, TOK.kwd_then }, {})
 
 	--Special shorthand for false-fallback or null-fallback ternaries:
 	--`a else b` is the same as `a if a else b`.
@@ -267,10 +270,17 @@ ternary = function(span)
 			}
 		end
 
+		local kids
+		if op.id == TOK.kwd_else then
+			kids = { condition, lhs, rhs }
+		else
+			kids = { condition, rhs, lhs }
+		end
+
 		return true, {
 			id = TOK.ternary,
 			span = Span:merge(lhs.span, rhs.span),
-			children = { condition, lhs, rhs },
+			children = kids,
 		}
 	end
 
@@ -595,7 +605,7 @@ dot_and_index = function(span)
 	while true do
 		local p = parser.peek(2)
 		local nullish = false
-		if p[1] == TOK.op_question and p[2] ~= TOK.kwd_else then
+		if p[1] == TOK.op_question and p[2] ~= TOK.kwd_else and p[2] ~= TOK.kwd_then then
 			nullish = true
 			parser.nextsym()
 		end

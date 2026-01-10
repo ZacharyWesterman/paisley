@@ -1,0 +1,6 @@
+# Test truthy and falsey fallback syntax
+
+print {1 then "success"} # prints "success"
+print {0 then "success"} # prints "0"
+print {1 else "failure"} # prints "1"
+print {0 else "failure"} # prints "failure"

@@ -135,8 +135,10 @@ kv_pair :=
 	| `=>`
 
 ternary :=
-	| list_comprehension `else` `?` ternary
+	| list_comprehension `?` `else` ternary
 	| list_comprehension `else` ternary
+	| list_comprehension `?` `then` ternary
+	| list_comprehension `then` ternary
 	| list_comprehension `if` list_comprehension `else` ternary
 	| list_comprehension
 
