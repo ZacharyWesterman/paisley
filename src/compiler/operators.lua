@@ -3,6 +3,7 @@ return {
 	['for'] = TOK.kwd_for,
 	['if'] = TOK.kwd_if,
 	['else'] = TOK.kwd_else,
+	['then'] = TOK.kwd_then,
 	['+'] = TOK.op_plus,
 	['-'] = TOK.op_minus,
 	['*'] = TOK.op_times,
