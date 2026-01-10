@@ -41,8 +41,10 @@ string concatenation `a b` (two expressions separated by a space)<br>
 - array searching `in` (e.g. `3 in (1,2,4,5,6)` gives `false`)
 - implicit string concatenation: There is no string concatenation operator. Seriously, two values next to each other, without an operator between them, results in string concatenation.
 - ternary expression, `val1 if expression else val2`. Like Python's ternary syntax, this will result in `val1` if `expression` evaluates to true, otherwise it will result in `val2`.
-- false-fallback operator, `val1 else val2`. Results in `val1` if val1 is truthy, otherwise results in `val2`. Syntax sugar for `val1 if val1 else val2`.
-- null-fallback operator, `val1 ?else val2`. Results in `val1` if val1 is *not null*, otherwise results in `val2`. Syntax sugar for `val1 if val1 != null else val2`.
+- falsey fallback operator, `val1 else val2`. Results in `val1` if val1 is truthy, otherwise results in `val2`. Syntax sugar for `val1 if val1 else val2`.
+- truthy fallback operator, `val1 then val2`. Results in `val2` if val1 is truthy, otherwise results in `val1`. Syntax sugar for `val2 if val1 else val2`.
+- null fallback operator, `val1 ?else val2`. Results in `val1` if val1 is *not null*, otherwise results in `val2`. Syntax sugar for `val1 if val1 != null else val2`.
+- non-null fallback operator, `val1 ?then val2`. Results in `val2` if val1 is *not null*, otherwise results in `val1`. Syntax sugar for `val1 if val1 = null else val2`.
 - Indexing, `[]`. Like most languages, this lets you get an element from a string, array, or object (e.g. `"string"[2]` gives "t", `('a','b','c')[3]` gives "c", and `('a'=>'v1', 'b'=>'v2')['a']` gives "v1"), however Paisley also lets you select multiple items at once in a single index expression. E.g. `"abcde"[2,5,5]` gives "bee", `"abcde"[1:3]` gives "abc", `(6,7,8,9,0)[3,1,5]` gives `(8,6,0)`.
 
 An extra note on slices: when slicing an array or a string, it's possible to replace the second number with a colon, to indicate that the slice should go from the start index all the way to the end of the string or array.
