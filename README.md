@@ -250,6 +250,9 @@ let x -= 1 # Subtract 1 from x
 let x *= 2 # Multiply x by 2
 let x /= 2 # Divide x by 2
 let x //= 2 # Integer-divide x by 2
+let x %= 2 # Set x to the remainder of x / 2
+let x %%= 2 # Set x to true if 2 divides x, false otherwise.
+let x .= str # Append "str" to x
 ```
 
 ### Variable Index Assignment

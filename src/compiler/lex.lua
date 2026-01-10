@@ -686,7 +686,8 @@ function Lexer(text, file, keep_comments)
 				if not match then
 					local assign_ops = {
 						'^=',
-						'^[%+%-%*/%.]=',
+						'^[%+%-%*/%.%%]=',
+						'^%%%%=',
 						'^//=',
 					}
 
