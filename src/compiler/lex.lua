@@ -272,6 +272,14 @@ function Lexer(text, file, keep_comments)
 					end
 				end
 
+				--Compiler directive markers
+				if not match then
+					match = text:match('^%$')
+					if match then
+						tok_type = TOK.directive
+					end
+				end
+
 				--[[minify-delete]]
 				if _G['IGNORE_MISSING_BRACE'] then
 					--expression end.

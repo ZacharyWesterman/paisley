@@ -50,6 +50,7 @@ local inline_command
 local argument
 local match_argument
 local match_expr
+local directive
 
 --Atoms
 local macro
@@ -1746,6 +1747,30 @@ scope_stmt = function(span)
 	}
 end
 
+directive = function(span)
+	if not parser.accept(TOK.directive) then return parser.out(false) end
+
+	--Compiler directives completely ignore traditional syntax,
+	--instead they greedily read until the next `$` or line ending,
+	--taking the raw text of the given tokens.
+	local args = {}
+	while true do
+		local sym = parser.t()
+		parser.nextsym()
+		if not sym or sym.id == TOK.line_ending or sym.id == TOK.directive then
+			break
+		end
+		table.insert(args, sym.text)
+	end
+
+	return true, {
+		id = TOK.directive,
+		span = span,
+		text = table.remove(args, 1),
+		value = args,
+	}
+end
+
 statement = function()
 	return parser.any_of({
 		TOK.line_ending,
@@ -1766,6 +1791,7 @@ statement = function()
 		--[[minify-delete]] import_stmt, --[[/minify-delete]]
 		scope_stmt,
 		command,
+		directive,
 	}, {}, false)
 end
 

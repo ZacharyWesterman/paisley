@@ -92,6 +92,8 @@ TOK = {
 	index_open = k(),
 	index_close = k(),
 
+	directive = k(),
+
 	--Below this point are composite or meta tokens that don't exist during initial lexing phase, only get created as part of AST gen
 
 	value = k(), --any value in an expression: number, string, literal, or variable
