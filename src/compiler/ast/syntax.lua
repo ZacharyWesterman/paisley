@@ -51,6 +51,10 @@ local argument
 local match_argument
 local match_expr
 local directive
+local directive_expr
+local directive_atom
+local directive_comp_op
+local directive_bool_op
 
 --Atoms
 local macro
@@ -1747,28 +1751,104 @@ scope_stmt = function(span)
 	}
 end
 
+directive_expr = function(span)
+	return parser.expect(directive_bool_op, { TOK.text })
+end
+
+directive_bool_op = function(span)
+	return binary_lassoc(
+		directive_comp_op,
+		{
+			'and',
+			'or',
+		},
+		TOK.boolean
+	)
+end
+
+directive_comp_op = function(span)
+	return binary_lassoc(
+		directive_atom,
+		{
+			'is',
+			'not',
+			'=',
+			'!=',
+			'>',
+			'>=',
+			'<',
+			'<=',
+		},
+		TOK.comparison
+	)
+end
+
+directive_atom = function(span)
+	local sym = parser.t()
+
+	local opers = {
+		'is',
+		'not',
+		'=',
+		'!=',
+		'>',
+		'>=',
+		'<',
+		'<=',
+		'and',
+		'or',
+		'$',
+		';',
+		'\n',
+	}
+	for _, v in ipairs(opers) do
+		if v == sym.text then
+			parser.ast_error(sym, TOK.text)
+			return parser.out(false)
+		end
+	end
+
+	sym.id = TOK.text
+	parser.nextsym()
+	return true, sym
+end
+
 directive = function(span)
 	if not parser.accept(TOK.directive) then return parser.out(false) end
 
 	--Compiler directives completely ignore traditional syntax,
 	--instead they greedily read until the next `$` or line ending,
-	--taking the raw text of the given tokens.
-	local args = {}
-	while true do
-		local sym = parser.t()
-		parser.nextsym()
-		if not sym or sym.id == TOK.line_ending or sym.id == TOK.directive then
-			break
-		end
-		table.insert(args, sym.text)
-	end
-
-	return true, {
-		id = TOK.directive,
-		span = span,
-		text = table.remove(args, 1),
-		value = args,
+	--checking only the raw text of the given tokens.
+	local directives = {
+		['if'] = directive_expr,
+		['elif'] = directive_expr,
+		['else'] = function(span)
+			return true, nil
+		end,
+		['end'] = function(span)
+			return true, nil
+		end,
 	}
+
+	local dir = parser.t()
+	if not dir or not directives[dir.text] then
+		local d = {}
+		for i, _ in pairs(directives) do table.insert(d, i) end
+		parser.ast_error(dir and dir.text, d)
+		return parser.out(false)
+	end
+	parser.nextsym()
+
+	local ok, child = parser.accept(directives[dir.text])
+	if not ok then return parser.out(false) end
+
+	ok = parser.any_of({ TOK.line_ending, TOK.directive }, { TOK.text, TOK.line_ending, ';', '$' }, true)
+	if not ok then return parser.out(false) end
+
+	dir.id = TOK.directive
+	if child then dir.children = { child } end
+
+	return true, dir
 end
 
 statement = function()
