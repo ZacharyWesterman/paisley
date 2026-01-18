@@ -236,6 +236,6 @@ return {
 			return
 		end
 
-		return dir[directive.text](directive, filename, get)
+		return directive.text, dir[directive.text](directive, filename, get)
 	end,
 }
