@@ -92,8 +92,6 @@ TOK = {
 	index_open = k(),
 	index_close = k(),
 
-	directive = k(),
-
 	--Below this point are composite or meta tokens that don't exist during initial lexing phase, only get created as part of AST gen
 
 	value = k(), --any value in an expression: number, string, literal, or variable
@@ -273,7 +271,7 @@ local function lsp_msg(span, msg, loglevel, file)
 		local line, col = span.from.line, span.from.col
 		if col < 0 then col = 0 end
 		print(loglevel ..
-		',' .. (line - 1) .. ',' .. col .. ',' .. (span.to.line - 1) .. ',' .. span.to.col .. '|' .. msg)
+			',' .. (line - 1) .. ',' .. col .. ',' .. (span.to.line - 1) .. ',' .. span.to.col .. '|' .. msg)
 	end
 end
 

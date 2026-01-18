@@ -272,11 +272,13 @@ function Lexer(text, file, keep_comments)
 					end
 				end
 
-				--Compiler directive markers
+				--Compiler directives
 				if not match then
-					match = text:match('^%$')
+					match = text:match('^%$[^\n;$]*%$?')
 					if match then
-						tok_type = TOK.directive
+						local dir = require 'src.compiler.directives'
+						local d = dir.compile(match, line, col)
+						tok_ignore = not keep_comments
 					end
 				end
 
