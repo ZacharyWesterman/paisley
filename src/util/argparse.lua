@@ -283,7 +283,7 @@ return {
 		if flags.target then flags.standalone = true end
 
 		if flags.standalone and not flags.output then
-			arg_error('Must specify an output file eith `--output` when building standalone applications.')
+			arg_error('Must specify an output file with `--output` when building standalone applications.')
 		end
 
 		if #positional < 1 then

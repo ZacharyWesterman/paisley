@@ -16,6 +16,10 @@ local function ast_error(symbol, valid_tokens)
 	if not symbol then symbol = token end
 	if not symbol then
 		error_msg = 'Unexpected EOF.'
+	elseif symbol == '\n' then
+		error_msg = 'Unexpected token <line_ending>.'
+	elseif type(symbol) == 'string' then
+		error_msg = 'Unexpected token `' .. symbol .. '`.'
 	elseif type(symbol) == 'table' then
 		error_msg = 'Unexpected token <' .. token_text(symbol.id) .. '>.'
 	elseif type(symbol) ~= 'function' then
@@ -64,6 +68,9 @@ local function accept(symbol)
 
 	if type(symbol) == 'function' then
 		ok, node = symbol(token.span)
+	elseif type(symbol) == 'string' then
+		ok, node = (token and token.text == symbol), token
+		if ok then nextsym() end
 	else
 		ok, node = (token and token.id == symbol), token
 		if ok then nextsym() end

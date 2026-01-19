@@ -1,3 +1,5 @@
+require 'src.compiler.type_signature'
+
 BUILTIN_COMMANDS = {
 	"time:number",
 	"sleep:null",

@@ -4,7 +4,7 @@ local config = {
 	description = "This is the Paisley compiler and runtime engine.\nhttps://github.com/ZacharyWesterman/paisley",
 	name = "Paisley",
 	exe = "paisley",
-	version = "1.19.7",
+	version = "1.20.0",
 }
 
 local options = {
@@ -65,6 +65,24 @@ package.path = package.path .. ';' .. (arg[0]:match('(.*[/\\])') or '.') .. '/?.
 local log = require 'src.log'
 local arg = require 'src.util.argparse'
 local flags, args = arg.parse_and_validate(options, config)
+
+LANGUAGE_SERVER = flags.language_server
+RESTRICT_TO_PLASMA_BUILD = flags.plasma
+SUPPRESS_AST_ERRORS = flags.no_ast_errors
+PRINT_TOKENS = flags.tokens
+PRINT_AST = flags.ast
+AST_AFTER_SEMANTIC = flags.ast_sem
+WORKING_DIR = ''
+LSP_FILENAME = flags.stdin or ''
+KEEP_DEAD_CODE = flags.no_prune_dead_code
+ALLOW_SUBROUTINE_ELISION = flags.allow_elision
+NO_SHORT_CIRCUIT = flags.no_short_circuit
+COERCE_SHELL_CMDS = flags.shell
+PGM_ARGS = args --program arguments
+V6 = args       --program arguments
+SANDBOX = flags.sandbox
+VERSION = config.version
+TARGET = flags.target or 'lua'
 
 if flags.format then
 	local input_file = table.remove(args, 1)
@@ -297,23 +315,6 @@ if flags.introspect then
 
 	os.exit(0)
 end
-
-LANGUAGE_SERVER = flags.language_server
-RESTRICT_TO_PLASMA_BUILD = flags.plasma
-SUPPRESS_AST_ERRORS = flags.no_ast_errors
-PRINT_TOKENS = flags.tokens
-PRINT_AST = flags.ast
-AST_AFTER_SEMANTIC = flags.ast_sem
-WORKING_DIR = ''
-LSP_FILENAME = flags.stdin or ''
-KEEP_DEAD_CODE = flags.no_prune_dead_code
-ALLOW_SUBROUTINE_ELISION = flags.allow_elision
-NO_SHORT_CIRCUIT = flags.no_short_circuit
-COERCE_SHELL_CMDS = flags.shell
-PGM_ARGS = args --program arguments
-V6 = args       --program arguments
-SANDBOX = flags.sandbox
-VERSION = config.version
 
 ENDED = false
 

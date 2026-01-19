@@ -217,10 +217,12 @@ function parse_error(span, msg, file)
 			print(msg)
 		else
 			--[[/minify-delete]]
+			local line, col = span.from.line, span.from.col
+			if col < 0 then col = 0 end
 			if file ~= nil and file ~= '' then
-				msg = (file .. ': ' .. span.from.line .. ', ' .. span.from.col .. ': ' .. msg)
+				msg = (file .. ': ' .. line .. ', ' .. col .. ': ' .. msg)
 			else
-				msg = (span.from.line .. ', ' .. span.from.col .. ': ' .. msg)
+				msg = (line .. ', ' .. col .. ': ' .. msg)
 			end
 
 			log.error(msg)
@@ -252,7 +254,7 @@ function parse_warning(span, msg, file)
 
 		--[[minify-delete]]
 		if true then
-			print('\27[0;33mWARNING:\27[0m ' .. msg)
+			print('[\27[0;33mWARNING\27[0m]: ' .. msg)
 			return
 		end
 		--[[/minify-delete]]
@@ -266,8 +268,10 @@ end
 local function lsp_msg(span, msg, loglevel, file)
 	if file == INFO.root_file or not _G['LANGUAGE_SERVER'] or not INFO.root_file then
 		msg = msg:gsub('\n', '\\n')
-		print(loglevel .. ',' ..
-			(span.from.line - 1) .. ',' .. span.from.col .. ',' .. (span.to.line - 1) .. ',' .. span.to.col .. '|' .. msg)
+		local line, col = span.from.line, span.from.col
+		if col < 0 then col = 0 end
+		print(loglevel ..
+			',' .. (line - 1) .. ',' .. col .. ',' .. (span.to.line - 1) .. ',' .. span.to.col .. '|' .. msg)
 	end
 end
 
