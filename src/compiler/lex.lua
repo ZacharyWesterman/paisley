@@ -1,6 +1,8 @@
 require "src.compiler.tokens"
 require "src.compiler.escape_codes"
 require "src.shared.stdlib"
+require 'src.shared.builtin_commands'
+require 'src.compiler.functions.params'
 
 local kwds = require "src.compiler.keywords"
 local opers = require "src.compiler.operators"
