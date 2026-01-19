@@ -1,0 +1,19 @@
+# The info that is printed will change depending on how this file is compiled.
+
+$if version >= 2.0.0
+print "Version is 2.0.0 or greater"
+$else
+print "Version is less than 2.0.0"
+$end
+
+$if target = cpp
+print "Target is C++"
+$elif target = c
+print "Target is C"
+$elif target = lua
+print "Target is Lua"
+$else
+$error "This should never happen!"
+$end
+
+$warn "This will warn at compile time"

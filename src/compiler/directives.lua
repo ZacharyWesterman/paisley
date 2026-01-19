@@ -223,11 +223,28 @@ local function no_args(dir, filename, get_token)
 	end
 end
 
+local function single_string_arg(dir, filename, get_token)
+	local token = get_token()
+	if not token or get_token() then
+		local msg = 'Compiler directive `$' .. dir.text .. '` takes exactly one argument.'
+		parse_error(dir.span, msg, filename)
+		return
+	end
+
+	local t = token.text
+	if t:sub(1, 1) == '"' or t:sub(1, 1) == "'" then
+		t = t:sub(2, -2)
+	end
+	return t
+end
+
 local dir = {
 	['if'] = validate_expression,
 	['elif'] = validate_expression,
 	['else'] = no_args,
 	['end'] = no_args,
+	['error'] = single_string_arg,
+	['warn'] = single_string_arg,
 }
 
 return {
@@ -236,6 +253,7 @@ return {
 
 		local function tokenizer(text)
 			text = text:gsub('[$\n;]', '')
+
 			return function()
 				if #text == 0 then return end
 
@@ -250,7 +268,15 @@ return {
 
 				match = text:match('^[()]')
 				if not match then
-					match = text:match('^[^()%s]+')
+					match = text:match('^[^()%s"\']+')
+				end
+
+				if not match then
+					match = text:match('^"[^"]*"')
+				end
+
+				if not match then
+					match = text:match("^'[^']*'")
 				end
 
 				if match then
@@ -280,7 +306,7 @@ return {
 
 		if not dir[directive.text] then
 			local msg = 'Unknown compiler directive `$' .. directive.text .. '`. '
-			msg = msg .. 'Valid directives are `$if`, `$elif`, `$else` and `$end`.'
+			msg = msg .. 'Valid directives are `$if`, `$elif`, `$else`, `$end`, `$error` and `$warn`.'
 			parse_error(directive.span, msg, filename)
 			return
 		end

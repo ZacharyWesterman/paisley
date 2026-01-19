@@ -811,6 +811,11 @@ $elif <expression>
 $else
 ...
 $end
+
+# You can also warn or error at compile time if certain conditions aren't met
+$if version < 2
+$error "At least version 2.0.0 is required!"
+$end
 ```
 
 ```
