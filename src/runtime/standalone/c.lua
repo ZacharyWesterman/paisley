@@ -58,7 +58,7 @@ STANDALONE.c = {
 		local bufsiz = 4096
 		for i = 1, #bytecode, bufsiz do
 			if i > 1 then pgm_buffer = pgm_buffer .. ',' end
-			pgm_buffer = pgm_buffer .. table.concat({ bytecode:byte(i, i + bufsiz) }, ',')
+			pgm_buffer = pgm_buffer .. table.concat({ bytecode:byte(i, i + bufsiz - 1) }, ',')
 		end
 		pgm_buffer = pgm_buffer .. '}'
 
