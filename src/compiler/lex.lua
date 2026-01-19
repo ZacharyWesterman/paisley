@@ -174,6 +174,9 @@ function Lexer(text, file, keep_comments)
 		end
 	end
 
+	local directive = 0
+	local dir_ignore_until = nil
+
 	local function token_iterator()
 		while #text > 0 do
 			local match = nil
@@ -277,7 +280,43 @@ function Lexer(text, file, keep_comments)
 					match = text:match('^%$[^\n;$]*%$?')
 					if match then
 						local dir = require 'src.compiler.directives'
-						local d = dir.compile(match, line, col)
+						local expr, res = dir.compile(match, line, col)
+
+						if expr ~= 'if' and directive == 0 then
+							parse_error(
+								Span:new(line, col, line, col),
+								'Unexpected `$' .. expr .. '` directive.',
+								file
+							)
+						end
+
+						if expr == 'if' then directive = directive + 1 end
+
+						if expr == 'if' and not res then
+							dir_ignore_until = directive
+						end
+
+						if expr == 'else' then
+							if dir_ignore_until == directive then
+								dir_ignore_until = nil
+							elseif not dir_ignore_until then
+								dir_ignore_until = directive
+							end
+						end
+
+						if expr == 'elif' then
+							if dir_ignore_until == directive and res then
+								dir_ignore_until = nil
+							elseif not dir_ignore_until then
+								dir_ignore_until = directive
+							end
+						end
+
+						if expr == 'end' and dir_ignore_until == directive then
+							dir_ignore_until = nil
+						end
+
+						if expr == 'end' then directive = directive - 1 end
 						tok_ignore = not keep_comments
 					end
 				end
@@ -610,6 +649,17 @@ function Lexer(text, file, keep_comments)
 								children = {},
 							}
 							col = col + #this_str
+
+							--Skip tokens inside ignored compiler directives.
+							if not keep_comments and dir_ignore_until then
+								match = this_chr
+								--exit string (pop to previous scope)
+								match = quote_end
+								tok_type = TOK.string_close
+								table.remove(scopes)
+								break
+							end
+
 							return out
 						end
 
@@ -742,6 +792,12 @@ function Lexer(text, file, keep_comments)
 				col = col + #(lines[#lines])
 
 				text = text:sub(#match + 1, #text)
+
+				--Skip tokens inside ignored compiler directives.
+				if not keep_comments and dir_ignore_until then
+					tok_ignore = true
+				end
+
 				if not tok_ignore then
 					local token = {
 						span = Span:new(line, col - #match - 1, line, col - 1),
