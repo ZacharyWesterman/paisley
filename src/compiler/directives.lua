@@ -56,14 +56,31 @@ local function validate_expression(dir, filename, get_token)
 			end
 			--[[/minify-delete]]
 
+			return build
+		end,
+		['target'] = function(span)
+			local target
 			--[[minify-delete]]
 			if _G['RESTRICT_TO_PLASMA_BUILD'] then
 				--[[/minify-delete]]
-				return 'plasma'
+				target = 'lua'
 				--[[minify-delete]]
+			else
+				target = _G['TARGET']
 			end
-			return 'desktop'
 			--[[/minify-delete]]
+
+			--[[minify-delete]]
+			if _G['LANGUAGE_SERVER'] then
+				local msg = '**target** = ' .. target
+				msg = msg .. '\nThe compilation target.'
+				msg = msg .. '\nPossible values are `lua`, `c` or `cpp`.'
+				INFO.hint(span, msg, filename)
+				INFO.constant(span, filename)
+			end
+			--[[/minify-delete]]
+
+			return target
 		end,
 	}
 
