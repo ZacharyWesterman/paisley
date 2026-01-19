@@ -20,10 +20,42 @@ local function validate_expression(dir, filename, get_token)
 	local op_stack = {}
 
 	local flags = {
-		['version'] = function()
+		['version'] = function(span)
+			--[[minify-delete]]
+			if _G['LANGUAGE_SERVER'] then
+				local msg = '**version** = ' .. _G['VERSION']
+				msg = msg .. '\nThe Paisley version at compile time.'
+				msg = msg .. '\nCompare with version numbers like `X.Y.Z`.'
+				INFO.hint(span, msg, filename)
+				INFO.constant(span, filename)
+			end
+			--[[/minify-delete]]
+
 			return _G['VERSION']
 		end,
-		['build'] = function()
+		['build'] = function(span)
+			local build
+
+			--[[minify-delete]]
+			if _G['RESTRICT_TO_PLASMA_BUILD'] then
+				--[[/minify-delete]]
+				build = 'plasma'
+				--[[minify-delete]]
+			else
+				build = 'desktop'
+			end
+			--[[/minify-delete]]
+
+			--[[minify-delete]]
+			if _G['LANGUAGE_SERVER'] then
+				local msg = '**build** = ' .. build
+				msg = msg .. '\nThe build type at compile time.'
+				msg = msg .. '\nCurrently, the only possible values are `plasma` or `desktop`.'
+				INFO.hint(span, msg, filename)
+				INFO.constant(span, filename)
+			end
+			--[[/minify-delete]]
+
 			--[[minify-delete]]
 			if _G['RESTRICT_TO_PLASMA_BUILD'] then
 				--[[/minify-delete]]
@@ -140,7 +172,7 @@ local function validate_expression(dir, filename, get_token)
 	local result = {}
 	for _, token in ipairs(stack) do
 		if not ops[token.text] then
-			table.insert(result, token.text)
+			table.insert(result, token)
 		else
 			local rhs, lhs = table.remove(result), table.remove(result)
 			if not lhs or not rhs then
@@ -149,9 +181,9 @@ local function validate_expression(dir, filename, get_token)
 				return
 			end
 
-			if flags[lhs] then lhs = flags[lhs]() end
+			if flags[lhs.text] then lhs = { text = flags[lhs.text](lhs.span) } end
 
-			local val = ops[token.text].oper(lhs, rhs)
+			local val = ops[token.text].oper(lhs.text, rhs.text)
 			table.insert(result, val)
 		end
 	end
