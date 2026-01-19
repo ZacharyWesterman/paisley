@@ -254,7 +254,7 @@ function parse_warning(span, msg, file)
 
 		--[[minify-delete]]
 		if true then
-			print('\27[0;33mWARNING:\27[0m ' .. msg)
+			print('[\27[0;33mWARNING\27[0m]: ' .. msg)
 			return
 		end
 		--[[/minify-delete]]
