@@ -284,13 +284,30 @@ function Lexer(text, file, keep_comments)
 						local dir = require 'src.compiler.directives'
 						local expr, res = dir.compile(match, line, col)
 
-						if expr ~= 'if' and directive == 0 then
+						if (expr == 'else' or expr == 'elif' or expr == 'end') and directive == 0 then
 							parse_error(
 								Span:new(line, col, line, col),
 								'Unexpected `$' .. expr .. '` directive.',
 								file
 							)
 						end
+
+						if not dir_ignore_until then
+							if expr == 'error' then
+								parse_error(
+									Span:new(line, col, line, col),
+									res or '<unknown>',
+									file
+								)
+							elseif expr == 'warn' then
+								parse_warning(
+									Span:new(line, col, line, col),
+									res or '<unknown>',
+									file
+								)
+							end
+						end
+
 
 						if expr == 'if' then directive = directive + 1 end
 
