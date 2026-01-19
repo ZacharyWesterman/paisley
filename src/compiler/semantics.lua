@@ -872,9 +872,16 @@ function SemanticAnalyzer(root, root_file)
 				.return_stmt, TOK.subroutine, TOK.length }, nil, type_checking)
 	end
 
-	-- After type checking, run one more pass on the AST to adjust synonym functions and so on.
-	config = require "src.compiler.semantics.pass3"
-	recurse2(root, config, root_file)
+	--[[minify-delete]]
+	if not _G['LANGUAGE_SERVER'] then
+		--[[/minify-delete]]
+
+		-- After type checking, run one more pass on the AST to adjust synonym functions and so on.
+		config = require "src.compiler.semantics.pass3"
+		recurse2(root, config, root_file)
+		--[[minify-delete]]
+	end
+	--[[/minify-delete]]
 
 	--Check if subroutines are even used
 	--We also keep track of what subroutines each subroutine references.
