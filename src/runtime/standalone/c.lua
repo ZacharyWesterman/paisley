@@ -53,8 +53,14 @@ STANDALONE.c = {
 		end
 		--[[/no-install]]
 
-		local bytecode = { LUA.compile(program_text):byte(1, -1) }
-		local pgm_buffer = '{' .. table.concat(bytecode, ',') .. '}'
+		local bytecode = LUA.compile(program_text)
+		local pgm_buffer = '{'
+		local bufsiz = 4096
+		for i = 1, #bytecode, bufsiz do
+			if i > 1 then pgm_buffer = pgm_buffer .. ',' end
+			pgm_buffer = pgm_buffer .. table.concat({ bytecode:byte(i, i + bufsiz) }, ',')
+		end
+		pgm_buffer = pgm_buffer .. '}'
 
 		local c_code = [[
 		#define LUA_IMPL
