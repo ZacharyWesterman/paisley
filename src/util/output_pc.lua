@@ -68,7 +68,7 @@ function output(value, port)
 		elseif cmd == 'clear' then
 			os.execute('clear')
 		else
-			print(args)
+			io.write(args .. '\n')
 		end
 		io.flush()
 	elseif port == 8 then

@@ -670,16 +670,9 @@ function Lexer(text, file, keep_comments)
 							col = col + #this_str
 
 							--Skip tokens inside ignored compiler directives.
-							if not keep_comments and dir_ignore_until then
-								match = this_chr
-								--exit string (pop to previous scope)
-								match = quote_end
-								tok_type = TOK.string_close
-								table.remove(scopes)
-								break
+							if keep_comments or not dir_ignore_until then
+								return out
 							end
-
-							return out
 						end
 
 						match = this_chr
