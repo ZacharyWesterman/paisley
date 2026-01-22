@@ -36,3 +36,45 @@ subroutine fmt.color
 	return {@2 @1 "\x1b[0m"}
 	$end
 end
+
+#[[
+@brief Format bold text.
+@param text string The text to format.
+@return string The formatted text.
+@export
+#]]
+subroutine fmt.bold
+	$if build = plasma
+	return "<b>{@}</b>"
+	$else
+	return "\x1b[1m{@}\x1b[0m"
+	$end
+end
+
+#[[
+@brief Format italic text.
+@param text string The text to format.
+@return string The formatted text.
+@export
+#]]
+subroutine fmt.italic
+	$if build = plasma
+	return "<i>{@}</i>"
+	$else
+	return "\x1b[3m{@}\x1b[0m"
+	$end
+end
+
+#[[
+@brief Format underline text.
+@param text string The text to format.
+@return string The formatted text.
+@export
+#]]
+subroutine fmt.underline
+	$if build = plasma
+	return "<u>{@}</u>"
+	$else
+	return "\x1b[4m{@}\x1b[0m"
+	$end
+end
