@@ -545,10 +545,14 @@ end
 
 ---Syntax rule for `not` operator
 not_oper = function(span)
-	local bitwise = parser.accept(TOK.op_bitwise)
-	local ok, child
-	if bitwise then
-		ok, _ = parser.expect(TOK.op_not, 'not')
+	local p = parser.peek(2)
+	local bitwise = false
+	local ok, child = true, nil
+
+	if p[1] == TOK.op_bitwise and p[2] == TOK.op_not then
+		bitwise = true
+		parser.nextsym()
+		parser.nextsym()
 	else
 		ok, _ = parser.accept(TOK.op_not)
 	end
