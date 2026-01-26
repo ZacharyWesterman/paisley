@@ -8,7 +8,6 @@ return {
 		end
 		--[[/minify-delete]]
 		print('[ERROR]: ' .. (msg or ''))
-		--[[minify-delete]]
 	end,
 
 	warn = function(msg, endl)
@@ -20,7 +19,6 @@ return {
 		end
 		--[[/minify-delete]]
 		print('[WARNING]: ' .. (msg or ''))
-		--[[minify-delete]]
 	end,
 
 	info = function(msg, endl)
@@ -32,6 +30,5 @@ return {
 		end
 		--[[/minify-delete]]
 		print('[INFO]: ' .. (msg or ''))
-		--[[minify-delete]]
 	end,
 }
