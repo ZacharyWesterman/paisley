@@ -226,6 +226,7 @@ function parse_error(span, msg, file)
 			end
 
 			log.error(msg)
+			--[[minify-delete]]
 		end
 	end
 	--[[/minify-delete]]
