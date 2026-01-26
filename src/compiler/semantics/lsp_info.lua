@@ -272,7 +272,7 @@ return {
 				local span = var.span
 
 				if var.value ~= nil then
-					text = text .. ' = ' .. json.stringify(var.value)
+					text = text .. ' = ' .. std.escape_xml(json.stringify(var.value))
 				end
 
 				for _, kid in ipairs(var.children) do
@@ -345,7 +345,7 @@ return {
 				end
 
 				if val ~= nil then
-					text = text .. ' = ' .. json.stringify(val)
+					text = text .. ' = ' .. std.escape_xml(json.stringify(val))
 				end
 				if comment then
 					text = text .. '\n' .. comment

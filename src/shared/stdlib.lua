@@ -725,6 +725,25 @@ std = {
 		return data
 	end,
 
+	---@brief Escape XML entities.
+	---@param text string The original text.
+	---@return string escaped_text The text with XML entities escaped.
+	--[[minify-delete]]
+	escape_xml = function(text)
+		local fmt = {
+			{ '&',  '&amp;' },
+			{ '"',  '&quot;' },
+			{ '\'', '&apos;' },
+			{ '<',  '&lt;' },
+			{ '>',  '&gt;' },
+		}
+		for _, i in ipairs(fmt) do
+			text = text:gsub(i[1], i[2])
+		end
+		return text
+	end,
+	--[[/minify-delete]]
+
 	MAX_ARRAY_LEN = 32768, --Any larger than this and performance tanks
 
 	--Perform bitwise and/or/xor
