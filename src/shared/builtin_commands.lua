@@ -62,7 +62,6 @@ local function _explode(cmdlist)
 end
 
 BUILTIN_COMMANDS = _explode(BUILTIN_COMMANDS)
-ALLOWED_COMMANDS = _explode(ALLOWED_COMMANDS)
 
 --[[minify-delete]]
 function PLASMA_RESTRICT()
@@ -89,3 +88,5 @@ if _G['SANDBOX'] then
 	SHELL_RESTRICT()
 end
 --[[/minify-delete]]
+
+return _explode

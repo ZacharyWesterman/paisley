@@ -33,9 +33,10 @@ PGM_ARGS = V6 or {}
 
 	Note that this IS case-sensitive!
 ]]
-ALLOWED_COMMANDS = V3
 if not SIGNATURE then function SIGNATURE(x) return x end end --Dummy signature definition, just so runtime doesn't give an error.
-require "src.shared.builtin_commands"
+
+local process_cmds = require "src.shared.builtin_commands"
+ALLOWED_COMMANDS = process_cmds(V3)
 
 --[[RUN THIS TO LOAD CODE]]
 function INIT()

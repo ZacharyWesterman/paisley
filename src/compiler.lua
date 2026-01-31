@@ -39,8 +39,8 @@ end
 
 	Note that this IS case-sensitive!
 ]]
-ALLOWED_COMMANDS = V3
-require "src.shared.builtin_commands"
+local process_cmds = require "src.shared.builtin_commands"
+ALLOWED_COMMANDS = process_cmds(V3)
 
 --[[minify-delete]]
 local LFS_INSTALLED, LFS = pcall(require, 'LFS')
