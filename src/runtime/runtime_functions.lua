@@ -1402,334 +1402,52 @@ local functions = {
 	}
 ]]
 
-COMMANDS = {
-	--CALL
-	function(line, p1, p2)
-		local fn = functions[p1 + 1]
-		if not fn then
-			runtime_error(line, 'RUNTIME BUG: No function found for id "' .. std.str(p1) .. '"')
-		else
-			fn(line, p2)
-		end
-	end,
-
-	--SET VARIABLE
-	function(line, p1, p2)
-		local v = POP()
-		if v == nil then
-			VARS[p1] = NULL
-		else
-			VARS[p1] = v
-		end
-	end,
-
-	--GET VARIABLE
-	function(line, p1, p2)
-		if p1 == '@' then
-			--List-of-params variable
-			if #INSTR_STACK > 0 then
-				PUSH(INSTR_STACK[#INSTR_STACK])
-			else
-				--If no params, then get argv
-				---@diagnostic disable-next-line
-				PUSH(PGM_ARGS or {})
-			end
-		elseif p1 == '$' then
-			--List-of-commands variable
-			local res = {}
-			for k in pairs(BUILTIN_COMMANDS --[[@as table]]) do table.insert(res, k) end
-			for k in pairs(ALLOWED_COMMANDS --[[@as table]]) do table.insert(res, k) end
-			table.sort(res)
-			PUSH(res)
-		elseif p1 == '_VARS' then
-			--List-of-vars variable
-			PUSH(VARS)
-		elseif p1 == '_VERSION' then
-			--Version variable
-			---@diagnostic disable-next-line
-			PUSH(VERSION)
-		else
-			local v = VARS[p1]
-			if v == NULL then PUSH(nil) else PUSH(v) end
-		end
-	end,
-
-	--PUSH VALUE ONTO STACK
-	function(line, p1, p2) PUSH(p1) end,
-
-	--POP VALUE FROM STACK
-	function(line, p1, p2) POP() end,
-
-	--RUN COMMAND
-	function(line, p1, p2)
-		local command_array = POP()
-		local cmd_array = {}
-		for i = 1, #command_array do
-			if std.type(command_array[i]) == 'array' then
-				for k = 1, #command_array[i] do
-					table.insert(cmd_array, std.str(command_array[i][k]))
-				end
-			elseif std.type(command_array[i]) == 'object' then
-				for key, value in pairs(command_array[i]) do
-					table.insert(cmd_array, std.str(key))
-					table.insert(cmd_array, std.str(value))
-				end
-			else
-				table.insert(cmd_array, std.str(command_array[i]))
-			end
-		end
-		command_array = cmd_array
-		local cmd_name = std.str(command_array[1])
-
-		if not ALLOWED_COMMANDS[cmd_name] and not BUILTIN_COMMANDS[cmd_name] then
-			--If command doesn't exist, try to help user by guessing the closest match (but still throw an error)
-			local msg = 'Unknown command "' .. cmd_name .. '"'
-			local guess = closest_word(cmd_name, ALLOWED_COMMANDS, 4)
-			if guess == nil or guess == '' then
-				guess = closest_word(cmd_name, BUILTIN_COMMANDS, 4)
-			end
-
-			if guess ~= nil and guess ~= '' then
-				msg = msg .. ' (did you mean "' .. guess .. '"?)'
-			end
-			runtime_error(line, msg)
-		end
-
-		if not ALLOWED_COMMANDS[cmd_name] then
-			if cmd_name == 'sleep' then
-				local amt = math.max(0.02, std.num(command_array[2])) - 0.02
-				output(amt, 4)
-			elseif cmd_name == 'time' then
-				output(nil, 5)
-			elseif cmd_name == 'systime' then
-				output(1, 6)
-			elseif cmd_name == 'sysdate' then
-				output(2, 6)
-			elseif cmd_name == 'print' --[[minify-delete]] or cmd_name == 'stdin' or cmd_name == 'stdout' or cmd_name == 'stderr' or cmd_name == 'clear' --[[/minify-delete]] then
-				table.remove(command_array, 1)
-				local msg = std.join(command_array, ' ')
-				output_array({ cmd_name, msg }, 7)
-			elseif cmd_name == 'error' then
-				table.remove(command_array, 1)
-				local msg = std.join(command_array, ' ')
-
-				if #EXCEPT_STACK > 0 then
-					--if exception is caught, unroll the stack and return to the catch block
-
-					local err = std.object()
-					err.message = msg
-					err.stack = { line }
-
-					--Unroll program stack
-					local catch = table.remove(EXCEPT_STACK)
-					while #STACK > catch.stack do
-						table.remove(STACK)
-					end
-
-					--Unroll call stack
-					while #INSTR_STACK > catch.instr_stack do
-						table.remove(INSTR_STACK) --Remove any subroutine parameters
-						table.remove(INSTR_STACK) --Remove stack size value
-						local instr_id = table.remove(INSTR_STACK)
-						table.insert(err.stack, 1, INSTRUCTIONS[instr_id][2])
-					end
-					CURRENT_INSTRUCTION = catch.instr
-
-					err.line = table.remove(err.stack, 1)
-
-					PUSH(err)
-					return false --Don't output the error
-				else
-					--If exception is not caught, end the program immediately and output the error
-					CURRENT_INSTRUCTION = #INSTRUCTIONS + 1
-
-					---@diagnostic disable-next-line
-					if FILE and #FILE > 0 then
-						msg = '["' .. FILE .. '": ' .. line .. '] ' .. msg
-					else
-						msg = '[line ' .. line .. '] ' .. msg
-					end
-					output_array({ "error", 'ERROR: ' .. msg .. '\nError not caught, program terminated.' }, 7)
-				end
-
-				--[[minify-delete]]
-			elseif cmd_name == '!' or cmd_name == '?' or cmd_name == '?!' or cmd_name == '=' then
-				table.remove(command_array, 1)
-				--Quote and escape all params, this will be run thru shell
-				local text = ''
-				for i = 1, #cmd_array do
-					local cmd_text = cmd_array[i]
-					if cmd_text:sub(1, #RAW_SH_TEXT_SENTINEL) == RAW_SH_TEXT_SENTINEL then
-						cmd_text = cmd_text:sub(#RAW_SH_TEXT_SENTINEL + 1)
-						text = text .. cmd_text
-					else
-						cmd_text = cmd_text:gsub('\\', '\\\\'):gsub(
-							'"', '\\"'):gsub('%$', '\\$'):gsub('`', '\\`'):gsub('!', '\\!')
-						--Escape strings correctly in powershell
-						if WINDOWS then cmd_text = cmd_text:gsub('\\"', '`"') end
-						text = text .. '"' .. cmd_text .. '" '
-					end
-				end
-				output_array({ cmd_name, text }, 9)
-				--[[/minify-delete]]
-			elseif cmd_name == '.' then
-				--No-op (results are calculated but discarded)
-			else
-				runtime_error(line, 'RUNTIME BUG: No logic implemented for built-in command "' .. command_array[1] .. '"')
-			end
-		else
-			output_array(command_array, 2)
-		end
-		return true --Suppress regular "continue" output
-	end,
-
-	--PUSH LAST COMMAND RESULT TO THE STACK
-	function(line, p1, p2)
-		PUSH(LAST_CMD_RESULT)
-	end,
-
-	--PUSH THE CURRENT INSTRUCTION INDEX TO THE STACK
-	function(line, p1, p2)
-		table.insert(INSTR_STACK, CURRENT_INSTRUCTION + 1)
-		table.insert(INSTR_STACK, #STACK - 1)          --Keep track of how big the stack SHOULD be when returning
-		table.insert(INSTR_STACK, STACK[#STACK - (p1 or 0)]) --Append any subroutine parameters (with offset, if any)
-	end,
-
-	--POP THE NEW INSTRUCTION INDEX FROM THE STACK (GOTO THAT INDEX)
-	function(line, p1, p2)
-		table.remove(INSTR_STACK) --Remove any subroutine parameters
-		local new_stack_size = table.remove(INSTR_STACK)
-		CURRENT_INSTRUCTION = table.remove(INSTR_STACK)
-
-		if not p1 then
-			--Put any subroutine return value in the "command return value" slot
-			V5 = table.remove(STACK)
-
-			--Shrink stack back down to how big it should be
-			while new_stack_size < #STACK do
-				table.remove(STACK)
-			end
-		end
-	end,
-
-	--COPY THE NTH STACK ELEMENT ONTO THE STACK AGAIN (BACKWARDS FROM TOP)
-	function(line, p1, p2)
-		PUSH(STACK[#STACK - p1])
-	end,
-
-	--DELETE VARIABLE
-	function(line, p1, p2)
-		VARS[p1] = nil
-	end,
-
-	--SWAP THE TOP 2 ELEMENTS ON THE STACK
-	function(line, p1, p2)
-		local v1 = STACK[#STACK]
-		local v2 = STACK[#STACK - 1]
-		STACK[#STACK - 1] = v1
-		STACK[#STACK] = v2
-	end,
-
-	--POP STACK UNTIL AND INCLUDING NULL
-	function(line, p1, p2)
-		local keep = {}
-		if p1 then
-			--Keep the N top elements
-			for i = 1, p1 do
-				if STACK[#STACK] == NULL then break end
-				table.insert(keep, POP())
-			end
-		end
-		while POP() ~= nil do end
-		if p1 then
-			--Re-push the N top elements
-			for i = #keep, 1, -1 do
-				PUSH(keep[i])
-			end
-		end
-	end,
-
-	--GET VALUE FROM CACHE IF IT EXISTS, ELSE JUMP
-	function(line, p1, p2)
-		local params = {}
-		if #INSTR_STACK > 0 then params = INSTR_STACK[#INSTR_STACK] end
-
-		--If cache value exists, place it in the "command return" slot.
-		if MEMOIZE_CACHE[p1] then
-			local serialized = json.stringify(params)
-			if MEMOIZE_CACHE[p1][serialized] ~= nil then
-				PUSH(MEMOIZE_CACHE[p1][serialized])
-				return
-			end
-		end
-
-		--if cache doesn't exist, jump.
-		CURRENT_INSTRUCTION = p2
-	end,
-
-	--SET CACHE FROM RETURN VALUE
-	function(line, p1, p2)
-		local params = {}
-		if #INSTR_STACK > 0 then params = INSTR_STACK[#INSTR_STACK] end
-
-		if not MEMOIZE_CACHE[p1] then MEMOIZE_CACHE[p1] = {} end
-		MEMOIZE_CACHE[p1][json.stringify(params)] = V5
-		PUSH(V5)
-	end,
-
-	--DELETE VALUE FROM MEMOIZATION CACHE
-	function(line, p1, p2)
-		MEMOIZE_CACHE[p1] = nil
-	end,
-
-	--PUSH CATCH RETURN LOCATION ONTO EXCEPTION STACK
-	function(line, p1, p2)
-		table.insert(EXCEPT_STACK, {
-			instr = p1,
-			stack = #STACK,
-			instr_stack = #INSTR_STACK,
-		})
-	end,
-
-	--INSERT VALUE INTO VARIABLE
-	function(line, p1, p2)
-		local value = POP()
-		local index = POP()
-
-		---@type string
-		local var_name = POP()
-
-		local var = VARS[var_name]
-		if type(var) == 'string' then
-			index = std.num(index)
-			return
-		elseif type(var) ~= 'table' then
-			print('WARNING: attempted to index a non-iterable variable "' .. var_name .. '", ignoring!')
-			return
-		end
-
-		if index == nil then
-			--If no index is given, append to array or do nothing if object
-			if std.type(var) == 'array' then
-				table.insert(var, value)
-			else
-				print('WARNING: attempted to append to a non-array variable "' .. var_name .. '", ignoring!')
-			end
-			return
-		end
-
-		std.update_element(var, index, value)
-	end,
-
-	--DESTRUCTURE VALUE INTO A LIST OF VARIABLES
-	function(line, p1, p2)
-		local value = POP()
-		if type(value) ~= 'table' then value = { value } end
-
-		for i = 1, #p1 do
-			local v = value[i]
-			if v == nil then v = NULL end
-			VARS[p1[i]] = v
-		end
-	end,
+local vm = {
+	functions = functions,
+	runtime_error = runtime_error,
+	pop = POP,
+	push = PUSH,
 }
+
+COMMANDS = {
+	--CALL FUNCTION
+	require 'src.runtime.actions.call',
+	--SET VARIABLE
+	require 'src.runtime.actions.set',
+	--GET VARIABLE
+	require 'src.runtime.actions.get',
+	--PUSH VALUE ONTO STACK
+	require 'src.runtime.actions.push',
+	--POP VALUE FROM STACK
+	require 'src.runtime.actions.pop',
+	--RUN COMMAND
+	require 'src.runtime.actions.run_command',
+	--PUSH LAST COMMAND RESULT TO THE STACK
+	require 'src.runtime.actions.push_cmd_result',
+	--PUSH THE CURRENT INSTRUCTION INDEX TO THE STACK
+	require 'src.runtime.actions.push_index',
+	--POP THE NEW INSTRUCTION INDEX FROM THE STACK (GOTO THAT INDEX)
+	require 'src.runtime.actions.pop_goto_index',
+	--COPY THE NTH STACK ELEMENT ONTO THE STACK AGAIN (BACKWARDS FROM TOP)
+	require 'src.runtime.actions.copy',
+	--DELETE VARIABLE
+	require 'src.runtime.actions.delete_var',
+	--SWAP THE TOP 2 ELEMENTS ON THE STACK
+	require 'src.runtime.actions.swap',
+	--POP STACK UNTIL AND INCLUDING NULL
+	require 'src.runtime.actions.pop_until_null',
+	--GET VALUE FROM CACHE IF IT EXISTS, ELSE JUMP
+	require 'src.runtime.actions.get_cache_else_jump',
+	--SET CACHE FROM RETURN VALUE
+	require 'src.runtime.actions.set_cache',
+	--DELETE VALUE FROM MEMOIZATION CACHE
+	require 'src.runtime.actions.delete_cache',
+	--PUSH CATCH RETURN LOCATION ONTO EXCEPTION STACK
+	require 'src.runtime.actions.push_catch_loc',
+	--INSERT VALUE INTO VARIABLE
+	require 'src.runtime.actions.variable_insert',
+	--DESTRUCTURE VALUE INTO A LIST OF VARIABLES
+	require 'src.runtime.actions.destructure',
+}
+
+return vm
