@@ -211,7 +211,7 @@ function parse_error(span, msg, file)
 
 	--[[minify-delete]]
 	if not HIDE_ERRORS then
-		if _G['LANGUAGE_SERVER'] then
+		if LANGUAGE_SERVER then
 			INFO.error(span, msg, file)
 		elseif span == nil then
 			print(msg)
@@ -246,7 +246,7 @@ end
 ---@diagnostic disable-next-line
 function parse_warning(span, msg, file)
 	--[[minify-delete]]
-	if _G['LANGUAGE_SERVER'] then
+	if LANGUAGE_SERVER then
 		INFO.warning(span, msg:gsub('\n', ' '), file)
 	else
 		--[[/minify-delete]]
@@ -267,7 +267,7 @@ end
 
 --[[minify-delete]]
 local function lsp_msg(span, msg, loglevel, file)
-	if file == INFO.root_file or not _G['LANGUAGE_SERVER'] or not INFO.root_file then
+	if file == INFO.root_file or not LANGUAGE_SERVER or not INFO.root_file then
 		msg = msg:gsub('\n', '\\n')
 		local line, col = span.from.line, span.from.col
 		if col < 0 then col = 0 end

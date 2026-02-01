@@ -140,7 +140,7 @@ function SemanticAnalyzer(root, root_file)
 				break
 			end
 
-			if _G['LANGUAGE_SERVER'] then
+			if LANGUAGE_SERVER then
 				--Print the filename that is imported.
 				INFO.hint(node.children[i].span, node.value[i], file)
 			end
@@ -258,7 +258,7 @@ function SemanticAnalyzer(root, root_file)
 						parse_error(ch.span, 'Unknown shell command "!?" (you probably meant "?!")', file)
 					end
 
-					if _G['COERCE_SHELL_CMDS'] and not _G['RESTRICT_TO_PLASMA_BUILD'] then
+					if COERCE_SHELL_CMDS and not RESTRICT_TO_PLASMA_BUILD then
 						--If bash extension is enabled, try to run a shell command
 						local bashcmd = '='
 						if in_cmd_eval then bashcmd = '?' end
@@ -268,7 +268,7 @@ function SemanticAnalyzer(root, root_file)
 							span = ch.span,
 							text = bashcmd,
 							value = bashcmd,
-							type = _G['TYPE_STRING'],
+							type = TYPE_STRING,
 							children = {},
 						})
 					else
@@ -312,13 +312,13 @@ function SemanticAnalyzer(root, root_file)
 				local exp_type = nil
 
 				if not token.children or #token.children == 0 then
-					exp_type = _G['TYPE_NULL']
+					exp_type = TYPE_NULL
 				elseif token.children[1].type then
 					exp_type = token.children[1].type
 				end
 
 				if sub.type and exp_type and not SIMILAR_TYPE(exp_type, sub.type) then
-					sub.type = _G['TYPE_ANY']
+					sub.type = TYPE_ANY
 				else
 					sub.type = exp_type
 				end
@@ -342,7 +342,7 @@ function SemanticAnalyzer(root, root_file)
 
 			local t1, t2 = token.children[1].type, token.children[2].type
 			if t1 and t2 then
-				if not SIMILAR_TYPE(t1, _G['TYPE_INDEXABLE']) then
+				if not SIMILAR_TYPE(t1, TYPE_INDEXABLE) then
 					if token.null_coalesce and token.children[1].value == nil then
 						return
 					end
@@ -352,28 +352,28 @@ function SemanticAnalyzer(root, root_file)
 					return
 				end
 
-				if SIMILAR_TYPE(t1, _G['TYPE_OBJECT']) then
-					token.type = _G['TYPE_ANY']
+				if SIMILAR_TYPE(t1, TYPE_OBJECT) then
+					token.type = TYPE_ANY
 				else
-					if not SIMILAR_TYPE(t2, _G['TYPE_INDEXER']) then
+					if not SIMILAR_TYPE(t2, TYPE_INDEXER) then
 						parse_error(token.children[1].span,
 							'Cannot index with a value of type `' ..
 							TYPE_TEXT(t2) .. '`. Must be `array[number]` or `number`', file)
 						return
 					end
 
-					if SIMILAR_TYPE(t1, _G['TYPE_STRING']) then
-						token.type = _G['TYPE_STRING']
-					elseif EXACT_TYPE(t2, _G['TYPE_ANY']) then
+					if SIMILAR_TYPE(t1, TYPE_STRING) then
+						token.type = TYPE_STRING
+					elseif EXACT_TYPE(t2, TYPE_ANY) then
 						--If index is "any", result is either the same type as t1, or the subtype of t1
 						token.type = MERGE_TYPES(t1, GET_SUBTYPES(t1))
-					elseif SIMILAR_TYPE(t2, _G['TYPE_ARRAY']) then
+					elseif SIMILAR_TYPE(t2, TYPE_ARRAY) then
 						token.type = t1
 					elseif HAS_SUBTYPES(t1) then
 						token.type = GET_SUBTYPES(t1)
 					else
 						--We don't know what type of array this is, so result of non-const array index has to be "any"
-						token.type = _G['TYPE_ANY']
+						token.type = TYPE_ANY
 					end
 				end
 			end
@@ -385,7 +385,7 @@ function SemanticAnalyzer(root, root_file)
 		elseif TYPESIG[token.text] ~= nil then
 			signature = TYPESIG[token.text]
 			--[[minify-delete]]
-			if _G['RESTRICT_TO_PLASMA_BUILD'] and signature.plasma == false then
+			if RESTRICT_TO_PLASMA_BUILD and signature.plasma == false then
 				parse_error(token.span, 'The `' .. token.text .. '` function cannot be used in the Plasma build.', file)
 			end
 			--[[/minify-delete]]
@@ -395,11 +395,11 @@ function SemanticAnalyzer(root, root_file)
 				if op.id == TOK.func_ref then
 					override_tp = TYPESIG[op.text].out
 				elseif op.id == TOK.op_bitwise then
-					override_tp = _G['TYPE_NUMBER']
+					override_tp = TYPE_NUMBER
 				elseif std.arrfind({ '+', '-', '/', '//', '%' }, op.text, 1) > 0 then
-					override_tp = _G['TYPE_NUMBER']
+					override_tp = TYPE_NUMBER
 				elseif std.arrfind({ '=', '<', '<=', '>', '>=', '!=', 'and', 'or', 'xor' }, op.text, 1) > 0 then
-					override_tp = _G['TYPE_BOOLEAN']
+					override_tp = TYPE_BOOLEAN
 				end
 			end
 		else
@@ -434,7 +434,7 @@ function SemanticAnalyzer(root, root_file)
 					end
 
 					for i = 1, #token.children do
-						table.insert(got_types, TYPE_TEXT(token.children[i].type or _G['TYPE_ANY']))
+						table.insert(got_types, TYPE_TEXT(token.children[i].type or TYPE_ANY))
 					end
 
 					local msg
@@ -557,7 +557,7 @@ function SemanticAnalyzer(root, root_file)
 			end
 		elseif token.id == TOK.try_stmt then
 			if token.children[3] then
-				push_var(token.children[3], _G['TYPE_OBJECT'])
+				push_var(token.children[3], TYPE_OBJECT)
 			end
 		end
 	end
@@ -597,9 +597,9 @@ function SemanticAnalyzer(root, root_file)
 						if expr.type then
 							value.type = expr.type.subtype
 							if expr.type.type == 'object' then
-								key.type = _G['TYPE_STRING']
+								key.type = TYPE_STRING
 							elseif expr.type.type == 'array' then
-								key.type = _G['TYPE_NUMBER']
+								key.type = TYPE_NUMBER
 							end
 						end
 						break
@@ -660,13 +660,13 @@ function SemanticAnalyzer(root, root_file)
 							elseif i == 1 then
 								tp = SIGNATURE(std.deep_type(ch.value))
 							else
-								tp = _G['TYPE_NULL']
+								tp = TYPE_NULL
 							end
 						else
-							tp = _G['TYPE_ANY']
+							tp = TYPE_ANY
 						end
 					else
-						tp = _G['TYPE_NULL']
+						tp = TYPE_NULL
 					end
 
 					if tp ~= nil then
@@ -696,11 +696,11 @@ function SemanticAnalyzer(root, root_file)
 					token.type = tp[#tp].type
 				end
 			elseif token.text == '$' then
-				token.type = _G['TYPE_ARRAY_STRING']
+				token.type = TYPE_ARRAY_STRING
 			elseif token.text == '@' then
-				token.type = _G['TYPE_ARRAY']
+				token.type = TYPE_ARRAY
 			elseif token.text == '_VARS' then
-				token.type = _G['TYPE_OBJECT']
+				token.type = TYPE_OBJECT
 				--Don't allow any variable pruning if _VARS is used;
 				--In that case, we want to make sure that any vars the programmer set *are* actually set!
 				if not using_var_of_vars then
@@ -717,9 +717,9 @@ function SemanticAnalyzer(root, root_file)
 					using_var_of_vars = true
 				end
 			elseif token.text == '_VERSION' then
-				token.type = _G['TYPE_STRING']
+				token.type = TYPE_STRING
 			elseif token.text == '_ENV' then
-				token.type = _G['TYPE_ENV']
+				token.type = TYPE_ENV
 			end
 		end
 	end
@@ -787,7 +787,7 @@ function SemanticAnalyzer(root, root_file)
 			for _, var_decl in pairs(assigned_vars[token.text]) do var_decl.is_referenced = true end
 		else
 			--[[minify-delete]]
-			if _G['LANGUAGE_SERVER'] then
+			if LANGUAGE_SERVER then
 				INFO.warning(token.span, 'Variable is never declared', file)
 			end
 			--[[/minify-delete]]
@@ -804,10 +804,10 @@ function SemanticAnalyzer(root, root_file)
 		end
 	end)
 	--[[minify-delete]]
-	if _G['LANGUAGE_SERVER'] then
+	if LANGUAGE_SERVER then
 		for _, decls in pairs(assigned_vars) do
 			for _, var_decl in pairs(decls) do
-				if not var_decl.is_referenced and not _G['EXPORT_LINES'][var_decl.span.from.line] then
+				if not var_decl.is_referenced and not EXPORT_LINES[var_decl.span.from.line] then
 					local filename = var_decl.filename or root_file
 					INFO.dead_code(var_decl.span, '', filename)
 				end
@@ -841,7 +841,7 @@ function SemanticAnalyzer(root, root_file)
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
 		--Don't fold if in language server mode, as folding can optimize away structures that we want to report info on.
-		if not ERRORED --[[minify-delete]] and not _G['LANGUAGE_SERVER'] --[[/minify-delete]] then
+		if not ERRORED --[[minify-delete]] and not LANGUAGE_SERVER --[[/minify-delete]] then
 			recurse(root,
 				{ TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK
 					.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary, TOK
@@ -873,7 +873,7 @@ function SemanticAnalyzer(root, root_file)
 	end
 
 	--[[minify-delete]]
-	if not _G['LANGUAGE_SERVER'] then
+	if not LANGUAGE_SERVER then
 		--[[/minify-delete]]
 
 		-- After type checking, run one more pass on the AST to adjust synonym functions and so on.
@@ -983,7 +983,7 @@ function SemanticAnalyzer(root, root_file)
 
 	--Print language server information.
 	--[[minify-delete]]
-	if _G['LANGUAGE_SERVER'] then
+	if LANGUAGE_SERVER then
 		config = require "src.compiler.semantics.lsp_info"
 		config.init(labels, variables)
 		recurse2(root, config, root_file)

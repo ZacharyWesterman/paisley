@@ -19,8 +19,8 @@ local expression = V1:gsub('\x0b', '\n')
 local file = V2
 
 --[[minify-delete]]
-if file == nil and _G['LANGUAGE_SERVER'] then
-	file = _G['LSP_FILENAME']
+if file == nil and LANGUAGE_SERVER then
+	file = LSP_FILENAME
 end
 --[[/minify-delete]]
 
@@ -47,7 +47,7 @@ local LFS_INSTALLED, LFS = pcall(require, 'LFS')
 local old_working_dir = nil
 if LFS_INSTALLED then
 	old_working_dir = LFS.currentdir()
-	LFS.chdir(_G['WORKING_DIR'])
+	LFS.chdir(WORKING_DIR)
 end
 --[[/minify-delete]]
 
@@ -57,7 +57,7 @@ local tokens = {}
 for t in lexer do table.insert(tokens, t) end --Iterate to get tokens.
 
 --[[minify-delete]]
-if COMPILER_DEBUG or _G['PRINT_TOKENS'] then
+if COMPILER_DEBUG or PRINT_TOKENS then
 	function print_header(title)
 		print('--------------------------')
 		print(title)
@@ -73,7 +73,7 @@ end
 --[[/minify-delete]]
 
 --[[minify-delete]]
-HIDE_ERRORS = _G['SUPPRESS_AST_ERRORS'] --[[/minify-delete]]
+HIDE_ERRORS = SUPPRESS_AST_ERRORS --[[/minify-delete]]
 
 local parser = SyntaxParser(tokens, file)
 local ast = parser()
@@ -81,7 +81,7 @@ local ast = parser()
 --[[minify-delete]]
 HIDE_ERRORS = false
 
-if _G['PRINT_AST'] and not _G['AST_AFTER_SEMANTIC'] then
+if PRINT_AST and not AST_AFTER_SEMANTIC then
 	print_tokens_recursive(ast)
 	return
 end
@@ -97,7 +97,7 @@ end
 --Analyze the AST and check for any errors
 local root = SemanticAnalyzer(ast, file)
 --[[minify-delete]]
-if _G['AST_AFTER_SEMANTIC'] then
+if AST_AFTER_SEMANTIC then
 	print_tokens_recursive(root)
 end
 
@@ -106,7 +106,7 @@ if COMPILER_DEBUG then
 	print_tokens_recursive(root)
 end
 
-if not _G['LANGUAGE_SERVER'] then
+if not LANGUAGE_SERVER then
 	--[[/minify-delete]]
 
 	--Generate instruction representation

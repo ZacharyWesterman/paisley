@@ -140,7 +140,7 @@ function FUNC_SANDBOX_RESTRICT()
 	SANDBOX = true
 end
 
-if _G['RESTRICT_TO_PLASMA_BUILD'] or _G['SANDBOX'] then
+if RESTRICT_TO_PLASMA_BUILD or SANDBOX then
 	FUNC_SANDBOX_RESTRICT()
 end
 --[[/minify-delete]]

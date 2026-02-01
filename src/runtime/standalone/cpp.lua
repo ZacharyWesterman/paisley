@@ -57,7 +57,7 @@ STANDALONE.cpp = {
 			text = text .. '\t' .. value_to_cpp(value) .. ',\n'
 		end
 
-		text = text .. '};\n\nconst bool SANDBOXED = ' .. (_G['SANDBOX'] and 'true' or 'false') .. ';\n'
+		text = text .. '};\n\nconst bool SANDBOXED = ' .. (SANDBOX and 'true' or 'false') .. ';\n'
 		---@diagnostic disable-next-line
 		text = text .. 'const std::string VERSION = ' .. escape_str(VERSION or 'unknown') .. ';\n'
 

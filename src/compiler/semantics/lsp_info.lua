@@ -181,7 +181,7 @@ return {
 
 				INFO.constant(token.span, filename)
 
-				local text = data_type('_ENV', _G['TYPE_ENV'])
+				local text = data_type('_ENV', TYPE_ENV)
 				text = text .. '\nReads an environment variable when indexed.'
 				text = text ..
 					'\nNote that unlike other variables, only individual keys of `_ENV` are allowed to be accessed, not the entire object.'
@@ -296,7 +296,7 @@ return {
 					end,
 					_VERSION = function()
 						local text = ''
-						if _G['VERSION'] then text = text .. ' = "' .. _G['VERSION'] .. '"' end
+						if VERSION then text = text .. ' = "' .. VERSION .. '"' end
 						text = text ..
 							'\nContains the version number of the Paisley runtime environment, formatted as `MAJOR.MINOR.PATCH`.'
 						return text
