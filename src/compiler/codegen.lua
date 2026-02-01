@@ -19,6 +19,7 @@ local bc = {
 	delete_cache = 16,
 	push_catch_loc = 17,
 	variable_insert = 18,
+	destructure = 19,
 }
 
 require "src.compiler.functions.codes"
@@ -696,14 +697,16 @@ function generate_bytecode(root, file)
 				emit(bc.call, 'explode')
 			end
 			emit(bc.label, loop_beg_label)
-			emit(bc.call, 'explode')
+
 			table.insert(loop_term_labels, loop_end_label)
 			table.insert(loop_begn_labels, loop_beg_label)
 
 			--Run loop
 			emit(bc.call, 'jumpifnil', loop_end_label)
-			emit(bc.set, token.children[1].text)
-			emit(bc.set, token.children[2].text)
+
+			--Assign variables
+			local vars = { token.children[1].text, token.children[2].text }
+			emit(bc.destructure, vars)
 
 			if token.children[4] then enter(token.children[4]) end
 
@@ -1300,7 +1303,14 @@ function generate_bytecode(root, file)
 		end
 
 		--Output constants to lookup table
-		if (instr[1] == bc.set or instr[1] == bc.get or instr[1] == bc.push or instr[1] == bc.delete) and instr[3] ~= nil then
+		local instr_consts = {
+			[bc.set] = true,
+			[bc.get] = true,
+			[bc.push] = true,
+			[bc.delete] = true,
+			[bc.destructure] = true,
+		}
+		if instr_consts[instr[1]] and instr[3] ~= nil then
 			local text = json.stringify(instr[3])
 			if constants[text] == nil then
 				const_len = const_len + 1
