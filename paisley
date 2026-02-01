@@ -217,7 +217,7 @@ local function compile_self_to(output_file, compiler_name, binary)
 	if binary then
 		log.info('Compiling Lua into an executable...')
 	end
-	local compiler = binary and _G['STANDALONE'].c or _G['STANDALONE'].lua
+	local compiler = binary and STANDALONE.c or STANDALONE.lua
 	local result = compiler.compile(text, output_file, compiler_name)
 
 	if not result then
@@ -491,11 +491,11 @@ end
 --Output bytecode, not an entire standalone.
 if flags.output ~= '-' then
 	local header = '#!/usr/bin/env -S paisley '
-	if _G['RESTRICT_TO_PLASMA_BUILD'] then
+	if RESTRICT_TO_PLASMA_BUILD then
 		header = header .. '--plasma '
-	elseif _G['SANDBOX'] then
+	elseif SANDBOX then
 		header = header .. '--sandbox '
-	elseif _G['COERCE_SHELL_CMDS'] then
+	elseif COERCE_SHELL_CMDS then
 		header = header .. '--shell '
 	end
 	text = header .. '--\n' .. text
