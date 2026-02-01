@@ -9,14 +9,14 @@ local function if_stmt_const(token, file)
 		end
 
 		--[[minify-delete]]
-		if _G['LANGUAGE_SERVER'] then
+		if LANGUAGE_SERVER then
 			if token.children[ix].id == TOK.kwd_end then return end
 			INFO.dead_code(token.children[ix].span, '', file)
 		end
 		--[[/minify-delete]]
 
 		--[[minify-delete]]
-		if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
+		if not KEEP_DEAD_CODE then --[[/minify-delete]]
 			token.children[ix] = {
 				id = id,
 				span = token.children[ix].span,
@@ -48,13 +48,13 @@ return {
 				local cond = token.children[1]
 				if (cond.value ~= nil or cond.id == TOK.lit_null) and not std.bool(cond.value) then
 					--[[minify-delete]]
-					if _G['LANGUAGE_SERVER'] then
+					if LANGUAGE_SERVER then
 						INFO.dead_code(token.span, '', file)
 					end
 					--[[/minify-delete]]
 
 					--[[minify-delete]]
-					if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
+					if not KEEP_DEAD_CODE then --[[/minify-delete]]
 						token.children = { cond }
 						--[[minify-delete]]
 					end --[[/minify-delete]]
@@ -68,13 +68,13 @@ return {
 				local cond = token.children[2]
 				if (cond.value ~= nil or cond.id == TOK.lit_null) and not std.bool(cond.value) then
 					--[[minify-delete]]
-					if _G['LANGUAGE_SERVER'] then
+					if LANGUAGE_SERVER then
 						INFO.dead_code(token.span, '', file)
 					end
 					--[[/minify-delete]]
 
 					--[[minify-delete]]
-					if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
+					if not KEEP_DEAD_CODE then --[[/minify-delete]]
 						token.children = { token.children[1], cond }
 						--[[minify-delete]]
 					end --[[/minify-delete]]
@@ -88,13 +88,13 @@ return {
 				local cond = token.children[3]
 				if (cond.value ~= nil or cond.id == TOK.lit_null) and not std.bool(cond.value) then
 					--[[minify-delete]]
-					if _G['LANGUAGE_SERVER'] then
+					if LANGUAGE_SERVER then
 						INFO.dead_code(token.span, '', file)
 					end
 					--[[/minify-delete]]
 
 					--[[minify-delete]]
-					if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
+					if not KEEP_DEAD_CODE then --[[/minify-delete]]
 						token.children = { token.children[1], token.children[2], cond }
 						--[[minify-delete]]
 					end --[[/minify-delete]]
@@ -110,7 +110,7 @@ return {
 				for i = 1, #token.children do
 					if dead_code_span then
 						--[[minify-delete]]
-						if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
+						if not KEEP_DEAD_CODE then --[[/minify-delete]]
 							token.children[i] = nil
 							--[[minify-delete]]
 						end --[[/minify-delete]]
@@ -130,7 +130,7 @@ return {
 				end
 
 				--[[minify-delete]]
-				if _G['LANGUAGE_SERVER'] and dead_code_span then
+				if LANGUAGE_SERVER and dead_code_span then
 					--Warn about dead code
 					INFO.dead_code(dead_code_span, 'Dead code', file)
 				end

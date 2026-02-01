@@ -105,7 +105,7 @@ function FOLD_CONSTANTS(token, file, get_var)
 			if c2.type == c3.type then
 				token.type = c2.type
 			else
-				token.type = _G['TYPE_ANY']
+				token.type = TYPE_ANY
 			end
 		end
 
@@ -138,7 +138,7 @@ function FOLD_CONSTANTS(token, file, get_var)
 		if token.children[1].type then
 			token.type = SIGNATURE('array[' .. TYPE_TEXT(token.children[1].type) .. ']')
 		else
-			token.type = _G['TYPE_ARRAY']
+			token.type = TYPE_ARRAY
 		end
 	end
 
@@ -270,7 +270,7 @@ function FOLD_CONSTANTS(token, file, get_var)
 		token.id = TOK.lit_object
 		token.value = value
 		token.text = '{}'
-		token.type = _G['TYPE_OBJECT']
+		token.type = TYPE_OBJECT
 		token.children = {}
 		return
 	end
@@ -290,7 +290,7 @@ function FOLD_CONSTANTS(token, file, get_var)
 		--Boolean 'and' and 'or' operators have short-circuiting behavior, so we may still be able to fold them if one child is constant.
 
 		--[[minify-delete]]
-		if _G['NO_SHORT_CIRCUIT'] then return end
+		if NO_SHORT_CIRCUIT then return end
 		--[[/minify-delete]]
 
 		local literal_value
@@ -531,7 +531,7 @@ function FOLD_CONSTANTS(token, file, get_var)
 		token.type = SIGNATURE(std.deep_type(token.value))
 		token.children = {}
 	elseif token.id == TOK.array_slice then
-		token.type = _G['TYPE_ARRAY_NUMBER']
+		token.type = TYPE_ARRAY_NUMBER
 		if #token.children == 1 then
 			if not token.unterminated then
 				parse_error(token.span,

@@ -1689,7 +1689,7 @@ import_stmt = function(span)
 
 	local files = {}
 
-	local file = parser.filename() or _G['LSP_FILENAME'] or ''
+	local file = parser.filename() or LSP_FILENAME or ''
 	local current_script_dir = file:match('(.-)([^\\/]-%.?([^%.\\/]*))$')
 
 	local function pai(filename)

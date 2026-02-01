@@ -22,8 +22,8 @@ local function validate_expression(dir, filename, get_token)
 	local flags = {
 		['version'] = function(span)
 			--[[minify-delete]]
-			if _G['LANGUAGE_SERVER'] then
-				local msg = '**version** = ' .. _G['VERSION']
+			if LANGUAGE_SERVER then
+				local msg = '**version** = ' .. VERSION
 				msg = msg .. '\nThe Paisley version at compile time.'
 				msg = msg .. '\nCompare with version numbers like `X.Y.Z`.'
 				INFO.hint(span, msg, filename)
@@ -31,13 +31,13 @@ local function validate_expression(dir, filename, get_token)
 			end
 			--[[/minify-delete]]
 
-			return _G['VERSION']
+			return VERSION
 		end,
 		['build'] = function(span)
 			local build
 
 			--[[minify-delete]]
-			if _G['RESTRICT_TO_PLASMA_BUILD'] then
+			if RESTRICT_TO_PLASMA_BUILD then
 				--[[/minify-delete]]
 				build = 'plasma'
 				--[[minify-delete]]
@@ -47,7 +47,7 @@ local function validate_expression(dir, filename, get_token)
 			--[[/minify-delete]]
 
 			--[[minify-delete]]
-			if _G['LANGUAGE_SERVER'] then
+			if LANGUAGE_SERVER then
 				local msg = '**build** = ' .. build
 				msg = msg .. '\nThe build type at compile time.'
 				msg = msg .. '\nCurrently, the only possible values are `plasma` or `desktop`.'
@@ -61,17 +61,17 @@ local function validate_expression(dir, filename, get_token)
 		['target'] = function(span)
 			local target
 			--[[minify-delete]]
-			if _G['RESTRICT_TO_PLASMA_BUILD'] then
+			if RESTRICT_TO_PLASMA_BUILD then
 				--[[/minify-delete]]
 				target = 'lua'
 				--[[minify-delete]]
 			else
-				target = _G['TARGET']
+				target = TARGET
 			end
 			--[[/minify-delete]]
 
 			--[[minify-delete]]
-			if _G['LANGUAGE_SERVER'] then
+			if LANGUAGE_SERVER then
 				local msg = '**target** = ' .. target
 				msg = msg .. '\nThe compilation target.'
 				msg = msg .. '\nPossible values are `lua`, `c` or `cpp`.'

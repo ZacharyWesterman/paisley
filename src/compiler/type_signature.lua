@@ -190,7 +190,7 @@ function GET_SUBTYPES(tp)
 	for key, val in pairs(tp) do
 		if val.subtypes then return val.subtypes end
 	end
-	return _G['TYPE_ANY']
+	return TYPE_ANY
 end
 
 function MERGE_TYPES(lhs, rhs)

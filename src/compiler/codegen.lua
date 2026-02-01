@@ -235,7 +235,7 @@ function generate_bytecode(root, file)
 			--4. AND we are not running as a REPL
 			--Then don't generate the (dead) code for it.
 			--[[minify-delete]]
-			if not _G['REPL'] and not _G['KEEP_DEAD_CODE'] then
+			if not REPL and not KEEP_DEAD_CODE then
 				--[[/minify-delete]]
 				local v1 = token.children[1]
 				if v1.ignore then
@@ -518,7 +518,7 @@ function generate_bytecode(root, file)
 				end,
 			}
 			--[[minify-delete]]
-			if _G['NO_SHORT_CIRCUIT'] then shortcut = {} end
+			if NO_SHORT_CIRCUIT then shortcut = {} end
 			--[[/minify-delete]]
 
 			if #token.children > 1 then
@@ -569,7 +569,7 @@ function generate_bytecode(root, file)
 				local list = token.children[2]
 				--If list is entirely constant, just use the last value.
 				--[[minify-delete]]
-				if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
+				if not KEEP_DEAD_CODE then --[[/minify-delete]]
 					if is_const(list) then
 						local val = list.value
 						if val ~= nil and #val > 0 then
@@ -663,7 +663,7 @@ function generate_bytecode(root, file)
 				local list = token.children[3]
 				--If list is entirely constant, just use the last value.
 				--[[minify-delete]]
-				if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
+				if not KEEP_DEAD_CODE then --[[/minify-delete]]
 					if is_const(list) then
 						local val = list.value
 						if val ~= nil and #val > 0 then
@@ -725,7 +725,7 @@ function generate_bytecode(root, file)
 
 			--If the loop will never get executed, don't generate it.
 			--[[minify-delete]]
-			if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
+			if not KEEP_DEAD_CODE then --[[/minify-delete]]
 				if const and not val then return end
 				--[[minify-delete]]
 			end --[[/minify-delete]]
@@ -856,7 +856,7 @@ function generate_bytecode(root, file)
 			local endif_label
 
 			--[[minify-delete]]
-			if _G['KEEP_DEAD_CODE'] then const = false end --[[/minify-delete]]
+			if KEEP_DEAD_CODE then const = false end --[[/minify-delete]]
 
 			local has_else = #token.children > 2 and token.children[3].id ~= TOK.kwd_end and not (const and val)
 
@@ -910,7 +910,7 @@ function generate_bytecode(root, file)
 		--GOSUB STATEMENT
 		[TOK.gosub_stmt] = function(token, file)
 			--[[minify-delete]]
-			if not _G['KEEP_DEAD_CODE'] then --[[/minify-delete]]
+			if not KEEP_DEAD_CODE then --[[/minify-delete]]
 				if token.ignore then return end
 				--[[minify-delete]]
 			end --[[/minify-delete]]
@@ -972,7 +972,7 @@ function generate_bytecode(root, file)
 		[TOK.subroutine] = function(token, file)
 			--Don't generate code for the subroutine if it contains nothing.
 			--If it contains nothing then references to it have already been removed.
-			if not token.ignore and token.is_referenced --[[minify-delete]] or _G['KEEP_DEAD_CODE'] --[[/minify-delete]] then
+			if not token.ignore and token.is_referenced --[[minify-delete]] or KEEP_DEAD_CODE --[[/minify-delete]] then
 				local skipsub = LABEL_ID()
 				emit(bc.call, 'jump', skipsub)
 				emit(bc.label, token.text)
@@ -1237,7 +1237,7 @@ function generate_bytecode(root, file)
 		--[[minify-delete]]
 		--Pipe operators are just text that don't get escaped when sent to command pipeline
 		[TOK.op_pipe] = function(token, file)
-			emit(bc.push, _G['RAW_SH_TEXT_SENTINEL'] .. token.text)
+			emit(bc.push, RAW_SH_TEXT_SENTINEL .. token.text)
 		end,
 		--[[/minify-delete]]
 	}

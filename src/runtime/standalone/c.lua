@@ -30,7 +30,7 @@ STANDALONE.c = {
 
 		text = init .. '\n' .. prefix .. '\n' .. text .. '\n' .. postfix
 
-		text = LUA.minify(text, true, _G['SANDBOX'] or false)
+		text = LUA.minify(text, true, SANDBOX or false)
 
 		return text
 	end,

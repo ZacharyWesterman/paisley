@@ -26,7 +26,7 @@ local function subroutine_enter(token, file)
 
 		local label = token.text
 		local prev = labels[label]
-		if prev ~= nil --[[minify-delete]] and not _G['ALLOW_SUBROUTINE_ELISION'] and not prev.allow_elision --[[/minify-delete]] then
+		if prev ~= nil --[[minify-delete]] and not ALLOW_SUBROUTINE_ELISION and not prev.allow_elision --[[/minify-delete]] then
 			-- Don't allow tokens to be redeclared
 			parse_error(token.span,
 				'Redeclaration of subroutine "' ..
@@ -39,7 +39,7 @@ local function subroutine_enter(token, file)
 		end
 
 		--[[minify-delete]]
-		if _G['ELIDE_LINES'][token.span.from.line] then
+		if ELIDE_LINES[token.span.from.line] then
 			token.allow_elision = true
 		end
 		--[[/minify-delete]]
@@ -74,7 +74,7 @@ end
 
 
 --[[minify-delete]]
-if _G['REPL'] then
+if REPL then
 	aliases = { ALIASES_TOPLEVEL }
 end
 --[[/minify-delete]]
@@ -113,7 +113,7 @@ end
 local macros = { {} }
 
 --[[minify-delete]]
-if _G['REPL'] then
+if REPL then
 	macros = MACROS_TOPLEVEL
 end
 --[[/minify-delete]]
@@ -141,7 +141,7 @@ local function pop_scope(token, file)
 		}
 
 		--[[minify-delete]]
-		if _G['LANGUAGE_SERVER'] then
+		if LANGUAGE_SERVER then
 			local info, text = {}, ''
 			local node = token.children[1]
 
@@ -172,7 +172,7 @@ local function pop_scope(token, file)
 			parse_error(token.span, 'Macro "' .. token.text .. '" is not defined in the current scope', file)
 		else
 			--[[minify-delete]]
-			if _G['LANGUAGE_SERVER'] then
+			if LANGUAGE_SERVER then
 				local info, text = {}, ''
 
 				local vscode = require "src.util.vscode"
@@ -464,7 +464,7 @@ return {
 				if token.text == 'exists' and ch.id == TOK.variable then
 					ch.id = TOK.string_open
 					ch.value = ch.text
-					ch.type = _G['TYPE_STRING']
+					ch.type = TYPE_STRING
 				end
 			end,
 		},
@@ -475,10 +475,10 @@ return {
 				local val = tonumber(token.text)
 				if val then
 					token.value = val
-					token.type = _G['TYPE_NUMBER']
+					token.type = TYPE_NUMBER
 				else
 					token.value = token.text
-					token.type = _G['TYPE_STRING']
+					token.type = TYPE_STRING
 				end
 			end,
 		},
@@ -697,13 +697,13 @@ return {
 
 	finally = function()
 		--[[minify-delete]]
-		if _G['REPL'] then
+		if REPL then
 			for key, value in pairs(aliases[1]) do
 				ALIASES_TOPLEVEL[key] = value
 			end
 		end
 
-		if _G['REPL'] then
+		if REPL then
 			macros = MACROS_TOPLEVEL
 		end
 		--[[/minify-delete]]

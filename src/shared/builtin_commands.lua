@@ -80,11 +80,11 @@ function SHELL_RESTRICT()
 	BUILTIN_COMMANDS['?!'] = nil
 end
 
-if _G['RESTRICT_TO_PLASMA_BUILD'] then
+if RESTRICT_TO_PLASMA_BUILD then
 	PLASMA_RESTRICT()
 end
 
-if _G['SANDBOX'] then
+if SANDBOX then
 	SHELL_RESTRICT()
 end
 --[[/minify-delete]]

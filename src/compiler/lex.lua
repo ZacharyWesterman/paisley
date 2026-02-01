@@ -341,7 +341,7 @@ function Lexer(text, file, keep_comments)
 				end
 
 				--[[minify-delete]]
-				if _G['IGNORE_MISSING_BRACE'] then
+				if IGNORE_MISSING_BRACE then
 					--expression end.
 					if not match then
 						match = text:match('^}')
@@ -369,7 +369,7 @@ function Lexer(text, file, keep_comments)
 				end
 
 				--[[minify-delete]]
-				if _G['RESTRICT_TO_PLASMA_BUILD'] then
+				if RESTRICT_TO_PLASMA_BUILD then
 					--[[/minify-delete]]
 					--non-quoted text
 					if not match then
@@ -633,7 +633,7 @@ function Lexer(text, file, keep_comments)
 							'Unexpected EOF inside string', file)
 						--[[minify-delete]]
 						--Hack to get REPL version to not loop forever
-						if _G['REPL'] then
+						if REPL then
 							this_chr = curr_scope
 							ERRORED = false
 						end
@@ -646,7 +646,7 @@ function Lexer(text, file, keep_comments)
 							'Unexpected line ending inside string', file)
 						--[[minify-delete]]
 						--Hack to get REPL version to not loop forever
-						if _G['REPL'] then
+						if REPL then
 							this_chr = curr_scope
 						end
 						--[[/minify-delete]]
@@ -853,19 +853,19 @@ function Lexer(text, file, keep_comments)
 			parse_error(Span:new(line, col, line, col), 'Unexpected EOF inside string', file)
 		elseif remaining_scope == '(' then
 			--[[minify-delete]]
-			if not _G['IGNORE_MISSING_BRACE'] then --[[/minify-delete]]
+			if not IGNORE_MISSING_BRACE then --[[/minify-delete]]
 				parse_error(Span:new(line, col, line, col), 'Missing parenthesis, expected ")"', file)
 				--[[minify-delete]]
 			end --[[/minify-delete]]
 		elseif remaining_scope == '[' then
 			--[[minify-delete]]
-			if not _G['IGNORE_MISSING_BRACE'] then --[[/minify-delete]]
+			if not IGNORE_MISSING_BRACE then --[[/minify-delete]]
 				parse_error(Span:new(line, col, line, col), 'Missing bracket, expected "]"', file)
 				--[[minify-delete]]
 			end --[[/minify-delete]]
 		elseif remaining_scope == '{' then
 			--[[minify-delete]]
-			if not _G['IGNORE_MISSING_BRACE'] then --[[/minify-delete]]
+			if not IGNORE_MISSING_BRACE then --[[/minify-delete]]
 				parse_error(Span:new(line, col, line, col), 'Missing brace after expression, expected "}"', file)
 				--[[minify-delete]]
 			end --[[/minify-delete]]
