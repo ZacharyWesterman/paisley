@@ -12,24 +12,90 @@ if [ ! -e "$cmd" ]; then
     cmd=paisley
 fi
 
+error() {
+    >&2 echo -e "[\e[31mERROR\e[0m]: $*"
+    failed=1
+}
+
+strip() {
+    local i
+    for i in "$@"; do
+        basename "${i%.*}"
+    done
+}
+
+readarray -t a1 < <($cmd --introspect --functions --synonyms=none)
+a2=(
+    add
+    arrayindex
+    arrayslice
+    bitwise_and
+    bitwise_not
+    bitwise_or
+    bitwise_xor
+    booland
+    boolnot
+    boolor
+    boolxor
+    concat
+    div
+    env_get
+    equal
+    explode
+    greater
+    greaterequal
+    implode
+    inarray
+    jump
+    jumpiffalse
+    jumpifnil
+    length
+    less
+    lessequal
+    mul
+    notequal
+    pow
+    rem
+    strlike
+    sub
+    superimplode
+    varexists
+)
+
+declare -A func_list
+declare -A operators
+
+for i in "${a1[@]}"; do func_list["$i"]=1; done
+for i in "${a2[@]}"; do operators["$i"]=1; done
+
 # Make sure that all functions have a cpp implementation (except synonym funcs)
 failed=0
-while read -r i; do
+for i in "${!func_list[@]}"; do
     if [ ! -e functions/"$i".cpp ]; then
-        >&2 echo -e "\e[1;31mERROR:\e[0m Missing C++ implementation of \`$i\` function."
-        failed=1
-    fi
-done < <($cmd --introspect --functions --synonyms=none)
-
-# Make sure that all actions have a cpp implementation
-failed=0
-for i in ../../runtime/actions/*.lua; do
-    i=${i%*.lua}
-    i=$(basename "$i")
-    if [ ! -e actions/"$i".cpp ]; then
-        >&2 echo -e "\e[1;31mERROR:\e[0m Missing C++ implementation of \`$i\` action."
-        failed=1
+        error "Missing C++ implementation of \`$i\` function."
     fi
 done
+
+# Make sure that there are no cpp functions that aren't implemented in Lua.
+while read -r i; do
+    if [ "${operators["$i"]}" != '' ]; then continue; fi
+    if [ "${func_list["$i"]}" == '' ]; then
+        error "C++ implementation of \`$i\` function exists but no such Lua function was found."
+    fi
+done < <(strip functions/*.cpp)
+
+# Make sure that all Lua actions have a cpp implementation
+while read -r i; do
+    if [ ! -e actions/"$i".cpp ]; then
+        error "Missing C++ implementation of \`$i\` action."
+    fi
+done < <(strip ../../runtime/actions/*.lua)
+
+# Make sure that all cpp actions have a Lua implementation
+while read -r i; do
+    if [ "$i" != pop_catch_or_throw ] && [ ! -e ../../runtime/actions/"$i".lua ]; then
+        error "C++ implementation of \`$i\` action exists but no such Lua action was found."
+    fi
+done < <(strip actions/*.cpp)
 
 exit $failed
