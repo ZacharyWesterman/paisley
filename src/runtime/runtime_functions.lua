@@ -62,109 +62,38 @@ local function PUSH(value)
 end
 
 local functions = {
-	--JUMP
 	require 'src.runtime.functions.jump',
-	--JUMP IF NIL
 	require 'src.runtime.functions.jumpifnil',
-	--JUMP IF FALSEY
 	require 'src.runtime.functions.jumpiffalse',
-	--EXPLODE: only used in for loops
 	require 'src.runtime.functions.explode',
-	--IMPLODE
 	require 'src.runtime.functions.implode',
-	--SUPERIMPLODE
 	require 'src.runtime.functions.superimplode',
-	--ADD
 	require 'src.runtime.functions.add',
-	--SUB
 	require 'src.runtime.functions.sub',
-	--MUL
 	require 'src.runtime.functions.mul',
-	--DIV
 	require 'src.runtime.functions.div',
-	--REM
 	require 'src.runtime.functions.rem',
-	--LENGTH
 	require 'src.runtime.functions.length',
-	--ARRAY INDEX
 	require 'src.runtime.functions.arrayindex',
-	--ARRAYSLICE
 	require 'src.runtime.functions.arrayslice',
-	--CONCAT
 	require 'src.runtime.functions.concat',
-	--BOOLEAN AND
 	require 'src.runtime.functions.booland',
-	--BOOLEAN OR
 	require 'src.runtime.functions.boolor',
-	--BOOLEAN XOR
 	require 'src.runtime.functions.boolxor',
-	--IN ARRAY/STRING
 	require 'src.runtime.functions.inarray',
-	--STRING LIKE PATTERN
 	require 'src.runtime.functions.strlike',
-	--EQUAL
 	require 'src.runtime.functions.equal',
-	--NOT EQUAL
 	require 'src.runtime.functions.notequal',
-	--GREATER THAN
 	require 'src.runtime.functions.greater',
-	--GREATER THAN OR EQUAL
 	require 'src.runtime.functions.greaterequal',
-	--LESS THAN
 	require 'src.runtime.functions.less',
-	--LESS THAN OR EQUAL
 	require 'src.runtime.functions.lessequal',
-	--BOOLEAN NOT
 	require 'src.runtime.functions.boolnot',
-	--CHECK IF VARIABLE EXISTS
 	require 'src.runtime.functions.varexists',
-	--IRANDOM
-	function(vm)
-		local v = vm.pop()
-		local min, max = std.num(v[1]), std.num(v[2])
-		vm.push(math.random(math.floor(min), math.floor(max)))
-	end,
-
-	--FRANDOM
-	function(vm)
-		local v = vm.pop()
-		local max, min = std.num(v[1]), std.num(v[2])
-		vm.push((math.random() * (max - min)) + min)
-	end,
-
-	--WORD DIFF (Levenshtein distance)
-	function(vm)
-		local v = vm.pop()
-		vm.push(lev(std.str(v[1]), std.str(v[2])))
-	end,
-
-	--DIST (N-dimensional vector distance)
-	function(vm)
-		local v = vm.pop()
-		local b, a = v[1], v[2]
-		local t1, t2 = type(a), type(b)
-		local result
-
-		if t1 ~= 'table' and t2 == 'table' then
-			b = b[1]
-		elseif t1 == 'table' and t2 ~= 'table' then
-			a = a[1]
-		end
-
-		if t1 == 'table' then
-			local total = 0
-			for i = 1, math.min(#a, #b) do
-				local p = a[i] - b[i]
-				total = total + p * p
-			end
-			result = math.sqrt(total)
-		else
-			result = math.abs(b - a)
-		end
-		vm.push(result)
-	end,
-
-	--MATH FUNCTIONS
+	require 'src.runtime.functions.random_int',
+	require 'src.runtime.functions.random_float',
+	require 'src.runtime.functions.word_diff',
+	require 'src.runtime.functions.dist',
 	require 'src.runtime.functions.sin',
 	require 'src.runtime.functions.cos',
 	require 'src.runtime.functions.tan',
@@ -173,38 +102,8 @@ local functions = {
 	require 'src.runtime.functions.atan',
 	require 'src.runtime.functions.atan2',
 	require 'src.runtime.functions.sqrt',
-
-	--SUM
-	function(vm)
-		local v, total = vm.pop(), 0
-		for i = 1, #v do
-			if type(v[i]) == 'table' then
-				for k = 1, #v[i] do total = total + std.num(v[i][k]) end
-			else
-				total = total + std.num(v[i])
-			end
-		end
-		vm.push(total)
-	end,
-
-	--MULT
-	function(vm)
-		local v, total = vm.pop(), 1
-		for i = 1, #v do
-			if type(v[i]) == 'table' then
-				for k = 1, #v[i] do
-					total = total * std.num(v[i][k])
-					if total == 0 then break end
-				end
-			else
-				total = total * std.num(v[i])
-			end
-			if total == 0 then break end
-		end
-		vm.push(total)
-	end,
-
-	--POWER
+	require 'src.runtime.functions.sum',
+	require 'src.runtime.functions.mult',
 	require 'src.runtime.functions.pow',
 
 	--MIN of arbitrary number of arguments
