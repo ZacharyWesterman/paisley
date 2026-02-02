@@ -119,27 +119,27 @@ local functions = {
 	--CHECK IF VARIABLE EXISTS
 	require 'src.runtime.functions.varexists',
 	--IRANDOM
-	function()
+	function(vm)
 		local v = vm.pop()
 		local min, max = std.num(v[1]), std.num(v[2])
 		vm.push(math.random(math.floor(min), math.floor(max)))
 	end,
 
 	--FRANDOM
-	function()
+	function(vm)
 		local v = vm.pop()
 		local max, min = std.num(v[1]), std.num(v[2])
 		vm.push((math.random() * (max - min)) + min)
 	end,
 
 	--WORD DIFF (Levenshtein distance)
-	function()
+	function(vm)
 		local v = vm.pop()
 		vm.push(lev(std.str(v[1]), std.str(v[2])))
 	end,
 
 	--DIST (N-dimensional vector distance)
-	function()
+	function(vm)
 		local v = vm.pop()
 		local b, a = v[1], v[2]
 		local t1, t2 = type(a), type(b)
@@ -175,7 +175,7 @@ local functions = {
 	require 'src.runtime.functions.sqrt',
 
 	--SUM
-	function()
+	function(vm)
 		local v, total = vm.pop(), 0
 		for i = 1, #v do
 			if type(v[i]) == 'table' then
@@ -188,7 +188,7 @@ local functions = {
 	end,
 
 	--MULT
-	function()
+	function(vm)
 		local v, total = vm.pop(), 1
 		for i = 1, #v do
 			if type(v[i]) == 'table' then
@@ -208,7 +208,7 @@ local functions = {
 	require 'src.runtime.functions.pow',
 
 	--MIN of arbitrary number of arguments
-	function()
+	function(vm)
 		local v, target = vm.pop()
 
 		for i = 1, #v do
@@ -224,7 +224,7 @@ local functions = {
 	end,
 
 	--MAX of arbitrary number of arguments
-	function()
+	function(vm)
 		local v, target = vm.pop()
 
 		for i = 1, #v do
@@ -240,40 +240,40 @@ local functions = {
 	end,
 
 	--SPLIT string into array
-	function()
+	function(vm)
 		local v = vm.pop()
 		vm.push(std.split(std.str(v[1]), std.str(v[2])))
 	end,
 
 	--JOIN array into string
-	function()
+	function(vm)
 		local v = vm.pop()
 		vm.push(std.join(v[1], std.str(v[2])))
 	end,
 
 	--TYPE
-	function() vm.push(std.type(vm.pop()[1])) end,
+	function(vm) vm.push(std.type(vm.pop()[1])) end,
 
 	--BOOL
-	function() vm.push(std.bool(vm.pop())) end,
+	function(vm) vm.push(std.bool(vm.pop())) end,
 
 	--NUM
-	function() vm.push(std.num(vm.pop()[1])) end,
+	function(vm) vm.push(std.num(vm.pop()[1])) end,
 
 	--STR
-	function() vm.push(std.str(vm.pop()[1])) end,
+	function(vm) vm.push(std.str(vm.pop()[1])) end,
 
 	--MORE MATH FUNCTIONS
 	require 'src.runtime.functions.floor',
 	require 'src.runtime.functions.ceil',
 
 	--ROUND
-	function() vm.push(math.floor(std.num(vm.pop()[1]) + 0.5)) end,
+	function(vm) vm.push(math.floor(std.num(vm.pop()[1]) + 0.5)) end,
 
 	require 'src.runtime.functions.abs',
 
 	--ARRAY APPEND
-	function()
+	function(vm)
 		local v = vm.pop()
 		if type(v[1]) == 'table' then
 			table.insert(v[1], v[2])
@@ -284,7 +284,7 @@ local functions = {
 	end,
 
 	--INDEX
-	function()
+	function(vm)
 		local v = vm.pop()
 		local res
 		if type(v[1]) == 'table' then
@@ -296,19 +296,19 @@ local functions = {
 	end,
 
 	--LOWERCASE
-	function() vm.push(std.str(vm.pop()):lower()) end,
+	function(vm) vm.push(std.str(vm.pop()):lower()) end,
 
 	--UPPERCASE
-	function() vm.push(std.str(vm.pop()):upper()) end,
+	function(vm) vm.push(std.str(vm.pop()):upper()) end,
 
 	--CAMEL CASE
-	function()
+	function(vm)
 		local v = std.str(vm.pop())
 		vm.push(v:gsub('(%l)(%w*)', function(x, y) return x:upper() .. y end))
 	end,
 
 	--STRING REPLACE
-	function()
+	function(vm)
 		local v = vm.pop()
 		vm.push(std.join(std.split(std.str(v[1]), std.str(v[2])), std.str(v[3])))
 	end,
@@ -343,7 +343,7 @@ local functions = {
 	end,
 
 	--JSON_VALID
-	function()
+	function(vm)
 		local v = vm.pop()
 		if type(v[1]) ~= 'string' then
 			vm.push(false)
@@ -353,17 +353,17 @@ local functions = {
 	end,
 
 	--BASE64_ENCODE
-	function()
+	function(vm)
 		vm.push(std.b64_encode(std.str(vm.pop()[1])))
 	end,
 
 	--BASE64_DECODE
-	function()
+	function(vm)
 		vm.push(std.b64_decode(std.str(vm.pop()[1])))
 	end,
 
 	--LEFT PAD STRING
-	function()
+	function(vm)
 		local v = vm.pop()
 		local text = std.str(v[1])
 		local character = std.str(v[2]):sub(1, 1)
@@ -373,7 +373,7 @@ local functions = {
 	end,
 
 	--RIGHT PAD STRING
-	function()
+	function(vm)
 		local v = vm.pop()
 		local text = std.str(v[1])
 		local character = std.str(v[2]):sub(1, 1)
@@ -383,13 +383,13 @@ local functions = {
 	end,
 
 	--FILTER STRING CHARS BASED ON PATTERN
-	function()
+	function(vm)
 		local v = vm.pop()
 		vm.push(std.filter(std.str(v[1]), std.str(v[2])))
 	end,
 
 	--GET ALL PATTERN MATCHES
-	function()
+	function(vm)
 		local v = vm.pop()
 		local array = std.array()
 		for i in std.str(v[1]):gmatch(std.str(v[2])) do
@@ -399,7 +399,7 @@ local functions = {
 	end,
 
 	--SPLIT A NUMBER INTO CLOCK TIME
-	function()
+	function(vm)
 		local v = std.num(vm.pop()[1])
 		local result = {
 			math.floor(v / 3600),
@@ -412,7 +412,7 @@ local functions = {
 	end,
 
 	--REVERSE ARRAY OR STRING
-	function()
+	function(vm)
 		local v = vm.pop()[1]
 		if type(v) == 'string' then
 			vm.push(v:reverse())
@@ -430,7 +430,7 @@ local functions = {
 		vm.push(result)
 	end,
 	--SORT ARRAY
-	function()
+	function(vm)
 		local is_table, v = false, vm.pop()[1]
 		if type(v) ~= 'table' then
 			vm.push({ v })
@@ -453,7 +453,7 @@ local functions = {
 	end,
 
 	--BYTES FROM NUMBER
-	function()
+	function(vm)
 		local v = vm.pop()
 		local result = {}
 		local value = math.floor(std.num(v[1]))
@@ -465,7 +465,7 @@ local functions = {
 	end,
 
 	--NUMBER FROM BYTES
-	function()
+	function(vm)
 		local v = vm.pop()
 		if type(v[1]) ~= 'table' then
 			vm.push(0)
@@ -479,7 +479,7 @@ local functions = {
 	end,
 
 	--MERGE TWO ARRAYS
-	function()
+	function(vm)
 		local v = vm.pop()
 		if type(v[1]) ~= 'table' then v[1] = { v[1] } end
 		if type(v[2]) ~= 'table' then v[2] = { v[2] } end
@@ -491,7 +491,7 @@ local functions = {
 	end,
 
 	--UPDATE ELEMENT IN ARRAY
-	function()
+	function(vm)
 		local v = vm.pop()
 		local object, indices, value = v[1], v[2], v[3]
 
@@ -499,7 +499,7 @@ local functions = {
 	end,
 
 	--INSERT ELEMENT IN ARRAY
-	function()
+	function(vm)
 		local v = vm.pop()
 		if type(v[1]) ~= 'table' then v[1] = { v[1] } end
 		local n = std.num(v[2])
@@ -522,7 +522,7 @@ local functions = {
 	end,
 
 	--DELETE ELEMENT FROM ARRAY
-	function()
+	function(vm)
 		local v = vm.pop()
 		if type(v[1]) ~= 'table' then v[1] = { v[1] } end
 		table.remove(v[1], std.num(v[2]))
@@ -530,7 +530,7 @@ local functions = {
 	end,
 
 	--LINEAR INTERPOLATION
-	function()
+	function(vm)
 		local v = vm.pop()
 		local ratio, a, b = std.num(v[1]), v[2], v[3]
 		if std.type(a) == 'array' or std.type(b) == 'array' then
@@ -552,7 +552,7 @@ local functions = {
 	end,
 
 	--SELECT RANDOM ELEMENT FROM ARRAY
-	function()
+	function(vm)
 		local v = vm.pop()
 		if type(v[1]) ~= 'table' then
 			vm.push(v[1])
@@ -562,12 +562,12 @@ local functions = {
 	end,
 
 	--GENERATE SHA256 HASH OF A STRING
-	function()
+	function(vm)
 		vm.push(std.hash(std.str(vm.pop()[1])))
 	end,
 
 	--FOLD ARRAY INTO OBJECT
-	function()
+	function(vm)
 		local result, array = std.object(), vm.pop()[1]
 		if type(array) == 'table' then
 			for i = 1, #array, 2 do
@@ -578,7 +578,7 @@ local functions = {
 	end,
 
 	--UNFOLD OBJECT INTO ARRAY
-	function()
+	function(vm)
 		local result, object = {}, vm.pop()[1]
 		if type(object) == 'table' then
 			for key, value in pairs(object) do
@@ -590,7 +590,7 @@ local functions = {
 	end,
 
 	--GET OBJECT KEYS
-	function()
+	function(vm)
 		local result, object = {}, vm.pop()[1]
 		if type(object) == 'table' then
 			for key, value in pairs(object) do
@@ -601,7 +601,7 @@ local functions = {
 	end,
 
 	--GET OBJECT VALUES
-	function()
+	function(vm)
 		local result, object = {}, vm.pop()[1]
 		if type(object) == 'table' then
 			for key, value in pairs(object) do
@@ -612,7 +612,7 @@ local functions = {
 	end,
 
 	--GET OBJECT KEY-VALUE PAIRS
-	function()
+	function(vm)
 		local result, object = {}, vm.pop()[1]
 		if type(object) == 'table' then
 			for key, value in pairs(object) do
@@ -623,7 +623,7 @@ local functions = {
 	end,
 
 	--INTERLEAVE TWO ARRAYS
-	function()
+	function(vm)
 		local result, v = {}, vm.pop()
 		if type(v[1]) == 'table' and type(v[2]) == 'table' then
 			local length = math.min(#v[1], #v[2])
@@ -642,7 +642,7 @@ local functions = {
 	end,
 
 	--FILTER UNIQUE ELEMENTS IN ARRAY
-	function()
+	function(vm)
 		local v = vm.pop()[1]
 		if type(v) == 'table' then
 			vm.push(std.unique(v))
@@ -666,7 +666,7 @@ local functions = {
 	require 'src.runtime.functions.is_superset',
 
 	--COUNT OCCURRENCES OF A VALUE IN ARRAY OR SUBSTRING IN STRING
-	function()
+	function(vm)
 		local v = vm.pop()
 		local res
 		if type(v[1]) == 'table' then
@@ -678,7 +678,7 @@ local functions = {
 	end,
 
 	--FIND NTH OCCURRENCE OF A VALUE IN ARRAY OR SUBSTRING IN STRING
-	function()
+	function(vm)
 		local v = vm.pop()
 		local res
 		if type(v[1]) == 'table' then
@@ -690,7 +690,7 @@ local functions = {
 	end,
 
 	--FLATTEN AN ARRAY OF ANY DIMENSION TO A 1-DIMENSIONAL ARRAY
-	function()
+	function(vm)
 		local function flatten(array, depth)
 			local result = std.array()
 			for i = 1, #array do
@@ -714,7 +714,7 @@ local functions = {
 	end,
 
 	--SMOOTHSTEP
-	function()
+	function(vm)
 		local v = vm.pop()
 		local value, min, max = std.num(v[1]), std.num(v[2]), std.num(v[3])
 
@@ -730,13 +730,13 @@ local functions = {
 	require 'src.runtime.functions.tanh',
 
 	--SIGN OF A NUMBER
-	function() vm.push(std.sign(std.num(vm.pop()[1]))) end,
+	function(vm) vm.push(std.sign(std.num(vm.pop()[1]))) end,
 
 	--CHAR TO ASCII
-	function() vm.push(string.byte(std.str(vm.pop()[1]))) end,
+	function(vm) vm.push(string.byte(std.str(vm.pop()[1]))) end,
 
 	--ASCII TO CHAR
-	function()
+	function(vm)
 		local num = math.floor(std.num(vm.pop()[1]))
 
 		local nans = {
@@ -750,28 +750,28 @@ local functions = {
 	end,
 
 	--STRING BEGINS WITH
-	function()
+	function(vm)
 		local v = vm.pop()
 		local search, substring = std.str(v[1]), std.str(v[2])
 		vm.push(search:sub(1, #substring) == substring)
 	end,
 
 	--STRING ENDS WITH
-	function()
+	function(vm)
 		local v = vm.pop()
 		local search, substring = std.str(v[1]), std.str(v[2])
 		vm.push(search:sub(#search - #substring + 1, #search) == substring)
 	end,
 
 	--CONVERT NUMBER TO NUMERIC STRING
-	function()
+	function(vm)
 		local v = vm.pop()
 		local number, base, pad_width = std.num(v[1]), std.num(v[2]), std.num(v[3])
 		vm.push(std.to_base(number, base, pad_width))
 	end,
 
 	--CONVERT TIMESTAMP INTO TIME STRING
-	function()
+	function(vm)
 		local v = vm.pop()[1]
 		if type(v) ~= 'table' then
 			v = std.num(v)
@@ -798,7 +798,7 @@ local functions = {
 	end,
 
 	--CONVERT DATE ARRAY INTO DATE STRING
-	function()
+	function(vm)
 		local v = vm.pop()[1]
 		if type(v) ~= 'table' then v = { v } end
 		local result = ''
@@ -811,7 +811,7 @@ local functions = {
 	end,
 
 	--SELECT NON-REPEATING RANDOM ELEMENTS FROM ARRAY
-	function()
+	function(vm)
 		local v = vm.pop()
 		local result = std.array()
 		if type(v[1]) ~= 'table' then v[1] = { v[1] } end
@@ -828,13 +828,13 @@ local functions = {
 	end,
 
 	--GET FIRST MATCH FROM A PATTERN ON A STRING
-	function()
+	function(vm)
 		local v = vm.pop()
 		vm.push(std.str(v[1]):match(std.str(v[2])))
 	end,
 
 	--SPLICE ARRAY
-	function()
+	function(vm)
 		local v = vm.pop()
 		local array1, index1, index2, array2 = v[1], std.num(v[2]), std.num(v[3]), v[4]
 		local result = std.array()
@@ -849,7 +849,7 @@ local functions = {
 	end,
 
 	--GENERATE UUID
-	function()
+	function(vm)
 		vm.pop()
 
 		local template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
@@ -862,7 +862,7 @@ local functions = {
 	end,
 
 	--CONVERT GLOB PATTERN TO LIST OF STRINGS
-	function()
+	function(vm)
 		local v = vm.pop()
 		local pattern = std.str(v[1])
 		local result = std.array()
@@ -883,13 +883,13 @@ local functions = {
 	end,
 
 	--SERIALIZE DATA TO XML
-	function() vm.push(XML.stringify(vm.pop()[1])) end,
+	function(vm) vm.push(XML.stringify(vm.pop()[1])) end,
 
 	--DESERIALIZE DATA FROM XML
-	function() vm.push(XML.parse(std.str(vm.pop()[1]))) end,
+	function(vm) vm.push(XML.parse(std.str(vm.pop()[1]))) end,
 
 	--LOGARITHM
-	function()
+	function(vm)
 		local v = vm.pop()
 		local base, value = v[2], std.num(v[1])
 		if base ~= nil then
@@ -904,7 +904,7 @@ local functions = {
 	end,
 
 	--NORMALIZE A VECTOR
-	function()
+	function(vm)
 		local v = vm.pop()[1]
 		if std.type(v) ~= 'array' then
 			v = { std.num(v) }
@@ -913,7 +913,7 @@ local functions = {
 	end,
 
 	--SELECT A RANDOM ELEMENT ACCORDING TO A DISTRIBUTION
-	function()
+	function(vm)
 		local v = vm.pop()
 		local vector, weights = v[1], v[2]
 		if std.type(vector) ~= 'array' then
@@ -926,7 +926,7 @@ local functions = {
 	end,
 
 	--TRIM CHARACTERS FROM A STRING
-	function()
+	function(vm)
 		local v = vm.pop()
 		local text, chars = std.str(v[1]), std.str(v[2])
 
@@ -944,7 +944,7 @@ local functions = {
 	require 'src.runtime.functions.modf',
 
 	--CONVERT A NUMERIC STRING FROM ANY BASE TO A NUMBER
-	function()
+	function(vm)
 		local v = vm.pop()
 		local str_value, base = std.str(v[1]), std.num(v[2])
 		if base < 2 or base > 36 then
@@ -955,7 +955,7 @@ local functions = {
 	end,
 
 	--CHUNK AN ARRAY INTO SUB-ARRAYS OF A GIVEN SIZE
-	function()
+	function(vm)
 		local v = vm.pop()
 		local array, size = v[1], std.num(v[2])
 		if std.type(array) ~= 'array' then
@@ -967,7 +967,7 @@ local functions = {
 	end,
 
 	--GET ENVIRONMENT VARIABLE
-	function()
+	function(vm)
 		--Environment variables are always null in the plasma build.
 
 		--[[minify-delete]]
@@ -982,7 +982,7 @@ local functions = {
 	end,
 
 	--CONVERT A TIME ARRAY INTO A TIMESTAMP
-	function()
+	function(vm)
 		local v = vm.pop()[1]
 		if type(v) ~= 'table' then
 			vm.push(0)
@@ -994,7 +994,7 @@ local functions = {
 	require 'src.runtime.functions.fmod',
 
 	--CHECK IF AN ARRAY IS SORTED
-	function()
+	function(vm)
 		local array = vm.pop()[1]
 
 		if std.type(array) ~= 'array' then
@@ -1014,20 +1014,20 @@ local functions = {
 	end,
 
 	--BITWISE AND
-	function() vm.push(std.bitwise['and'](std.num(vm.pop()), std.num(vm.pop()))) end,
+	function(vm) vm.push(std.bitwise['and'](std.num(vm.pop()), std.num(vm.pop()))) end,
 
 	--BITWISE OR
-	function() vm.push(std.bitwise['or'](std.num(vm.pop()), std.num(vm.pop()))) end,
+	function(vm) vm.push(std.bitwise['or'](std.num(vm.pop()), std.num(vm.pop()))) end,
 
 	--BITWISE XOR
-	function() vm.push(std.bitwise['xor'](std.num(vm.pop()), std.num(vm.pop()))) end,
+	function(vm) vm.push(std.bitwise['xor'](std.num(vm.pop()), std.num(vm.pop()))) end,
 
 	--BITWISE NOT
-	function() vm.push(std.bitwise['not'](std.num(vm.pop()))) end,
+	function(vm) vm.push(std.bitwise['not'](std.num(vm.pop()))) end,
 
 	--[[minify-delete]]
 	--CONVERT A DATETIME OBJECT TO A UNIX TIMESTAMP
-	function()
+	function(vm)
 		local dt = vm.pop()[1]
 		if std.type(dt) ~= 'object' then
 			vm.push(0)
@@ -1044,7 +1044,7 @@ local functions = {
 	end,
 
 	--CONVERT A UNIX TIMESTAMP TO A DATETIME OBJECT
-	function()
+	function(vm)
 		local timestamp = vm.pop()[1]
 		local datetime = std.object()
 		if std.type(timestamp) ~= 'number' then
@@ -1058,13 +1058,13 @@ local functions = {
 	end,
 
 	--GET THE CURRENT EPOCH TIME
-	function()
+	function(vm)
 		vm.pop()
 		vm.push(os.time())
 	end,
 
 	--LIST ALL FILES THAT MATCH A GLOB PATTERN
-	function()
+	function(vm)
 		local pattern = std.str(vm.pop()[1])
 
 		local lfs = fs.rocks.lfs
@@ -1077,61 +1077,61 @@ local functions = {
 	end,
 
 	--CHECK IF A FILE EXISTS
-	function() vm.push(fs.file_exists(std.str(vm.pop()[1]))) end,
+	function(vm) vm.push(fs.file_exists(std.str(vm.pop()[1]))) end,
 
 	--GET FILE SIZE
-	function() vm.push(fs.file_size(std.str(vm.pop()[1]))) end,
+	function(vm) vm.push(fs.file_size(std.str(vm.pop()[1]))) end,
 
 	--READ FILE CONTENTS
-	function() vm.push(fs.file_read(std.str(vm.pop()[1]))) end,
+	function(vm) vm.push(fs.file_read(std.str(vm.pop()[1]))) end,
 
 	--WRITE FILE CONTENTS
-	function()
+	function(vm)
 		local v = vm.pop()
 		vm.push(fs.file_write(std.str(v[1]), std.str(v[2]), false))
 	end,
 
 	--APPEND TO FILE
-	function()
+	function(vm)
 		local v = vm.pop()
 		vm.push(fs.file_write(std.str(v[1]), std.str(v[2]), true))
 	end,
 
 	--DELETE A FILE
-	function() vm.push(fs.file_delete(std.str(vm.pop()[1]))) end,
+	function(vm) vm.push(fs.file_delete(std.str(vm.pop()[1]))) end,
 
 	--MAKE A DIRECTORY
-	function()
+	function(vm)
 		local v = vm.pop()
 		vm.push(fs.dir_create(std.str(v[1]), std.bool(v[2])))
 	end,
 
 	--LIST FILES IN A DIRECTORY
-	function()
+	function(vm)
 		local v = vm.pop()
 		vm.push(fs.dir_list(std.str(v[1])))
 	end,
 
 	--DELETE A DIRECTORY
-	function()
+	function(vm)
 		local v = vm.pop()
 		vm.push(fs.dir_delete(std.str(v[1]), std.bool(v[2])))
 	end,
 
 	--GET THE TYPE OF A FILESYSTEM OBJECT
-	function() vm.push(fs.file_type(std.str(vm.pop()[1]))) end,
+	function(vm) vm.push(fs.file_type(std.str(vm.pop()[1]))) end,
 
 	--STAT A FILE
-	function() vm.push(fs.file_stat(std.str(vm.pop()[1]))) end,
+	function(vm) vm.push(fs.file_stat(std.str(vm.pop()[1]))) end,
 
 	--COPY A FILE
-	function()
+	function(vm)
 		local v = vm.pop()
 		vm.push(fs.file_copy(std.str(v[1]), std.str(v[2]), std.bool(v[3])))
 	end,
 
 	--MOVE A FILE
-	function()
+	function(vm)
 		local v = vm.pop()
 		vm.push(fs.file_move(std.str(v[1]), std.str(v[2]), std.bool(v[3])))
 	end,
