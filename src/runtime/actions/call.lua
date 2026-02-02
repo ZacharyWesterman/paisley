@@ -3,6 +3,6 @@ return function(vm, line, p1, p2)
 	if not fn then
 		vm.runtime_error(line, 'RUNTIME BUG: No function found for id "' .. std.str(p1) .. '"')
 	else
-		fn(line, p2)
+		fn(vm, line, p2)
 	end
 end

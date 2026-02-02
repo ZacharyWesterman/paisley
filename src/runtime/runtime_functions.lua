@@ -323,7 +323,7 @@ local functions = {
 	end,
 
 	--JSON_ENCODE
-	function(line)
+	function(vm, line)
 		local v = POP()
 		local indent = nil
 		if std.bool(v[2]) then indent = 2 end
@@ -336,7 +336,7 @@ local functions = {
 	end,
 
 	--JSON_DECODE
-	function(line)
+	function(vm, line)
 		local v = POP()
 
 		if type(v[1]) ~= 'string' then
