@@ -105,94 +105,20 @@ local functions = {
 	require 'src.runtime.functions.sum',
 	require 'src.runtime.functions.mult',
 	require 'src.runtime.functions.pow',
-
-	--MIN of arbitrary number of arguments
-	function(vm)
-		local v, target = vm.pop()
-
-		for i = 1, #v do
-			if type(v[i]) == 'table' then
-				for k = 1, #v[i] do
-					if target then target = math.min(target, std.num(v[i][k])) else target = std.num(v[i][k]) end
-				end
-			else
-				if target then target = math.min(target, std.num(v[i])) else target = std.num(v[i]) end
-			end
-		end
-		vm.push(target)
-	end,
-
-	--MAX of arbitrary number of arguments
-	function(vm)
-		local v, target = vm.pop()
-
-		for i = 1, #v do
-			if type(v[i]) == 'table' then
-				for k = 1, #v[i] do
-					if target then target = math.max(target, std.num(v[i][k])) else target = std.num(v[i][k]) end
-				end
-			else
-				if target then target = math.max(target, std.num(v[i])) else target = std.num(v[i]) end
-			end
-		end
-		vm.push(target)
-	end,
-
-	--SPLIT string into array
-	function(vm)
-		local v = vm.pop()
-		vm.push(std.split(std.str(v[1]), std.str(v[2])))
-	end,
-
-	--JOIN array into string
-	function(vm)
-		local v = vm.pop()
-		vm.push(std.join(v[1], std.str(v[2])))
-	end,
-
-	--TYPE
-	function(vm) vm.push(std.type(vm.pop()[1])) end,
-
-	--BOOL
-	function(vm) vm.push(std.bool(vm.pop())) end,
-
-	--NUM
-	function(vm) vm.push(std.num(vm.pop()[1])) end,
-
-	--STR
-	function(vm) vm.push(std.str(vm.pop()[1])) end,
-
-	--MORE MATH FUNCTIONS
+	require 'src.runtime.functions.min',
+	require 'src.runtime.functions.max',
+	require 'src.runtime.functions.split',
+	require 'src.runtime.functions.join',
+	require 'src.runtime.functions.type',
+	require 'src.runtime.functions.bool',
+	require 'src.runtime.functions.num',
+	require 'src.runtime.functions.str',
 	require 'src.runtime.functions.floor',
 	require 'src.runtime.functions.ceil',
-
-	--ROUND
-	function(vm) vm.push(math.floor(std.num(vm.pop()[1]) + 0.5)) end,
-
+	require 'src.runtime.functions.round',
 	require 'src.runtime.functions.abs',
-
-	--ARRAY APPEND
-	function(vm)
-		local v = vm.pop()
-		if type(v[1]) == 'table' then
-			table.insert(v[1], v[2])
-			vm.push(v[1])
-		else
-			vm.push({ v[1], v[2] })
-		end
-	end,
-
-	--INDEX
-	function(vm)
-		local v = vm.pop()
-		local res
-		if type(v[1]) == 'table' then
-			res = std.arrfind(v[1], v[2], 1)
-		else
-			res = std.strfind(std.str(v[1]), std.str(v[2]), 1)
-		end
-		vm.push(res)
-	end,
+	require 'src.runtime.functions.append',
+	require 'src.runtime.functions.index',
 
 	--LOWERCASE
 	function(vm) vm.push(std.str(vm.pop()):lower()) end,
