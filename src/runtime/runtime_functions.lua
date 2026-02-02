@@ -61,285 +61,47 @@ local function PUSH(value)
 	end
 end
 
---[[c=math]]
-local function mathfunc(funcname)
-	return function(line)
-		local v, p = POP(), {}
-		for i = 1, #v do
-			table.insert(p, std.num(v[i]))
-		end
-
-		---@diagnostic disable-next-line
-		local u = table.unpack or unpack
-
-		--If null was passed to the function, in a way that could not be determined at compile time, coerce it to be zero.
-		if #p == 0 then
-			print('WARNING: line ' .. line .. ': Null passed to math function, coerced to 0')
-			p = { 0 }
-		end
-
-		local fn = math[funcname]
-		if not fn then
-			runtime_error(line, 'RUNTIME BUG: Math function "' .. funcname .. '" does not exist')
-		end
-
-		local val1, val2 = fn(u(p))
-		if val2 then
-			PUSH({ val1, val2 })
-		else
-			PUSH(val1)
-		end
-	end
-end
---[[/]]
-
---[[c=numbers]]
----Format two parameters and perform a binary operation on them.
----@param format_func fun(param: any): any The function to format the parameters with.
----@param operate_func fun(param1: any, param2: any): any The operation to perform on the two parameters.
----@return fun(line: number): nil runtime_function The function to execute the operation.
-local function operator(format_func, operate_func)
-	return function(line)
-		local v2, v1 = POP(), POP()
-
-		if type(v1) == 'table' or type(v2) == 'table' then
-			if type(v1) ~= 'table' then v1 = { v1 } end
-			if type(v2) ~= 'table' then v2 = { v2 } end
-
-			local result = {}
-			for i = 1, math.min(#v1, #v2) do
-				table.insert(result, operate_func(format_func(v1[i]), format_func(v2[i])))
-			end
-			PUSH(result)
-		else
-			PUSH(operate_func(format_func(v1), format_func(v2)))
-		end
-	end
-end
---[[/]]
-
---[[c=sets]]
----Perform operations on two sets.
----@param func fun(a: table, b: table): table The function to perform on the two sets.
----@return fun(line: number): nil runtime_function The function to execute the operation.
-local function set_operator(func)
-	return function(line)
-		local v = POP()
-		local a, b = v[1], v[2]
-		if type(a) ~= 'table' then a = { a } end
-		if type(b) ~= 'table' then b = { b } end
-		PUSH(func(a, b))
-	end
-end
-
 local functions = {
 	--JUMP
-	function(line, param)
-		if param == nil then
-			CURRENT_INSTRUCTION = POP()
-		else
-			CURRENT_INSTRUCTION = param
-		end
-	end,
-
+	require 'src.runtime.functions.jump',
 	--JUMP IF NIL
-	function(line, param)
-		if STACK[#STACK] == NULL then
-			CURRENT_INSTRUCTION = param
-		end
-	end,
-
+	require 'src.runtime.functions.jumpifnil',
 	--JUMP IF FALSEY
-	function(line, param)
-		if std.bool(STACK[#STACK]) == false then CURRENT_INSTRUCTION = param end
-	end,
-
+	require 'src.runtime.functions.jumpiffalse',
 	--EXPLODE: only used in for loops
-	function(line, param)
-		local array = POP()
-
-		if std.type(array) == 'object' then
-			for key, value in pairs(array) do PUSH(key) end
-		elseif std.type(array) == 'array' then
-			for i = 1, #array do
-				local val = array[#array - i + 1]
-				PUSH(val)
-			end
-		else
-			PUSH(array)
-		end
-	end,
-
+	require 'src.runtime.functions.explode',
 	--IMPLODE
-	function(line, param)
-		--Reverse the table so it's in the correct order
-		local res = {}
-		for i = param, 1, -1 do
-			res[i] = POP()
-		end
-		PUSH(res)
-	end,
-
+	require 'src.runtime.functions.implode',
 	--SUPERIMPLODE
-	function(line, param)
-		local array = {}
-		for i = 1, param do
-			local val = POP()
-			if type(val) == 'table' then
-				local k
-				for k = 1, #val do table.insert(array, val[k]) end
-			else
-				table.insert(array, val)
-			end
-		end
-		--Reverse the table so it's in the correct order
-		local res = {}
-		for i = 1, #array do
-			table.insert(res, array[#array - i + 1])
-		end
-		PUSH(res)
-	end,
-
+	require 'src.runtime.functions.superimplode',
 	--ADD
-	operator(std.num, function(a, b) return a + b end),
-
+	require 'src.runtime.functions.add',
 	--SUB
-	operator(std.num, function(a, b) return a - b end),
-
+	require 'src.runtime.functions.sub',
 	--MUL
-	operator(std.num, function(a, b) return a * b end),
-
+	require 'src.runtime.functions.mul',
 	--DIV
-	operator(std.num, function(a, b) return a / b end),
-
+	require 'src.runtime.functions.div',
 	--REM
-	operator(std.num, function(a, b) return a % b end),
-
+	require 'src.runtime.functions.rem',
 	--LENGTH
-	function()
-		local val = POP()
-		if type(val) == 'table' then PUSH(#val) else PUSH(#std.str(val)) end
-	end,
-
+	require 'src.runtime.functions.length',
 	--ARRAY INDEX
-	function(line)
-		local index, data = POP(), POP()
-		local is_string = false
-		if type(data) ~= 'table' then
-			is_string = true
-			data = std.split(std.str(data), '')
-		end
-		local meta = getmetatable(data)
-		local is_array = true
-		if meta and not meta.is_array then is_array = false end
-
-		local result
-		if type(index) ~= 'table' then
-			if is_array then
-				if type(index) ~= 'number' and not tonumber(index) then
-					print('WARNING: line ' .. line .. ': Attempt to index array with non-numeric value, null returned')
-					PUSH(NULL)
-					return
-				end
-
-				index = std.num(index)
-				if index < 0 then
-					index = #data + index + 1
-				elseif index == 0 then
-					print('WARNING: line ' .. line .. ': Indexes begin at 1, not 0')
-				end
-
-				result = data[index]
-			else
-				result = data[std.str(index)]
-			end
-		else
-			result = {}
-			for i = 1, #index do
-				if is_array then
-					if type(index[i]) ~= 'number' and not tonumber(index[i]) then
-						print('WARNING: line ' ..
-							line .. ': Attempt to index array with non-numeric value, null returned')
-						PUSH(NULL)
-						return
-					end
-
-					local ix = std.num(index[i])
-					if ix < 0 then
-						ix = #data + ix + 1
-					elseif ix == 0 then
-						print('WARNING: line ' .. line .. ': Indexes begin at 1, not 0')
-					end
-					table.insert(result, data[ix])
-				else
-					table.insert(result, data[std.str(index[i])])
-				end
-			end
-			if is_string then result = std.join(result, '') end
-		end
-		PUSH(result)
-	end,
-
+	require 'src.runtime.functions.arrayindex',
 	--ARRAYSLICE
-	function(line)
-		local stop, start, i = std.num(POP()), std.num(POP())
-		local array = {}
-
-		--For performance, limit how big slices can be.
-		if stop - start > std.MAX_ARRAY_LEN then
-			print('WARNING: line ' ..
-				line ..
-				': Attempt to create an array of ' ..
-				(stop - start) .. ' elements (max is ' .. std.MAX_ARRAY_LEN .. '). Array truncated.')
-			stop = start + std.MAX_ARRAY_LEN
-		end
-
-		for i = start, stop do
-			table.insert(array, i)
-		end
-		PUSH(array)
-	end,
-
+	require 'src.runtime.functions.arrayslice',
 	--CONCAT
-	function(line, param)
-		local result = ''
-		while param > 0 do
-			result = std.str(POP()) .. result
-			param = param - 1
-		end
-		PUSH(result)
-	end,
-
+	require 'src.runtime.functions.concat',
 	--BOOLEAN AND
-	operator(std.bool, function(a, b) return a and b end),
-
+	require 'src.runtime.functions.booland',
 	--BOOLEAN OR
-	operator(std.bool, function(a, b) return a or b end),
-
+	require 'src.runtime.functions.boolor',
 	--BOOLEAN XOR
-	operator(std.bool, function(a, b) return (a or b) and not (a and b) end),
-
+	require 'src.runtime.functions.boolxor',
 	--IN ARRAY/STRING
-	function()
-		local data, val = POP(), POP()
-		local result = false
-		if std.type(data) == 'array' then
-			for i = 1, #data do
-				if data[i] == val then
-					result = true
-					break
-				end
-			end
-		elseif std.type(data) == 'object' then
-			result = data[std.str(val)] ~= nil
-		else
-			result = std.contains(std.str(data), val)
-		end
-		PUSH(result)
-	end,
-
+	require 'src.runtime.functions.inarray',
 	--STRING LIKE PATTERN
-	operator(std.str, function(a, b) return a:match(b) ~= nil end),
+	require 'src.runtime.functions.strlike',
 
 	--EQUAL
 	function() PUSH(std.equal(POP(), POP())) end,
@@ -412,14 +174,14 @@ local functions = {
 	end,
 
 	--MATH FUNCTIONS
-	mathfunc('sin'),
-	mathfunc('cos'),
-	mathfunc('tan'),
-	mathfunc('asin'),
-	mathfunc('acos'),
-	mathfunc('atan'),
-	mathfunc('atan2'),
-	mathfunc('sqrt'),
+	require 'src.runtime.functions.sin',
+	require 'src.runtime.functions.cos',
+	require 'src.runtime.functions.tan',
+	require 'src.runtime.functions.asin',
+	require 'src.runtime.functions.acos',
+	require 'src.runtime.functions.atan',
+	require 'src.runtime.functions.atan2',
+	require 'src.runtime.functions.sqrt',
 
 	--SUM
 	function()
@@ -452,7 +214,7 @@ local functions = {
 	end,
 
 	--POWER
-	operator(std.num, function(a, b) if a == 0 then return 0 else return a ^ b end end),
+	require 'src.runtime.functions.pow',
 
 	--MIN of arbitrary number of arguments
 	function()
@@ -511,13 +273,13 @@ local functions = {
 	function() PUSH(std.str(POP()[1])) end,
 
 	--MORE MATH FUNCTIONS
-	mathfunc('floor'),
-	mathfunc('ceil'),
+	require 'src.runtime.functions.floor',
+	require 'src.runtime.functions.ceil',
 
 	--ROUND
 	function() PUSH(math.floor(std.num(POP()[1]) + 0.5)) end,
 
-	mathfunc('abs'),
+	require 'src.runtime.functions.abs',
 
 	--ARRAY APPEND
 	function()
@@ -897,27 +659,20 @@ local functions = {
 			PUSH { v }
 		end
 	end,
-
 	--UNION OF TWO SETS
-	set_operator(std.union),
-
+	require 'src.runtime.functions.union',
 	--INTERSECTION OF TWO SETS
-	set_operator(std.intersection),
-
+	require 'src.runtime.functions.intersection',
 	--DIFFERENCE OF TWO SETS
-	set_operator(std.difference),
-
+	require 'src.runtime.functions.difference',
 	--SYMMETRIC DIFFERENCE OF TWO SETS
-	set_operator(std.symmetric_difference),
-
+	require 'src.runtime.functions.symmetric_difference',
 	--CHECK IF TWO SETS ARE DISJOINT
-	set_operator(std.is_disjoint),
-
+	require 'src.runtime.functions.is_disjoint',
 	--CHECK IF ONE SET IS A SUBSET OF ANOTHER
-	set_operator(std.is_subset),
-
+	require 'src.runtime.functions.is_subset',
 	--CHECK IF ONE SET IS A SUPERSET OF ANOTHER
-	set_operator(std.is_superset),
+	require 'src.runtime.functions.is_superset',
 
 	--COUNT OCCURRENCES OF A VALUE IN ARRAY OR SUBSTRING IN STRING
 	function()
@@ -979,9 +734,9 @@ local functions = {
 	end,
 
 	--HYPERBOLIC TRIG FUNCTIONS
-	mathfunc('sinh'),
-	mathfunc('cosh'),
-	mathfunc('tanh'),
+	require 'src.runtime.functions.sinh',
+	require 'src.runtime.functions.cosh',
+	require 'src.runtime.functions.tanh',
 
 	--SIGN OF A NUMBER
 	function() PUSH(std.sign(std.num(POP()[1]))) end,
@@ -1195,7 +950,7 @@ local functions = {
 		PUSH(text:match(pattern))
 	end,
 
-	mathfunc('modf'),
+	require 'src.runtime.functions.modf',
 
 	--CONVERT A NUMERIC STRING FROM ANY BASE TO A NUMBER
 	function()
@@ -1245,7 +1000,7 @@ local functions = {
 		PUSH((v[1] or 0) * 3600 + (v[2] or 0) * 60 + (v[3] or 0) + (v[4] or 0) / 1000)
 	end,
 
-	mathfunc('fmod'),
+	require 'src.runtime.functions.fmod',
 
 	--CHECK IF AN ARRAY IS SORTED
 	function()
