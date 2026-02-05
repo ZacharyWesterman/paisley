@@ -119,636 +119,70 @@ local functions = {
 	require 'src.runtime.functions.abs',
 	require 'src.runtime.functions.append',
 	require 'src.runtime.functions.index',
-
-	--LOWERCASE
-	function(vm) vm.push(std.str(vm.pop()):lower()) end,
-
-	--UPPERCASE
-	function(vm) vm.push(std.str(vm.pop()):upper()) end,
-
-	--CAMEL CASE
-	function(vm)
-		local v = std.str(vm.pop())
-		vm.push(v:gsub('(%l)(%w*)', function(x, y) return x:upper() .. y end))
-	end,
-
-	--STRING REPLACE
-	function(vm)
-		local v = vm.pop()
-		vm.push(std.join(std.split(std.str(v[1]), std.str(v[2])), std.str(v[3])))
-	end,
-
-	--JSON_ENCODE
-	function(vm, line)
-		local v = vm.pop()
-		local indent = nil
-		if std.bool(v[2]) then indent = 2 end
-
-		local res, err = json.stringify(v[1], indent)
-		if err ~= nil then
-			runtime_error(line, err)
-		end
-		vm.push(res)
-	end,
-
-	--JSON_DECODE
-	function(vm, line)
-		local v = vm.pop()
-
-		if type(v[1]) ~= 'string' then
-			runtime_error(line, 'Input to json_decode is not a string')
-		end
-
-		local res, err = json.parse(v[1], true)
-		if err ~= nil then
-			runtime_error(line, err)
-		end
-
-		vm.push(res)
-	end,
-
-	--JSON_VALID
-	function(vm)
-		local v = vm.pop()
-		if type(v[1]) ~= 'string' then
-			vm.push(false)
-		else
-			vm.push(json.verify(v[1]))
-		end
-	end,
-
-	--BASE64_ENCODE
-	function(vm)
-		vm.push(std.b64_encode(std.str(vm.pop()[1])))
-	end,
-
-	--BASE64_DECODE
-	function(vm)
-		vm.push(std.b64_decode(std.str(vm.pop()[1])))
-	end,
-
-	--LEFT PAD STRING
-	function(vm)
-		local v = vm.pop()
-		local text = std.str(v[1])
-		local character = std.str(v[2]):sub(1, 1)
-		local width = std.num(v[3])
-
-		vm.push(character:rep(width - #text) .. text)
-	end,
-
-	--RIGHT PAD STRING
-	function(vm)
-		local v = vm.pop()
-		local text = std.str(v[1])
-		local character = std.str(v[2]):sub(1, 1)
-		local width = std.num(v[3])
-
-		vm.push(text .. character:rep(width - #text))
-	end,
-
-	--FILTER STRING CHARS BASED ON PATTERN
-	function(vm)
-		local v = vm.pop()
-		vm.push(std.filter(std.str(v[1]), std.str(v[2])))
-	end,
-
-	--GET ALL PATTERN MATCHES
-	function(vm)
-		local v = vm.pop()
-		local array = std.array()
-		for i in std.str(v[1]):gmatch(std.str(v[2])) do
-			table.insert(array, i)
-		end
-		vm.push(array)
-	end,
-
-	--SPLIT A NUMBER INTO CLOCK TIME
-	function(vm)
-		local v = std.num(vm.pop()[1])
-		local result = {
-			math.floor(v / 3600),
-			math.floor(v / 60) % 60,
-			math.floor(v) % 60,
-		}
-		local millis = math.floor(v * 1000) % 1000
-		if millis ~= 0 then result[4] = millis end
-		vm.push(result)
-	end,
-
-	--REVERSE ARRAY OR STRING
-	function(vm)
-		local v = vm.pop()[1]
-		if type(v) == 'string' then
-			vm.push(v:reverse())
-			return
-		elseif type(v) ~= 'table' then
-			vm.push({ v })
-			return
-		end
-
-		local result = {}
-		for i = #v, 1, -1 do
-			table.insert(result, v[i])
-		end
-
-		vm.push(result)
-	end,
-	--SORT ARRAY
-	function(vm)
-		local is_table, v = false, vm.pop()[1]
-		if type(v) ~= 'table' then
-			vm.push({ v })
-			return
-		end
-
-		for key, val in pairs(v) do
-			if type(val) == 'table' then
-				is_table = true
-				break
-			end
-		end
-
-		if is_table then
-			table.sort(v, function(a, b) return std.str(a) < std.str(b) end)
-		else
-			table.sort(v)
-		end
-		vm.push(v)
-	end,
-
-	--BYTES FROM NUMBER
-	function(vm)
-		local v = vm.pop()
-		local result = {}
-		local value = math.floor(std.num(v[1]))
-		for i = math.min(4, std.num(v[2])), 1, -1 do
-			result[i] = value % 256
-			value = math.floor(value / 256)
-		end
-		vm.push(result)
-	end,
-
-	--NUMBER FROM BYTES
-	function(vm)
-		local v = vm.pop()
-		if type(v[1]) ~= 'table' then
-			vm.push(0)
-		else
-			local result = 0
-			for i = 1, #v[1] do
-				result = result * 256 + v[1][i]
-			end
-			vm.push(result)
-		end
-	end,
-
-	--MERGE TWO ARRAYS
-	function(vm)
-		local v = vm.pop()
-		if type(v[1]) ~= 'table' then v[1] = { v[1] } end
-		if type(v[2]) ~= 'table' then v[2] = { v[2] } end
-
-		for i = 1, #v[2] do
-			table.insert(v[1], v[2][i])
-		end
-		vm.push(v[1])
-	end,
-
-	--UPDATE ELEMENT IN ARRAY
-	function(vm)
-		local v = vm.pop()
-		local object, indices, value = v[1], v[2], v[3]
-
-		vm.push(std.update_element(object, indices, value))
-	end,
-
-	--INSERT ELEMENT IN ARRAY
-	function(vm)
-		local v = vm.pop()
-		if type(v[1]) ~= 'table' then v[1] = { v[1] } end
-		local n = std.num(v[2])
-
-		local meta = getmetatable(v[1])
-		if not meta or meta.is_array then
-			--If index is negative, insert starting at the end
-			if n < 0 then n = #v[1] + n + 2 end
-
-			if n > #v[1] then
-				table.insert(v[1], v[3])
-			elseif n > 0 then
-				table.insert(v[1], n, v[3])
-			else
-				--Insert at beginning if index is less than 1
-				table.insert(v[1], 1, v[3])
-			end
-		end
-		vm.push(v[1])
-	end,
-
-	--DELETE ELEMENT FROM ARRAY
-	function(vm)
-		local v = vm.pop()
-		if type(v[1]) ~= 'table' then v[1] = { v[1] } end
-		table.remove(v[1], std.num(v[2]))
-		vm.push(v[1])
-	end,
-
-	--LINEAR INTERPOLATION
-	function(vm)
-		local v = vm.pop()
-		local ratio, a, b = std.num(v[1]), v[2], v[3]
-		if std.type(a) == 'array' or std.type(b) == 'array' then
-			if type(a) ~= 'table' then a = { a } end
-			if type(b) ~= 'table' then b = { b } end
-
-			local result = {}
-			for i = 1, math.min(#a, #b) do
-				local start = std.num(a[i])
-				local stop = std.num(b[i])
-				result[i] = start + ratio * (stop - start)
-			end
-			vm.push(result)
-			return
-		end
-		a = std.num(a)
-		b = std.num(b)
-		vm.push(a + ratio * (b - a))
-	end,
-
-	--SELECT RANDOM ELEMENT FROM ARRAY
-	function(vm)
-		local v = vm.pop()
-		if type(v[1]) ~= 'table' then
-			vm.push(v[1])
-		else
-			vm.push(v[1][math.random(1, #v[1])])
-		end
-	end,
-
-	--GENERATE SHA256 HASH OF A STRING
-	function(vm)
-		vm.push(std.hash(std.str(vm.pop()[1])))
-	end,
-
-	--FOLD ARRAY INTO OBJECT
-	function(vm)
-		local result, array = std.object(), vm.pop()[1]
-		if type(array) == 'table' then
-			for i = 1, #array, 2 do
-				result[std.str(array[i])] = array[i + 1]
-			end
-		end
-		vm.push(result)
-	end,
-
-	--UNFOLD OBJECT INTO ARRAY
-	function(vm)
-		local result, object = {}, vm.pop()[1]
-		if type(object) == 'table' then
-			for key, value in pairs(object) do
-				table.insert(result, key)
-				table.insert(result, value)
-			end
-		end
-		vm.push(result)
-	end,
-
-	--GET OBJECT KEYS
-	function(vm)
-		local result, object = {}, vm.pop()[1]
-		if type(object) == 'table' then
-			for key, value in pairs(object) do
-				table.insert(result, key)
-			end
-		end
-		vm.push(result)
-	end,
-
-	--GET OBJECT VALUES
-	function(vm)
-		local result, object = {}, vm.pop()[1]
-		if type(object) == 'table' then
-			for key, value in pairs(object) do
-				table.insert(result, value)
-			end
-		end
-		vm.push(result)
-	end,
-
-	--GET OBJECT KEY-VALUE PAIRS
-	function(vm)
-		local result, object = {}, vm.pop()[1]
-		if type(object) == 'table' then
-			for key, value in pairs(object) do
-				table.insert(result, { key, value })
-			end
-		end
-		vm.push(result)
-	end,
-
-	--INTERLEAVE TWO ARRAYS
-	function(vm)
-		local result, v = {}, vm.pop()
-		if type(v[1]) == 'table' and type(v[2]) == 'table' then
-			local length = math.min(#v[1], #v[2])
-			for i = 1, length do
-				table.insert(result, v[1][i])
-				table.insert(result, v[2][i])
-			end
-			for i = length + 1, #v[1] do table.insert(result, v[1][i]) end
-			for i = length + 1, #v[2] do table.insert(result, v[2][i]) end
-		elseif type(v[1]) == 'table' then
-			result = v[1]
-		elseif type(v[2]) == 'table' then
-			result = v[2]
-		end
-		vm.push(result)
-	end,
-
-	--FILTER UNIQUE ELEMENTS IN ARRAY
-	function(vm)
-		local v = vm.pop()[1]
-		if type(v) == 'table' then
-			vm.push(std.unique(v))
-		else
-			vm.push { v }
-		end
-	end,
-	--UNION OF TWO SETS
+	require 'src.runtime.functions.lower',
+	require 'src.runtime.functions.upper',
+	require 'src.runtime.functions.camel',
+	require 'src.runtime.functions.replace',
+	require 'src.runtime.functions.json_encode',
+	require 'src.runtime.functions.json_decode',
+	require 'src.runtime.functions.json_valid',
+	require 'src.runtime.functions.b64_encode',
+	require 'src.runtime.functions.b64_decode',
+	require 'src.runtime.functions.lpad',
+	require 'src.runtime.functions.rpad',
+	require 'src.runtime.functions.filter',
+	require 'src.runtime.functions.matches',
+	require 'src.runtime.functions.clocktime',
+	require 'src.runtime.functions.reverse',
+	require 'src.runtime.functions.sort',
+	require 'src.runtime.functions.bytes',
+	require 'src.runtime.functions.frombytes',
+	require 'src.runtime.functions.merge',
+	require 'src.runtime.functions.update',
+	require 'src.runtime.functions.insert',
+	require 'src.runtime.functions.delete',
+	require 'src.runtime.functions.lerp',
+	require 'src.runtime.functions.random_element',
+	require 'src.runtime.functions.hash',
+	require 'src.runtime.functions.object',
+	require 'src.runtime.functions.array',
+	require 'src.runtime.functions.keys',
+	require 'src.runtime.functions.values',
+	require 'src.runtime.functions.pairs',
+	require 'src.runtime.functions.interleave',
+	require 'src.runtime.functions.unique',
 	require 'src.runtime.functions.union',
-	--INTERSECTION OF TWO SETS
 	require 'src.runtime.functions.intersection',
-	--DIFFERENCE OF TWO SETS
 	require 'src.runtime.functions.difference',
-	--SYMMETRIC DIFFERENCE OF TWO SETS
 	require 'src.runtime.functions.symmetric_difference',
-	--CHECK IF TWO SETS ARE DISJOINT
 	require 'src.runtime.functions.is_disjoint',
-	--CHECK IF ONE SET IS A SUBSET OF ANOTHER
 	require 'src.runtime.functions.is_subset',
-	--CHECK IF ONE SET IS A SUPERSET OF ANOTHER
 	require 'src.runtime.functions.is_superset',
-
-	--COUNT OCCURRENCES OF A VALUE IN ARRAY OR SUBSTRING IN STRING
-	function(vm)
-		local v = vm.pop()
-		local res
-		if type(v[1]) == 'table' then
-			res = std.arrcount(v[1], v[2])
-		else
-			res = std.strcount(std.str(v[1]), std.str(v[2]))
-		end
-		vm.push(res)
-	end,
-
-	--FIND NTH OCCURRENCE OF A VALUE IN ARRAY OR SUBSTRING IN STRING
-	function(vm)
-		local v = vm.pop()
-		local res
-		if type(v[1]) == 'table' then
-			res = std.arrfind(v[1], v[2], std.num(v[3]))
-		else
-			res = std.strfind(std.str(v[1]), std.str(v[2]), std.num(v[3]))
-		end
-		vm.push(res)
-	end,
-
-	--FLATTEN AN ARRAY OF ANY DIMENSION TO A 1-DIMENSIONAL ARRAY
-	function(vm)
-		local function flatten(array, depth)
-			local result = std.array()
-			for i = 1, #array do
-				if depth > 0 and type(array[i]) == 'table' then
-					local flat = flatten(array[i], depth - 1)
-					for k = 1, #flat do table.insert(result, flat[k]) end
-				else
-					table.insert(result, array[i])
-				end
-			end
-			return result
-		end
-
-		local v = vm.pop()
-		if type(v[1]) ~= 'table' then
-			vm.push({ v[1] })
-			return
-		end
-
-		vm.push(flatten(v[1], v[2] and std.num(v[2]) or math.maxinteger))
-	end,
-
-	--SMOOTHSTEP
-	function(vm)
-		local v = vm.pop()
-		local value, min, max = std.num(v[1]), std.num(v[2]), std.num(v[3])
-
-		local range = max - min
-		value = (math.min(math.max(min, value), max) - min) / range
-		value = value * value * (3.0 - 2.0 * value)
-		vm.push(value * range + min)
-	end,
-
-	--HYPERBOLIC TRIG FUNCTIONS
+	require 'src.runtime.functions.count',
+	require 'src.runtime.functions.find',
+	require 'src.runtime.functions.flatten',
+	require 'src.runtime.functions.smoothstep',
 	require 'src.runtime.functions.sinh',
 	require 'src.runtime.functions.cosh',
 	require 'src.runtime.functions.tanh',
-
-	--SIGN OF A NUMBER
-	function(vm) vm.push(std.sign(std.num(vm.pop()[1]))) end,
-
-	--CHAR TO ASCII
-	function(vm) vm.push(string.byte(std.str(vm.pop()[1]))) end,
-
-	--ASCII TO CHAR
-	function(vm)
-		local num = math.floor(std.num(vm.pop()[1]))
-
-		local nans = {
-			['nan'] = true,
-			['inf'] = true,
-			['-inf'] = true,
-		}
-
-		if nans[tostring(num)] then num = 0 end
-		vm.push(string.char(num % 256))
-	end,
-
-	--STRING BEGINS WITH
-	function(vm)
-		local v = vm.pop()
-		local search, substring = std.str(v[1]), std.str(v[2])
-		vm.push(search:sub(1, #substring) == substring)
-	end,
-
-	--STRING ENDS WITH
-	function(vm)
-		local v = vm.pop()
-		local search, substring = std.str(v[1]), std.str(v[2])
-		vm.push(search:sub(#search - #substring + 1, #search) == substring)
-	end,
-
-	--CONVERT NUMBER TO NUMERIC STRING
-	function(vm)
-		local v = vm.pop()
-		local number, base, pad_width = std.num(v[1]), std.num(v[2]), std.num(v[3])
-		vm.push(std.to_base(number, base, pad_width))
-	end,
-
-	--CONVERT TIMESTAMP INTO TIME STRING
-	function(vm)
-		local v = vm.pop()[1]
-		if type(v) ~= 'table' then
-			v = std.num(v)
-			local result = {
-				math.floor(v / 3600),
-				math.floor(v / 60) % 60,
-				math.floor(v) % 60,
-			}
-			local millis = math.floor(v * 1000) % 1000
-			if millis ~= 0 then result[4] = millis end
-			v = result
-		end
-		local result = ''
-		for i = 1, #v do
-			if i > 3 then
-				result = result .. '.'
-			elseif #result > 0 then
-				result = result .. ':'
-			end
-			local val = tostring(std.num(v[i]))
-			result = result .. ('0'):rep(2 - #val) .. val
-		end
-		vm.push(result)
-	end,
-
-	--CONVERT DATE ARRAY INTO DATE STRING
-	function(vm)
-		local v = vm.pop()[1]
-		if type(v) ~= 'table' then v = { v } end
-		local result = ''
-		for i = #v, 1, -1 do
-			if #result > 0 then result = result .. '-' end
-			local val = tostring(std.num(v[i]))
-			result = result .. ('0'):rep(2 - #val) .. val
-		end
-		vm.push(result)
-	end,
-
-	--SELECT NON-REPEATING RANDOM ELEMENTS FROM ARRAY
-	function(vm)
-		local v = vm.pop()
-		local result = std.array()
-		if type(v[1]) ~= 'table' then v[1] = { v[1] } end
-
-		for i = 1, math.min(std.num(v[2]), #v[1]) do
-			local index = math.random(1, #v[1])
-
-			--To make sure that no elements repeat,
-			--Remove elements from source and insert them in dest.
-			table.insert(result, table.remove(v[1], index))
-		end
-
-		vm.push(result)
-	end,
-
-	--GET FIRST MATCH FROM A PATTERN ON A STRING
-	function(vm)
-		local v = vm.pop()
-		vm.push(std.str(v[1]):match(std.str(v[2])))
-	end,
-
-	--SPLICE ARRAY
-	function(vm)
-		local v = vm.pop()
-		local array1, index1, index2, array2 = v[1], std.num(v[2]), std.num(v[3]), v[4]
-		local result = std.array()
-
-		if type(array1) ~= 'table' then array1 = { array1 } end
-		if type(array2) ~= 'table' then array2 = { array2 } end
-
-		for i = 1, index1 - 1 do table.insert(result, array1[i]) end
-		for i = 1, #array2 do table.insert(result, array2[i]) end
-		for i = index2 + 1, #array1 do table.insert(result, array1[i]) end
-		vm.push(result)
-	end,
-
-	--GENERATE UUID
-	function(vm)
-		vm.pop()
-
-		local template = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-		local uuid = string.gsub(template, '[xy]', function(c)
-			local v = (c == 'x') and math.random(0, 0xf) or math.random(8, 0xb)
-			return string.format('%x', v)
-		end)
-
-		vm.push(uuid)
-	end,
-
-	--CONVERT GLOB PATTERN TO LIST OF STRINGS
-	function(vm)
-		local v = vm.pop()
-		local pattern = std.str(v[1])
-		local result = std.array()
-
-		for i = 2, #v do
-			if std.type(v[i]) == 'array' then
-				for k = 1, #v[i] do
-					local val = pattern:gsub("%*", std.str(v[i][k]))
-					table.insert(result, val)
-				end
-			else
-				local val = pattern:gsub("%*", std.str(v[i]))
-				table.insert(result, val)
-			end
-		end
-
-		vm.push(result)
-	end,
-
-	--SERIALIZE DATA TO XML
-	function(vm) vm.push(XML.stringify(vm.pop()[1])) end,
-
-	--DESERIALIZE DATA FROM XML
-	function(vm) vm.push(XML.parse(std.str(vm.pop()[1]))) end,
-
-	--LOGARITHM
-	function(vm)
-		local v = vm.pop()
-		local base, value = v[2], std.num(v[1])
-		if base ~= nil then
-			base = std.num(base)
-			if base <= 1 then
-				error('Error: log() base must be greater than 1!')
-				return
-			end
-		end
-
-		vm.push(math.log(value, base))
-	end,
-
-	--NORMALIZE A VECTOR
-	function(vm)
-		local v = vm.pop()[1]
-		if std.type(v) ~= 'array' then
-			v = { std.num(v) }
-		end
-		vm.push(std.normalize(v))
-	end,
-
-	--SELECT A RANDOM ELEMENT ACCORDING TO A DISTRIBUTION
-	function(vm)
-		local v = vm.pop()
-		local vector, weights = v[1], v[2]
-		if std.type(vector) ~= 'array' then
-			vector = { std.num(vector) }
-		end
-		if std.type(weights) ~= 'array' then
-			weights = { std.num(weights) }
-		end
-		vm.push(std.random_weighted(vector, weights))
-	end,
+	require 'src.runtime.functions.sign',
+	require 'src.runtime.functions.ascii',
+	require 'src.runtime.functions.char',
+	require 'src.runtime.functions.beginswith',
+	require 'src.runtime.functions.endswith',
+	require 'src.runtime.functions.to_base',
+	require 'src.runtime.functions.time',
+	require 'src.runtime.functions.date',
+	require 'src.runtime.functions.random_elements',
+	require 'src.runtime.functions.match',
+	require 'src.runtime.functions.splice',
+	require 'src.runtime.functions.uuid',
+	require 'src.runtime.functions.glob',
+	require 'src.runtime.functions.xml_encode',
+	require 'src.runtime.functions.xml_decode',
+	require 'src.runtime.functions.log',
+	require 'src.runtime.functions.normalize',
+	require 'src.runtime.functions.random_weighted',
 
 	--TRIM CHARACTERS FROM A STRING
 	function(vm)
