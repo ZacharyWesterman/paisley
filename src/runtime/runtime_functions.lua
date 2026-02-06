@@ -188,6 +188,7 @@ local functions = {
 	--[[minify-delete]]
 	require 'src.runtime.functions.toepoch',
 	require 'src.runtime.functions.fromepoch',
+	require 'src.runtime.functions.epochnow',
 	require 'src.runtime.functions.file_glob',
 	require 'src.runtime.functions.file_exists',
 	require 'src.runtime.functions.file_size',
