@@ -89,6 +89,8 @@ local function process_comment_annotations(text, line)
 			append_text(text, true)
 		elseif i == '@PARAM' then
 			local t = text:match('@[pP][aA][rR][aA][mM]%s*(.*%S)')
+			if not t then return end
+
 			local name, type, desc
 
 			name = t:match('^%S*')
