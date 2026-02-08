@@ -6,7 +6,7 @@
 require "src.shared.stdlib"
 require "src.shared.closest_word"
 require "src.shared.xml"
-require "src.runtime.runtime_functions"
+local vm = require "src.runtime.runtime_functions"
 local json = require "src.shared.json"
 
 
@@ -92,7 +92,7 @@ function ITER()
 		output(nil, 3) --Program successfully completed
 	else
 		output(I[2], 8) --Output line number
-		local external_cmd = COMMANDS[I[1]](I[2], I[3], I[4])
+		local external_cmd = COMMANDS[I[1]](vm, I[2], I[3], I[4])
 		if not external_cmd then
 			return true
 		end
