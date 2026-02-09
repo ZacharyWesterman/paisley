@@ -30,9 +30,9 @@ local NEXT_TAGS = {}
 ---Some comments can give hints about what commands exist, and suppress "unknown command" errors.
 ---Process these annotations.
 ---@param text string The comment text to process, including the leading # character.
-local function process_comment_annotations(text, line)
-	local comment_text = text:upper()
-
+---@param line number The current line number in this file.
+---@param file string? The name of the current file.
+local function process_comment_annotations(text, line, file)
 	local _, line_ct = text:gsub('\n', '\n')
 
 	-- Forget annotations if there's a blank line of non-comment space
@@ -55,10 +55,11 @@ local function process_comment_annotations(text, line)
 		NEXT_TAGS.text = result
 	end
 
-	for line in comment_text:gmatch('[^\n]+') do
-		local i = line:match('@[a-zA-Z_]+')
+	local ln = line
+	for line in text:gmatch('[^\n]+') do
+		local i = line:upper():match('@[a-zA-Z_]+')
 		if i == '@COMMANDS' then
-			local msg = text:match('@[cC][oO][mM][mM][aA][nN][dD][sS][^%w_]([^\n]*)')
+			local msg = line:match('@[cC][oO][mM][mM][aA][nN][dD][sS][^%w_]([^\n]*)')
 			if msg then
 				for k in msg:gmatch('[%w_:]+') do
 					local cmd = std.split(k, ':')
@@ -86,50 +87,87 @@ local function process_comment_annotations(text, line)
 		elseif i == '@PRIVATE' then
 			NEXT_TAGS.private = true
 		elseif i == '@BRIEF' then
-			append_text(text, true)
+			append_text(line, true)
 		elseif i == '@PARAM' then
-			local t = text:match('@[pP][aA][rR][aA][mM]%s*(.*%S)')
-			if not t then return end
+			local t = line:match('@[pP][aA][rR][aA][mM]%s*(.*%S)')
+			if t then
+				local name, type, desc
 
-			local name, type, desc
+				name = t:match('^%S*')
+				if name then
+					t = t:sub(#name + 1):match('^%s*(.*%S)')
+					type = t:match('^%S*')
+				end
 
-			name = t:match('^%S*')
-			if name then
-				t = t:sub(#name + 1):match('^%s*(.*%S)')
-				type = t:match('^%S*')
-			end
+				if type then
+					desc = t:sub(#type + 1):match('^%s*(.*%S)')
+				end
+				local errfn = function(message, start, stop)
+					local pos = text:find(line, 0, true)
 
-			if type then
-				desc = t:sub(#type + 1):match('^%s*(.*%S)')
-			end
+					local _, line_no = text:sub(0, pos):gsub('\n', '')
+					line_no = line_no + ln
+					local col_no = text:find(type, 0, true) - pos
 
-			if name then
-				if not NEXT_TAGS.params then NEXT_TAGS.params = {} end
-				if name:match('^%d+$') then
-					NEXT_TAGS.params[tonumber(name)] = {
-						type = type,
-						desc = desc,
-					}
-				else
-					table.insert(NEXT_TAGS.params, {
-						name = name,
-						type = type,
-						desc = desc,
-					})
+					parse_warning(Span:new(
+						line_no,
+						col_no,
+						line_no,
+						col_no + #type
+					), message, file)
+				end
+
+				if name then
+					if not NEXT_TAGS.params then NEXT_TAGS.params = {} end
+					if name:match('^%d+$') then
+						NEXT_TAGS.params[tonumber(name)] = {
+							type = SIGNATURE(type or 'any', false, errfn),
+							desc = desc,
+						}
+					else
+						table.insert(NEXT_TAGS.params, {
+							name = name,
+							type = SIGNATURE(type or 'any', false, errfn),
+							desc = desc,
+						})
+					end
 				end
 			end
 		elseif i == '@RETURN' then
-			local t = text:match('@[rR][eE][tT][uU][rR][nN]%s*(.*%S)')
-			local type_text = t:match('^[^%s]+')
-			if type_text then
-				local type_desc = t:sub(#type_text + 1):gsub('#]]', ''):match('^%s*(.*%S)')
-				NEXT_TAGS.returns = {
-					type = type_text,
-					desc = type_desc,
-				}
+			local t = line:match('@[rR][eE][tT][uU][rR][nN]%s*(.*%S)')
+			if t then
+				local type_text = t:match('^[^%s]+')
+				if type_text then
+					local type_sig = SIGNATURE(type_text, false, function(message, start, stop)
+						local pos = text:find(line, 0, true)
+
+						local _, line_no = text:sub(0, pos):gsub('\n', '')
+						line_no = line_no + ln
+						local col_no = text:find(type_text, 0, true) - pos
+
+						parse_warning(Span:new(
+							line_no,
+							col_no,
+							line_no,
+							col_no + #type_text
+						), message, file)
+					end)
+
+					if type_sig then
+						local type_desc = t:sub(#type_text + 1):gsub('#]]', ''):match('^%s*(.*%S)')
+						NEXT_TAGS.returns = {
+							type = type_sig,
+							desc = type_desc,
+						}
+					end
+				end
 			end
+		elseif i == '@ERROR' then
+			if not NEXT_TAGS.error then NEXT_TAGS.error = {} end
+			local t = line:gsub('@[eE][rR][rR][oO][rR]%s*', '')
+			table.insert(NEXT_TAGS.error, t)
 		else
-			append_text(text)
+			append_text(line)
 		end
 	end
 end
@@ -213,9 +251,7 @@ function Lexer(text, file, keep_comments)
 						match = text:match('^#%[%[.-#%]%]')
 						if not match then match = text:match('^#%[%[.*') end
 						--[[minify-delete]]
-						for m in match:gmatch('[^\n]+') do
-							process_comment_annotations(m, line)
-						end
+						process_comment_annotations(match, line, file)
 						--[[/minify-delete]]
 					end
 				end
@@ -226,9 +262,7 @@ function Lexer(text, file, keep_comments)
 					if match then
 						tok_ignore = not keep_comments
 						--[[minify-delete]]
-						for m in match:gmatch('[^\n]+') do
-							process_comment_annotations(m, line)
-						end
+						process_comment_annotations(match, line, file)
 						--[[/minify-delete]]
 					end
 				end
@@ -295,14 +329,13 @@ function Lexer(text, file, keep_comments)
 						end
 
 						if not dir_ignore_until then
-							if expr == 'error' then
-								parse_error(
-									Span:new(line, col, line, col),
-									res or '<unknown>',
-									file
-								)
-							elseif expr == 'warn' then
-								parse_warning(
+							local logfn = ({
+								error = parse_error,
+								warn = parse_warning,
+								info = parse_info,
+							})[expr]
+							if logfn then
+								logfn(
 									Span:new(line, col, line, col),
 									res or '<unknown>',
 									file
@@ -427,7 +460,7 @@ function Lexer(text, file, keep_comments)
 						match = text:match('^#%[%[.-#%]%]')
 						if not match then match = text:match('^#%[%[.*') end
 						--[[minify-delete]]
-						process_comment_annotations(match, line)
+						process_comment_annotations(match, line, file)
 						--[[/minify-delete]]
 					end
 				end
@@ -438,7 +471,7 @@ function Lexer(text, file, keep_comments)
 					if match then
 						tok_ignore = not keep_comments
 						--[[minify-delete]]
-						process_comment_annotations(match, line)
+						process_comment_annotations(match, line, file)
 						--[[/minify-delete]]
 					end
 				end

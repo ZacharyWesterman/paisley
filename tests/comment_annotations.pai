@@ -1,0 +1,15 @@
+#[[
+@param 1 string gary
+@param 2 string This is a test
+@return any The result
+@error If more than 100 arguments are passed
+#]]
+subroutine testsub
+	return {'test'.match('a')}
+	return {0:9}
+end
+
+let x = {\testsub(123)}
+
+print {x}
+ 

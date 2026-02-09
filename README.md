@@ -813,8 +813,12 @@ $else
 $end
 
 # You can also warn or error at compile time if certain conditions aren't met
-$if version < 2
-$error "At least version 2.0.0 is required!"
+$if version < 1
+$error "At least version 1.0.0 is required!"
+$elif version >= 2
+$warn "This might work in version 2.x.x, but we're not sure."
+$else
+$info "You've got the correct version :)"
 $end
 ```
 

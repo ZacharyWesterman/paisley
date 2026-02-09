@@ -245,6 +245,7 @@ local dir = {
 	['end'] = no_args,
 	['error'] = single_string_arg,
 	['warn'] = single_string_arg,
+	['info'] = single_string_arg,
 }
 
 return {
@@ -306,7 +307,7 @@ return {
 
 		if not dir[directive.text] then
 			local msg = 'Unknown compiler directive `$' .. directive.text .. '`. '
-			msg = msg .. 'Valid directives are `$if`, `$elif`, `$else`, `$end`, `$error` and `$warn`.'
+			msg = msg .. 'Valid directives are `$if`, `$elif`, `$else`, `$end`, `$error`, `$warn`, and `$info`.'
 			parse_error(directive.span, msg, filename)
 			return
 		end
