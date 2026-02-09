@@ -103,10 +103,17 @@ local function subroutine_text(token)
 	if token.tags.returns then
 		--Print return info
 		local retn = token.tags.returns
-		local tp = SIGNATURE(retn.type, true)
-		text = text .. return_text(tp, retn.desc)
+		text = text .. return_text(retn.type, retn.desc)
 	elseif token.type then
 		text = text .. return_text(token.type)
+	end
+
+	if token.tags.error then
+		--Print the situations in which the subroutine might raise an error.
+		text = text .. '\n**Errors**:'
+		for _, t in ipairs(token.tags.error) do
+			text = text .. '\n- ' .. t
+		end
 	end
 
 	return text

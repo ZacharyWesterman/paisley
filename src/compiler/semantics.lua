@@ -222,7 +222,10 @@ function SemanticAnalyzer(root, root_file)
 	--[[/minify-delete]]
 
 	local function type_precheck(token, file)
-		if token.id == TOK.subroutine then current_sub = token.text end
+		if token.id == TOK.subroutine then
+			current_sub = token.text
+			token.type = TYPE_NULL
+		end
 		if token.id == TOK.inline_command then in_cmd_eval = true end
 	end
 
@@ -872,16 +875,9 @@ function SemanticAnalyzer(root, root_file)
 				.return_stmt, TOK.subroutine, TOK.length }, nil, type_checking)
 	end
 
-	--[[minify-delete]]
-	if not LANGUAGE_SERVER then
-		--[[/minify-delete]]
-
-		-- After type checking, run one more pass on the AST to adjust synonym functions and so on.
-		config = require "src.compiler.semantics.pass3"
-		recurse2(root, config, root_file)
-		--[[minify-delete]]
-	end
-	--[[/minify-delete]]
+	-- After type checking, run one more pass on the AST to adjust synonym functions and so on.
+	config = require "src.compiler.semantics.pass3"
+	recurse2(root, config, root_file)
 
 	--Check if subroutines are even used
 	--We also keep track of what subroutines each subroutine references.

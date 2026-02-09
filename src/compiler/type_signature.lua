@@ -15,16 +15,24 @@
 ---
 ---@param signature string A type signature string representation.
 ---@param ignore_errors boolean? If true, don't error with bad type signatures.
----@return table TypeSignature A table representing a type signature. This should not be manipulated directly, instead use the functions in this file.
-function SIGNATURE(signature, ignore_errors)
+---@param error_callback fun(message:string, start:number, stop:number)? A callback to execute when an error is encountered. If not specified, `error()` is called.
+---@return table? TypeSignature A table representing a type signature. This should not be manipulated directly, instead use the functions in this file.
+function SIGNATURE(signature, ignore_errors, error_callback)
 	local patterns = { '^%w+', '^|', '^%[', '^%]', '?' }
 	local typenames = { any = true, object = true, array = true, string = true, number = true, boolean = true, null = true, }
 	local tokens = {}
 	local sig = signature
 	local bracket_ct = 0
 
-	local function do_error(message, char)
-		if not ignore_errors then error(message .. ' in type signature "' .. signature .. '" at char ' .. char) end
+	local function do_error(message, stop, length)
+		if ignore_errors then return end
+
+		local msg = message .. ' in type signature.'
+		if error_callback then
+			error_callback(msg, stop - length, stop)
+		else
+			error(msg .. ' at char ' .. (stop - length))
+		end
 	end
 
 	--Split signature into valid tokens
@@ -39,13 +47,15 @@ function SIGNATURE(signature, ignore_errors)
 			m = sig:match(patterns[i])
 			if m then
 				if i == 1 and not typenames[m] then
-					do_error('Invalid type "' .. m .. '"', #signature - #sig)
+					do_error('Invalid type "' .. m .. '"', #signature, #sig)
+					return
 				elseif i == 3 then
 					bracket_ct = bracket_ct + 1
 				elseif i == 4 then
 					bracket_ct = bracket_ct - 1
 					if bracket_ct < 0 then
-						do_error('Bracket mismatch', #signature - #sig)
+						do_error('Bracket mismatch', #signature, #sig)
+						return
 					end
 				end
 
@@ -53,27 +63,26 @@ function SIGNATURE(signature, ignore_errors)
 
 				if i == 5 then
 					--Equate "?" operator to mean "|null".
-					table.insert(tokens, { text = '|', kind = 2 }) --Insert bar
-					m, i = 'null', 1                --Change type to "null"
+					table.insert(tokens, { text = '|', kind = 2, stop = #signature }) --Insert bar
+					m, i = 'null', 1                                   --Change type to "null"
 				end
 
-				table.insert(tokens, { text = m, kind = i })
+				table.insert(tokens, { text = m, kind = i, stop = #signature })
 				break
 			end
 		end
 
 		if not m then
-			do_error('Invalid character', #signature - #sig)
+			do_error('Invalid character', #signature, #sig)
+			return
 		end
 	end
 	if bracket_ct > 0 then
-		do_error('Bracket mismatch', #signature - #sig)
+		do_error('Bracket mismatch', #signature, #sig)
+		return
 	end
 
 	--Parse signature into a valid type tree
-	local function do_error(message)
-		error(message .. ' in type signature "' .. signature .. '"')
-	end
 	local function ast(index)
 		local opt, i, exp_delim, subtypes, found = {}, index, false, nil, {}
 
@@ -81,25 +90,29 @@ function SIGNATURE(signature, ignore_errors)
 			local t = tokens[i]
 			if t.kind == 2 then
 				if not exp_delim then
-					do_error('Unexpected bar')
+					do_error('Unexpected bar', t.stop, #t.text)
+					return
 				end
 				exp_delim = false
 			else
 				if exp_delim and t.kind ~= 3 then
-					do_error('Missing bar')
+					do_error('Missing bar', t.stop, #t.text)
+					return
 				end
 
 				if t.kind == 1 then
 					if t.text == 'object' or t.text == 'array' then
 						if not subtypes then subtypes = { any = { type = 'any' } } end
 					elseif subtypes then
-						do_error('Type "' .. t.text .. '" cannot have a subtype')
+						do_error('Type "' .. t.text .. '" cannot have a subtype', t.stop, #t.text)
+						return
 					end
 
 					if opt[t.text] then
 						-- do_error('Redundant use of type "' .. t.text .. '"')
 					elseif opt.any then
-						do_error('Cannot mix "any" with other types')
+						do_error('Cannot mix "any" with other types', t.stop, #t.text)
+						return
 					end
 
 					exp_delim = true
@@ -112,7 +125,8 @@ function SIGNATURE(signature, ignore_errors)
 					subtypes, i = ast(i - 1)
 				elseif t.kind == 3 then
 					if found.any and #opt > 1 then
-						do_error('Cannot mix "any" with other types')
+						do_error('Cannot mix "any" with other types', t.stop, #t.text)
+						return
 					end
 					return opt, i
 				end
@@ -165,18 +179,18 @@ end
 function EXACT_TYPE(lhs, rhs)
 	if not lhs or not rhs then return false end
 
+	--Make sure all the same keys exist in both types
+	for key, _ in pairs(rhs) do if not lhs[key] then return false end end
+
+	--Make sure the existing keys have valid subtypes
 	for key, val in pairs(lhs) do
 		if not rhs[key] then return false end
-		if not val.subtypes then
-			if rhs[key].subtypes then return false end
-			return true
-		end
+		if not rhs[key].subtypes ~= not val.subtypes then return false end
 
-		if not rhs[key].subtypes then return false end
-		if not EXACT_TYPE(val.subtypes, rhs[key].subtypes) then return false end
+		if val.subtypes and not EXACT_TYPE(val.subtypes, rhs[key].subtypes) then return false end
 	end
 
-	return false
+	return true
 end
 
 function HAS_SUBTYPES(tp)
