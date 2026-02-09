@@ -329,14 +329,13 @@ function Lexer(text, file, keep_comments)
 						end
 
 						if not dir_ignore_until then
-							if expr == 'error' then
-								parse_error(
-									Span:new(line, col, line, col),
-									res or '<unknown>',
-									file
-								)
-							elseif expr == 'warn' then
-								parse_warning(
+							local logfn = ({
+								error = parse_error,
+								warn = parse_warning,
+								info = parse_info,
+							})[expr]
+							if logfn then
+								logfn(
 									Span:new(line, col, line, col),
 									res or '<unknown>',
 									file

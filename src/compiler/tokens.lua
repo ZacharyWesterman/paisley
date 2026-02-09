@@ -258,14 +258,26 @@ function parse_warning(span, msg, file)
 		--[[/minify-delete]]
 		msg = span.from.line .. ', ' .. span.from.col .. ': ' .. msg
 		if file then msg = file .. ': ' .. msg end
-
+		log.warn(msg)
 		--[[minify-delete]]
-		if true then
-			print('[\27[0;33mWARNING\27[0m]: ' .. msg)
-			return
-		end
+	end
+	--[[/minify-delete]]
+end
+
+---Print supplementary info to the console.
+---@param span Span
+---@param msg string
+---@param file string?
+---@diagnostic disable-next-line
+function parse_info(span, msg, file)
+	--[[minify-delete]]
+	if LANGUAGE_SERVER then
+		INFO.info(span, msg:gsub('\n', ' '), file)
+	else
 		--[[/minify-delete]]
-		print('WARNING: ' .. msg)
+		msg = span.from.line .. ', ' .. span.from.col .. ': ' .. msg
+		if file then msg = file .. ': ' .. msg end
+		log.info(msg)
 		--[[minify-delete]]
 	end
 	--[[/minify-delete]]
