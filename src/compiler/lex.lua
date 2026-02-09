@@ -90,33 +90,47 @@ local function process_comment_annotations(text, line, file)
 			append_text(line, true)
 		elseif i == '@PARAM' then
 			local t = line:match('@[pP][aA][rR][aA][mM]%s*(.*%S)')
-			if not t then return end
+			if t then
+				local name, type, desc
 
-			local name, type, desc
+				name = t:match('^%S*')
+				if name then
+					t = t:sub(#name + 1):match('^%s*(.*%S)')
+					type = t:match('^%S*')
+				end
 
-			name = t:match('^%S*')
-			if name then
-				t = t:sub(#name + 1):match('^%s*(.*%S)')
-				type = t:match('^%S*')
-			end
+				if type then
+					desc = t:sub(#type + 1):match('^%s*(.*%S)')
+				end
+				local errfn = function(message, start, stop)
+					local pos = text:find(line, 0, true)
 
-			if type then
-				desc = t:sub(#type + 1):match('^%s*(.*%S)')
-			end
+					local _, line_no = text:sub(0, pos):gsub('\n', '')
+					line_no = line_no + ln
+					local col_no = text:find(type, 0, true) - pos
 
-			if name then
-				if not NEXT_TAGS.params then NEXT_TAGS.params = {} end
-				if name:match('^%d+$') then
-					NEXT_TAGS.params[tonumber(name)] = {
-						type = type,
-						desc = desc,
-					}
-				else
-					table.insert(NEXT_TAGS.params, {
-						name = name,
-						type = type,
-						desc = desc,
-					})
+					parse_warning(Span:new(
+						line_no,
+						col_no,
+						line_no,
+						col_no + #type
+					), message, file)
+				end
+
+				if name then
+					if not NEXT_TAGS.params then NEXT_TAGS.params = {} end
+					if name:match('^%d+$') then
+						NEXT_TAGS.params[tonumber(name)] = {
+							type = SIGNATURE(type or 'any', false, errfn),
+							desc = desc,
+						}
+					else
+						table.insert(NEXT_TAGS.params, {
+							name = name,
+							type = SIGNATURE(type or 'any', false, errfn),
+							desc = desc,
+						})
+					end
 				end
 			end
 		elseif i == '@RETURN' then

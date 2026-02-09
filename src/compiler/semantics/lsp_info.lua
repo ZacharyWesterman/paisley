@@ -94,8 +94,7 @@ local function subroutine_text(token)
 			if param.name then
 				text = text .. '**' .. param.name .. '** '
 			end
-			local tp = SIGNATURE(param.type or 'any', true)
-			text = text .. '(' .. TYPE_TEXT(tp, true) .. ')'
+			text = text .. '(' .. TYPE_TEXT(param.type, true) .. ')'
 			if param.desc then text = text .. ' ' .. param.desc end
 		end
 	end
