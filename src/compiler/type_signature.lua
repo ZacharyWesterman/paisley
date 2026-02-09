@@ -141,19 +141,23 @@ function SIGNATURE(signature, ignore_errors, error_callback)
 	return ast(#tokens)
 end
 
-TYPE_ANY = SIGNATURE('any')
-TYPE_OBJECT = SIGNATURE('object')
-TYPE_ARRAY = SIGNATURE('array')
-TYPE_STRING = SIGNATURE('string')
-TYPE_NUMBER = SIGNATURE('number')
-TYPE_BOOLEAN = SIGNATURE('boolean')
-TYPE_NULL = SIGNATURE('null')
-TYPE_ENV = SIGNATURE('object[string]')
+function SIGNATURE_G(text)
+	return SIGNATURE(text, true) or {}
+end
 
-TYPE_ARRAY_STRING = SIGNATURE('array[string]')
-TYPE_ARRAY_NUMBER = SIGNATURE('array[number]')
-TYPE_INDEXABLE = SIGNATURE('array|object|string')
-TYPE_INDEXER = SIGNATURE('number|array[number]')
+TYPE_ANY = SIGNATURE_G('any')
+TYPE_OBJECT = SIGNATURE_G('object')
+TYPE_ARRAY = SIGNATURE_G('array')
+TYPE_STRING = SIGNATURE_G('string')
+TYPE_NUMBER = SIGNATURE_G('number')
+TYPE_BOOLEAN = SIGNATURE_G('boolean')
+TYPE_NULL = SIGNATURE_G('null')
+TYPE_ENV = SIGNATURE_G('object[string]')
+
+TYPE_ARRAY_STRING = SIGNATURE_G('array[string]')
+TYPE_ARRAY_NUMBER = SIGNATURE_G('array[number]')
+TYPE_INDEXABLE = SIGNATURE_G('array|object|string')
+TYPE_INDEXER = SIGNATURE_G('number|array[number]')
 
 ---Check if two type signatures can match up.
 ---E.g. "any" and "string" are similar enough, "number|string" and "string" are similar enough, etc.

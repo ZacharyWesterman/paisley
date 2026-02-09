@@ -877,6 +877,7 @@ function SemanticAnalyzer(root, root_file)
 
 	-- After type checking, run one more pass on the AST to adjust synonym functions and so on.
 	config = require "src.compiler.semantics.pass3"
+	config.set(labels)
 	recurse2(root, config, root_file)
 
 	--Check if subroutines are even used

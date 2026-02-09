@@ -1,6 +1,12 @@
 local synonyms = require "src.compiler.semantics.synonyms"
 
+local labels = {}
+
 return {
+	set = function(_labels)
+		labels = _labels
+	end,
+
 	enter = {
 		[TOK.func_call] = {
 			--Restructure function calls
@@ -67,7 +73,35 @@ return {
 					parse_warning(token.span, msg, file)
 				end
 			end,
-		}
+		},
+
+		[TOK.gosub_stmt] = {
+			--Make sure that param types line up with the comment annotations.
+			function(token, file)
+				local name = token.children[1].text
+				local sub = labels[name]
+				if not sub or not sub.tags or not sub.tags.params then return end
+
+				for i, param in ipairs(sub.tags.params) do
+					local arg = token.children[i + 1]
+					local arg_type = (arg and arg.type) or TYPE_NULL
+
+					if not SIMILAR_TYPE(param.type, arg_type) then
+						local msg, span
+						if arg then
+							span = arg.span
+							msg = 'Argument ' .. i .. ' of "' .. name .. '" expected `' .. TYPE_TEXT(param.type) ..
+								'` but got `' .. TYPE_TEXT(arg_type) .. '`.'
+						else
+							span = token.span
+							msg = 'Missing argument ' .. i ..
+								' of "' .. name .. '", expected `' .. TYPE_TEXT(param.type) .. '`.'
+						end
+						parse_warning(span, msg, file)
+					end
+				end
+			end,
+		},
 	},
 
 	exit = {},
