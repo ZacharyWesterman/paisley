@@ -4,7 +4,7 @@ local config = {
 	description = "This is the Paisley compiler and runtime engine.\nhttps://github.com/ZacharyWesterman/paisley",
 	name = "Paisley",
 	exe = "paisley",
-	version = "1.20.2",
+	version = "1.20.3",
 }
 
 local options = {
@@ -45,6 +45,7 @@ local options = {
 	{ description = "Output detailed info in an easy-to-parse format",               long = "language-server" },
 	{ description = "Format the given program input, then exit",                     long = "format" },
 	{ description = "If formatting, set the indent to the given string",             long = "indent",            type = "string", arg = "[INDENT]",            default = "\t" },
+	{ description = "Treat any warnings as errors",                                  long = "werror" },
 	--[[no-install]]
 	{ description = "Compile the Paisley application into a standalone executable",  long = "install" },
 	{ description = "Compile the main executable with the given compiler",           long = "compile-self",      type = "string", arg = "[COMPILER]" },
@@ -83,6 +84,7 @@ V6 = args       --program arguments
 SANDBOX = flags.sandbox
 VERSION = config.version
 TARGET = flags.target or 'lua'
+WARNINGS_ARE_ERRORS = flags.werror
 
 if flags.format then
 	local input_file = table.remove(args, 1)

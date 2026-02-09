@@ -249,6 +249,12 @@ function parse_warning(span, msg, file)
 	if LANGUAGE_SERVER then
 		INFO.warning(span, msg:gsub('\n', ' '), file)
 	else
+		---@diagnostic disable-next-line
+		if WARNINGS_ARE_ERRORS then
+			parse_error(span, msg, file)
+			return
+		end
+
 		--[[/minify-delete]]
 		msg = span.from.line .. ', ' .. span.from.col .. ': ' .. msg
 		if file then msg = file .. ': ' .. msg end
