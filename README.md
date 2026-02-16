@@ -526,7 +526,7 @@ define {!pi[3.14]}
 
 do
 	# But sometimes, 3 might be a good enough estimate
-	define {!pi[4]}
+	define {!pi[3]}
 
 	print "My estimate for pi is {!pi}"
 end

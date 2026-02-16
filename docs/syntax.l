@@ -5,6 +5,7 @@ statement :=
 	| if_stmt
 	| while_stmt
 	| for_stmt
+	| scope_stmt
 	| subroutine
 	| gosub_stmt
 	| let_stmt
@@ -40,6 +41,9 @@ while_stmt :=
 
 for_stmt :=
 	| `for` <text>+ `in` argument+ `do` program `end`
+
+scope_stmt :=
+	| `do` program `end`
 
 delete_stmt :=
 	| `delete` <text>+
