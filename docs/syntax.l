@@ -55,6 +55,7 @@ let_stmt :=
 	| `let` <variable> `{` expression `}` `=` argument+
 	| `let` <variable>+ `=` argument+
 	| `let` <variable>+
+	| `let` <variable> (`+=`|`-=`|`*=`|`/=`|`%=`|`%%=`|`.=`) argument+
 	| `initial` <variable> `=` argument+
 
 uncache_stmt :=
@@ -79,7 +80,7 @@ match_if_stmt :=
 match_argument :=
 	| <text>
 	| string
-	| `{` (`>`|`<`|`>=`|`<=`|`=`|`!=`|`not`? `like`|`not`? `in`|`bitwise`? `and`|`bitwise`? `or`|`bitwise`? `xor`) expression `}`
+	| `{` (`%`|`%%`|`>`|`<`|`>=`|`<=`|`=`|`!=`|`not`? `like`|`not`? `in`|`bitwise`? `and`|`bitwise`? `or`|`bitwise`? `xor`) expression `}`
 	| `{` expression `}`
 	| `${` inline_command `}`
 
