@@ -14,3 +14,14 @@ for i in {1:int(@1)} do
 		print {i}
 	end
 end
+
+# Alternatively, you could use the `match` statement, which may be more readable:
+#[[
+for i in {1:int(@1)} do
+	match {i} do
+		if {%% 15} then print fizzbuzz end
+		if {%% 3} then print fizz end
+		if {%% 5} then print buzz end
+	else print {i} end
+end
+#]]
