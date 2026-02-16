@@ -1541,6 +1541,8 @@ match_expr = function(span)
 		TOK.op_and,
 		TOK.op_or,
 		TOK.op_xor,
+		TOK.op_divisible,
+		TOK.op_mod,
 	}, {
 		'and',
 		'or',
