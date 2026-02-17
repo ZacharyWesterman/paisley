@@ -13,7 +13,7 @@ Operator precedence in Paisley follows the table below, from higher to lower pri
 string concatenation `a b` (two expressions separated by a space)<br>
 `exists`&emsp;`and`&emsp;`or`&emsp;`xor` and any `bitwise` versions of the latter 4.<br>
 `a for b in c`&emsp;`a for b in c if d`<br>
-`a if b else c`&emsp;`a else b`&emsp;&emsp;`a else? b`&emsp;`a then b`&emsp;`a ?then b`<br>
+`a if b else c`&emsp;`a else b`&emsp;&emsp;`a ?else b`&emsp;`a then b`&emsp;`a ?then b`<br>
 `=>`<br>
 `,`<br>
 
