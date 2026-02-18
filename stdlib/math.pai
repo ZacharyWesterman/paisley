@@ -9,7 +9,7 @@ define {!e[2.71828182845904523536]}
 @param n number The positive integer to compute the factorial of.
 @return number The factorial of the given integer, or 1 if n is non-positive.
 #]]
-subroutine math.factorial
+function math.factorial
 	return {(1:@1).reduce(*)}
 end
 
@@ -19,7 +19,7 @@ end
 @param n number The number to check for primality.
 @return boolean True if the number is prime, false otherwise.
 #]]
-subroutine math.isprime
+function math.isprime
 	let _n = {@1}
 	if {_n.type() != 'number' or _n < 2 or _n.floor() != _n} then
 		delete _n
@@ -45,7 +45,7 @@ end
 @param b number The second integer.
 @return number The GCD of the two integers.
 #]]
-subroutine math.gcd
+function math.gcd
 	let _a = {@1.abs().floor()}
 	let _b = {@2.abs().floor()}
 	while {_b != 0} do
@@ -64,7 +64,7 @@ end
 @param b number The second integer.
 @return number The LCM of the two integers.
 #]]
-subroutine math.lcm
+function math.lcm
 	let _a = {@1.floor()}
 	let _b = {@2.floor()}
 	if {_a = 0 or _b = 0} then
@@ -82,7 +82,7 @@ end
 @param chars string A string containing the characters to be used as flags.
 @return number An integer representing the bit flags of the characters.
 #]]
-subroutine math.flagify
+function math.flagify
 	return {
 		(
 			(2 ^ (@2.index(i) - 1) if @2.index(i) else 0)
@@ -100,6 +100,6 @@ end
 @param num number An integer, treated as if it were unsigned.
 @return array[boolean] A list of 32 bits, with the most-significant bits first.
 #]]
-subroutine math.bits
+function math.bits
 	return {bool(@1 bitwise and 2^i) for i in reverse(0:31)}
 end

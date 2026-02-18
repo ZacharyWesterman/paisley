@@ -1,24 +1,24 @@
-subroutine option_1
-    print "This is the first subroutine!"
+function option_1
+    print "This is the first function!"
 end
 
-subroutine option_2
+function option_2
     print "Here is the second!"
 end
 
-subroutine option_3
+function option_3
     print "And I am the third one!"
 end
 
-subroutine ignored
-    print "This subroutine will NEVER get called"
+function ignored
+    print "This function will NEVER get called"
 end
 
-#Choose a random subroutine to jump to
-#Note how dynamic `gosub` MUST be in an if statement; the jump might fail if `number` is some other value.
+#Choose a random function to jump to
+#Note how dynamic `call` MUST be in an if statement; the jump might fail if `number` is some other value.
 let number = {random_int(1, 3)}
-if gosub "option_{number}" then
+if call "option_{number}" then
     print "Success"
 else
-    print "Subroutine does not exist"
+    print "Function does not exist"
 end

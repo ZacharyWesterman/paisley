@@ -4,7 +4,7 @@
 @return string? The response body from the server, or null if the request fails.
 @export
 #]]
-subroutine http.get
+function http.get
 	# This is just a wrapper around curl for simplicity.
 	?! curl -s {@1}
 	if ${=} else return end
@@ -18,7 +18,7 @@ end
 @return string? The response body from the server, or null if the request fails.
 @export
 #]]
-subroutine http.post
+function http.post
 	# This is just a wrapper around curl for simplicity.
 	?! curl -s -X POST -d {@2} {@1}
 	if ${=} else return end

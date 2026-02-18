@@ -15,7 +15,7 @@ define {
 # @param hex string The hex color code (e.g., "#RRGGBB" or "RRGGBB")
 # @return array[number] An array containing the RGB values [R, G, B]
 # @export
-subroutine color.hex_to_rgba
+function color.hex_to_rgba
 	let _color = {@1[(2 if @1[1] = '#' else 1)::]}
 	
 	if {(len(_color) != 6 and len(_color) != 8) or _color not like '^[0-9a-fA-F]+$'} then
@@ -33,7 +33,7 @@ end
 # @param @ array[number] An array containing the RGB values [R, G, B, A]. RGBA array may be passed as a single argument or as four separate arguments.
 # @return string The hex color code in the format "#RRGGBBAA"
 # @export
-subroutine color.rgba_to_hex
+function color.rgba_to_hex
 	let _color = {@.flatten().frombytes()}
 	# Append alpha value of 255 if not provided
 	if {len(_color) < 4} then let _color{} = {0xff} end
@@ -48,7 +48,7 @@ end
 @return array[number] An array containing the blended RGBA values [R, G, B, A]
 @export
 #]]
-subroutine color.blend
+function color.blend
 	return {sqrt(i[1]^2 * @3 + i[2]^2 * (1 - @3)) for i in interleave(@1, @2).chunk(2)}
 end
 
@@ -61,6 +61,6 @@ end
 @return array[number] An array containing the RGBA values [R, G, B, A]
 @export
 #]]
-subroutine color.new
+function color.new
 	return { @1, @2, @3, (@4 if @4 else 255) }
 end

@@ -4,7 +4,7 @@
 # @param suffix string? The string to append if truncating. If not specified, "..." is used.
 # @return string A string with the specified length, truncated and appended with the suffix if necessary.
 # @export
-subroutine string.truncate
+function string.truncate
 	if {len(@1) <= @2} then return {@1} end
 	
 	return {
@@ -17,7 +17,7 @@ end
 # @param text string The string to test
 # @return boolean True if the string only contains numeric characters.
 # @export
-subroutine string.is_numeric
+function string.is_numeric
 	return {@1 like '^%d+$'}
 end
 
@@ -25,7 +25,7 @@ end
 # @param text string The string to test
 # @return boolean True if the string only contains alphabetic characters.
 # @export
-subroutine string.is_alpha
+function string.is_alpha
 	return {@1 like '^%a+$'}
 end
 
@@ -33,7 +33,7 @@ end
 # @param text string The string to test
 # @return boolean True if the string only contains alphanumeric characters.
 # @export
-subroutine string.is_alphanumeric
+function string.is_alphanumeric
 	return {@1 like '^%w+$'}
 end
 
@@ -41,7 +41,7 @@ end
 # @param text string The string to encode
 # @return string The URL-encoded string.
 # @export
-subroutine string.urlencode
+function string.urlencode
 	define {
 		!entities[(
 		' ' => '%20',
@@ -88,7 +88,7 @@ end
 # @param text string The string to decode
 # @return string The URL-decoded string.
 # @export
-subroutine string.urldecode
+function string.urldecode
 	define {
 		!entities[(
 		' ' => '%20',
@@ -137,7 +137,7 @@ end
 @param number number The number to convert.
 @return string The English numeral representation of the number.
 #]]
-subroutine string.numeral
+function string.numeral
 	let _n = {abs(@[1])}
 
 	if {_n = 0} then
@@ -191,8 +191,8 @@ end
 @param number number The number to convert.
 @return string The English ordinal representation of the number.
 #]]
-subroutine string.ordinal
-	let _r = ${gosub string.numeral {@[1]}}
+function string.ordinal
+	let _r = ${call string.numeral {@[1]}}
 
 	let _repl = {
 		'twelve' => 'twelfth',

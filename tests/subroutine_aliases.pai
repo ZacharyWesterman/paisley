@@ -2,5 +2,5 @@ require datetime
 
 using datetime.*
 
-print ${gosub now}
+print ${call now}
 print {\now()}

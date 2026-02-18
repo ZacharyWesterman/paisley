@@ -29,7 +29,7 @@ $end
 @return string The formatted text.
 @export
 #]]
-subroutine fmt.color
+function fmt.color
 	$if build = plasma
 	return "<color={@2}>{@1}</color>"
 	$else
@@ -43,7 +43,7 @@ end
 @return string The formatted text.
 @export
 #]]
-subroutine fmt.bold
+function fmt.bold
 	$if build = plasma
 	return "<b>{@}</b>"
 	$else
@@ -57,7 +57,7 @@ end
 @return string The formatted text.
 @export
 #]]
-subroutine fmt.italic
+function fmt.italic
 	$if build = plasma
 	return "<i>{@}</i>"
 	$else
@@ -71,7 +71,7 @@ end
 @return string The formatted text.
 @export
 #]]
-subroutine fmt.underline
+function fmt.underline
 	$if build = plasma
 	return "<u>{@}</u>"
 	$else

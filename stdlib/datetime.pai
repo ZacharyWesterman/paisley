@@ -1,7 +1,7 @@
 #@export
 #@brief Get the current date and time.
 #@return object The current date and time.
-subroutine datetime.now
+function datetime.now
 	return {
 		'date' => ${sysdate},
 		'time' => ${systime},
@@ -12,7 +12,7 @@ end
 #@brief Format a datetime object as a string in ISO 8601 format.
 #@param datetime object The input datetime object.
 #@return string The formatted string.
-subroutine datetime.isoformat
+function datetime.isoformat
 	return "{date(@[1].date)}T{time(@[1].time)}"
 end
 
@@ -21,7 +21,7 @@ end
 #@param str string The input string to parse.
 #@return object The parsed date and time.
 #@mutate _dt
-subroutine datetime.fromiso
+function datetime.fromiso
 	let _dt = {@[1].split('T')}
 	return {
 		'date' => int(i) for i in _dt[1].split('-').reverse(),
@@ -33,7 +33,7 @@ end
 #@brief Check if a string is in ISO 8601 format.
 #@param str string The input string to check.
 #@return boolean True if the string is in ISO 8601 format, false otherwise.
-subroutine datetime.isiso
+function datetime.isiso
 	return {@[1] like '%d%d%d%d%-%d%d%-%d%dT%d%d:%d%d:%d%d'}
 end
 
@@ -41,7 +41,7 @@ end
 #@brief Parse a duration string (e.g., "1h30m") into an elapsed datetime object.
 #@param duration string The duration string to parse.
 #@return object The total duration.
-subroutine datetime.duration
+function datetime.duration
 	let _d_time = 0
 	let _d_date = {0, 0, 0}
 
@@ -82,7 +82,7 @@ end
 @param duration object The duration to add.
 @return object The new datetime object after addition.
 #]]
-subroutine datetime.add
+function datetime.add
 	define {
 		!january[31],
 		!february[28],
@@ -152,7 +152,7 @@ end
 @param duration object The duration to add.
 @return object The new datetime object after addition.
 #]]
-subroutine datetime.sub
+function datetime.sub
 	define {
 		!january[31],
 		!february[28],

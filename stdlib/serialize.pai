@@ -4,7 +4,7 @@
 @param value number The integer to serialize.
 @return string A string of 4 bytes.
 #]]
-subroutine serialize.int
+function serialize.int
 	return {
 		(
 			char(i) for i in @1.bytes(4).reverse()

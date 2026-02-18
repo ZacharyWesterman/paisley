@@ -42,7 +42,7 @@ let info = {
 let args = {\arg.parse(@, config, info)}
 
 # Alternative way of doing the same thing, but more verbose:
-# let args = ${gosub arg.parse {@} {config} {info} }
+# let args = ${call arg.parse {@} {config} {info} }
 
 # Print the parsed arguments
 print {args.json_encode(true)}
