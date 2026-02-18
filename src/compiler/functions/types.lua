@@ -472,7 +472,7 @@ TYPESIG = {
 		--[[minify-delete]]
 		params = { 'list', 'op' },
 		description =
-		'Reduce an array to a single element based on a repeated binary operation. The `op` param may be a binary operator, the name of a 2-argument function, or the name of a subroutine (written like `\\sub_name`).',
+		'Reduce an array to a single element based on a repeated binary operation. The `op` param may be a binary operator, or the name of a 2-argument built-in or user-defined function (the latter must be written like `\\sub_name`).',
 		category = 'arrays',
 		--[[/minify-delete]]
 	},

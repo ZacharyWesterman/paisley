@@ -6,7 +6,7 @@ function error(text)
 end
 
 KEEP_DEAD_CODE = true
-ALLOW_SUBROUTINE_ELISION = true --Allow any redeclaration of a subroutine to elide any existing definition, rather than error.
+ALLOW_FUNCTION_ELISION = true --Allow any redeclaration of a function to elide any existing definition, rather than error.
 
 require "src.shared.stdlib"
 require "src.shared.json"
@@ -223,7 +223,7 @@ local indent_tokens = {
 	[TOK.kwd_if] = true,
 	[TOK.kwd_else] = true,
 	[TOK.kwd_elif] = true,
-	[TOK.kwd_subroutine] = true,
+	[TOK.kwd_function] = true,
 	[TOK.expr_open] = true,
 	[TOK.kwd_try] = true,
 }
@@ -233,7 +233,7 @@ local dedent_tokens = {
 }
 
 local token_cache = {}
-local subroutine_cache = {} --Keep cache of all subroutines the user creates
+local function_cache = {} --Keep cache of all functions the user creates
 local lexer, append_text = Lexer('')
 
 local curses = fs.rocks.curses
@@ -365,7 +365,7 @@ if curses then
 					end
 
 					if match then
-						if (scope and match == 'gosub') or (not scope and (kwds[match] or match == 'define')) then
+						if (scope and (match == 'call' or match == 'gosub')) or (not scope and (kwds[match] or match == 'define')) then
 							cmd_found = true
 							if match == 'end' or match == 'then' or match == 'do' or match == 'try' then
 								cmd_found = false
@@ -466,7 +466,7 @@ if curses then
 					end
 				end
 
-				--Special gosub 'function syntax' calls
+				--Special backslash syntax for function calls
 				if not match then
 					match = text:match('^%\\[^\'"%$%{%}%(%) \t#;]*')
 					if match then
@@ -765,30 +765,30 @@ for input_line in readline do
 
 		--Run semantic analysis
 		if not ERRORED then
-			--Reappend subroutine cache into program.
-			for _, subroutine_ast in pairs(subroutine_cache) do
-				table.insert(ast.children, subroutine_ast)
+			--Reappend function cache into program.
+			for _, function_ast in pairs(function_cache) do
+				table.insert(ast.children, function_ast)
 			end
 
 			root = SemanticAnalyzer(ast)
 		end
 
-		--If we didn't hit any compile errors, then add any subroutines to the cache.
+		--If we didn't hit any compile errors, then add any functions to the cache.
 		if not ERRORED and root then
 			--Fun simplification available here:
-			--Since Paisley requires all subroutines to be defined at the top level
+			--Since Paisley requires all functions to be defined at the top level
 			--(and program nodes get flattened), we don't have to do a full recursive search.
-			--Just check if the root node IS or CONTAINS subroutines.
-			local function cache_subroutines(node)
-				if node.id == TOK.subroutine then
-					subroutine_cache[node.text] = node
+			--Just check if the root node IS or CONTAINS functions.
+			local function cache_functions(node)
+				if node.id == TOK.function_def then
+					function_cache[node.text] = node
 				elseif node.id == TOK.program then
 					for i = 1, #node.children do
-						cache_subroutines(node.children[i])
+						cache_functions(node.children[i])
 					end
 				end
 			end
-			cache_subroutines(root)
+			cache_functions(root)
 		end
 
 		--Generate bytecode

@@ -145,7 +145,7 @@ function FOLD_CONSTANTS(token, file, get_var)
 	--Another unique case: the reduce() function takes an operator as the second parameter, not a value
 	if token.id == TOK.func_call and token.text == 'reduce' then
 		if c2.id == TOK.sub_ref then
-			-- Can't fold if using a subroutine to reduce the values.
+			-- Can't fold if using a user-defined function to reduce the values.
 			return
 		end
 

@@ -4,7 +4,7 @@
 @return any The result
 @error If more than 100 arguments are passed
 #]]
-subroutine testsub
+function testsub
 	return {'test'.match('a')}
 	return {0:9}
 end

@@ -1,6 +1,10 @@
-#Print the current date and time in ISO-8601 format
-subroutine iso_time
+#[[
+@brief Get the current date and time in ISO-8601 format.
+@return string an ISO formatted datetime string.
+#]]
+function iso_time
 	return "{${sysdate}.date()}T{${systime}.floor().time()}"
 end
 
-print ${gosub iso_time}
+print ${call iso_time}
+ 

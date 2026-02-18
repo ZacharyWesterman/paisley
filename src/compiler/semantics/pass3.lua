@@ -54,8 +54,8 @@ return {
 			end,
 		},
 
-		[TOK.subroutine] = {
-			--Make sure that comment annotations exactly match what the subroutine actually returns.
+		[TOK.function_def] = {
+			--Make sure that comment annotations exactly match what the function actually returns.
 			function(token, file)
 				if not token.tags or not token.tags.returns then return end
 
@@ -75,7 +75,7 @@ return {
 			end,
 		},
 
-		[TOK.gosub_stmt] = {
+		[TOK.call_stmt] = {
 			--Make sure that param types line up with the comment annotations.
 			function(token, file)
 				local name = token.children[1].text

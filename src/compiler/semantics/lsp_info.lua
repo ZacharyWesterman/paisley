@@ -34,12 +34,12 @@ local function command_lsp(token, filename)
 	if token.id == TOK.inline_command then cmd = cmd.children[1] end
 
 	if cmd.value then
-		if var.id == TOK.gosub_stmt then
+		if var.id == TOK.call_stmt then
 			if config.labels[cmd.text] then
 				local tp = config.labels[cmd.text].type
 				if EXACT_TYPE(tp, TYPE_NULL) then
 					INFO.info(cmd.span,
-						'The ' .. keywords[TOK.kwd_subroutine] .. ' `' ..
+						'The ' .. keywords[TOK.kwd_function] .. ' `' ..
 						cmd.text ..
 						'` always returns null, so using an inline command eval here is not helpful',
 						filename)
@@ -69,10 +69,10 @@ local function command_lsp(token, filename)
 	end
 end
 
-local function subroutine_text(token)
+local function function_text(token)
 	local text = '## ' ..
-		vscode.color(keywords[TOK.kwd_subroutine], vscode.theme.keyword) ..
-		' ' .. vscode.color(token.text, vscode.theme.sub)
+		vscode.color('function', vscode.theme.keyword) ..
+		' ' .. vscode.color(token.text, vscode.theme.func)
 
 	local tags = {}
 	if token.memoize then table.insert(tags, 'memoized') end
@@ -108,7 +108,7 @@ local function subroutine_text(token)
 	end
 
 	if token.tags.error then
-		--Print the situations in which the subroutine might raise an error.
+		--Print the situations in which the function might raise an error.
 		text = text .. '\n**Errors**:'
 		for _, t in ipairs(token.tags.error) do
 			text = text .. '\n- ' .. t
@@ -153,10 +153,10 @@ return {
 
 			function(token, filename)
 				if not config.labels[token.text] then return end
-				--Print subroutine signature
-				local text = subroutine_text(config.labels[token.text])
+				--Print function signature
+				local text = function_text(config.labels[token.text])
 
-				--Print subroutine location
+				--Print function location
 				text = text .. '\n\n*'
 				local fname = config.labels[token.text].filename or filename
 				if fname and fname ~= INFO.root_file then
@@ -204,14 +204,14 @@ return {
 			command_lsp,
 		},
 
-		[TOK.gosub_stmt] = {
+		[TOK.call_stmt] = {
 			function(token, filename)
 				token = token.children[1]
 				if config.labels[token.text] then
-					--Print subroutine signature
-					local text = subroutine_text(config.labels[token.text])
+					--Print function signature
+					local text = function_text(config.labels[token.text])
 
-					--Print subroutine location
+					--Print function location
 					text = text .. '\n\n*'
 					local fname = config.labels[token.text].filename or filename
 					if fname and fname ~= INFO.root_file then
@@ -226,8 +226,8 @@ return {
 			end,
 		},
 
-		--Print information about subroutine definitions
-		[TOK.subroutine] = {
+		--Print information about function definitions
+		[TOK.function_def] = {
 			function(token, filename)
 				local to_col = 9999
 				if token.children[1].span.from.line == token.span.from.line then
@@ -240,14 +240,14 @@ return {
 						line = token.span.from.line,
 						col = to_col,
 					}
-				}, subroutine_text(token), filename)
+				}, function_text(token), filename)
 			end,
 
-			--Warn if the subroutine is never used
+			--Warn if the function is never used
 			function(token, filename)
 				if not token.is_referenced and not EXPORT_LINES[token.span.from.line] then
 					INFO.dead_code(token.span,
-						'The ' .. keywords[TOK.kwd_subroutine] .. ' `' .. token.text .. '` is never used.',
+						'The ' .. keywords[TOK.kwd_function] .. ' `' .. token.text .. '` is never used.',
 						filename)
 				end
 			end,
@@ -312,7 +312,7 @@ return {
 					end,
 					['@'] = function()
 						return
-						'\nIf used inside a subroutine, this contains any arguments passed to the subroutine.\nIf used outside of a subroutine, it instead contains any run-time arguments passed to the current script.'
+						'\nIf used inside a function, this contains any arguments passed to the function.\nIf used outside of a function, it instead contains any run-time arguments passed to the current script.'
 					end,
 				}
 

@@ -33,7 +33,7 @@
 #@param 3 object The information about the program (name and description).
 #@return object The parsed arguments.
 #@error If the argument is not a list, or if args don't match the expected format.
-subroutine arg.parse
+function arg.parse
     #Parse name/description
     if {@3.type() != 'object' or not @3.name or not @3.description} then
         error "Third parameter to arg.parse should be an object of the form:\n(\n\t'name' => 'program_name',\n\t'description' => 'program_description'\n)"
@@ -87,7 +87,7 @@ subroutine arg.parse
     # If found, show usage info and then exit
     if {'--help' in @1 or '-h' in @1} then
         delete _args _key _val
-        gosub arg._help_text {@2} {@3}
+        call arg._help_text {@2} {@3}
         stop
     end
 
@@ -100,7 +100,7 @@ subroutine arg.parse
                 error "Missing value for flag \"{_key}\""
             end
 
-            let _res{_prev_key} = ${gosub arg._parse_type {_args.flags['--' _prev_key].type} {_arg} {_prev_key} }
+            let _res{_prev_key} = ${call arg._parse_type {_args.flags['--' _prev_key].type} {_arg} {_prev_key} }
             let _prev_key = {null}
             continue
         end
@@ -124,7 +124,7 @@ subroutine arg.parse
                 error "Empty value for flag \"{_key}\""
             end
 
-            let _res{_key} = ${gosub arg._parse_type {_args.flags['--' _key].type} {_val} {'--'_key}}
+            let _res{_key} = ${call arg._parse_type {_args.flags['--' _key].type} {_val} {'--'_key}}
             let _args{'flags', _key, 'found'} = {true}
             continue
         end
@@ -149,7 +149,7 @@ subroutine arg.parse
             end
 
             let _key = {_args.flags['-'_key].key}
-            let _res{_key} = ${gosub arg._parse_type {_args.flags['--' _key].type} {_val} {'--'_key}}
+            let _res{_key} = ${call arg._parse_type {_args.flags['--' _key].type} {_val} {'--'_key}}
             let _args{'flags', ('--'_key), 'found'} = {true}
             continue
         end
@@ -188,7 +188,7 @@ end
 
 #@private
 #@error If the value is not valid for the flag.
-subroutine arg._parse_type
+function arg._parse_type
     match {@1} do
         if boolean then
             let _conv = {'true' => true, 'false' => false, '1' => true, '0' => false}
@@ -214,7 +214,7 @@ subroutine arg._parse_type
 end
 
 #@private
-subroutine arg._help_text
+function arg._help_text
     let flags = {i for i in @1.pairs() if i[2].type() = 'object'}
     let values = {@1['-']}
     if {not values} then

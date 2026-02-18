@@ -4,7 +4,7 @@
 @param ... array The arrays to zip.
 @return array[array] An array of arrays, where each inner array contains elements from the input arrays at the same index.
 #]]
-subroutine array.zip
+function array.zip
 	return {
 		(@[i][index] for i in 1:len(@))
 		for index in (1:max(len(i) for i in @))
@@ -27,7 +27,7 @@ let taken arr = {\array.take(arr, 3)}
 @param n number The number of elements to take.
 @return array[array] The first n elements of the input array, and the rest as a second array.
 #]]
-subroutine array.take
+function array.take
 	return {@1[1:@2], @1[(@2+1)::]}
 end
 
@@ -46,7 +46,7 @@ let arr = {\array.drop(arr, 3)}
 @param n number The number of elements to drop.
 @return array The array after dropping the first n elements.
 #]]
-subroutine array.drop
+function array.drop
 	return {@1[(@2+1)::]}
 end
 
@@ -56,7 +56,7 @@ end
 @param arr array The input array.
 @return array? The next permutation of the array, or null if it is the last permutation.
 #]]
-subroutine array.permute
+function array.permute
 	let _array = {@1.reverse()}
 	
 	# Find the largest index _k such that _array[_k] < _array[_k + 1]. If no such index exists, the permutation is the last permutation.

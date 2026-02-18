@@ -113,7 +113,7 @@ The only use of line endings is to separate commands, which can also be done wit
 A Paisley script may consist of a series of comments, statements, and commands.
 - Single-line comments begin with a `#` character and continue to the end of the line.
 - Multi-line comments begin with `#[[` and continue until `#]]` is reached, or the end of the file.
-- There are 5 types of statements: conditionals (if/else/elif/match/try), loops (for/while), variable assignment, subroutines, and miscellaneous statements (return/break/etc).
+- There are 5 types of statements: conditionals (if/else/elif/match/try), loops (for/while), variable assignment, function definitions, and miscellaneous statements (return/break/etc).
 - Any text that is not a keyword or otherwise part of a statement is considered a command. More on that later.
 
 Before continuing, note that commands do not have to be hard-coded. You can put expressions in them, such as
@@ -254,7 +254,7 @@ let x /= 2 # Divide x by 2
 let x //= 2 # Integer-divide x by 2
 let x %= 2 # Set x to the remainder of x / 2
 let x %%= 2 # Set x to true if 2 divides x, false otherwise.
-let x .= str # Append "str" to x
+let x &= str # Append "str" to x
 ```
 
 ### Variable Index Assignment
@@ -298,15 +298,14 @@ if {not (variable exists)} then
 end
 ```
 
-## Subroutines:
-Proper use of subroutines can let you easily reuse common code.
+## User-defined functions:
+User-defined functions may be either called as if they were commands, or built-in functions.
+Like commands, they can take parameters and optionally return a value, but they don't have to.
+Unlike commands, they can modify global variables, which may or may not be desired. Just keep it in mind when writing them.
 
-Subroutines are basically user-defined functions that are called as if they were commands. Like commands, they can take parameters and optionally return a value, but they don't have to.
-Unlike commands, they can modify global variables, which may or may not be desired. Just keep it in mind when writing subroutines.
-
-An example subroutine usage might look like the following:
+An example function definition and usage might look like the following:
 ```
-subroutine print_numbers
+function print_numbers
 	for i in {0 : @[1]} do
 		if {i > 30} then
 			print "whoa, too big!"
@@ -316,121 +315,121 @@ subroutine print_numbers
 	end
 end
 
-gosub print_numbers 10
-gosub print_numbers 50
+call print_numbers 10
+call print_numbers 50
 
-subroutine power
+function power
     return {@[1] ^ @[2]}
 end
 
-# You can use gosub the same as any inline command evaluation.
-print ${gosub power 2 10}
+# You can use call the same as any inline command evaluation.
+print ${call power 2 10}
 
-# However, for calling subroutines inside expressions, they can be used like functions!
-# Just prepend a backslash to the subroutine name.
+# However, for calling user-defined functions inside expressions, they can be used like built-in functions!
+# Just prepend a backslash to the function name.
 print {\power(2,10)}
 ```
-See how in the above, the `@` variable stores any parameters passed to a subroutine as an array, so the first parameter is `@[1]`, the second is `@[2]` and so on. For constant indexes, the square brackets are optional, e.g. `@1` and `@2` will also work, but **not** `@ 2`.
-Also see that subroutines return values the same way that commands do, using the inline command evaluation syntax, `${...}`.
+See how in the above, the `@` variable stores any parameters passed to a function as an array, so the first parameter is `@[1]`, the second is `@[2]` and so on. For constant indexes, the square brackets are optional, e.g. `@1` and `@2` will also work, but **not** `@ 2`.
+Also see that functions return values the same way that commands do, using the inline command evaluation syntax, `${...}`.
 
-Note that it is also possible to jump to subroutines with an arbitrary label ID. Unlike a regular gosub, a dynamic gosub could fail at runtime, and so requires a conditional check `if gosub {expression} then ... else ... end` to make sure the label is valid.
-See how in the following example, the program will randomly call one of 5 possible subroutines, and then print "Subroutine exists".
+Note that it is also possible to jump to functions with an arbitrary label ID. Unlike a regular call, a dynamic call could fail at runtime, and so requires a conditional check `if call {expression} then ... else ... end` to make sure the label is valid.
+See how in the following example, the program will randomly call one of 5 possible functions, and then print "Function exists".
 ```
-if gosub "{random_int(1,5)}" then
-	print "Subroutine exists"
+if call "{random_int(1,5)}" then
+	print "Function exists"
 end
 
-subroutine 1 end
-subroutine 2 end
-subroutine 3 end
-subroutine 4 end
-subroutine 5 end
+function 1 end
+function 2 end
+function 3 end
+function 4 end
+function 5 end
 ```
 
-You can of course also pass arguments to a dynamic gosub.
+You can of course also pass arguments to a dynamic call.
 However, any returned value is ignored.
 
 ```
-if gosub "add{random_int(1,5)}" 100 then
-	print "Subroutine exists"
+if call "add{random_int(1,5)}" 100 then
+	print "Function exists"
 end
 
-subroutine add1
+function add1
 	print {@1 + 1}
 end
 ...
-subroutine add5
+function add5
 	print {@1 + 5}
 end
 ```
 
-As an aside, note how in the above, the subroutine calls happened *before* their definitions.
-This is totally valid; as long as the subroutine is defined *somewhere*, the compiler doesn't care *where* it's defined.
+As an aside, note how in the above, the function calls happened *before* their definitions.
+This is totally valid; as long as the function is defined *somewhere*, the compiler doesn't care *where* it's defined.
 
-### Subroutines in Expressions:
-Inside of expressions, subroutines can be called in one of two ways:
-1. Using the inline command evaluation syntax `${...}`, in the same way as commands are used. E.g. `${gosub my_subroutine {arg1} arg2 "arg3" etc..}`
-2. Using the special function evaluation syntax `\my_subroutine(arg1,arg2,etc...)`. Note that calling subroutines like this ignores other syntax until the parentheses. So calling `\some.sub.name(arg1)` or `\+(123, 456)` will always be interpreted as subroutine calls.
+### User-defined Functions in Expressions:
+Inside of expressions, functions can be called in one of two ways:
+1. Using the inline command evaluation syntax `${...}`, in the same way as commands are used. E.g. `${call my_function {arg1} arg2 "arg3" etc..}`
+2. Using the special function evaluation syntax `\my_function(arg1,arg2,etc...)`. Note that calling functions like this ignores other syntax until the parentheses. So calling `\some.sub.name(arg1)` or `\+(123, 456)` will always be interpreted as function calls.
 
 These both do exactly the same thing: the latter is just syntax sugar for the former, and is supplied for convenience.
 
-### Subroutine Memoization:
-Some subroutines may take a very long time to compute values, when we only really need them to be computed once for any given input.
-For these kinds of subroutines, the `cache` keyword can be used to memoize the subroutine and only compute the results once.
+### Function Memoization:
+Some functions may take a very long time to compute values, when we only really need them to be computed once for any given input.
+For these kinds of functions, the `cache` keyword can be used to memoize the function and only compute the results once.
 See the following recursive fibonacci example:
 ```
-cache subroutine fib
+cache function fib
 	if {@1 < 2} then return {@1} end
 	return {\fib(@1 - 1) + \fib(@1 - 2)}
 end
 ```
 Subsequent calls to `fib` will be *very* fast, because each fibonacci number only has to be computed once.
 
-If it turns out that you need to invalidate a specific subroutine's cache, you can manually do so:
+If it turns out that you need to invalidate a specific function's cache, you can manually do so:
 ```
 break cache fib
 ```
-If the subroutine is not memoized, this of course does nothing.
+If the function is not memoized, this of course does nothing.
 
-In short, memoization can be a good way to get a significant performance boost, basically for free (there *is* a slight runtime overhead, but it's negligible). Do keep in mind that any side effects (e.g. running commands, modifying variables, etc) of the called subroutine will not trigger if the result is already cached, so do not use this feature if you *want* your subroutine to always cause side effects.
+In short, memoization can be a good way to get a significant performance boost, basically for free (there *is* a slight runtime overhead, but it's negligible). Do keep in mind that any side effects (e.g. running commands, modifying variables, etc) of the called function will not trigger if the result is already cached, so do not use this feature if you *want* your function to always cause side effects.
 
-### Subroutine Aliases:
+### Function Aliases:
 
-Some subroutines may have very long names that are unwieldy to type. In such cases you can create an alias with the `using` keyword:
+Some functions may have very long names that are unwieldy to type. In such cases you can create an alias with the `using` keyword:
 ```
-subroutine very_long_name_thats_annoying_to_type end
+function very_long_name_thats_annoying_to_type end
 using very_long_name_thats_annoying_to_type as short_name
-gosub short_name
+call short_name
 
-#If your subroutine name has at least one period in it,
+#If your function name has at least one period in it,
 #then you don't have to manually write the alias name.
 #It will be deduced from the text after the last period.
-subroutine example.sub end
+function example.sub end
 using example.sub
-gosub sub
+call sub
 ```
 Do note that aliases are restricted to their scope, for example:
 ```
-subroutine example.sub end
+function example.sub end
 if {x} then
 	using example.sub as mysub
-	gosub mysub #This is valid.
+	call mysub #This is valid.
 end
-gosub mysub #This is an error; "mysub" alias is not defined in this scope.
+call mysub #This is an error; "mysub" alias is not defined in this scope.
 ```
-You can also alias subroutines according to a wildcard, if you end the subroutine name with an asterisk.
+You can also alias functions according to a wildcard, if you end the function name with an asterisk.
 ```
-subroutine sub1 end
-subroutine sub2 end
-using sub* as * #Can now do `gosub 1` and `gosub 2`
-using sub* as s* #Can now do `gosub s1` and `gosub s2`
-using sub* as *s #Can now do `gosub 1s` and `gosub 2s`
-using nonexistent.sub.* #Nothing happens unless at least 1 subroutine matches the pattern.
+function sub1 end
+function sub2 end
+using sub* as * #Can now do `call 1` and `call 2`
+using sub* as s* #Can now do `call s1` and `call s2`
+using sub* as *s #Can now do `call 1s` and `call 2s`
+using nonexistent.sub.* #Nothing happens unless at least 1 function matches the pattern.
 ```
-Note that aliases do NOT work with dynamic gosubs; those require the full subroutine name, to avoid any ambiguity at runtime.
+Note that aliases do NOT work with dynamic calls; those require the full function name, to avoid any ambiguity at runtime.
 
 ## Macros:
-Macros are another good way to reuse code, however unlike subroutines, these are specifically for reusing parts of expressions.
+Macros are another good way to reuse code, however unlike functions, these are specifically for reusing parts of expressions.
 Macros are defined with the syntax `![expression]`, and are referred to with that same `!` identifier, just without the brackets. Note that the `!` can be any number of exclamation marks, optionally followed by an alphanumeric identifier. So for example, `!!`, `!2`, and `!!macro_1` are all valid macro identifiers, all referring to different macros. Note that macros are not functions; they don't take any parameters, instead they behave exactly as if you had written the contained expression instead of the macro.
 
 Below is an example of macro usage. Both the top and bottom commands will print 5 random numbers in the range 0-100.
@@ -454,18 +453,18 @@ let b = {![!+1]} # `b` is set to 2.
 let c = {![!+1]} # `c` is set to 3.
 ```
 
-Note that, unlike variables, macros are restricted to their scope. Thus, for example, if you define a macro in a subroutine, you cannot use it outside of the subroutine.
+Note that, unlike variables, macros are restricted to their scope. Thus, for example, if you define a macro in a function, you cannot use it outside of the function.
 
 ## Exceptions:
 Sometimes, parts of a program **will** fail, and the failure point is not always easy to predict. Many languages use exceptions to gracefully handle errors, and Paisley does so as well. To raise an exception, use the `error` command along with any message. And then to handle an exception, you can use a `try/catch` block, where the `catch` can have an optional variable to set.
 
 ```
-subroutine this_errors
+function this_errors
 	error "your error message"
 end
 
 try
-	gosub this_errors
+	call this_errors
 catch e
 	print {json_encode(e)}
 end
@@ -478,7 +477,7 @@ The output variable (in this case `e`) will always be an object that looks like 
 	"stack": [2] 
 }
 ```
-Where `line` is the line where the exception was caught, and `stack` is the line numbers for the subroutine call stack.
+Where `line` is the line where the exception was caught, and `stack` is the line numbers for the function call stack.
 
 ## Scopes:
 Every time you enter into a new "block" of code, the scope is incremented.
@@ -508,8 +507,8 @@ else
 	# You get the picture
 end
 
-subroutine my_sub
-	# You guessed it! This subroutine has its own scope.
+function my_sub
+	# You guessed it! This function has its own scope.
 end
 
 try
@@ -555,7 +554,7 @@ Note that these imports follow a strict top-down file structure (you can never g
 - `continue` or `continue 1` or `continue 2` etc, will skip an iteration of as many while/for loops as are specified (defaults to 1 if not specified)
 - `delete` will delete the variables listed, e.g. `delete x y z`
 - `stop` will immediately halt program execution.
-- `return` returns from a subroutine back to the caller.
+- `return` returns from a function back to the caller.
 - `define` will parse the following expression(s) but will ignore them at run time. This is most useful for defining macros outside of where they're used.
 
 ## Expressions:
@@ -636,7 +635,7 @@ Along with the regular arithmetic operators, there are also ternary and array-re
 - Multi-line strings with interpoation, `"""some text"""`
 - Multi-line strings with NO interpolation, `'''some text'''`
 - Variables, `var_name`, `x`, etc.
-- `@`, the "parameter list" variable, an array containing any values passed to the current subroutine. If used outside of a subroutine, it instead contains any arguments passed to the script.
+- `@`, the "parameter list" variable, an array containing any values passed to the current function. If used outside of a function, it instead contains any arguments passed to the script.
 - `$`, the "command list" variable, an array containing the names of all the commands the current script has access to.
 - `_VARS`, the "variables" variable, an object that contains the names and values of all variables in the current script as key-value pairs.
 - `_VERSION`, the "version number" variable, a string formatted as `MAJOR.MINOR.PATCH`.
@@ -774,21 +773,21 @@ Comments can also be used to annotate parts of the program and slightly modify c
 
 Every comment annotation starts with `@`. They will look something like the following:
 ```
-#Some example subroutine
+#Some example function
 #@param n number The number to square.
 #@return number The square of the input number.
-subroutine square
+function square
 	return {@1 * @1}
 end
 ```
 
 The following is a complete list of annotations and what their effects are:
-- `@brief` : Indicate a single-line description of a subroutine, separate from the full description.
-- `@param` : Indicate a subroutine parameter of a specific type. This is a type hint and is not enforced.
-- `@return` : Indicate a subroutine return value of a specific type.
-- `@mutate` : Indicate that this subroutine mutates the given variable(s) (e.g. `#@mutate var1 var2`)
-- `@allow-elision`: Allow this subroutine to be overridden by external code.
-- `@export` : Don't mark this subroutine or variable as dead code. Only used when running Paisley as a language server.
+- `@brief` : Indicate a single-line description of a function, separate from the full description.
+- `@param` : Indicate a function parameter of a specific type. This is a type hint and is not enforced.
+- `@return` : Indicate a function return value of a specific type.
+- `@mutate` : Indicate that this function mutates the given variable(s) (e.g. `#@mutate var1 var2`)
+- `@allow-elision`: Allow this function to be overridden by external code.
+- `@export` : Don't mark this function or variable as dead code. Only used when running Paisley as a language server.
 - `@plasma`: Apply the `--plasma` flag to the current compilation unit.
 - `@shell`: Apply the `--shell` flag to the current compilation unit.
 - `@sandbox`: Apply the `--sandbox` flag to the current compilation unit.

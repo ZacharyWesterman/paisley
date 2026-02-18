@@ -6,8 +6,8 @@ statement :=
 	| while_stmt
 	| for_stmt
 	| scope_stmt
-	| subroutine
-	| gosub_stmt
+	| function_def
+	| call_stmt
 	| let_stmt
 	| uncache_stmt
 	| break_stmt
@@ -22,10 +22,10 @@ statement :=
 	| command
 
 if_stmt :=
-	| `if` (argument|gosub_stmt) `then` program `end`
-	| `if` (argument|gosub_stmt) `then` program else_stmt
-	| `if` (argument|gosub_stmt) `then` program elif_stmt
-	| `if` (argument|gosub_stmt) else_stmt
+	| `if` (argument|call_stmt) `then` program `end`
+	| `if` (argument|call_stmt) `then` program else_stmt
+	| `if` (argument|call_stmt) `then` program elif_stmt
+	| `if` (argument|call_stmt) else_stmt
 
 elif_stmt :=
 	| `elif` program `end`
@@ -48,10 +48,12 @@ scope_stmt :=
 delete_stmt :=
 	| `delete` <text>+
 
-subroutine :=
+function_def :=
+	| `function` <text> program `end`
 	| `subroutine` <text> program `end`
 
-gosub_stmt :=
+call_stmt :=
+	| `call` <text>
 	| `gosub` <text>
 
 let_stmt :=
@@ -59,7 +61,7 @@ let_stmt :=
 	| `let` <variable> `{` expression `}` `=` argument+
 	| `let` <variable>+ `=` argument+
 	| `let` <variable>+
-	| `let` <variable> (`+=`|`-=`|`*=`|`/=`|`%=`|`%%=`|`.=`) argument+
+	| `let` <variable> (`+=`|`-=`|`*=`|`/=`|`%=`|`%%=`|`&=`) argument+
 	| `initial` <variable> `=` argument+
 
 uncache_stmt :=
@@ -122,7 +124,7 @@ stdio :=
 	| `?!`
 
 inline_command :=
-	| gosub_stmt
+	| call_stmt
 	| command
 
 expression :=

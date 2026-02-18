@@ -1,5 +1,5 @@
 #Calculate a bunch of numbers in the fibonacci sequence.
-#See how, since the subroutine is memoized,
+#See how, since the function is memoized,
 #results are generated very quickly, even though the
 #recursive implementation is well-known for its slowness.
 
@@ -7,8 +7,8 @@ for n in {0:25} do
     print "fib({n}) = {\fibonacci(n)}"
 end
 
-#Remove `cache` to see how slow this subroutine can be.
-cache subroutine fibonacci
+#Remove `cache` to see how slow this function can be.
+cache function fibonacci
     if {@1 < 2} then return {@1} end
     return {\fibonacci(@1-1) + \fibonacci(@1-2)}
 end

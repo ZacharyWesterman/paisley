@@ -9,7 +9,7 @@ require color
 @return image A new image object.
 @export
 #]]
-subroutine image.new
+function image.new
 	let _color = {@3 if @3 else !black}
 	let _image = {,}
 
@@ -29,7 +29,7 @@ end
 #@param image array[array[number]] The RGBA color image to convert.
 #@return string A string containing the BMP representation of the image.
 #@export
-subroutine image.bitmap
+function image.bitmap
 	let _image = {@1}
 
 	let _width = {len(_image[1])}

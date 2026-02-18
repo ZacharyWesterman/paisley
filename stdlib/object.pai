@@ -6,7 +6,7 @@
 @param keys array The keys to pick.
 @return object A new object containing only the specified keys.
 #]]
-subroutine object.pick
+function object.pick
 	return {
 		(
 			(i, @1[i]) for i in @2 if i in @1
@@ -22,7 +22,7 @@ end
 @param keys array The keys to omit.
 @return object A new object without the specified keys.
 #]]
-subroutine object.omit
+function object.omit
 	return {
 		(
 			(i, @1[i]) for i in @1 if i not in @2

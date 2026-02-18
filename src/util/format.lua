@@ -29,7 +29,7 @@ return function(text, indent_text)
 		[TOK.kwd_do] = true,
 		[TOK.kwd_try] = true,
 		[TOK.kwd_catch] = true,
-		[TOK.kwd_subroutine] = true,
+		[TOK.kwd_function] = true,
 		[TOK.paren_open] = true,
 		[TOK.command_open] = true,
 		[TOK.expr_open] = true,
@@ -53,7 +53,7 @@ return function(text, indent_text)
 		[TOK.index_open] = true,
 	}
 	local nospace_expr_after = {
-		[TOK.op_count] = true,
+		[TOK.op_concat] = true,
 	}
 
 	local indent = 0

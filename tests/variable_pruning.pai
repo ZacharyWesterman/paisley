@@ -6,9 +6,9 @@ print {x}
 
 
 # This will not be pruned, because we're not sure if y is always defined before it's used
-subroutine a
+function a
 	print {y}
 end
 
 let y = 123
-gosub a
+call a
