@@ -148,7 +148,7 @@ local function pop_scope(token, file)
 			local vscode = require "src.util.vscode"
 
 			--Print macro value if it's a simple literal
-			text = vscode.color('**' .. token.text .. '**', vscode.theme.sub)
+			text = vscode.color('**' .. token.text .. '**', vscode.theme.macro)
 			if node.value ~= nil or node.id == TOK.lit_null then
 				local json = require "src.shared.json"
 				text = text .. ' = ' .. json.stringify(node.value)
@@ -178,7 +178,7 @@ local function pop_scope(token, file)
 				local vscode = require "src.util.vscode"
 
 				--Print macro value if it's a simple literal
-				text = vscode.color('**' .. token.text .. '**', vscode.theme.sub)
+				text = vscode.color('**' .. token.text .. '**', vscode.theme.macro)
 				if macro.node.value ~= nil or macro.node.id == TOK.lit_null then
 					local json = require "src.shared.json"
 					text = text .. ' = ' .. json.stringify(macro.node.value)

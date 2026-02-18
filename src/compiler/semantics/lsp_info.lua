@@ -71,8 +71,8 @@ end
 
 local function function_text(token)
 	local text = '## ' ..
-		vscode.color(keywords[TOK.kwd_function], vscode.theme.keyword) ..
-		' ' .. vscode.color(token.text, vscode.theme.sub)
+		vscode.color('function', vscode.theme.keyword) ..
+		' ' .. vscode.color(token.text, vscode.theme.func)
 
 	local tags = {}
 	if token.memoize then table.insert(tags, 'memoized') end

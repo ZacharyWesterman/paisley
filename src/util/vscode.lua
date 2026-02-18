@@ -4,7 +4,7 @@ return {
 		func = '#dcdcaa',
 		var = '#9cdcfe',
 		command = '#569cd6',
-		sub = '#4ec9b0',
+		macro = '#4ec9b0',
 		keyword = '#c586c0',
 		gray = '#808080',
 	},
