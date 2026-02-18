@@ -13,7 +13,7 @@ return {
 	['%%'] = TOK.op_divisible,
 	['^'] = TOK.op_exponent,
 	[':'] = TOK.op_slice,
-	['&'] = TOK.op_count,
+	['&'] = TOK.op_concat,
 	['not'] = TOK.op_not,
 	['and'] = TOK.op_and,
 	['or'] = TOK.op_or,

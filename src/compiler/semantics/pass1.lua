@@ -17,19 +17,19 @@ local function break_continue(token, file)
 	end
 end
 
---Make a list of all subroutines, and check that return statements are only in subroutines
+--Make a list of all user-defined functions, and check that return statements are only in user-defined functions
 local labels = {}
 local inside_sub = 0
-local function subroutine_enter(token, file)
-	if token.id == TOK.subroutine then
+local function function_enter(token, file)
+	if token.id == TOK.function_def then
 		inside_sub = inside_sub + 1
 
 		local label = token.text
 		local prev = labels[label]
-		if prev ~= nil --[[minify-delete]] and not ALLOW_SUBROUTINE_ELISION and not prev.allow_elision --[[/minify-delete]] then
+		if prev ~= nil --[[minify-delete]] and not ALLOW_FUNCTION_ELISION and not prev.allow_elision --[[/minify-delete]] then
 			-- Don't allow tokens to be redeclared
 			parse_error(token.span,
-				'Redeclaration of subroutine "' ..
+				'Redeclaration of function "' ..
 				label .. '" (previously declared on line ' .. prev.span.from.line ..
 				', col ' .. prev.span.from.col .. ')', file)
 		end
@@ -47,17 +47,17 @@ local function subroutine_enter(token, file)
 		labels[label] = token
 	else
 		if inside_sub < 1 then
-			parse_error(token.span, 'Return statements can only be inside subroutines', file)
+			parse_error(token.span, 'Return statements can only be inside functions', file)
 		end
 	end
 end
-local function subroutine_exit(token, file)
-	if token.id == TOK.subroutine then
+local function function_exit(token, file)
+	if token.id == TOK.function_def then
 		inside_sub = inside_sub - 1
 	end
 end
 
---Resolve all subroutine aliases
+--Resolve all function aliases
 --Unlike other structures, these do respect scope.
 local aliases = { {} }
 
@@ -85,16 +85,16 @@ local function aliases_enter(token, file)
 		local c = token.children[1]
 		aliases[#aliases][token.children[2].text] = c.text
 
-		--If alias refers to a subroutine that doesn't exist, error.
+		--If alias refers to a function that doesn't exist, error.
 		if not labels[c.text] then
-			local msg = 'Subroutine `' .. c.text .. '` not declared anywhere'
+			local msg = 'Function `' .. c.text .. '` not declared anywhere'
 			local guess = closest_word(c.text, labels, 4)
 			if guess ~= nil and guess ~= '' then
 				msg = msg .. ' (did you mean "' .. guess .. '"?)'
 			end
 			parse_error(c.span, msg, file)
 		end
-	elseif token.id == TOK.gosub_stmt then
+	elseif token.id == TOK.call_stmt then
 		--Check for an alias that matches
 		local c = token.children[1]
 		local a = find_label(c.text)
@@ -104,7 +104,7 @@ local function aliases_enter(token, file)
 	end
 end
 local function aliases_exit(token, file)
-	if token.id ~= TOK.alias_stmt and token.id ~= TOK.gosub_stmt then
+	if token.id ~= TOK.alias_stmt and token.id ~= TOK.call_stmt then
 		table.remove(aliases)
 	end
 end
@@ -302,8 +302,8 @@ return {
 			end,
 		},
 
-		[TOK.subroutine] = {
-			subroutine_enter,
+		[TOK.function_def] = {
+			function_enter,
 			aliases_enter,
 			push_scope,
 			--[[minify-delete]]
@@ -315,10 +315,10 @@ return {
 
 		[TOK.scope_stmt] = { push_scope },
 
-		[TOK.return_stmt] = { subroutine_enter },
+		[TOK.return_stmt] = { function_enter },
 
-		[TOK.gosub_stmt] = {
-			--Reduce subroutine references
+		[TOK.call_stmt] = {
+			--Reduce function references
 			function(token, file)
 				if token.children[1].id == TOK.command then
 					token.children = token.children[1].children
@@ -329,7 +329,7 @@ return {
 		},
 
 		[TOK.alias_stmt] = {
-			--Split up subroutine aliases that end with an asterisk
+			--Split up function aliases that end with an asterisk
 			function(token, file)
 				local l, a = token.children[1], token.children[2]
 				local label, alias = l.text, a.text
@@ -512,12 +512,12 @@ return {
 		},
 
 		[TOK.uncache_stmt] = {
-			--Make sure `break cache` refers to an existing subroutine
+			--Make sure `break cache` refers to an existing function
 			function(token, file)
 				local label = token.children[1].text
 
 				if labels[label] == nil then
-					local msg = 'Subroutine `' .. label .. '` not declared anywhere'
+					local msg = 'Function `' .. label .. '` not declared anywhere'
 					local guess = closest_word(label, labels, 4)
 					if guess ~= nil and guess ~= '' then
 						msg = msg .. ' (did you mean "' .. guess .. '"?)'
@@ -530,11 +530,11 @@ return {
 		},
 
 		[TOK.func_call] = {
-			--Replace special function calls "\sub_name(arg1,arg2)" with "${gosub sub_name {arg1} {arg2}}"
+			--Replace special function calls "\sub_name(arg1,arg2)" with "${call sub_name {arg1} {arg2}}"
 			function(token, file)
 				if token.text:sub(1, 1) ~= '\\' then return end
 
-				--If function name begins with backslash, it's actually a gosub.
+				--If function name begins with backslash, it's actually a call.
 
 				---@type Token[]
 				table.insert(token.children, 1, {
@@ -549,8 +549,8 @@ return {
 				token.text = '${'
 				token.id = TOK.inline_command
 				token.children = { {
-					id = TOK.gosub_stmt,
-					text = 'gosub',
+					id = TOK.call_stmt,
+					text = 'call',
 					span = token.span,
 					children = token.children,
 				} }
@@ -593,13 +593,13 @@ return {
 	},
 
 	exit = {
-		[TOK.subroutine] = {
-			subroutine_exit,
+		[TOK.function_def] = {
+			function_exit,
 			aliases_exit,
 			pop_scope,
 		},
 		[TOK.scope_stmt] = { pop_scope },
-		[TOK.return_stmt] = { subroutine_exit },
+		[TOK.return_stmt] = { function_exit },
 
 		[TOK.if_stmt] = {
 			aliases_exit,

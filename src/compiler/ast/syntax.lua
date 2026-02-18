@@ -10,8 +10,8 @@ local elif_stmt
 local while_stmt
 local for_stmt
 local delete_stmt
-local subroutine
-local gosub_stmt
+local function_def
+local call_stmt
 local let_stmt
 local break_stmt
 local continue_stmt
@@ -581,12 +581,13 @@ end
 
 ---Syntax rule for length
 length = function(span)
-	if not parser.accept(TOK.op_count) then return exp(dot_and_index) end
+	if not parser.accept(TOK.op_concat) then return exp(dot_and_index) end
 
 	local ok, child = exp(dot_and_index)
 	if not ok then return parser.out(false) end
 
-	local msg = 'The operator `&` is deprecated and will be removed in v2.0. Use the `len()` function instead.'
+	local msg =
+	'Using `&` to mean "length" is deprecated and will be changed to string concatenation in v2.0. Use the `len()` function instead.'
 	parse_warning(span, msg, parser.filename())
 
 	return true, {
@@ -850,10 +851,10 @@ inline_command = function(span)
 
 	local ok, child = parser.any_of({
 		command,
-		gosub_stmt,
+		call_stmt,
 	}, {
 		TOK.command,
-		'gosub',
+		'call',
 	}, true)
 	if not ok then return parser.out(false) end
 
@@ -1028,13 +1029,13 @@ if_stmt = function(span)
 
 	nl()
 
-	-- `if` (argument|`gosub`) ...
+	-- `if` (argument|`call`) ...
 	local ok, child = parser.any_of({
 		argument,
-		gosub_stmt,
+		call_stmt,
 	}, {
 		TOK.argument,
-		'gosub',
+		'call',
 	}, true)
 	if not ok then return parser.out(false) end
 	table.insert(node.children, child)
@@ -1174,22 +1175,27 @@ for_stmt = function(span)
 	return true, node
 end
 
----@brief Syntax rule for `subroutine` block
-subroutine = function(span)
+---@brief Syntax rule for `function` block
+function_def = function(span)
 	local memoize = false
 
 	local kwd_ok, kwd = parser.accept(TOK.kwd_cache)
 
 	if kwd_ok then
 		memoize = true
-		if not parser.expect(TOK.kwd_subroutine, 'subroutine') then
+		if not parser.expect(TOK.kwd_function, 'function') then
 			return parser.out(false)
 		end
 	else
-		kwd_ok, kwd = parser.accept(TOK.kwd_subroutine)
+		kwd_ok, kwd = parser.accept(TOK.kwd_function)
 		if not kwd_ok then
 			return parser.out(false)
 		end
+	end
+
+	if kwd.text == 'subroutine' then
+		parse_warning(span, 'The `subroutine` keyword is deprecated and will be removed in v2.0. Use `function` instead.',
+			parser.filename())
 	end
 
 	local ok, list = parser.expect_list({
@@ -1197,14 +1203,14 @@ subroutine = function(span)
 		program,
 		TOK.kwd_end,
 	}, {
-		'subroutine name',
+		'function name',
 		TOK.program,
 		'end',
 	})
 	if not ok then return parser.out(false) end
 
 	return true, {
-		id = TOK.subroutine,
+		id = TOK.function_def,
 		text = list[1].text,
 		span = list[1].span,
 		children = { list[2] },
@@ -1213,20 +1219,26 @@ subroutine = function(span)
 	}
 end
 
----@brief Syntax rule for `gosub` statement
-gosub_stmt = function(span)
-	if not parser.accept(TOK.kwd_gosub) then return parser.out(false) end
+---@brief Syntax rule for `call` statement
+call_stmt = function(span)
+	local ok, kwd = parser.accept(TOK.kwd_call)
+	if not ok then return parser.out(false) end
+
+	if kwd.text == 'gosub' then
+		parse_warning(span, 'The `gosub` keyword is deprecated and will be removed in v2.0. Use `call` instead.',
+			parser.filename())
+	end
 
 	local _, list
-	local ok, list = parser.one_or_more(argument)
+	ok, list = parser.one_or_more(argument)
 	if not ok then
 		parser.ast_error(parser.t(), { TOK.argument })
 		return parser.out(false)
 	end
 
 	return true, {
-		id = TOK.gosub_stmt,
-		text = 'gosub',
+		id = TOK.call_stmt,
+		text = 'call',
 		span = Span:merge(span, list[#list].span),
 		children = list,
 	}
@@ -1259,7 +1271,7 @@ let_stmt = function(span)
 		local id = TOK.multiply
 		if op.text == '+=' or op.text == '-=' then
 			id = TOK.add
-		elseif op.text == '.=' then
+		elseif op.text == '&=' then
 			id = TOK.concat
 		end
 
@@ -1596,7 +1608,7 @@ alias_stmt = function(span)
 		if not alias then
 			parse_error(
 				child.span,
-				'Unable to deduce alias from subroutine name "' ..
+				'Unable to deduce alias from function name "' ..
 				child.text .. '" (e.g. `A.B` or `A.C.B` will be aliased to `B`)',
 				parser.filename()
 			)
@@ -1758,8 +1770,8 @@ statement = function()
 		if_stmt,
 		while_stmt,
 		for_stmt,
-		subroutine,
-		gosub_stmt,
+		function_def,
+		call_stmt,
 		let_stmt,
 		delete_stmt,
 		break_stmt,

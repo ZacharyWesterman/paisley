@@ -20,8 +20,8 @@ TOK = {
 	kwd_continue = k(),
 	kwd_break = k(),
 	kwd_delete = k(),
-	kwd_subroutine = k(),
-	kwd_gosub = k(),
+	kwd_function = k(),
+	kwd_call = k(),
 	kwd_return = k(),
 	kwd_let = k(),
 	kwd_initial = k(),
@@ -55,7 +55,7 @@ TOK = {
 	op_divisible = k(),
 	op_exponent = k(),
 	op_slice = k(),
-	op_count = k(),
+	op_concat = k(),
 	op_not = k(),
 	op_and = k(),
 	op_or = k(),
@@ -136,8 +136,8 @@ TOK = {
 	for_stmt = k(),
 	kv_for_stmt = k(),
 	delete_stmt = k(),
-	subroutine = k(),
-	gosub_stmt = k(),
+	function_def = k(),
+	call_stmt = k(),
 	let_stmt = k(),
 	break_stmt = k(),
 	continue_stmt = k(),
@@ -180,13 +180,13 @@ local log = require 'src.log'
 ---@field children Token[] A list of child nodes.
 ---@field type table? The data type that was deduced for this token, if any.
 ---@field inside_object boolean? If defined and true, this token is inside an object declaration.
----@field ignore boolean? If true, optimize this token away. Only defined on subroutine and variable definitions.
+---@field ignore boolean? If true, optimize this token away. Only defined on user-defined functions and variable definitions.
 ---@field unterminated boolean? Whether this slice token is unterminated (e.g. var[1::]). Only defined on slices.
----@field is_referenced boolean? Whether this subroutine token is referenced. Only defined on subroutine and variable definitions.
----@field memoize boolean? If true, memoize (cache) calls to this subroutine.
+---@field is_referenced boolean? Whether this function token is referenced. Only defined on user-defined functions and variable definitions.
+---@field memoize boolean? If true, memoize (cache) calls to this user-defined function.
 ---@field filename string? The name of the file that this token came from.
 ---@field in_match boolean? If true, this is a boolean operator directly inside a "match" statement
----@field tags table? Defined on subroutines only, and contains parsed documentation comments.
+---@field tags table? Defined on user-defined functions only, and contains parsed documentation comments.
 Token = {}
 
 --[[minify-delete]]
@@ -374,7 +374,7 @@ end
 
 --[[/minify-delete]]
 
---Generate unique label ids (ones that can't clash with subroutine names)
+--Generate unique label ids (ones that can't clash with function names)
 local _label_counter = 0
 function LABEL_ID()
 	_label_counter = _label_counter + 1

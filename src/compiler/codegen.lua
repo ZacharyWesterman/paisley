@@ -871,7 +871,7 @@ function generate_bytecode(root, file)
 				if not const then
 					else_label = LABEL_ID()
 					endif_label = LABEL_ID()
-					if token.children[1].id == TOK.gosub_stmt then token.children[1].dynamic = true end
+					if token.children[1].id == TOK.call_stmt then token.children[1].dynamic = true end
 					enter(token.children[1])
 					emit(bc.call, 'jumpiffalse', else_label)
 					emit(bc.pop)
@@ -910,15 +910,15 @@ function generate_bytecode(root, file)
 		--ELIF STATEMENT (Functionally identical to the IF statement)
 		[TOK.elif_stmt] = function(token, file) codegen_rules[TOK.if_stmt](token, file) end,
 
-		--GOSUB STATEMENT
-		[TOK.gosub_stmt] = function(token, file)
+		--CALL STATEMENT
+		[TOK.call_stmt] = function(token, file)
 			--[[minify-delete]]
 			if not KEEP_DEAD_CODE then --[[/minify-delete]]
 				if token.ignore then return end
 				--[[minify-delete]]
 			end --[[/minify-delete]]
 
-			--Push any parameters passed to the gosub
+			--Push any parameters passed to the function
 			if #token.children > 1 then
 				for i = 2, #token.children do
 					codegen_rules.recur_push(token.children[i])
@@ -931,11 +931,11 @@ function generate_bytecode(root, file)
 			if token.dynamic then
 				codegen_rules.recur_push(token.children[1])
 				emit(bc.push_index)
-				emit(bc.call, 'jump', '?dynamic-gosub')
+				emit(bc.call, 'jump', '?dynamic-call')
 
-				emit_after_labels['dynamic-gosub'] = function(labels)
+				emit_after_labels['dynamic-call'] = function(labels)
 					emit(bc.call, 'jump', EOF_LABEL)
-					emit(bc.label, '?dynamic-gosub')
+					emit(bc.label, '?dynamic-call')
 
 					local lookup = std.object()
 					for name, index in pairs(labels) do
@@ -960,20 +960,21 @@ function generate_bytecode(root, file)
 					emit(bc.push, true)
 
 					emit(bc.label, fail_label)
-					emit(bc.pop_goto_index, true) --Unlike regular subroutines, don't clean up the stack here.
+					emit(bc.pop_goto_index, true) --Unlike regular functions, don't clean up the stack here.
 				end
 			elseif is_const(token.children[1]) then
 				emit(bc.push_index)
 				emit(bc.call, 'jump', token.children[1].text)
 			else
-				parse_error(token.span, 'Label for gosub must either be a constant, or wrapped inside an if statement',
+				parse_error(token.span,
+					'Label for function call must either be a constant, or wrapped inside an if statement',
 					file)
 			end
 		end,
 
-		--SUBROUTINES. These are basically just a label and a return statement
-		[TOK.subroutine] = function(token, file)
-			--Don't generate code for the subroutine if it contains nothing.
+		--FUNCTIONS. These are basically just a label and a return statement
+		[TOK.function_def] = function(token, file)
+			--Don't generate code for the function if it contains nothing.
 			--If it contains nothing then references to it have already been removed.
 			if not token.ignore and token.is_referenced --[[minify-delete]] or KEEP_DEAD_CODE --[[/minify-delete]] then
 				local skipsub = LABEL_ID()
@@ -999,7 +1000,7 @@ function generate_bytecode(root, file)
 
 					emit(bc.label, use_cache)
 				end
-				--Subroutine body
+				--Function body
 				enter(token.children[1])
 
 				--Make sure to push a value to the stack before returning
@@ -1203,7 +1204,7 @@ function generate_bytecode(root, file)
 			codegen_rules.recur_push(token.children[2])
 		end,
 
-		--BREAK CACHE OF SUBROUTINE
+		--BREAK CACHE OF FUNCTION
 		[TOK.uncache_stmt] = function(token, file)
 			emit(bc.delete_cache, get_cache_id(token.children[1].text))
 		end,
@@ -1247,7 +1248,7 @@ function generate_bytecode(root, file)
 
 	enter(root)
 
-	--BUILD LABEL LISTS AND EMIT DYNAMIC GOSUB CODE BASED ON THAT
+	--BUILD LABEL LISTS AND EMIT DYNAMIC FUNCTION CALL CODE BASED ON THAT
 	local labels, ct = {}, 1
 	for i = 1, #instructions do
 		local instr = instructions[i]

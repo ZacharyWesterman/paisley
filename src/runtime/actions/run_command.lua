@@ -65,7 +65,7 @@ return function(vm, line, p1, p2)
 
 				--Unroll call stack
 				while #INSTR_STACK > catch.instr_stack do
-					table.remove(INSTR_STACK) --Remove any subroutine parameters
+					table.remove(INSTR_STACK) --Remove any function parameters
 					table.remove(INSTR_STACK) --Remove stack size value
 					local instr_id = table.remove(INSTR_STACK)
 					table.insert(err.stack, 1, INSTRUCTIONS[instr_id][2])

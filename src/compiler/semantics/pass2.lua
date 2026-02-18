@@ -132,11 +132,11 @@ return {
 					if binary_ops[ch.id] then
 						--It's a binary operator, all valid.
 					elseif ch.id == TOK.variable and ch.text:sub(1, 1) == '\\' then
-						--Assume a subroutine name was given,
+						--Assume a function name was given,
 						--make sure it's a valid name.
 						local sub_name = ch.text:sub(2)
 						if not labels[sub_name] then
-							local msg = 'Subroutine `' .. sub_name .. '` not declared anywhere'
+							local msg = 'Function `' .. sub_name .. '` not declared anywhere'
 							local guess = closest_word(sub_name, labels, 4)
 							if guess ~= nil and guess ~= '' then
 								msg = msg .. ' (did you mean "' .. guess .. '"?)'
@@ -147,7 +147,7 @@ return {
 
 						ch.id = TOK.sub_ref
 						ch.text = sub_name
-						--Make sure to mark that this subroutine is in use,
+						--Make sure to mark that this function is in use,
 						--so it does not get pruned later on.
 						labels[sub_name].is_referenced = true
 					elseif ch.id == TOK.variable then
@@ -199,7 +199,7 @@ return {
 						ch.id = TOK.func_ref
 					else
 						parse_error(ch.span,
-							'The second parameter of "reduce(a,b)" must be a binary operator (e.g. + or *), or the name of a function or subroutine',
+							'The second parameter of "reduce(a,b)" must be a binary operator (e.g. + or *), or the name of a built-in or user-defined function',
 							file)
 					end
 				else

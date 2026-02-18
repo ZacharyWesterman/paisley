@@ -80,7 +80,7 @@ function SemanticAnalyzer(root, root_file)
 	end
 	autofill(root)
 
-	--Make sure subroutines and file imports are top-level statements
+	--Make sure functions and file imports are top-level statements
 	--[[minify-delete]]
 	local found_import = false
 	local function check_top_level_stmts()
@@ -89,7 +89,7 @@ function SemanticAnalyzer(root, root_file)
 
 		local tok_level = 0
 		recurse(root,
-			{ TOK.subroutine, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.if_stmt, TOK.for_stmt, TOK
+			{ TOK.function_def, --[[minify-delete]] TOK.import_stmt, --[[/minify-delete]] TOK.if_stmt, TOK.for_stmt, TOK
 				.kv_for_stmt, TOK.while_stmt, TOK.scope_stmt }, function(token, file)
 				--[[minify-delete]]
 				if token.id == TOK.import_stmt then
@@ -99,8 +99,8 @@ function SemanticAnalyzer(root, root_file)
 
 				--Enter scope
 				if tok_level > 0 then
-					if token.id == TOK.subroutine then
-						parse_error(token.span, 'Subroutines cannot be defined inside other structures', file)
+					if token.id == TOK.function_def then
+						parse_error(token.span, 'Functions cannot be defined inside other structures', file)
 						--[[minify-delete]]
 					elseif token.id == TOK.import_stmt then
 						parse_error(token.span, 'Statement `' .. token.text .. '` cannot be inside other structures',
@@ -110,7 +110,7 @@ function SemanticAnalyzer(root, root_file)
 				end
 
 				if (token.text or ''):sub(1, 1) == '?' then
-					parse_error(token.span, 'Subroutine name cannot begin with `?`', file)
+					parse_error(token.span, 'Function name cannot begin with `?`', file)
 				end
 
 				tok_level = tok_level + 1
@@ -222,7 +222,7 @@ function SemanticAnalyzer(root, root_file)
 	--[[/minify-delete]]
 
 	local function type_precheck(token, file)
-		if token.id == TOK.subroutine then
+		if token.id == TOK.function_def then
 			current_sub = token.text
 			token.type = TYPE_NULL
 		end
@@ -237,8 +237,8 @@ function SemanticAnalyzer(root, root_file)
 		if token.id == TOK.inline_command or token.id == TOK.command then
 			local ch = token.children[1]
 
-			--subroutine eval is different
-			if ch.id == TOK.gosub_stmt then
+			--function eval is different
+			if ch.id == TOK.call_stmt then
 				if not token.type then
 					local lbl = ch.children[1]
 					if labels[lbl.text] then token.type = labels[lbl.text].return_type end
@@ -329,7 +329,7 @@ function SemanticAnalyzer(root, root_file)
 			return
 		end
 
-		if token.id == TOK.subroutine then
+		if token.id == TOK.function_def then
 			current_sub = nil
 			return
 		end
@@ -839,7 +839,7 @@ function SemanticAnalyzer(root, root_file)
 				{ TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK
 					.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK
 					.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.inline_command, TOK.command, TOK.return_stmt, TOK
-					.subroutine }, type_precheck, type_checking)
+					.function_def }, type_precheck, type_checking)
 		end
 
 		--Fold constants. this improves performance at runtime, and checks for type errors early on.
@@ -872,7 +872,7 @@ function SemanticAnalyzer(root, root_file)
 			{ TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK
 				.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK
 				.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.variable, TOK.inline_command, TOK.command, TOK
-				.return_stmt, TOK.subroutine, TOK.length }, nil, type_checking)
+				.return_stmt, TOK.function_def, TOK.length }, nil, type_checking)
 	end
 
 	-- After type checking, run one more pass on the AST to adjust synonym functions and so on.
@@ -880,14 +880,14 @@ function SemanticAnalyzer(root, root_file)
 	config.set(labels)
 	recurse2(root, config, root_file)
 
-	--Check if subroutines are even used
-	--We also keep track of what subroutines each subroutine references.
-	--This lets us remove recursive subroutines, or subs that reference each other
+	--Check if functions are even used
+	--We also keep track of what functions each function references.
+	--This lets us remove recursive functions, or subs that reference each other
 	local sub_refs = {}
 	local top_level_subs = {}
 	local current_sub = nil
-	recurse(root, { TOK.gosub_stmt, TOK.subroutine }, function(token, file)
-		if token.id == TOK.gosub_stmt then
+	recurse(root, { TOK.call_stmt, TOK.function_def }, function(token, file)
+		if token.id == TOK.call_stmt then
 			local text = token.children[1].value or token.children[1].text
 
 			if current_sub then
@@ -902,11 +902,11 @@ function SemanticAnalyzer(root, root_file)
 			current_sub = token.text
 		end
 	end, function(token, file)
-		if token.id == TOK.subroutine then current_sub = nil end
+		if token.id == TOK.function_def then current_sub = nil end
 	end)
 
-	--Scan through subroutines and check if we can trace gosubs from the top level down to each subroutine.
-	--If we can, then we CANNOT optimize the subroutine away.
+	--Scan through functions and check if we can trace function calls from the top level down to each function.
+	--If we can, then we CANNOT optimize the function away.
 	local function trace_subs(parent, children, top_parent)
 		for _, child in ipairs(children) do
 			if child ~= parent and child ~= top_parent then
@@ -920,8 +920,8 @@ function SemanticAnalyzer(root, root_file)
 		if sub_refs[label] then trace_subs(label, sub_refs[label], label) end
 	end
 
-	--Check gosub uses. Gosub IS allowed to have a single, constant value as its parameter.
-	recurse(root, { TOK.gosub_stmt }, function(token, file)
+	--Check function call uses. `call` IS allowed to have a single, constant value as its parameter.
+	recurse(root, { TOK.call_stmt }, function(token, file)
 		local label
 		if token.children[1].value ~= nil or token.children[1].id == TOK.lit_null then
 			label = std.str(token.children[1].value)
@@ -932,7 +932,7 @@ function SemanticAnalyzer(root, root_file)
 		if label == nil then
 			local kid = token.children[1]
 
-			--Check if the dynamic gosub could never possibly hit certain subroutines
+			--Check if the dynamic function call could never possibly hit certain functions
 			---@type table|nil
 			local begins, ends, contains = nil, nil, {}
 			if kid and kid.children[1] then
@@ -948,7 +948,7 @@ function SemanticAnalyzer(root, root_file)
 			if begins and (begins.value ~= nil or begins.id == TOK.lit_null) then begins = { value = begins.text } end
 			if ends and (ends.value ~= nil or ends.id == TOK.lit_null) then ends = { value = ends.text } end
 
-			--If we have a dynamic gosub then we can't remove any subroutines, as we don't really know what subroutine is referenced.
+			--If we have a dynamic function call then we can't remove any functions, as we don't really know what function is referenced.
 			for k, i in pairs(labels) do
 				local begins_with = begins and k:sub(1, #std.str(begins.value)) == begins.value
 				local ends_with = ends and k:sub(#k - #std.str(ends.value) + 1, #k) == ends.value
@@ -967,7 +967,7 @@ function SemanticAnalyzer(root, root_file)
 		end
 
 		if labels[label] == nil then
-			local msg = 'Subroutine `' .. label .. '` not declared anywhere'
+			local msg = 'Function `' .. label .. '` not declared anywhere'
 			local guess = closest_word(label, labels, 4)
 			if guess ~= nil and guess ~= '' then
 				msg = msg .. ' (did you mean "' .. guess .. '"?)'
