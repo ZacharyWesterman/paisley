@@ -60,16 +60,11 @@ return {
 				if not token.tags or not token.tags.returns then return end
 
 				local sig = token.tags.returns.type
-				if not token.type then
-					local msg = 'Comment annotation indicates a return type of `' ..
-						TYPE_TEXT(sig) .. '` but a return type was not deduced.'
-					parse_warning(token.span, msg, file)
-					return
-				end
+				local tp = token.type or TYPE_NULL
 
-				if not EXACT_TYPE(sig, token.type) then
+				if not EXACT_TYPE(sig, tp) then
 					local msg = 'Comment annotation indicates a return type of `' ..
-						TYPE_TEXT(sig) .. '` but actual return type is `' .. TYPE_TEXT(token.type) .. '`.'
+						TYPE_TEXT(sig) .. '` but actual return type is `' .. TYPE_TEXT(tp) .. '`.'
 					parse_warning(token.span, msg, file)
 				end
 			end,

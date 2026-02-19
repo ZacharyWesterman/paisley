@@ -224,7 +224,6 @@ function SemanticAnalyzer(root, root_file)
 	local function type_precheck(token, file)
 		if token.id == TOK.function_def then
 			current_sub = token.text
-			token.type = TYPE_NULL
 		end
 		if token.id == TOK.inline_command then in_cmd_eval = true end
 	end
@@ -321,7 +320,7 @@ function SemanticAnalyzer(root, root_file)
 				end
 
 				if sub.type and exp_type and not SIMILAR_TYPE(exp_type, sub.type) then
-					sub.type = TYPE_ANY
+					sub.type = MERGE_TYPES(exp_type, sub.type)
 				else
 					sub.type = exp_type
 				end
