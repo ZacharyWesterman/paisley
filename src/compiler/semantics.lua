@@ -240,7 +240,7 @@ function SemanticAnalyzer(root, root_file)
 			if ch.id == TOK.call_stmt then
 				if not token.type then
 					local lbl = ch.children[1]
-					if labels[lbl.text] then token.type = labels[lbl.text].return_type end
+					if labels[lbl.text] then token.type = labels[lbl.text].type end
 				end
 
 				return
