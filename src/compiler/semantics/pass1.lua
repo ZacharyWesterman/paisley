@@ -590,6 +590,13 @@ return {
 				}
 			end,
 		},
+
+		[TOK.object] = {
+			--Set the type to "object[any]"
+			function(token, file)
+				token.type = TYPE_OBJECT
+			end,
+		},
 	},
 
 	exit = {
