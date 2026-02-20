@@ -76,26 +76,30 @@ for i in "${!func_list[@]}"; do
     fi
 done
 
-# Make sure that there are no cpp functions that aren't implemented in Lua.
-while read -r i; do
-    if [ "${operators["$i"]}" != '' ]; then continue; fi
-    if [ "${func_list["$i"]}" == '' ]; then
-        error "C++ implementation of \`$i\` function exists but no such Lua function was found."
-    fi
-done < <(strip functions/*.cpp)
+if [ -e functions ]; then
+    # Make sure that there are no cpp functions that aren't implemented in Lua.
+    while read -r i; do
+        if [ "${operators["$i"]}" != '' ]; then continue; fi
+        if [ "${func_list["$i"]}" == '' ]; then
+            error "C++ implementation of \`$i\` function exists but no such Lua function was found."
+        fi
+    done < <(strip functions/*.cpp)
+fi
 
-# Make sure that all Lua actions have a cpp implementation
-while read -r i; do
-    if [ ! -e actions/"$i".cpp ]; then
-        error "Missing C++ implementation of \`$i\` action."
-    fi
-done < <(strip ../../runtime/actions/*.lua)
-
-# Make sure that all cpp actions have a Lua implementation
-while read -r i; do
-    if [ "$i" != pop_catch_or_throw ] && [ ! -e ../../runtime/actions/"$i".lua ]; then
-        error "C++ implementation of \`$i\` action exists but no such Lua action was found."
-    fi
-done < <(strip actions/*.cpp)
+if [ -e ../../runtime/actions ]; then
+    # Make sure that all Lua actions have a cpp implementation
+    while read -r i; do
+        if [ ! -e actions/"$i".cpp ]; then
+            error "Missing C++ implementation of \`$i\` action."
+        fi
+    done < <(strip ../../runtime/actions/*.lua)
+    
+    # Make sure that all cpp actions have a Lua implementation
+    while read -r i; do
+        if [ "$i" != pop_catch_or_throw ] && [ ! -e ../../runtime/actions/"$i".lua ]; then
+            error "C++ implementation of \`$i\` action exists but no such Lua action was found."
+        fi
+    done < <(strip actions/*.cpp)
+fi
 
 exit $failed
