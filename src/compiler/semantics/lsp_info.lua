@@ -286,8 +286,8 @@ return {
 					span = Span:merge(span, kid.span)
 				end
 
-				if token.tags and token.tags.text and #token.tags.text > 0 then
-					text = text .. '\n' .. token.tags.text
+				if token.tags and token.tags.brief and #token.tags.brief > 0 then
+					text = text .. '\n' .. token.tags.brief
 				end
 
 				INFO.hint(span, text, filename)

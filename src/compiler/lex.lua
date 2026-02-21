@@ -88,6 +88,12 @@ local function process_comment_annotations(text, line, file)
 			NEXT_TAGS.private = true
 		elseif i == '@BRIEF' then
 			append_text(line, true)
+			local brief_text = process_text(line, true)
+			if NEXT_TAGS.brief then
+				NEXT_TAGS.brief = NEXT_TAGS.brief .. '\n' .. brief_text
+			else
+				NEXT_TAGS.brief = brief_text
+			end
 		elseif i == '@PARAM' then
 			local t = line:match('@[pP][aA][rR][aA][mM]%s*(.*%S)')
 			if t then
