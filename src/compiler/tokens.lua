@@ -219,14 +219,13 @@ function parse_error(span, msg, file)
 			--[[/minify-delete]]
 			local line, col = span.from.line, span.from.col
 			if col < 0 then col = 0 end
-			if file ~= nil and file ~= '' then
-				msg = (file .. ': ' .. line .. ', ' .. col .. ': ' .. msg)
-			else
-				msg = (line .. ', ' .. col .. ': ' .. msg)
-			end
+			msg = line .. ', ' .. col .. ': ' .. msg
+			if file ~= nil and file ~= '' then msg = file .. ': ' .. msg end
 
 			log.error(msg)
 			--[[minify-delete]]
+
+			if file then log.context(span, file) end
 		end
 	end
 	--[[/minify-delete]]
@@ -256,10 +255,15 @@ function parse_warning(span, msg, file)
 		end
 
 		--[[/minify-delete]]
-		msg = span.from.line .. ', ' .. span.from.col .. ': ' .. msg
-		if file then msg = file .. ': ' .. msg end
+		local line, col = span.from.line, span.from.col
+		if col < 0 then col = 0 end
+		msg = line .. ', ' .. col .. ': ' .. msg
+		if file ~= nil and file ~= '' then msg = file .. ': ' .. msg end
+
 		log.warn(msg)
 		--[[minify-delete]]
+
+		if file then log.context(span, file) end
 	end
 	--[[/minify-delete]]
 end
