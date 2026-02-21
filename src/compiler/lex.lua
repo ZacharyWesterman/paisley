@@ -68,7 +68,11 @@ local function process_comment_annotations(text, line, file)
 			return
 		end
 
-		local debug_text = 'return function ' .. in_debug.text .. line:sub(1, index - 1) .. '\nend'
+		--Generate function in chunk
+		--Make sure anything that gives access to files is disabled.
+		--(don't want comments to be able to mess with the host OS!)
+		local debug_text = 'local io, os, require\n_G = {}\nreturn function ' ..
+			in_debug.text .. line:sub(1, index - 1) .. '\nend'
 
 		--Compile Lua text into function.
 		local switch = false

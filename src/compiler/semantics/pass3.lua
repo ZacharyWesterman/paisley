@@ -13,9 +13,6 @@ local function run_debug_fn(token, file, dbg)
 			new[key] = deep_copy(val)
 		end
 
-		new.warn = function(self, msg)
-			parse_warning(self.span, msg, file)
-		end
 		new.info = function(self, msg)
 			parse_info(self.span, msg, file)
 		end
@@ -32,7 +29,6 @@ local function run_debug_fn(token, file, dbg)
 	local success, error_msg = pcall(
 		dbg.fn,
 		tokens,
-		function(msg) parse_warning(token.span, msg, file) end,
 		function(msg) parse_info(token.span, msg, file) end
 	)
 	if not success then
