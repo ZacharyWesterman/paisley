@@ -2,6 +2,44 @@ local synonyms = require "src.compiler.semantics.synonyms"
 
 local labels = {}
 
+local function run_debug_fn(token, file, dbg)
+	--Deep copy child ast nodes before passing to debug function.
+	--We DON'T want those functions to be able to actually change compilation!
+	local tokens = {}
+	local function deep_copy(data)
+		if type(data) ~= 'table' then return data end
+		local new = setmetatable({}, getmetatable(data))
+		for key, val in pairs(data) do
+			new[key] = deep_copy(val)
+		end
+
+		new.warn = function(self, msg)
+			parse_warning(self.span, msg, file)
+		end
+		new.info = function(self, msg)
+			parse_info(self.span, msg, file)
+		end
+		new.is_const = new.value ~= nil or new.id == TOK.lit_null
+
+		return new
+	end
+	for i = 2, #token.children do
+		table.insert(tokens, deep_copy(token.children[i]))
+	end
+
+	--Run the debug function
+	--(arg_token_list, warn, info)
+	local success, error_msg = pcall(
+		dbg.fn,
+		tokens,
+		function(msg) parse_warning(token.span, msg, file) end,
+		function(msg) parse_info(token.span, msg, file) end
+	)
+	if not success then
+		parse_info(dbg.span, 'Error in @debug annotation: ' .. error_msg, dbg.file)
+	end
+end
+
 return {
 	set = function(_labels)
 		labels = _labels
@@ -44,7 +82,6 @@ return {
 				end
 			end,
 		},
-
 
 		[TOK.scope_stmt] = {
 			--Convert scope blocks into regular program blocks.
@@ -96,7 +133,37 @@ return {
 					end
 				end
 			end,
+
+			--[[minify-delete]]
+			--Process any @debug annotations for this function call
+			function(token, file)
+				local name = token.children[1].text
+				local sub = labels[name]
+				if not sub or not sub.tags or not sub.tags.debug then return end
+
+				run_debug_fn(token, file, sub.tags.debug)
+			end,
+			--[[/minify-delete]]
 		},
+
+		--[[minify-delete]]
+		[TOK.command] = {
+			--Process any @debug annotations for this command invocation
+			function(token, file)
+				if not DEBUG_FUNCS then return end
+
+				--Only process annotation for commands that are known at compile time.
+				local cmdname = token.children[1].value
+				if not cmdname then return end
+
+				--If no annotation for this command, skip.
+				local dbg = DEBUG_FUNCS[cmdname]
+				if not dbg then return end
+
+				run_debug_fn(token, file, dbg)
+			end,
+		},
+		--[[/minify-delete]]
 	},
 
 	exit = {},

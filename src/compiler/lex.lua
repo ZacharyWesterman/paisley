@@ -26,6 +26,8 @@ literals = {
 EXPORT_LINES = {}
 ELIDE_LINES = {}
 local NEXT_TAGS = {}
+DEBUG_FUNCS = {}
+local in_debug = nil
 
 ---Some comments can give hints about what commands exist, and suppress "unknown command" errors.
 ---Process these annotations.
@@ -56,8 +58,58 @@ local function process_comment_annotations(text, line, file)
 	end
 
 	local ln = line
-	for line in text:gmatch('[^\n]+') do
-		local i = line:upper():match('@[a-zA-Z_]+')
+
+	local function debug_annotations(line)
+		if not in_debug then return end
+
+		local index = line:find('@[eE][nN][dD]')
+		if not index then
+			in_debug.text = in_debug.text .. '\n' .. line
+			return
+		end
+
+		local debug_text = 'return function ' .. in_debug.text .. line:sub(1, index - 1) .. '\nend'
+
+		--Compile Lua text into function.
+		local switch = false
+		local function loadfn()
+			if switch then return nil end
+			switch = true
+			return debug_text
+		end
+		local fn, error_msg = load(loadfn)
+
+		if fn then
+			local body = fn()
+			if type(body) == 'function' then
+				local chunk = {
+					fn = body,
+					span = in_debug.span,
+					file = file,
+				}
+
+				--If it has a name, apply to command invocations.
+				--If no name, apply the debug logic to the next user-defined function.
+				if in_debug.name then
+					DEBUG_FUNCS[in_debug.name] = chunk
+				else
+					NEXT_TAGS.debug = chunk
+				end
+			else
+				parse_info(
+					in_debug.span,
+					'COMPILER BUG: Expected @debug annotation to return `function`, but got `' .. type(body) .. '`!',
+					file
+				)
+			end
+		else
+			parse_info(in_debug.span, 'Syntax error in @debug annotation: ' .. error_msg, file)
+		end
+
+		in_debug = nil
+	end
+
+	local function handle_annotations(i, line)
 		if i == '@COMMANDS' then
 			local msg = line:match('@[cC][oO][mM][mM][aA][nN][dD][sS][^%w_]([^\n]*)')
 			if msg then
@@ -172,8 +224,31 @@ local function process_comment_annotations(text, line, file)
 			if not NEXT_TAGS.error then NEXT_TAGS.error = {} end
 			local t = line:gsub('@[eE][rR][rR][oO][rR]%s*', '')
 			table.insert(NEXT_TAGS.error, t)
+		elseif i == '@DEBUG' then
+			local pattern = '@[dD][eE][bB][uU][gG]%s+([^%s%(]+)'
+			local cmdname = line:gmatch(pattern)()
+			local paren_index = line:find('%(')
+			if paren_index then
+				in_debug = {
+					name = cmdname,
+					text = line:sub(paren_index),
+					span = Span:new(
+						NEXT_TAGS.line - line_ct, 0,
+						NEXT_TAGS.line - 1, 9999
+					)
+				}
+			end
 		else
 			append_text(line)
+		end
+	end
+
+	for line in text:gmatch('[^\n]+') do
+		if in_debug then
+			debug_annotations(line)
+		else
+			local i = line:upper():match('@[a-zA-Z_]+')
+			handle_annotations(i, line)
 		end
 	end
 end
