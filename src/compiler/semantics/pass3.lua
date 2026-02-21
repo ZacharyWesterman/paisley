@@ -13,10 +13,41 @@ local function run_debug_fn(token, file, dbg)
 			new[key] = deep_copy(val)
 		end
 
-		new.info = function(self, msg)
-			parse_info(self.span, msg, file)
+		--If we're copying an ast node, inject helper functions in there.
+		if new.span and new.type then
+			new.info = function(self, msg)
+				parse_info(self.span, msg, file)
+			end
+
+			new.type.tostring = function(self)
+				return TYPE_TEXT(self)
+			end
+			new.type.is_exactly = function(self, rhs)
+				if type(rhs) == 'string' then
+					rhs = SIGNATURE(rhs)
+				elseif type(rhs) ~= 'table' then
+					return false
+				end
+				return EXACT_TYPE(self, rhs)
+			end
+			new.type.is_subset_of = function(self, rhs)
+				if type(rhs) == 'string' then
+					rhs = SIGNATURE(rhs)
+				elseif type(rhs) ~= 'table' then
+					return false
+				end
+				return TYPE_IS_SUBSET(rhs, self)
+			end
+			new.type.is_superset_of = function(self, rhs)
+				if type(rhs) == 'string' then
+					rhs = SIGNATURE(rhs)
+				elseif type(rhs) ~= 'table' then
+					return false
+				end
+				return TYPE_IS_SUBSET(self, rhs)
+			end
+			new.is_const = new.value ~= nil or new.id == TOK.lit_null
 		end
-		new.is_const = new.value ~= nil or new.id == TOK.lit_null
 
 		return new
 	end
@@ -25,11 +56,12 @@ local function run_debug_fn(token, file, dbg)
 	end
 
 	--Run the debug function
-	--(arg_token_list, warn, info)
+	--(arg_token_list, warn, info, json)
 	local success, error_msg = pcall(
 		dbg.fn,
 		tokens,
-		function(msg) parse_info(token.span, msg, file) end
+		function(msg) parse_info(token.span, msg, file) end,
+		require 'src.shared.json'
 	)
 	if not success then
 		parse_info(dbg.span, 'Error in @debug annotation: ' .. error_msg, dbg.file)
