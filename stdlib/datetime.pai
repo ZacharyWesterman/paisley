@@ -20,7 +20,6 @@ end
 #@brief Parse a string in ISO 8601 format.
 #@param str string The input string to parse.
 #@return object The parsed date and time.
-#@mutate _dt
 function datetime.fromiso
 	let _dt = {@[1].split('T')}
 	return {
