@@ -62,7 +62,7 @@ return {
 				local sig = token.tags.returns.type
 				local tp = token.type or TYPE_NULL
 
-				if not EXACT_TYPE(sig, tp) then
+				if not TYPE_IS_SUBSET(sig, tp) then
 					local msg = 'Comment annotation indicates a return type of `' ..
 						TYPE_TEXT(sig) .. '` but actual return type is `' .. TYPE_TEXT(tp) .. '`.'
 					parse_warning(token.span, msg, file)

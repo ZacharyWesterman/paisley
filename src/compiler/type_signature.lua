@@ -180,6 +180,32 @@ function SIMILAR_TYPE(lhs, rhs)
 	return false
 end
 
+---Check if the right type is a subset of the left type.
+---E.g. TYPE_IS_SUBSET(any, string|null) is true, but TYPE_IS_SUBSET(string, string|null) is false.
+---@param lhs table The first type signature to compare.
+---@param rhs table The second type signature to compare.
+---@return boolean is_subset True if the RHS is a subset of the LHS, false otherwise.
+function TYPE_IS_SUBSET(lhs, rhs)
+	if not lhs or not rhs then return false end
+
+	if lhs.any then return true end
+	if rhs.any then return false end
+
+	--Make sure any subtypes that are in the RHS are also in the LHS.
+	for key, val in pairs(rhs) do
+		if not lhs[key] then return false end
+		if not lhs[key].subtypes ~= not val.subtypes then return false end
+
+		if val.subtypes and not TYPE_IS_SUBSET(val.subtypes, lhs[key].subtypes) then return false end
+	end
+
+	return true
+end
+
+---Check if two type signatures are exactly the same.
+---@param lhs table The first type signature to compare.
+---@param rhs table The second type signature to compare.
+---@return boolean is_subset True if signatures are identical, false otherwise.
 function EXACT_TYPE(lhs, rhs)
 	if not lhs or not rhs then return false end
 
@@ -235,6 +261,10 @@ function MERGE_TYPES(lhs, rhs)
 		if not out[key] then
 			out[key] = val
 		end
+	end
+
+	if out.array and out.object and out.number and out.boolean and out.number and out.null and out.string then
+		return TYPE_ANY
 	end
 
 	return out
