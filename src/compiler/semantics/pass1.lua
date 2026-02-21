@@ -32,6 +32,14 @@ local function function_enter(token, file)
 				'Redeclaration of function "' ..
 				label .. '" (previously declared on line ' .. prev.span.from.line ..
 				', col ' .. prev.span.from.col .. ')', file)
+			--[[minify-delete]]
+			if not LANGUAGE_SERVER then
+				local log = require 'src.log'
+				local msg = 'Previous definition on line ' .. prev.span.from.line
+				if prev.filename then msg = msg .. ' of ' .. prev.filename end
+				log.context(prev.span, prev.filename or file, msg)
+			end
+			--[[/minify-delete]]
 		end
 
 		if #token.children == 0 then
