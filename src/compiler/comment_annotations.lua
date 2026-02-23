@@ -43,11 +43,11 @@ local function process_comment_annotations(text, line, file)
 
 	local ln = line
 
-	local function debug_annotations(line)
+	local function debug_annotations(line, imported)
 		if not in_debug then return end
 
 		local index = line:find('@[eE][nN][dD]')
-		if not index then
+		if not index and not imported then
 			in_debug.text = in_debug.text .. '\n' .. line
 			return
 		end
@@ -55,8 +55,13 @@ local function process_comment_annotations(text, line, file)
 		--Generate function in chunk
 		--Make sure anything that gives access to files is disabled.
 		--(don't want comments to be able to mess with the host OS!)
-		local debug_text = 'local io, os, require\n_G = {}\nreturn function ' ..
-			in_debug.text .. line:sub(1, index - 1) .. '\nend'
+		local debug_text = 'local io, os, require\n_G = {}\n'
+		if not imported then
+			debug_text = debug_text .. 'return function ' ..
+				in_debug.text .. line:sub(1, index - 1) .. '\nend'
+		else
+			debug_text = debug_text .. in_debug.text
+		end
 
 		--Compile Lua text into function.
 		local switch = false
@@ -95,6 +100,69 @@ local function process_comment_annotations(text, line, file)
 		end
 
 		in_debug = nil
+	end
+
+	-- Handle annotations like `@debug {filename}`
+	local function imported_annotation(line)
+		local pattern = '@[dD][eE][bB][uU][gG]%s*%{([^%}]*)%}?'
+		local filename = line:gmatch(pattern)()
+		if not filename then return false end
+
+		local span = Span:new(
+			NEXT_TAGS.line - line_ct, 0,
+			NEXT_TAGS.line - 1, 9999
+		)
+
+		--Use stdlib as a fallback if local file doesn't exist.
+		local fs = require 'src.util.filesystem'
+		local std_fp, stdlib_filename = fs.stdlib(filename, '.lua')
+
+		--Normalize filename, relative to the current parsed file
+		local current_script_dir = file and file:match('(.-)([^\\/]-%.?([^%.\\/]*))$') or './'
+		filename = current_script_dir .. filename:gsub('%.', '/') .. '.lua'
+
+		local fp = io.open(filename, 'r')
+		if not fp and std_fp then
+			fp = std_fp
+			filename = stdlib_filename
+		end
+
+		if not fp then
+			parse_info(span, 'Unable to import debug annotation from `' .. filename .. '`: file not readable.', file)
+			return true
+		end
+
+		local lua_chunk = fp:read('a')
+		if not lua_chunk then
+			parse_info(span, 'Failed to read debug annotation from `' .. filename .. '`: file not readable.', file)
+			return true
+		end
+
+		in_debug = {
+			text = lua_chunk,
+			span = span,
+		}
+
+		debug_annotations(line, true)
+
+		return true
+	end
+
+	-- Handle annotations like `@debug ...(args..) ... @end`
+	local function inline_annotation(line)
+		local pattern = '@[dD][eE][bB][uU][gG]%s+([^%s%(]+)'
+		local cmdname = line:gmatch(pattern)()
+		local paren_index = line:find('%(')
+		if paren_index then
+			in_debug = {
+				name = cmdname,
+				text = line:sub(paren_index),
+				span = Span:new(
+					NEXT_TAGS.line - line_ct, 0,
+					NEXT_TAGS.line - 1, 9999
+				)
+			}
+		end
 	end
 
 	local function handle_annotations(i, line)
@@ -213,18 +281,8 @@ local function process_comment_annotations(text, line, file)
 			local t = line:gsub('@[eE][rR][rR][oO][rR]%s*', '')
 			table.insert(NEXT_TAGS.error, t)
 		elseif i == '@DEBUG' then
-			local pattern = '@[dD][eE][bB][uU][gG]%s+([^%s%(]+)'
-			local cmdname = line:gmatch(pattern)()
-			local paren_index = line:find('%(')
-			if paren_index then
-				in_debug = {
-					name = cmdname,
-					text = line:sub(paren_index),
-					span = Span:new(
-						NEXT_TAGS.line - line_ct, 0,
-						NEXT_TAGS.line - 1, 9999
-					)
-				}
+			if not imported_annotation(line) then
+				inline_annotation(line)
 			end
 		else
 			append_text(line)
