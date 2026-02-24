@@ -23,7 +23,7 @@ literals = {
 }
 
 --[[minify-delete]]
-local req = require('src.compiler.comment_annotations')
+local req = require 'src.compiler.comment_annotations'
 local process_comment_annotations, get_tags, wipe_tags = req()
 --[[/minify-delete]]
 
