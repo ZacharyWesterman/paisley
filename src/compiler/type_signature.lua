@@ -274,6 +274,15 @@ function MERGE_TYPES(lhs, rhs)
 	return out
 end
 
+function ARRAY_FROM_TYPE(tp)
+	return {
+		array = {
+			type = "array",
+			subtypes = tp,
+		}
+	}
+end
+
 ---Convert a type signature back into its string representation.
 ---This is useful for error reporting and debug purposes.
 ---@param tp table A type signature object.
