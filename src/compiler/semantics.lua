@@ -340,21 +340,23 @@ function SemanticAnalyzer(root, root_file)
 			local c2 = token.children[2]
 			if c2.id == TOK.array_slice and #c2.children == 1 then
 				c2.unterminated = true
+				c2.type = TYPE_ARRAY_NUMBER
 			end
 
-			local t1, t2 = token.children[1].type, token.children[2].type
-			if t1 and t2 then
-				if not SIMILAR_TYPE(t1, TYPE_INDEXABLE) then
-					if token.null_coalesce and token.children[1].value == nil then
-						return
-					end
-					parse_error(token.children[1].span,
-						'Cannot index a value of type `' ..
-						TYPE_TEXT(t1) .. '`. Type must be `string`, `array`, or `object`', file)
+			local t1, t2 = token.children[1].type, c2.type
+
+			if t1 and not SIMILAR_TYPE(t1, TYPE_INDEXABLE) then
+				if token.null_coalesce and token.children[1].value == nil then
 					return
 				end
+				parse_error(token.children[1].span,
+					'Cannot index a value of type `' ..
+					TYPE_TEXT(t1) .. '`. Type must be `string`, `array`, or `object`', file)
+				return
+			end
 
-				if SIMILAR_TYPE(t1, TYPE_OBJECT) then
+			if t1 and t2 then
+				if EXACT_TYPE(t1, TYPE_OBJECT) then
 					token.type = TYPE_ANY
 				else
 					if not SIMILAR_TYPE(t2, TYPE_INDEXER) then
@@ -364,13 +366,17 @@ function SemanticAnalyzer(root, root_file)
 						return
 					end
 
-					if SIMILAR_TYPE(t1, TYPE_STRING) then
+					if EXACT_TYPE(t1, TYPE_STRING) then
 						token.type = TYPE_STRING
 					elseif EXACT_TYPE(t2, TYPE_ANY) then
 						--If index is "any", result is either the same type as t1, or the subtype of t1
 						token.type = MERGE_TYPES(t1, GET_SUBTYPES(t1))
 					elseif SIMILAR_TYPE(t2, TYPE_ARRAY) then
-						token.type = t1
+						if HAS_SUBTYPES(t1) then
+							token.type = t1
+						else
+							token.type = ARRAY_FROM_TYPE(t1)
+						end
 					elseif HAS_SUBTYPES(t1) then
 						token.type = GET_SUBTYPES(t1)
 					else

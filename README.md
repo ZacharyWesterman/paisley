@@ -791,7 +791,7 @@ The following is a complete list of annotations and what their effects are:
 - `@shell`: Apply the `--shell` flag to the current compilation unit.
 - `@sandbox`: Apply the `--sandbox` flag to the current compilation unit.
 - `@commands`: Postpone "command not found" errors until run-time, and assume that they return the given types (e.g. `#@commands cmd1:type1 cmd2:type2`)
-- `@debug`: Validate command params without actually running them (e.g. `#@debug command_name` ... `#@end`)
+- `@debug`: Validate command params without actually running them (e.g. `#@debug command_name` ... `#@end`). see the [docs on debug annotations](docs/debug_annotations.md) for more info.
 
 ## Conditional compilation via Compiler Directives
 

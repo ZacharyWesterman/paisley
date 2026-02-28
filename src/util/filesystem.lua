@@ -96,12 +96,12 @@ fs = {
 		return (byte1 == 0x78) and (byte2 == 0x01 or byte2 == 0x9C or byte2 == 0xDA)
 	end,
 
-	stdlib = function(require_path)
+	stdlib = function(require_path, extension)
 		if fs.exec_dir == nil then return nil, require_path end
 
-		local fname = 'stdlib/' .. require_path:gsub('%.', '/') .. '.pai'
+		local fname = 'stdlib/' .. require_path:gsub('%.', '/') .. (extension or '.pai')
 		local fp = fs.open(fname, true)
-		if not fp then
+		if not fp and not extension then
 			fname = fname .. 'sley'
 			fp = fs.open(fname, true)
 		end
@@ -116,7 +116,7 @@ fs = {
 		end
 	end,
 
-	pwd = function(path)
+	pwd = function()
 		if fs.rocks.lfs then
 			return fs.rocks.lfs.currentdir()
 		end

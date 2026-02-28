@@ -168,7 +168,7 @@ function SIMILAR_TYPE(lhs, rhs)
 	if not lhs or not rhs or lhs.any or rhs.any then return true end
 
 	for key, val in pairs(lhs) do
-		if rhs[key] then
+		if type(val) == 'table' and rhs[key] then
 			if not val.subtypes then
 				return true
 			elseif SIMILAR_TYPE(val.subtypes, rhs[key].subtypes) then
@@ -193,10 +193,12 @@ function TYPE_IS_SUBSET(lhs, rhs)
 
 	--Make sure any subtypes that are in the RHS are also in the LHS.
 	for key, val in pairs(rhs) do
-		if not lhs[key] then return false end
-		if not lhs[key].subtypes ~= not val.subtypes then return false end
+		if type(val) == 'table' then
+			if not lhs[key] then return false end
+			if not lhs[key].subtypes ~= not val.subtypes then return false end
 
-		if val.subtypes and not TYPE_IS_SUBSET(val.subtypes, lhs[key].subtypes) then return false end
+			if val.subtypes and not TYPE_IS_SUBSET(val.subtypes, lhs[key].subtypes) then return false end
+		end
 	end
 
 	return true
@@ -225,14 +227,14 @@ end
 
 function HAS_SUBTYPES(tp)
 	for key, val in pairs(tp) do
-		if val.subtypes then return true end
+		if type(val) == 'table' and val.subtypes then return true end
 	end
 	return false
 end
 
 function GET_SUBTYPES(tp)
 	for key, val in pairs(tp) do
-		if val.subtypes then return val.subtypes end
+		if type(val) == 'table' and val.subtypes then return val.subtypes end
 	end
 	return TYPE_ANY
 end
@@ -243,22 +245,24 @@ function MERGE_TYPES(lhs, rhs)
 
 	local out = {}
 	for key, val in pairs(lhs) do
-		if rhs[key] then
-			if val.subtypes and rhs[key].subtypes then
-				out[key] = {
-					type = key,
-					subtypes = MERGE_TYPES(val.subtypes, rhs[key].subtypes),
-				}
+		if type(val) == 'table' then
+			if rhs[key] then
+				if val.subtypes and rhs[key].subtypes then
+					out[key] = {
+						type = key,
+						subtypes = MERGE_TYPES(val.subtypes, rhs[key].subtypes),
+					}
+				else
+					out[key] = { type = key }
+				end
 			else
-				out[key] = { type = key }
+				out[key] = val
 			end
-		else
-			out[key] = val
 		end
 	end
 
 	for key, val in pairs(rhs) do
-		if not out[key] then
+		if type(val) == 'table' and not out[key] then
 			out[key] = val
 		end
 	end
@@ -270,6 +274,15 @@ function MERGE_TYPES(lhs, rhs)
 	return out
 end
 
+function ARRAY_FROM_TYPE(tp)
+	return {
+		array = {
+			type = "array",
+			subtypes = tp,
+		}
+	}
+end
+
 ---Convert a type signature back into its string representation.
 ---This is useful for error reporting and debug purposes.
 ---@param tp table A type signature object.
@@ -277,12 +290,14 @@ end
 function TYPE_TEXT(tp --[[minify-delete]], colorize --[[/minify-delete]])
 	local result = {}
 	for key, val in pairs(tp) do
-		local text = key
-		if val.subtypes then
-			text = text ..
-				'[' .. TYPE_TEXT(val.subtypes) .. ']'
+		if type(val) == 'table' then
+			local text = key
+			if val.subtypes then
+				text = text ..
+					'[' .. TYPE_TEXT(val.subtypes) .. ']'
+			end
+			table.insert(result, text)
 		end
-		table.insert(result, text)
 	end
 
 	table.sort(result)
@@ -301,9 +316,11 @@ end
 --[[minify-delete]]
 function PRINT_TYPESIG(ast, indent)
 	for _, val in pairs(ast) do
-		print(indent .. val.type)
-		if val.subtypes then
-			PRINT_TYPESIG(val.subtypes, indent .. '  ')
+		if type(val) == 'table' then
+			print(indent .. val.type)
+			if val.subtypes then
+				PRINT_TYPESIG(val.subtypes, indent .. '  ')
+			end
 		end
 	end
 end
