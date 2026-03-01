@@ -157,6 +157,8 @@ TYPE_ENV = SIGNATURE_G('object[string]')
 TYPE_ARRAY_STRING = SIGNATURE_G('array[string]')
 TYPE_ARRAY_NUMBER = SIGNATURE_G('array[number]')
 TYPE_INDEXABLE = SIGNATURE_G('array|object|string')
+TYPE_ITERABLE = SIGNATURE_G('array|object')
+TYPE_COUNTABLE = SIGNATURE_G('array|string')
 TYPE_INDEXER = SIGNATURE_G('number|array[number]')
 
 ---Check if two type signatures can match up.
