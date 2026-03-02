@@ -88,6 +88,12 @@ local function type_from_value(token)
 end
 
 local function require_args_op(arg_type)
+	local tpstr = (({
+		[TYPE_NUMBER] = 'numeric',
+		[TYPE_BOOLEAN] = 'boolean',
+		[TYPE_STRING] = 'string',
+	})[arg_type] or 'UNKNOWN')
+
 	return function(token, file)
 		local failed = false
 		local args = {}
@@ -104,8 +110,8 @@ local function require_args_op(arg_type)
 			local op = (token.id == TOK.bitwise and 'bitwise ' or '') .. token.text
 			parse_error(
 				token.span,
-				'Operator `' .. op ..
-				'` expected only numeric arguments but got (' .. std.join(args, ', ') .. ').',
+				'Operator `' .. op .. '` expected only ' .. tpstr ..
+				' arguments but got (' .. std.join(args, ', ') .. ').',
 				file
 			)
 		end
@@ -128,6 +134,16 @@ return {
 
 		[TOK.inline_command] = {
 			function() in_cmd_eval = true end,
+		},
+
+		[TOK.index] = {
+			function(token)
+				local indexer = token.children[2]
+				if indexer.id == TOK.array_slice and #indexer.children == 1 then
+					--Allow unterminated slices inside indexes ONLY.
+					indexer.unterminated = true
+				end
+			end,
 		},
 	},
 
@@ -256,12 +272,47 @@ return {
 		},
 
 		[TOK.boolean] = {
-			require_args_op(TYPE_BOOLEAN),
 			function(token) token.type = TYPE_BOOLEAN end,
 		},
 
 		[TOK.comparison] = {
 			function(token) token.type = TYPE_BOOLEAN end,
+
+			function(token, file)
+				local c1, c2 = token.children[1], token.children[2]
+				if token.text == 'in' then
+					if c2.type and not SIMILAR_TYPE(c2.type, TYPE_INDEXABLE) then
+						parse_error(
+							c2.span,
+							'Right operand of `in` expected (array|object) but got (' .. TYPE_TEXT(c2.type) .. ').',
+							file
+						)
+					end
+					return
+				end
+
+				if token.text == 'like' then
+					local c1_invalid = c1.type and not TYPE_IS_SUBSET(c1.type, TYPE_STRING)
+					local c2_invalid = c2.type and not TYPE_IS_SUBSET(c2.type, TYPE_STRING)
+
+					if c1_invalid or c2_invalid then
+						local c1_tp = c1.type and TYPE_TEXT(c1.type) or 'unknown'
+						local c2_tp = c2.type and TYPE_TEXT(c2.type) or 'unknown'
+						local span = token.span
+						if not c1_invalid then span = c2.span end
+						if not c2_invalid then span = c1.span end
+
+						parse_error(
+							span,
+							'Operator `like` expected arguments of type (string,string) but got (' ..
+							c1_tp .. ',' .. c2_tp .. ').',
+							file
+						)
+					end
+					return
+				end
+			end
+
 		},
 
 		[TOK.array_concat] = {
@@ -269,11 +320,7 @@ return {
 				local tp
 				for _, child in ipairs(token.children) do
 					if child.type then
-						if tp then
-							tp = MERGE_TYPES(tp, child.type)
-						else
-							tp = child.type
-						end
+						tp = tp and MERGE_TYPES(tp, child.type) or child.type
 					end
 				end
 
@@ -392,6 +439,40 @@ return {
 
 				if override_tp then token.type = override_tp end
 			end,
+
+			function(token, file)
+				--Make sure that the argument passed to `reduce()` has all the correct types.
+				if token.text ~= 'reduce' then return end
+
+				local arg_tp, op = token.children[1].type, token.children[2]
+				if not arg_tp then return end
+				if op.id ~= TOK.func_ref then return end
+
+				local subtype = GET_SUBTYPES(arg_tp)
+				local fn_types = TYPESIG[op.text].valid
+
+				local valid = false
+				local invalid_arg_pos = 1
+				for _, params in ipairs(fn_types) do
+					valid = true
+					for i, param_tp in ipairs(params) do
+						if not SIMILAR_TYPE(subtype, param_tp) then
+							valid = false
+							invalid_arg_pos = i
+							break
+						end
+					end
+					if valid then break end
+				end
+
+				if not valid then
+					local msg = 'Cannot `reduce(' .. TYPE_TEXT(arg_tp) .. ', ...)`'
+					msg = msg .. ' with the function `' .. op.text .. '(' .. funcsig(op.text) .. ')`'
+					msg = msg .. ' because parameter ' .. invalid_arg_pos .. ' of ' .. op.text
+					msg = msg .. ' is incompatible with type `' .. TYPE_TEXT(subtype) .. '`.'
+					parse_error(op.span, msg, file)
+				end
+			end,
 		},
 
 		[TOK.ternary] = {
@@ -415,7 +496,36 @@ return {
 					)
 				end
 
-				token.type = it.type
+				token.type = it.type or TYPE_ARRAY
+			end,
+		},
+
+		[TOK.array_slice] = {
+			require_args_op(TYPE_NUMBER),
+			function(token, file)
+				token.type = TYPE_ARRAY_NUMBER
+
+				if #token.children == 1 and not token.unterminated then
+					parse_error(
+						token.children[1].span,
+						'Unterminated slices are only allowed inside index operations, e.g. `var1[i::]`.',
+						file
+					)
+				end
+			end,
+		},
+
+		[TOK.object] = {
+			function(token, file)
+				local tp
+				for _, child in ipairs(token.children) do
+					local subchild = child.children[2]
+					if subchild.type then
+						tp = tp and MERGE_TYPES(tp, subchild.type) or subchild.type
+					end
+				end
+
+				token.type = OBJECT_FROM_TYPE(tp or TYPE_ANY)
 			end,
 		},
 	},

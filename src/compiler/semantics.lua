@@ -581,9 +581,14 @@ function SemanticAnalyzer(root, root_file)
 	end
 
 
-	config = require "src.compiler.semantics.type_checking"
+	config = require 'src.compiler.semantics.type_checking'
 	config.set(labels, funcsig)
 	recurse2(root, config, root_file)
+
+	if not ERRORED --[[minify-delete]] and not LANGUAGE_SERVER --[[/minify-delete]] then
+		config = require 'src.compiler.semantics.constant_folding'
+		recurse2(root, config, root_file)
+	end
 
 	print_tokens_recursive(root)
 	error('STOP FOR TESTING')

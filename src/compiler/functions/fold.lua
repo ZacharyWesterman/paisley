@@ -1,6 +1,30 @@
 local json = require "src.shared.json"
 
-FUNC_OPERATIONS = {
+local function flatten(array)
+	local result = std.array()
+	for i = 1, #array do
+		if type(array[i]) == 'table' then
+			local flat = flatten(array[i])
+			for k = 1, #flat do table.insert(result, flat[k]) end
+		else
+			table.insert(result, array[i])
+		end
+	end
+	return result
+end
+
+local function clocktime(value)
+	local result = {
+		math.floor(value / 3600),
+		math.floor(value / 60) % 60,
+		math.floor(value) % 60,
+	}
+	local millis = math.floor(value * 1000) % 1000
+	if millis ~= 0 then result[4] = millis end
+	return result
+end
+
+return {
 	bytes = function(number, count)
 		local result = {}
 		for i = math.min(4, count), 1, -1 do
@@ -219,16 +243,7 @@ FUNC_OPERATIONS = {
 		end
 		return array
 	end,
-	clocktime = function(value)
-		local result = {
-			math.floor(value / 3600),
-			math.floor(value / 60) % 60,
-			math.floor(value) % 60,
-		}
-		local millis = math.floor(value * 1000) % 1000
-		if millis ~= 0 then result[4] = millis end
-		return result
-	end,
+	clocktime = clocktime,
 
 	reverse = function(value)
 		if type(value) == 'string' then
@@ -349,19 +364,7 @@ FUNC_OPERATIONS = {
 		end
 	end,
 
-	flatten = function(array)
-		local result = std.array()
-		for i = 1, #array do
-			if type(array[i]) == 'table' then
-				local flat = FUNC_OPERATIONS.flatten(array[i])
-				for k = 1, #flat do table.insert(result, flat[k]) end
-			else
-				table.insert(result, array[i])
-			end
-		end
-		return result
-	end,
-
+	flatten = flatten,
 	sign = std.sign,
 	ascii = function(char) return char:byte(1) end,
 	char = function(ascii) return string.char(ascii) end,
@@ -382,7 +385,7 @@ FUNC_OPERATIONS = {
 	end,
 
 	time = function(timestamp)
-		if type(timestamp) == 'number' then timestamp = FUNC_OPERATIONS.clocktime(timestamp) end
+		if type(timestamp) == 'number' then timestamp = clocktime(timestamp) end
 		local result = ''
 		for i = 1, #timestamp do
 			if i > 3 then

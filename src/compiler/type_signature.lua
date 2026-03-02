@@ -285,6 +285,15 @@ function ARRAY_FROM_TYPE(tp)
 	}
 end
 
+function OBJECT_FROM_TYPE(tp)
+	return {
+		object = {
+			type = "object",
+			subtypes = tp,
+		}
+	}
+end
+
 ---Convert a type signature back into its string representation.
 ---This is useful for error reporting and debug purposes.
 ---@param tp table A type signature object.
