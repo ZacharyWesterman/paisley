@@ -424,8 +424,6 @@ return {
 					return
 				end
 
-				local json = require 'src.shared.json'
-
 				--This only applies if the variable is used inside the same scope as it was defined.
 				if var.scope ~= token.scope then
 					for decl, _ in pairs(var.decls) do
