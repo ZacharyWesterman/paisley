@@ -568,7 +568,7 @@ return {
 				if token.text ~= 'reduce' then return end
 
 				local op = token.children[2]
-				if op.id == TOK.variable and op.text:sub(1, 1) == '\\' then
+				if op and op.id == TOK.variable and op.text:sub(1, 1) == '\\' then
 					--Check for an alias that matches
 					local a = find_label(op.text:sub(2))
 					if a then op.text = '\\' .. a end

@@ -370,7 +370,7 @@ return {
 							override_tp = TYPESIG[op.text].out
 						elseif op.id == TOK.op_bitwise then
 							override_tp = TYPE_NUMBER
-						elseif std.arrfind({ '+', '-', '/', '//', '%' }, op.text, 1) > 0 then
+						elseif std.arrfind({ '*', '+', '-', '/', '//', '%' }, op.text, 1) > 0 then
 							override_tp = TYPE_NUMBER
 						elseif std.arrfind({ '=', '<', '<=', '>', '>=', '!=', 'and', 'or', 'xor' }, op.text, 1) > 0 then
 							override_tp = TYPE_BOOLEAN
@@ -446,10 +446,18 @@ return {
 
 				local arg_tp, op = token.children[1].type, token.children[2]
 				if not arg_tp then return end
-				if op.id ~= TOK.func_ref then return end
+
+				local fn_types
+				if op.id ~= TOK.func_ref then
+					if std.arrfind({ '=', '<', '<=', '>', '>=', '!=', 'and', 'or', 'xor' }, op.text, 1) > 0 then
+						return --Comparison can accept a list containing any arbitrary types.
+					end
+					fn_types = { { TYPE_NUMBER, TYPE_NUMBER } }
+				else
+					fn_types = TYPESIG[op.text].valid
+				end
 
 				local subtype = GET_SUBTYPES(arg_tp)
-				local fn_types = TYPESIG[op.text].valid
 
 				local valid = false
 				local invalid_arg_pos = 1
@@ -467,9 +475,11 @@ return {
 
 				if not valid then
 					local msg = 'Cannot `reduce(' .. TYPE_TEXT(arg_tp) .. ', ...)`'
-					msg = msg .. ' with the function `' .. op.text .. '(' .. funcsig(op.text) .. ')`'
-					msg = msg .. ' because parameter ' .. invalid_arg_pos .. ' of ' .. op.text
-					msg = msg .. ' is incompatible with type `' .. TYPE_TEXT(subtype) .. '`.'
+						.. ' with the ' .. (op.id == TOK.func_ref and 'function' or 'operator')
+						.. ' `' .. op.text .. (op.id == TOK.func_ref and ('(' .. funcsig(op.text) .. ')`') or '`')
+						.. ' because ' ..
+						(op.id == TOK.func_ref and ('parameter ' .. invalid_arg_pos .. ' of ' .. op.text) or 'it')
+						.. ' is incompatible with type `' .. TYPE_TEXT(subtype) .. '`.'
 					parse_error(op.span, msg, file)
 				end
 			end,

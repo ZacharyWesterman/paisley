@@ -109,6 +109,7 @@ return {
 				--For reduce() function, make sure that its second parameter is an operator/func_name/sub_name.
 				if token.text == 'reduce' then
 					local ch = token.children[2]
+					if not ch then return end
 
 					local binary_ops = {
 						[TOK.op_plus] = true,
