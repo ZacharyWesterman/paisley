@@ -215,7 +215,6 @@ function SemanticAnalyzer(root, root_file)
 	]]
 	local variables = {}
 	local using_var_of_vars = false
-	local deduced_variable_types
 
 	local function push_var(var, datatype)
 		if not variables[var] then variables[var] = {} end
@@ -580,47 +579,17 @@ function SemanticAnalyzer(root, root_file)
 			variable_assignment, variable_unassignment)
 	end
 
-
 	config = require 'src.compiler.semantics.type_checking'
 	config.set(labels, funcsig)
+
+	local folding = require 'src.compiler.semantics.constant_folding'
 	while config.needs_iter() and not ERRORED do
 		config.ready_new_iter()
 		recurse2(root, config, root_file)
-	end
 
-	if not ERRORED --[[minify-delete]] and not LANGUAGE_SERVER --[[/minify-delete]] then
-		config = require 'src.compiler.semantics.constant_folding'
-		recurse2(root, config, root_file)
-	end
-
-	print_tokens_recursive(root)
-	error('STOP FOR TESTING')
-
-
-	deduced_variable_types = true
-	local run_again = true
-	while deduced_variable_types and not ERRORED do
-		deduced_variable_types = false
-
-		--First pass at deducing all types
-		if not ERRORED then
-			recurse(root,
-				{ TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK
-					.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK
-					.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.inline_command, TOK.command, TOK.return_stmt, TOK
-					.function_def }, type_precheck, type_checking)
-		end
-
-		--Fold constants. this improves performance at runtime, and checks for type errors early on.
-		--Don't fold if in language server mode, as folding can optimize away structures that we want to report info on.
+		--Fold any newly deduced constants
 		if not ERRORED --[[minify-delete]] and not LANGUAGE_SERVER --[[/minify-delete]] then
-			recurse(root,
-				{ TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.length, TOK.func_call, TOK.array_concat, TOK
-					.negate, TOK.comparison, TOK.concat, TOK.array_slice, TOK.string_open, TOK.index, TOK.ternary, TOK
-					.list_comp, TOK.object, TOK.key_value_pair, TOK.bitwise, TOK.variable }, nil,
-				function(token, file)
-					FOLD_CONSTANTS(token, file, get_var)
-				end)
+			recurse2(root, folding, root_file)
 		end
 
 		--Set any variables we can
@@ -628,20 +597,6 @@ function SemanticAnalyzer(root, root_file)
 			recurse(root, { TOK.for_stmt, TOK.kv_for_stmt, TOK.let_stmt, TOK.variable, TOK.try_stmt },
 				variable_assignment, variable_unassignment)
 		end
-
-		if not deduced_variable_types and run_again then
-			deduced_variable_types = true
-			run_again = false
-		end
-	end
-
-	if not ERRORED then
-		--One last pass at deducing all types (after any constant folding)
-		recurse(root,
-			{ TOK.string_open, TOK.add, TOK.multiply, TOK.exponent, TOK.boolean, TOK.index, TOK.array_concat, TOK
-				.array_slice, TOK.comparison, TOK.negate, TOK.func_call, TOK.concat, TOK.length, TOK.lit_array, TOK
-				.lit_boolean, TOK.lit_null, TOK.lit_number, TOK.variable, TOK.inline_command, TOK.command, TOK
-				.return_stmt, TOK.function_def, TOK.length }, nil, type_checking)
 	end
 
 	-- After type checking, run one more pass on the AST to adjust synonym functions and so on.
