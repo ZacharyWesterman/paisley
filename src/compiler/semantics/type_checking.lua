@@ -5,6 +5,13 @@ local in_cmd_eval = false
 --[[/minify-delete]]
 local funcsig
 
+local type_changed = false
+local function set_type(token, new_type)
+	if not type_changed then
+		type_changed = token.type == nil and new_type ~= nil
+	end
+	token.type = new_type
+end
 
 
 local function command(token, file)
@@ -14,7 +21,7 @@ local function command(token, file)
 	if ch.id == TOK.call_stmt then
 		if not token.type then
 			local lbl = ch.children[1]
-			if labels[lbl.text] then token.type = labels[lbl.text].type end
+			if labels[lbl.text] then set_type(token, labels[lbl.text].type) end
 		end
 
 		return
@@ -72,18 +79,18 @@ local function command(token, file)
 		--[[/minify-delete]]
 
 		if ALLOWED_COMMANDS[ch.value] then
-			token.type = ALLOWED_COMMANDS[ch.value]
+			set_type(token, ALLOWED_COMMANDS[ch.value])
 		else
-			token.type = BUILTIN_COMMANDS[ch.value]
+			set_type(token, BUILTIN_COMMANDS[ch.value])
 		end
 	end
 
-	if token.id == TOK.inline_command then token.type = token.children[1].type end
+	if token.id == TOK.inline_command then set_type(token, token.children[1].type) end
 end
 
 local function type_from_value(token)
 	if token.value ~= nil or token.id == TOK.lit_null then
-		token.type = SIGNATURE(std.deep_type(token.value))
+		set_type(token, SIGNATURE(std.deep_type(token.value)))
 	end
 end
 
@@ -116,14 +123,6 @@ local function require_args_op(arg_type)
 			)
 		end
 	end
-end
-
-local type_changed = false
-local function set_type(token, new_type)
-	if not type_changed then
-		type_changed = token.type == nil and new_type ~= nil
-	end
-	token.type = new_type
 end
 
 return {
@@ -198,7 +197,7 @@ return {
 			function() current_sub = nil end,
 			function(token)
 				if #token.children[1].children == 0 then
-					token.type = TYPE_NULL
+					set_type(token, TYPE_NULL)
 				end
 			end
 		},
@@ -225,7 +224,7 @@ return {
 
 				if t1 and t2 then
 					if EXACT_TYPE(t1, TYPE_OBJECT) then
-						token.type = TYPE_ANY
+						set_type(token, TYPE_ANY)
 					else
 						if not SIMILAR_TYPE(t2, TYPE_INDEXER) then
 							parse_error(token.children[1].span,
@@ -235,21 +234,21 @@ return {
 						end
 
 						if EXACT_TYPE(t1, TYPE_STRING) then
-							token.type = TYPE_STRING
+							set_type(token, TYPE_STRING)
 						elseif EXACT_TYPE(t2, TYPE_ANY) then
 							--If index is "any", result is either the same type as t1, or the subtype of t1
-							token.type = MERGE_TYPES(t1, GET_SUBTYPES(t1))
+							set_type(token, MERGE_TYPES(t1, GET_SUBTYPES(t1)))
 						elseif SIMILAR_TYPE(t2, TYPE_ARRAY) then
 							if HAS_SUBTYPES(t1) then
-								token.type = t1
+								set_type(token, t1)
 							else
-								token.type = ARRAY_FROM_TYPE(t1)
+								set_type(token, ARRAY_FROM_TYPE(t1))
 							end
 						elseif HAS_SUBTYPES(t1) then
-							token.type = GET_SUBTYPES(t1)
+							set_type(token, GET_SUBTYPES(t1))
 						else
 							--We don't know what type of array this is, so result of non-const array index has to be "any"
-							token.type = TYPE_ANY
+							set_type(token, TYPE_ANY)
 						end
 					end
 				end
@@ -258,41 +257,41 @@ return {
 
 		[TOK.string_open] = {
 			function(token)
-				token.type = TYPE_STRING
+				set_type(token, TYPE_STRING)
 			end,
 		},
 
 		[TOK.add] = {
 			require_args_op(TYPE_NUMBER),
-			function(token) token.type = TYPE_NUMBER end,
+			function(token) set_type(token, TYPE_NUMBER) end,
 		},
 
 		[TOK.negate] = {
 			require_args_op(TYPE_NUMBER),
-			function(token) token.type = TYPE_NUMBER end,
+			function(token) set_type(token, TYPE_NUMBER) end,
 		},
 
 		[TOK.multiply] = {
 			require_args_op(TYPE_NUMBER),
-			function(token) token.type = TYPE_NUMBER end,
+			function(token) set_type(token, TYPE_NUMBER) end,
 		},
 
 		[TOK.exponent] = {
 			require_args_op(TYPE_NUMBER),
-			function(token) token.type = TYPE_NUMBER end,
+			function(token) set_type(token, TYPE_NUMBER) end,
 		},
 
 		[TOK.bitwise] = {
 			require_args_op(TYPE_NUMBER),
-			function(token) token.type = TYPE_NUMBER end,
+			function(token) set_type(token, TYPE_NUMBER) end,
 		},
 
 		[TOK.boolean] = {
-			function(token) token.type = TYPE_BOOLEAN end,
+			function(token) set_type(token, TYPE_BOOLEAN) end,
 		},
 
 		[TOK.comparison] = {
-			function(token) token.type = TYPE_BOOLEAN end,
+			function(token) set_type(token, TYPE_BOOLEAN) end,
 
 			function(token, file)
 				local c1, c2 = token.children[1], token.children[2]
@@ -340,12 +339,12 @@ return {
 					end
 				end
 
-				token.type = ARRAY_FROM_TYPE(tp or TYPE_ANY)
+				set_type(token, ARRAY_FROM_TYPE(tp or TYPE_ANY))
 			end,
 		},
 
 		[TOK.concat] = {
-			function(token) token.type = TYPE_STRING end,
+			function(token) set_type(token, TYPE_STRING) end,
 		},
 
 		[TOK.length] = {
@@ -360,7 +359,7 @@ return {
 					)
 				end
 
-				token.type = TYPE_NUMBER
+				set_type(token, TYPE_NUMBER)
 			end,
 		},
 
@@ -445,15 +444,15 @@ return {
 
 					if type(signature.out) == 'number' then
 						--Return type matches that of the nth param
-						token.type = token.children[signature.out].type
+						set_type(token, token.children[signature.out].type)
 					else
-						token.type = signature.out
+						set_type(token, signature.out)
 					end
 				else
-					token.type = signature.out
+					set_type(token, signature.out)
 				end
 
-				if override_tp then token.type = override_tp end
+				if override_tp then set_type(token, override_tp) end
 			end,
 
 			function(token, file)
@@ -505,7 +504,7 @@ return {
 			function(token)
 				local type1, type2 = token.children[2].type, token.children[3].type
 				if type1 and type2 then
-					token.type = MERGE_TYPES(type1, type2)
+					set_type(token, MERGE_TYPES(type1, type2))
 				end
 			end,
 		},
@@ -522,14 +521,14 @@ return {
 					)
 				end
 
-				token.type = it.type or TYPE_ARRAY
+				set_type(token, it.type or TYPE_ARRAY)
 			end,
 		},
 
 		[TOK.array_slice] = {
 			require_args_op(TYPE_NUMBER),
 			function(token, file)
-				token.type = TYPE_ARRAY_NUMBER
+				set_type(token, TYPE_ARRAY_NUMBER)
 
 				if #token.children == 1 and not token.unterminated then
 					parse_error(
@@ -551,7 +550,7 @@ return {
 					end
 				end
 
-				token.type = OBJECT_FROM_TYPE(tp or TYPE_ANY)
+				set_type(token, OBJECT_FROM_TYPE(tp or TYPE_ANY))
 			end,
 		},
 	},
