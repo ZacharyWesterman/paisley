@@ -42,7 +42,13 @@ local string_concat = if_const(
 
 local func_operations = require 'src.compiler.functions.fold'
 
+local function get_var(name) end
+
 return {
+	set = function(new_get_var)
+		get_var = new_get_var
+	end,
+
 	enter = {},
 	exit = {
 		[TOK.add] = {
@@ -405,6 +411,38 @@ return {
 					return result
 				end
 			),
+		},
+
+		[TOK.variable] = {
+			function(token, file)
+				local var = get_var(token.text)
+				if not var then return end
+
+				if var.multiple then
+					--Don't optimize away if there are multiple (non-same) assignments of the variable
+					token.value = nil
+					return
+				end
+
+				local json = require 'src.shared.json'
+
+				--This only applies if the variable is used inside the same scope as it was defined.
+				if var.scope ~= token.scope then
+					for decl, _ in pairs(var.decls) do
+						decl.value = nil
+						decl.multiple = true
+					end
+					var.multiple = true
+					var.value = nil
+					token.value = nil
+					return
+				end
+
+				if Span:first(token.span, var.span) == var.span then
+					--If the variable is assigned before it is used, use that value.
+					token.value = var.value
+				end
+			end,
 		},
 	},
 }

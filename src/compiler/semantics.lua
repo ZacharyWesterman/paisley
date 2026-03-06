@@ -583,6 +583,8 @@ function SemanticAnalyzer(root, root_file)
 	config.set(labels, funcsig)
 
 	local folding = require 'src.compiler.semantics.constant_folding'
+	folding.set(get_var)
+
 	while config.needs_iter() and not ERRORED do
 		config.ready_new_iter()
 		recurse2(root, config, root_file)
