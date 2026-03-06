@@ -518,4 +518,18 @@ return {
 			std.str(chars):gsub('(%W)', '%%%1') .. ']*$'
 		return text:match(pattern)
 	end,
+
+	all = function(list)
+		for _, val in ipairs(list) do
+			if not std.bool(val) then return false end
+		end
+		return true
+	end,
+
+	any = function(list)
+		for _, val in ipairs(list) do
+			if std.bool(val) then return true end
+		end
+		return false
+	end,
 }

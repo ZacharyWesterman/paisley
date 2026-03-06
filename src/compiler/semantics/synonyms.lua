@@ -37,6 +37,7 @@ return {
 			id = TOK.op_and,
 			span = token.span,
 			text = 'and',
+			children = {},
 		})
 	end,
 
@@ -47,6 +48,7 @@ return {
 			id = TOK.op_or,
 			span = token.span,
 			text = 'or',
+			children = {},
 		})
 	end,
 
