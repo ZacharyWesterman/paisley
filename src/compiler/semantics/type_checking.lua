@@ -118,6 +118,13 @@ local function require_args_op(arg_type)
 	end
 end
 
+local type_changed = false
+local function set_type(token, new_type)
+	if not type_changed then
+		type_changed = token.type == nil and new_type ~= nil
+	end
+	token.type = new_type
+end
 
 return {
 	set = function(new_labels, new_funcsig)
@@ -125,6 +132,15 @@ return {
 		current_sub = nil
 		in_cmd_eval = false
 		funcsig = new_funcsig
+		type_changed = true
+	end,
+
+	needs_iter = function()
+		return type_changed
+	end,
+
+	ready_new_iter = function()
+		type_changed = false
 	end,
 
 	enter = {

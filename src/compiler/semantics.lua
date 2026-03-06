@@ -583,7 +583,10 @@ function SemanticAnalyzer(root, root_file)
 
 	config = require 'src.compiler.semantics.type_checking'
 	config.set(labels, funcsig)
-	recurse2(root, config, root_file)
+	while config.needs_iter() and not ERRORED do
+		config.ready_new_iter()
+		recurse2(root, config, root_file)
+	end
 
 	if not ERRORED --[[minify-delete]] and not LANGUAGE_SERVER --[[/minify-delete]] then
 		config = require 'src.compiler.semantics.constant_folding'
