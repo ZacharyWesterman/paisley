@@ -443,8 +443,16 @@ return {
 					end
 
 					if type(signature.out) == 'number' then
-						--Return type matches that of the nth param
-						set_type(token, token.children[signature.out].type)
+						--Return type matches that of the nth argument,
+						--Or if more strict, the expected type(s) of the param.
+						local index = signature.out
+						local arg_type = token.children[index].type
+						local param_type = signature.valid[1][index]
+						for i = 2, #signature.valid do
+							param_type = MERGE_TYPES(param_type, signature.valid[i][index])
+						end
+						local tp = TYPE_IS_SUBSET(arg_type, param_type) and param_type or arg_type
+						set_type(token, tp)
 					else
 						set_type(token, signature.out)
 					end
