@@ -305,7 +305,6 @@ function SemanticAnalyzer(root, root_file)
 					if tp ~= nil then
 						push_var(var, tp)
 						var.type = tp
-						deduced_variable_types = true
 					end
 				end
 			end
@@ -437,7 +436,6 @@ function SemanticAnalyzer(root, root_file)
 						if i > 1 then child = var.children[i - 1] end
 						set_var(child, tp)
 						child.type = tp
-						deduced_variable_types = true
 					end
 				end
 			elseif tp ~= nil then
