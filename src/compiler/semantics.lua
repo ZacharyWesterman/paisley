@@ -405,12 +405,21 @@ function SemanticAnalyzer(root, root_file)
 					tp = nil
 					if ch then
 						if ch.id == TOK.array_concat then
-							if ch.children[i] and ch.children[i].type then
-								tp = ch.children[i].type
+							local subchild = ch.children[i]
+							if not subchild then
+								tp = TYPE_NULL
+							elseif subchild.type then
+								tp = subchild.type
+							elseif subchild.value ~= nil or subchild.id == TOK.lit_null then
+								tp = SIGNATURE(std.deep_type(subchild.value))
 							end
 						elseif ch.value or ch.id == TOK.lit_null then
 							if ch.id == TOK.lit_array then
-								tp = SIGNATURE(std.deep_type(ch.value[i]))
+								if ch.value[i] then
+									tp = SIGNATURE(std.deep_type(ch.value[i]))
+								else
+									tp = TYPE_NULL
+								end
 							elseif i == 1 then
 								tp = SIGNATURE(std.deep_type(ch.value))
 							else
@@ -435,7 +444,8 @@ function SemanticAnalyzer(root, root_file)
 				--Single-variable assignment
 				set_var(var, tp, ch.value)
 				var.type = tp
-				deduced_variable_types = true
+			elseif not ch then
+				var.type = TYPE_NULL
 			end
 		elseif token.id == TOK.variable then
 			if token.type then return end
@@ -449,12 +459,7 @@ function SemanticAnalyzer(root, root_file)
 				else
 					token.type = tp[#tp].type
 				end
-			elseif token.text == '$' then
-				token.type = TYPE_ARRAY_STRING
-			elseif token.text == '@' then
-				token.type = TYPE_ARRAY
 			elseif token.text == '_VARS' then
-				token.type = TYPE_OBJECT
 				--Don't allow any variable pruning if _VARS is used;
 				--In that case, we want to make sure that any vars the programmer set *are* actually set!
 				if not using_var_of_vars then
@@ -470,10 +475,6 @@ function SemanticAnalyzer(root, root_file)
 					end
 					using_var_of_vars = true
 				end
-			elseif token.text == '_VERSION' then
-				token.type = TYPE_STRING
-			elseif token.text == '_ENV' then
-				token.type = TYPE_ENV
 			end
 		end
 	end

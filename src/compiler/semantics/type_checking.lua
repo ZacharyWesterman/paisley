@@ -549,7 +549,7 @@ return {
 		},
 
 		[TOK.object] = {
-			function(token, file)
+			function(token)
 				local tp
 				for _, child in ipairs(token.children) do
 					local subchild = child.children[2]
@@ -559,6 +559,58 @@ return {
 				end
 
 				set_type(token, OBJECT_FROM_TYPE(tp or TYPE_ANY))
+			end,
+		},
+
+		[TOK.variable] = {
+			--Set language vars
+			function(token)
+				if token.text == '@' then
+					set_type(token, current_sub and TYPE_ARRAY or TYPE_ARRAY_STRING)
+				elseif token.text == '$' then
+					set_type(token, TYPE_ARRAY_STRING)
+				elseif token.text == '_VARS' then
+					set_type(token, TYPE_OBJECT)
+				elseif token.text == '_VERSION' then
+					set_type(token, TYPE_STRING)
+				elseif token.text == '_ENV' then
+					set_type(token, TYPE_ENV)
+				end
+			end,
+		},
+
+		[TOK.let_stmt] = {
+			--Set expected type from annotations, and spit out a warning
+			--if the actual type is not compatible with the annotation.
+			function(token, file)
+				if not token.tags or not token.tags.type then return end
+
+				local tp_list = token.tags.type
+				local var = token.children[1]
+
+				local tp_asgn = {
+					{ node = var, tp = tp_list[1] },
+				}
+				for i, node in ipairs(var.children) do
+					table.insert(tp_asgn, {
+						node = node, tp = tp_list[i + 1],
+					})
+				end
+
+				for _, asgn in ipairs(tp_asgn) do
+					if asgn.tp then
+						if asgn.node.type and not SIMILAR_TYPE(asgn.tp, asgn.node.type) then
+							parse_warning(
+								asgn.node.span,
+								'Annotation indicated a type of `' ..
+								TYPE_TEXT(asgn.tp) ..
+								'`, but the type of the assigned expression is `' .. TYPE_TEXT(asgn.node.type) .. '`.',
+								file
+							)
+						end
+						asgn.node.type = asgn.tp
+					end
+				end
 			end,
 		},
 	},

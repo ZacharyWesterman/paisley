@@ -276,6 +276,32 @@ local function process_comment_annotations(text, line, file)
 					end
 				end
 			end
+		elseif i == '@TYPE' then
+			---@type string|nil
+			local t = line:match('@[tT][yY][pP][eE]%s*(.*)$')
+			if t then
+				NEXT_TAGS.type = {}
+				for type_text in t:gmatch('[^%s,]+') do
+					local type_sig = SIGNATURE(type_text, false, function(message, start, stop)
+						local pos = text:find(line, 0, true)
+
+						local _, line_no = text:sub(0, pos):gsub('\n', '')
+						line_no = line_no + ln
+						local col_no = text:find(type_text, 0, true) - pos
+
+						parse_warning(Span:new(
+							line_no,
+							col_no,
+							line_no,
+							col_no + #type_text
+						), message, file)
+					end)
+
+					if type_sig then
+						table.insert(NEXT_TAGS.type, type_sig)
+					end
+				end
+			end
 		elseif i == '@ERROR' then
 			if not NEXT_TAGS.error then NEXT_TAGS.error = {} end
 			local t = line:gsub('@[eE][rR][rR][oO][rR]%s*', '')
