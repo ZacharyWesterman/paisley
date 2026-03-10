@@ -210,7 +210,20 @@ return {
 
 		[TOK.index] = {
 			function(token, file)
-				local c2 = token.children[2]
+				local c1, c2 = token.children[1], token.children[2]
+
+				if current_sub and c1.id == TOK.variable and c1.text == '@' and type(c2.value) == 'number' then
+					--Deduce the type of function arguments, if annotated.
+					local func = labels[current_sub]
+					if func and func.tags and func.tags.params then
+						local param = func.tags.params[c2.value]
+						if param and param.type then
+							set_type(token, param.type)
+							return
+						end
+					end
+				end
+
 				if c2.id == TOK.array_slice and #c2.children == 1 then
 					c2.unterminated = true
 					c2.type = TYPE_ARRAY_NUMBER
