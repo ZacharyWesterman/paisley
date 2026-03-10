@@ -256,7 +256,7 @@ function SemanticAnalyzer(root, root_file)
 				v.multiple = true
 			end
 
-			v.type = MERGE_TYPES(v.type, var.type)
+			v.type = MERGE_TYPES(v.type, var.type or datatype)
 
 			v.decls[var] = true
 			if v.multiple then
