@@ -132,6 +132,7 @@ local function func_call_lsp(token, filename)
 		end
 		funcsig = funcsig .. std.join(types, '|', TYPE_TEXT)
 	else
+		---@diagnostic disable-next-line
 		funcsig = funcsig .. TYPE_TEXT(TYPESIG[name].out, true)
 	end
 
@@ -302,6 +303,7 @@ return {
 					end,
 					_VERSION = function()
 						local text = ''
+						---@diagnostic disable-next-line
 						if VERSION then text = text .. ' = "' .. VERSION .. '"' end
 						text = text ..
 							'\nContains the version number of the Paisley runtime environment, formatted as `MAJOR.MINOR.PATCH`.'
@@ -375,6 +377,16 @@ return {
 						},
 					}, filename)
 				end
+			end,
+		},
+
+		[TOK.try_stmt] = {
+			function(token, file)
+				local var = token.children[3]
+				if not var then return end
+
+				local text = data_type(var.text, var.type)
+				INFO.hint(var.span, text, file)
 			end,
 		},
 	},

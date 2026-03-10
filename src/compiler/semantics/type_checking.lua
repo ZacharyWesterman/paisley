@@ -627,7 +627,8 @@ return {
 		[TOK.try_stmt] = {
 			function(token)
 				if token.children[3] then
-					push_var(token.children[3], TYPE_OBJECT)
+					set_var(token.children[3], TYPE_OBJECT)
+					token.children[3].type = TYPE_OBJECT
 				end
 			end
 		}

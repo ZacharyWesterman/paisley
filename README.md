@@ -474,7 +474,8 @@ The output variable (in this case `e`) will always be an object that looks like 
 {
 	"message": "your error message",
 	"line": 6,
-	"stack": [2] 
+	"stack": [2],
+	"type": "TypeName" or null,
 }
 ```
 Where `line` is the line where the exception was caught, and `stack` is the line numbers for the function call stack.
