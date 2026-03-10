@@ -25,7 +25,7 @@
   - Find the minimum of a list of values.
 - `mult(...: number|array[number]) -> number`
   - Calculate the product of a list of values. This is identical to calling `reduce(..., *)`.
-- `reduce(list: array[any], op: operator|funcname|subname) -> any`
+- `reduce(list: array[any], op: operator|function) -> any`
   - Reduce an array to a single element based on a repeated binary operation. The `op` param may be a binary operator, or the name of a 2-argument built-in or user-defined function (the latter must be written like `\sub_name`).
 - `sort(list: array[any]) -> array[any]`
   - Sort an array in ascending order.
