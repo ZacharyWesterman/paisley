@@ -389,75 +389,8 @@ function SemanticAnalyzer(root, root_file)
 
 				return
 			end
-
-			local tp = nil
-			if ch and ch.type then tp = ch.type end
-
-			if #var.children > 0 then
-				--Multi-variable assignment
-				local vars = { var.text }
-				for i = 1, #var.children do
-					table.insert(vars, var.children[i].text)
-				end
-
-				for i = 1, #vars do
-					tp = nil
-					if ch then
-						if ch.id == TOK.array_concat then
-							local subchild = ch.children[i]
-							if not subchild then
-								tp = TYPE_NULL
-							elseif subchild.type then
-								tp = subchild.type
-							elseif subchild.value ~= nil or subchild.id == TOK.lit_null then
-								tp = SIGNATURE(std.deep_type(subchild.value))
-							end
-						elseif ch.value or ch.id == TOK.lit_null then
-							if ch.id == TOK.lit_array then
-								if ch.value[i] then
-									tp = SIGNATURE(std.deep_type(ch.value[i]))
-								else
-									tp = TYPE_NULL
-								end
-							elseif i == 1 then
-								tp = SIGNATURE(std.deep_type(ch.value))
-							else
-								tp = TYPE_NULL
-							end
-						else
-							tp = TYPE_ANY
-						end
-					else
-						tp = TYPE_NULL
-					end
-
-					if tp ~= nil then
-						local child = var
-						if i > 1 then child = var.children[i - 1] end
-						set_var(child, tp)
-						child.type = tp
-					end
-				end
-			elseif tp ~= nil then
-				--Single-variable assignment
-				set_var(var, tp, ch.value)
-				var.type = tp
-			elseif not ch then
-				var.type = TYPE_NULL
-			end
 		elseif token.id == TOK.variable then
-			if token.type then return end
-
-			local tp = variables[token.text]
-			if tp then
-				local tp1 = tp[#tp]
-				if Span:first(tp1.span, token.span) == token.span then
-					if #tp < 2 then return end
-					token.type = tp[#tp - 1].type
-				else
-					token.type = tp[#tp].type
-				end
-			elseif token.text == '_VARS' then
+			if token.text == '_VARS' then
 				--Don't allow any variable pruning if _VARS is used;
 				--In that case, we want to make sure that any vars the programmer set *are* actually set!
 				if not using_var_of_vars then
@@ -579,7 +512,7 @@ function SemanticAnalyzer(root, root_file)
 	end
 
 	config = require 'src.compiler.semantics.type_checking'
-	config.set(labels, funcsig)
+	config.set(labels, funcsig, set_var, get_var, push_var)
 
 	local folding = require 'src.compiler.semantics.constant_folding'
 	folding.set(get_var)

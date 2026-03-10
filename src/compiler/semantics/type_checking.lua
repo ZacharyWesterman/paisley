@@ -4,6 +4,9 @@ local labels = {}
 local in_cmd_eval = false
 --[[/minify-delete]]
 local funcsig
+local function set_var(var, datatype, value) end
+local function get_var(name) end
+local function push_var(var, datatype) end
 
 local type_changed = false
 local function set_type(token, new_type)
@@ -126,12 +129,15 @@ local function require_args_op(arg_type)
 end
 
 return {
-	set = function(new_labels, new_funcsig)
+	set = function(new_labels, new_funcsig, set_var_func, get_var_func, push_var_func)
 		labels = new_labels
 		current_sub = nil
 		in_cmd_eval = false
 		funcsig = new_funcsig
 		type_changed = true
+		set_var = set_var_func
+		get_var = get_var_func
+		push_var = push_var_func
 	end,
 
 	needs_iter = function()
@@ -563,7 +569,7 @@ return {
 		},
 
 		[TOK.variable] = {
-			--Set language vars
+			--Set var types
 			function(token)
 				if token.text == '@' then
 					set_type(token, current_sub and TYPE_ARRAY or TYPE_ARRAY_STRING)
@@ -575,6 +581,11 @@ return {
 					set_type(token, TYPE_STRING)
 				elseif token.text == '_ENV' then
 					set_type(token, TYPE_ENV)
+				else
+					local var_decl = get_var(token.text)
+					if var_decl then
+						token.type = var_decl.type
+					end
 				end
 			end,
 		},
@@ -583,35 +594,42 @@ return {
 			--Set expected type from annotations, and spit out a warning
 			--if the actual type is not compatible with the annotation.
 			function(token, file)
-				if not token.tags or not token.tags.type then return end
+				-- if not token.tags or not token.tags.type then return end
 
-				local tp_list = token.tags.type
+				local tp_list = token.tags and token.tags.type or {}
 				local var = token.children[1]
+				local var1_tp = token.children[2] and token.children[2].type
+				local vars_tp = TYPE_NULL
+
+				if #var.children > 0 and SIMILAR_TYPE(var1_tp, TYPE_ARRAY) then
+					var1_tp = MERGE_TYPES(GET_SUBTYPES(var1_tp), TYPE_NULL)
+					vars_tp = var1_tp
+				end
 
 				local tp_asgn = {
-					{ node = var, tp = tp_list[1] },
+					{ node = var, tp = tp_list[1] or var1_tp },
 				}
 				for i, node in ipairs(var.children) do
 					table.insert(tp_asgn, {
-						node = node, tp = tp_list[i + 1],
+						node = node, tp = tp_list[i + 1] or vars_tp,
 					})
 				end
 
 				for _, asgn in ipairs(tp_asgn) do
 					if asgn.tp then
-						if asgn.node.type and not SIMILAR_TYPE(asgn.tp, asgn.node.type) then
-							parse_warning(
-								asgn.node.span,
-								'Annotation indicated a type of `' ..
-								TYPE_TEXT(asgn.tp) ..
-								'`, but the type of the assigned expression is `' .. TYPE_TEXT(asgn.node.type) .. '`.',
-								file
-							)
-						end
+						set_var(asgn.node, asgn.tp)
 						asgn.node.type = asgn.tp
 					end
 				end
 			end,
 		},
+
+		[TOK.try_stmt] = {
+			function(token)
+				if token.children[3] then
+					push_var(token.children[3], TYPE_OBJECT)
+				end
+			end
+		}
 	},
 }
