@@ -546,9 +546,11 @@ return {
 						TYPE_TEXT(it.type) .. ').',
 						file
 					)
+					return
 				end
 
-				set_type(token, it.type or TYPE_ARRAY)
+				local iter_type = token.children[1].type or TYPE_ANY
+				set_type(token, ARRAY_FROM_TYPE(iter_type))
 			end,
 		},
 
