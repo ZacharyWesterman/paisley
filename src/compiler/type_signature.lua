@@ -199,7 +199,7 @@ function TYPE_IS_SUBSET(lhs, rhs)
 			if not lhs[key] then return false end
 			if not lhs[key].subtypes ~= not val.subtypes then return false end
 
-			if val.subtypes and not TYPE_IS_SUBSET(val.subtypes, lhs[key].subtypes) then return false end
+			if val.subtypes and not TYPE_IS_SUBSET(lhs[key].subtypes, val.subtypes) then return false end
 		end
 	end
 
