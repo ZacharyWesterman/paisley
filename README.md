@@ -691,6 +691,15 @@ let x = {1:100}
 let y = {i for i in x if i % 5 = 0}
 ```
 
+One important caveat to note about list comprehension is that the intermediate variable does not actually change the values of any global variables.
+So, while the above examples are *computationally* the same, list comprehension has the benefits of being more terse, more performant, and encapsulated.
+For example,
+```
+let i = 123
+let values = {i + 1 for i in 0:9}
+print {i} # This is still `123`! The list comprehension did not affect the actual variable `i`.
+```
+
 ## Commands
 
 ### Inline Command Evaluation
