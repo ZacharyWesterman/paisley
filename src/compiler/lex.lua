@@ -601,9 +601,20 @@ function Lexer(text, file, keep_comments)
 											local m = text:sub(this_ix - 1, this_ix + #replace.next + 1):match('^\\' ..
 												search .. replace.next)
 											if m then
-												this_chr = replace.op(m:sub(2 + #search, #m))
+												local val = m:sub(2 + #search, #m)
 												this_ix = this_ix + #m - 2
 												found_esc = true
+
+												if m:sub(2, 2) == 'U' and tonumber(val, 16) > 0x10ffff then
+													parse_error(
+														Span:new(line, col + #search, line, col + #search + #m - 2),
+														'Value is outside of Unicode range, max is 0x10FFFF.',
+														file
+													)
+													break
+												end
+
+												this_chr = replace.op(m:sub(2 + #search, #m))
 											end
 											--[[minify-delete]]
 										elseif replace.plasma and RESTRICT_TO_PLASMA_BUILD then
