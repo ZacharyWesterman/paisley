@@ -341,7 +341,7 @@ return {
 								end
 							end
 
-							local t = decl_token.tags and decl_token.tags.text
+							local t = decl_token.tags and decl_token.tags.brief
 							if t and #t > 0 then
 								comment = t
 								found = true
