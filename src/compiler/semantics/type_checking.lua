@@ -8,6 +8,10 @@ local function set_var(var, datatype, value) end
 local function get_var(name) end
 local function push_var(var, datatype) end
 
+--Temporary variables (e.g. list comprehension) that don't actually affect
+--the value/type of global variables, even with the same name.
+local temp_vars = {}
+
 local type_changed = false
 local function set_type(token, new_type)
 	if not type_changed then
@@ -138,6 +142,7 @@ return {
 		set_var = set_var_func
 		get_var = get_var_func
 		push_var = push_var_func
+		temp_vars = {}
 	end,
 
 	needs_iter = function()
@@ -166,6 +171,21 @@ return {
 				end
 			end,
 		},
+
+		[TOK.list_comp] = {
+			function(token)
+				local var = token.children[2]
+				temp_vars[var.text] = var
+
+				local expr_type = token.children[3].type
+				if not expr_type then return end
+				expr_type = GET_SUBTYPES(expr_type)
+				if not expr_type then return end
+
+				--Set the type of the temporary variable.
+				set_type(var, expr_type)
+			end,
+		}
 	},
 
 	exit = {
@@ -538,7 +558,9 @@ return {
 
 		[TOK.list_comp] = {
 			function(token, file)
-				local it = token.children[3]
+				local var, it = token.children[2], token.children[3]
+				temp_vars[var.text] = nil
+
 				if it.type and not SIMILAR_TYPE(it.type, TYPE_ITERABLE) then
 					parse_error(
 						it.span,
@@ -597,7 +619,7 @@ return {
 				elseif token.text == '_ENV' then
 					set_type(token, TYPE_ENV)
 				else
-					local var_decl = get_var(token.text)
+					local var_decl = temp_vars[token.text] or get_var(token.text)
 					if var_decl then
 						token.type = var_decl.type
 					end
