@@ -55,7 +55,8 @@ local function command_lsp(token, filename)
 
 			if token.id == TOK.command and tp then
 				local text = '## ' ..
-					vscode.color(cmd.text, vscode.theme.command) .. '\n' .. CMD_DESCRIPTION[cmd.text] .. return_text(tp)
+					vscode.color(cmd.text, vscode.theme.command) ..
+					'\n' .. (CMD_DESCRIPTION[cmd.text] or '') .. return_text(tp)
 				INFO.hint(cmd.span, text, filename)
 			end
 
