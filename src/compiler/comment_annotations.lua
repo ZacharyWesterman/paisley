@@ -110,7 +110,7 @@ local function process_comment_annotations(text, line, file)
 
 		local span = Span:new(
 			NEXT_TAGS.line - line_ct, 0,
-			NEXT_TAGS.line - 1, 9999
+			NEXT_TAGS.line, 9999
 		)
 
 		--Use stdlib as a fallback if local file doesn't exist.
