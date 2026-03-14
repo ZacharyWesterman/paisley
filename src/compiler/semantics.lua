@@ -308,10 +308,6 @@ function SemanticAnalyzer(root, root_file)
 					end
 				end
 			end
-		elseif token.id == TOK.try_stmt then
-			if token.children[3] then
-				push_var(token.children[3], TYPE_OBJECT)
-			end
 		end
 	end
 

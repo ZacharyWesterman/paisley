@@ -187,7 +187,28 @@ return {
 				--Set the type of the temporary variable.
 				set_type(var, expr_type)
 			end,
-		}
+		},
+
+		[TOK.for_stmt] = {
+			function(token)
+				local var, expr = token.children[1], token.children[2]
+				if not expr.type then return end
+
+				local tp
+				if SIMILAR_TYPE(expr.type, TYPE_OBJECT) then
+					tp = MERGE_TYPES(tp, TYPE_STRING)
+				end
+				if SIMILAR_TYPE(expr.type, TYPE_ARRAY) then
+					tp = MERGE_TYPES(tp, GET_SUBTYPES(expr.type))
+				end
+				if not tp then tp = expr.type end
+
+				if tp then
+					set_var(var, tp)
+					set_type(var, tp)
+				end
+			end,
+		},
 	},
 
 	exit = {
@@ -692,6 +713,6 @@ return {
 					token.children[3].type = TYPE_OBJECT
 				end
 			end
-		}
+		},
 	},
 }

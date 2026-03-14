@@ -144,14 +144,13 @@ return {
 
 				for i, param in ipairs(sub.tags.params) do
 					local arg = token.children[i + 1]
-					local arg_type = (arg and arg.type) or TYPE_NULL
 
-					if not SIMILAR_TYPE(param.type, arg_type) then
+					if arg and arg.type and not SIMILAR_TYPE(param.type, arg.type) then
 						local msg, span
 						if arg then
 							span = arg.span
 							msg = 'Argument ' .. i .. ' of "' .. name .. '" expected `' .. TYPE_TEXT(param.type) ..
-								'` but got `' .. TYPE_TEXT(arg_type) .. '`.'
+								'` but got `' .. TYPE_TEXT(arg.type) .. '`.'
 						else
 							span = token.span
 							msg = 'Missing argument ' .. i ..
