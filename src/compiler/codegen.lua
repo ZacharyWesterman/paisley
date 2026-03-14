@@ -128,19 +128,7 @@ function generate_bytecode(root, file)
 
 	local function is_const(token) return token.value ~= nil or token.id == TOK.lit_null end
 
-	local function nodes_identical(node1, node2)
-		if node1.id ~= node2.id or node1.text ~= node2.text or #node1.children ~= #node2.children or not std.equal(node1.value, node2.value) then
-			return false
-		end
-
-		for i = 1, #node1.children do
-			if not nodes_identical(node1.children[i], node2.children[i]) then
-				return false
-			end
-		end
-
-		return true
-	end
+	local nodes_identical = require 'src.compiler.nodes_identical'
 
 	local loop_term_labels = {}
 	local loop_begn_labels = {}

@@ -241,6 +241,16 @@ function GET_SUBTYPES(tp)
 	return TYPE_ANY
 end
 
+function NON_NULL(tp)
+	local out = {}
+	for key, val in pairs(tp) do
+		if key ~= 'null' then
+			out[key] = val
+		end
+	end
+	return out
+end
+
 function MERGE_TYPES(lhs, rhs)
 	if not lhs or not rhs then return lhs or rhs end
 	if lhs.any or rhs.any then return TYPE_ANY end

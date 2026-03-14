@@ -20,6 +20,8 @@ local function set_type(token, new_type)
 	token.type = new_type
 end
 
+local nodes_identical = require 'src.compiler.nodes_identical'
+
 
 local function command(token, file)
 	local ch = token.children[1]
@@ -549,10 +551,32 @@ return {
 
 		[TOK.ternary] = {
 			function(token)
-				local type1, type2 = token.children[2].type, token.children[3].type
-				if type1 and type2 then
-					set_type(token, MERGE_TYPES(type1, type2))
+				local condition, type1, type2 = token.children[1], token.children[2].type, token.children[3].type
+				if not type1 or not type2 then return end
+
+				if condition.id == TOK.comparison and condition.text == '!=' then
+					local lhs, rhs = condition.children[1], condition.children[2]
+					local arg
+
+					if lhs.value == false or lhs.id == TOK.lit_null or (lhs.type and TYPE_IS_SUBSET(lhs, TYPE_NULL)) then
+						arg = rhs
+					elseif rhs.value == false or rhs.id == TOK.lit_null or (rhs.type and TYPE_IS_SUBSET(rhs, TYPE_NULL)) then
+						arg = lhs
+					end
+
+					if arg and nodes_identical(arg, token.children[2]) then
+						set_type(token, MERGE_TYPES(NON_NULL(type1), type2))
+						return
+					end
+				elseif condition.id == TOK.lit_null or (condition.type and TYPE_IS_SUBSET(condition.type, TYPE_NULL)) then
+					set_type(token, MERGE_TYPES(NON_NULL(type1), type2))
+					return
+				elseif condition.value == false then
+					set_type(token, type2)
+					return
 				end
+
+				set_type(token, MERGE_TYPES(type1, type2))
 			end,
 		},
 
