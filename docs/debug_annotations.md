@@ -109,3 +109,49 @@ end
 
 Obviously, the exact file structure is up to you, but that would be a totally fine way to structure it.
 And the benefits here are that not only do the annotations themselves take up very little space, but they are easy to reuse, and if you need to change the annotation's behavior, you don't have to change a million source files, only one.
+
+## Debug Arguments
+
+All debug functions - for commands or user-defined functions - take the same 3 arguments, `args`, `info`, and `json`.
+
+- **args**: A list of *AST nodes* passed to the function/command as arguments. so `args[1]` will be the first argument, etc. AST node layout is detailed below.
+- **info**: A function of the form `function info(message: string) -> nil`. Calling this function will trigger an `INFO` level compiler message with the context being the *entire* function/command call expression. Most often this would be used when either there are no arguments, or it's not just a specific argument that's at fault.
+- **json**: Allows for converting arbitrary data to and from JSON strings. The following methods are available:
+  - `json.stringify(data: any) -> string`: Serialize data to JSON.
+  - `json.parse(text: string) -> any, string|nil`: Deserialize data from a JSON string. If an error is encountered, the error message is returned as the second value.
+  - `json.verify(text: string) -> boolean`: Check if a string is in valid JSON format. Returns true if valid, false if not.
+
+### AST Node Layout
+
+```lua
+--Node layout is always the same for every type of AST node.
+NODE = {
+	id = 123, --An integer indicating the type of node this is.
+	text = 'string', --Contains the actual text the node represents (e.g. addition is `+`, boolean literals are `true` or `false`, etc.)
+	span = {
+		from = {
+			line = 123, --The line number this node begins at.
+			col = 123, --The column number this node begins at.
+		},
+		to = {
+			line = 123, --The line number this node ends at.
+			col = 123, --The column number this node ends at.
+		},
+	},
+	is_const = function() -> boolean, --Returns true if the node was able to be coerced to a constant value.
+	value = ..., --If the node was able to be coerced to a constant value, that will be stored here.
+	type = DATA_TYPE|nil, --The datatype of the node, if any was deduced. Nil if not applicable, or the compiler isn't sure on the type.
+	children = {...}, --A list of any child nodes that this node has. E.g. for `A + B`, the `+` node will have 2 children, `A` and `B`.
+	info = function(message: string) -> nil, --Similar to the main `info()` function, but the context is limited to this node instead of the whole expression.
+}
+
+--Data type layout is always the same.
+DATA_TYPE = {
+	is_subset_of = function(self, other_type: DATA_TYPE|string) -> boolean, --Returns true if other_type is a subset of self. E.g. `string` is a subset of `any` or `string|nil`, but is NOT a subset of `string|number`.
+	is_superset_of = function(self, other_type: DATA_TYPE|string) -> boolean, --Returns true if other_type is a superset of self. E.g. `string|number|nil` is a superset of `string|nil`, but `string|number` is not.
+	is_exactly = function(self, other_type: DATA_TYPE|string) -> boolean, --Returns true if other_type is exactly the same type as self.
+	tostring = function(self) -> string, --Returns the string representation of the data type.
+}
+```
+
+See [the data type docs](docs/types.md) for information on string representation of types.

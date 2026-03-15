@@ -57,11 +57,16 @@ local function run_debug_fn(token, file, dbg)
 
 	--Run the debug function
 	--(arg_token_list, warn, info, json)
+	local json = require 'src.shared.json'
 	local success, error_msg = pcall(
 		dbg.fn,
 		tokens,
 		function(msg) parse_info(token.span, msg, file) end,
-		require 'src.shared.json'
+		{
+			stringify = json.stringify,
+			parse = function(t) return json.parse(t, true) end,
+			verify = json.verify,
+		}
 	)
 	if not success then
 		parse_info(dbg.span, 'Error in @debug annotation: ' .. error_msg, dbg.file)
