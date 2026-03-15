@@ -284,35 +284,37 @@ return {
 					return
 				end
 
-				if t1 and t2 then
-					if EXACT_TYPE(t1, TYPE_OBJECT) then
-						set_type(token, TYPE_ANY)
-					else
-						if not SIMILAR_TYPE(t2, TYPE_INDEXER) then
-							parse_error(token.children[1].span,
-								'Cannot index with a value of type `' ..
-								TYPE_TEXT(t2) .. '`. Must be `array[number]` or `number`', file)
-							return
-						end
+				if not t1 or not t2 then return end
 
-						if EXACT_TYPE(t1, TYPE_STRING) then
-							set_type(token, TYPE_STRING)
-						elseif EXACT_TYPE(t2, TYPE_ANY) then
-							--If index is "any", result is either the same type as t1, or the subtype of t1
-							set_type(token, MERGE_TYPES(t1, GET_SUBTYPES(t1)))
-						elseif SIMILAR_TYPE(t2, TYPE_ARRAY) then
-							if HAS_SUBTYPES(t1) then
-								set_type(token, t1)
-							else
-								set_type(token, ARRAY_FROM_TYPE(t1))
-							end
-						elseif HAS_SUBTYPES(t1) then
-							set_type(token, GET_SUBTYPES(t1))
-						else
-							--We don't know what type of array this is, so result of non-const array index has to be "any"
-							set_type(token, TYPE_ANY)
-						end
+				if SIMILAR_TYPE(t1, TYPE_OBJECT) then
+					set_type(token, GET_SUBTYPES(t1))
+					return
+				end
+
+				if not SIMILAR_TYPE(t2, TYPE_INDEXER) then
+					print(TYPE_TEXT(t1), TYPE_TEXT(TYPE_INDEXER))
+					parse_error(token.children[1].span,
+						'Cannot index with a value of type `' ..
+						TYPE_TEXT(t2) .. '`. Must be `array[number]` or `number`', file)
+					return
+				end
+
+				if EXACT_TYPE(t1, TYPE_STRING) then
+					set_type(token, TYPE_STRING)
+				elseif EXACT_TYPE(t2, TYPE_ANY) then
+					--If index is "any", result is either the same type as t1, or the subtype of t1
+					set_type(token, MERGE_TYPES(t1, GET_SUBTYPES(t1)))
+				elseif SIMILAR_TYPE(t2, TYPE_ARRAY) then
+					if HAS_SUBTYPES(t1) then
+						set_type(token, t1)
+					else
+						set_type(token, ARRAY_FROM_TYPE(t1))
 					end
+				elseif HAS_SUBTYPES(t1) then
+					set_type(token, GET_SUBTYPES(t1))
+				else
+					--We don't know what type of array this is, so result of non-const array index has to be "any"
+					set_type(token, TYPE_ANY)
 				end
 			end,
 		},
@@ -676,7 +678,8 @@ return {
 			--Set expected type from annotations, and spit out a warning
 			--if the actual type is not compatible with the annotation.
 			function(token, file)
-				-- if not token.tags or not token.tags.type then return end
+				--Index-assignment is different!
+				if token.children[3] then return end
 
 				local tp_list = token.tags and token.tags.type or {}
 				local var = token.children[1]
