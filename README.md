@@ -792,9 +792,10 @@ end
 ```
 
 The following is a complete list of annotations and what their effects are:
-- `@brief` : Indicate a single-line description of a function, separate from the full description.
-- `@param` : Indicate a function parameter of a specific type. This is a type hint and is not enforced.
+- `@brief` : A single-line description of a function or variable.
+- `@param` : Indicate a function parameter of a specific type.
 - `@return` : Indicate a function return value of a specific type.
+- `@type`: Indicate that the variable is guaranteed to have the given data type.
 - `@allow_elision`: Allow this function to be overridden by external code.
 - `@export` : Don't mark this function or variable as dead code. Only used when running Paisley as a language server.
 - `@plasma`: Apply the `--plasma` flag to the current compilation unit.
