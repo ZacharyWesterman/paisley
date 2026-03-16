@@ -4,6 +4,18 @@ if {@1 not like '^%d+$' or int(@1) = 0} then
 end
 
 for i in {1:int(@1)} do
+	match {i} do
+		print fizzbuzz if {%% 15}
+		print buzz if {%% 5}
+		print fizz if {%% 3}
+	else
+		print {i}
+	end
+end
+
+# Alternatively, you could use the `if` statements, which is more verbose but may be more readable.
+#[[
+for i in {1:int(@1)} do
 	if {i %% 15} then
 		print fizzbuzz
 	elif {i %% 5} then
@@ -13,15 +25,5 @@ for i in {1:int(@1)} do
 	else
 		print {i}
 	end
-end
-
-# Alternatively, you could use the `match` statement, which may be more readable:
-#[[
-for i in {1:int(@1)} do
-	match {i} do
-		if {%% 15} then print fizzbuzz end
-		if {%% 3} then print fizz end
-		if {%% 5} then print buzz end
-	else print {i} end
 end
 #]]
