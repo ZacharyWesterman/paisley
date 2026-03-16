@@ -82,6 +82,7 @@ match_stmt :=
 
 match_if_stmt :=
 	| `if` match_argument `then` program `end`
+	| terse_match_statement `if` match_argument
 
 match_argument :=
 	| <text>
@@ -89,6 +90,17 @@ match_argument :=
 	| `{` (`%`|`%%`|`>`|`<`|`>=`|`<=`|`=`|`!=`|`not`? `like`|`not`? `in`|`bitwise`? `and`|`bitwise`? `or`|`bitwise`? `xor`) expression `}`
 	| `{` expression `}`
 	| `${` inline_command `}`
+
+terse_match_statement :=
+	| call_stmt
+	| let_stmt
+	| uncache_stmt
+	| break_stmt
+	| continue_stmt
+	| return_stmt
+	| delete_stmt
+	| stop_stmt
+	| command
 
 alias_stmt :=
 	| `using` argument `as` argument
