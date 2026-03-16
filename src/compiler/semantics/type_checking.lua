@@ -209,6 +209,55 @@ return {
 				end
 			end,
 		},
+
+
+		[TOK.kv_for_stmt] = {
+			function(token)
+				local key_var, val_var, expr = token.children[1], token.children[2], token.children[3]
+				if not expr.type then return end
+
+				if expr.id ~= TOK.func_call or expr.text ~= 'pairs' then
+					local key_type, val_type
+					if HAS_SUBTYPES(expr.type) then
+						key_type = GET_SUBTYPES(expr.type)
+						val_type = MERGE_TYPES(key_type, TYPE_NULL)
+					else
+						key_type = expr.type
+						val_type = TYPE_NULL
+					end
+					set_type(key_var, MERGE_TYPES(key_var.type, key_type))
+					set_type(val_var, MERGE_TYPES(val_var.type, val_type))
+					set_var(key_var, key_var.type)
+					set_var(val_var, val_var.type)
+					return
+				end
+
+				--`pairs()` expression at the top level.
+				--At this point, the child node is pretty much guaranteed to be an object or an array,
+				--but perhaps an "any" type may be here.
+				expr = expr.children[1]
+				local key_type, val_type
+				if not expr.type then return end
+
+				if EXACT_TYPE(expr.type, TYPE_ANY) then
+					key_type = MERGE_TYPES(TYPE_NUMBER, TYPE_STRING)
+					val_type = TYPE_ANY
+				end
+				if expr.type.object then
+					key_type = MERGE_TYPES(key_type, TYPE_STRING)
+					val_type = MERGE_TYPES(val_type, GET_SUBTYPES(expr.type))
+				end
+				if expr.type.array then
+					key_type = MERGE_TYPES(key_type, TYPE_NUMBER)
+					val_type = MERGE_TYPES(val_type, GET_SUBTYPES(expr.type))
+				end
+
+				set_type(key_var, MERGE_TYPES(key_var.type, key_type))
+				set_type(val_var, MERGE_TYPES(val_var.type, val_type))
+				set_var(key_var, key_var.type)
+				set_var(val_var, val_var.type)
+			end,
+		},
 	},
 
 	exit = {

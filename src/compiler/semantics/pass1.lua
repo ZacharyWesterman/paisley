@@ -653,7 +653,7 @@ return {
 						if node.text == 'chunk' then
 							--Make sure that the second parameter to chunk() is exactly 2.
 							node = node.children[2]
-							if node.value ~= 2 then
+							if node and node.value ~= 2 then
 								parse_error(node.span,
 									'The second parameter to `chunk()` in key-value for loops must be exactly 2',
 									file)
@@ -668,7 +668,6 @@ return {
 					if not node then break end
 				end
 
-				print_tokens_recursive(token)
 				parse_error(token.children[3].span,
 					'Expression in key-value for loop must contain `pairs()` or `chunk()`', file)
 			end,
