@@ -13,7 +13,7 @@ for i in {1:int(@1)} do
 	end
 end
 
-# Alternatively, you could use the `if` statements, which is more verbose but may be more readable.
+# Alternatively, you could use `if` statements, which is more verbose but may be more readable.
 #[[
 for i in {1:int(@1)} do
 	if {i %% 15} then

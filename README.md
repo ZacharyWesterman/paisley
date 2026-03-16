@@ -148,8 +148,9 @@ See [the type-casting docs](docs/type-casting.md) for more info on truthiness an
 There is also the `match` structure, which is similar to c-like languages' `switch/case` structure (or Rust's `match`). This structure is included to allow for more readable logic with less repeated code.
 ```
 match {expression} do
-	if {case 1} then ... end
-	if {case 2} then ... end
+	... if {case 1}
+	... if {case 2}
+	if {case 3} then ...complex logic, loops, etc... end
 	...
 else
 	... default action if no cases match ...
@@ -158,16 +159,21 @@ end
 For example:
 ```
 match {random_int(1,5)} do
-	if 1 then print one end
-	if 2 then print two end
-	if {> 4} then print 4 or 5 end
+	print one if 1
+	print two if 2
+	print 4 or 5 if {> 4}
 	if {like '%d+'} then error "it's a string?!" end
 else
 	print "some other number"
 end
 ```
-Note how, inside match statements, the top-level boolean operators (`=`, `!=`, `>`, `<`, `>=`, `<=`, `in`, `like`, `and`, `or`, `xor`) and bitwise operators (`bitwise and`, `bitwise or`, `bitwise xor`) don't require a left operand.
-Instead, the left operand is implied to be the value of the match expression.
+
+See how there are two possible syntaxes for the match branches.
+The first kind, `{command(s)} if {expression}` only allows a list of simple commands, that is, any block statements (e.g. `if`, `while`, etc.)are **not allowed**, however, multiple commands are fine (e.g. `print 123; stop if {> 4}` is fine).
+The second kind, `if {expression} then {command(s)} end` functions like a normal if statement; it allows any kind of statement(s) to be used inside.
+
+Note that, inside match statements, the top-level boolean operators (`=`, `!=`, `>`, `<`, `>=`, `<=`, `in`, `like`, `and`, `or`, `xor`, `%%`) and bitwise operators (`bitwise and`, `bitwise or`, `bitwise xor`) don't require a left operand.
+Instead, the left operand is implied to be the bound value of the match expression.
 If the operator is left out, then `=` is implied. e.g. `{3}` is the same as `{=3}`.
 
 Of course, like `if` statements, the `else` branch is optional and can be excluded.
