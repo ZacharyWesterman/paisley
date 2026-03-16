@@ -18,6 +18,8 @@ local continue_stmt
 local return_stmt
 local match_stmt
 local match_if_stmt
+local match_if_stmt_verbose
+local match_if_stmt_terse
 local alias_stmt
 local try_stmt
 local stop_stmt
@@ -1491,6 +1493,11 @@ end
 
 ---@brief Syntax rule for the simpler `if` blocks that are allowed inside `match` blocks.
 match_if_stmt = function(span)
+	return parser.any_of({ match_if_stmt_verbose, match_if_stmt_terse }, {})
+end
+
+---@brief Verbose syntax for the `if` statements inside `match` blocks.
+match_if_stmt_verbose = function(span)
 	nl()
 	if not parser.accept(TOK.kwd_if) then return parser.out(false) end
 
@@ -1511,6 +1518,53 @@ match_if_stmt = function(span)
 		id = TOK.if_stmt,
 		span = Span:merge(span, list[#list].span),
 		children = { list[1], list[3] },
+	}
+end
+
+---@brief Terse syntax for the `if` statements inside `match` blocks.
+match_if_stmt_terse = function(span)
+	local ok, statements = parser.one_or_more(function()
+		return parser.any_of({
+			TOK.line_ending,
+			call_stmt,
+			let_stmt,
+			delete_stmt,
+			break_stmt,
+			continue_stmt,
+			return_stmt,
+			stop_stmt,
+			command,
+		}, {}, false)
+	end)
+	if not ok then return parser.out(false) end
+
+	local pgm = {
+		id = TOK.program,
+		children = {},
+		span = Span:merge(span, statements[#statements].span)
+	}
+
+	--Remove newlines from program
+	for _, s in ipairs(statements) do
+		if s.id ~= TOK.line_ending then
+			table.insert(pgm.children, s)
+		end
+	end
+
+	local list
+	ok, list = parser.expect_list({
+		TOK.kwd_if,
+		match_argument,
+	}, {
+		'if',
+		TOK.argument,
+	}, TOK.line_ending)
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = TOK.if_stmt,
+		span = Span:merge(span, list[#list].span),
+		children = { list[2], pgm },
 	}
 end
 
@@ -1554,11 +1608,22 @@ match_expr = function(span)
 		TOK.op_or,
 		TOK.op_xor,
 		TOK.op_divisible,
-		TOK.op_mod,
-	}, {
+	}, bitwise and {
 		'and',
 		'or',
 		'xor',
+	} or {
+		'in',
+		'like',
+		'>',
+		'>=',
+		'<',
+		'<=',
+		'!=',
+		'and',
+		'or',
+		'xor',
+		'%%',
 	}, bitwise)
 	if bitwise and not lhs_op then return parser.out(false) end
 
@@ -1573,7 +1638,7 @@ match_expr = function(span)
 
 	if lhs_op then
 		return true, {
-			id = bitwise and TOK.bitwise or TOK.comparison,
+			id = op.text == '%%' and TOK.multiply or (bitwise and TOK.bitwise or TOK.comparison),
 			text = op.text,
 			span = Span:merge(span, list[1].span),
 			children = { list[1] },
