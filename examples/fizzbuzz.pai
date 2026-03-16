@@ -1,4 +1,8 @@
-if {@1 not like '^%d+$' or int(@1) = 0} then
+define {
+	!positive_number['^[1-9][0-9]*$']
+}
+
+if {@1 not like !positive_number} then
 	stderr "ERROR: Please input a positive number.\n"
 	stop
 end
