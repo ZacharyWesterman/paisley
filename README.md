@@ -62,7 +62,7 @@ Optional extra features include:
 On Linux systems, just run `./install.sh` and it will install Lua rocks for all extra features, then compile Paisley into a single file and install on your system.
 To uninstall, just run `./uninstall.sh`.
 
-**NOTE:** If you for whatever reason *can't* install **ANY** dependencies on your system, there is also a standalone build available in the latest tag. This build is available for both Linux and Windows.
+**NOTE:** If you can't or *don't want to* install **ANY** dependencies on your system, there is also a standalone build available in the latest tag. This build is available for both Linux and Windows.
 
 ## Running Paisley
 
