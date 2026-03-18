@@ -1,0 +1,752 @@
+# A Comprehensive Guide to Paisley
+
+The following is a detailed breakdown of every language feature in Paisley. For some hands-on examples of programs, check out the `examples/` or `stdlib/` directories.
+
+I'd also recommend checking out the [syntax specification](docs/syntax.l) for an organized view of the syntax.
+
+## Main program structures
+
+As a general rule, white space and line endings *do not matter* in Paisley.
+The only use of line endings is to separate commands, which can also be done with a semicolon `;` character.
+
+A Paisley script may consist of a series of comments, statements, and commands.
+- Single-line comments begin with a `#` character and continue to the end of the line.
+- Multi-line comments begin with `#[[` and continue until `#]]` is reached, or the end of the file.
+- There are 5 types of statements: conditionals (if/else/elif/match/try), loops (for/while), variable assignment, function definitions, and miscellaneous statements (return/break/etc).
+- Any text that is not a keyword or otherwise part of a statement is considered a command. More on that later.
+
+Before continuing, note that commands do not have to be hard-coded. You can put expressions in them, such as
+```
+let r = 500
+print "r = {r}, d = {3.14 * r * r}"
+```
+See how in the above, expressions are contained inside curly braces, `{}`. More on that later.
+
+## Conditionals:
+"If" statements have the following structure:
+```
+if {expression is truthy} then
+	...
+elif {expression is truthy} then
+	...
+else
+	...
+end
+```
+
+You can also leave out the "then" clause if all that's needed is the "else" clause, e.g.:
+```
+if {expression is truthy} else
+	... do this if expression is falsey ...
+end
+```
+
+Keep in mind that `if` statements convert the expression to a boolean, and so use a few rules to test an expression's truthiness: false, null, zero, empty strings, empty arrays and empty objects are all falsey, everything else is truthy.
+See [the type-casting docs](docs/type-casting.md) for more info on truthiness and other type-casting rules.
+
+There is also the `match` structure, which is similar to c-like languages' `switch/case` structure (or Rust's `match`). This structure is included to allow for more readable logic with less repeated code.
+```
+match {expression} do
+	... if {case 1}
+	... if {case 2}
+	if {case 3} then ...complex logic, loops, etc... end
+	...
+else
+	... default action if no cases match ...
+end
+```
+For example:
+```
+match {random_int(1,5)} do
+	print one if 1
+	print two if 2
+	print 4 or 5 if {> 4}
+	if {like '%d+'} then error "it's a string?!" end
+else
+	print "some other number"
+end
+```
+
+See how there are two possible syntaxes for the match branches.
+The first kind, `{command(s)} if {expression}` only allows a list of simple commands, that is, any block statements (e.g. `if`, `while`, etc.)are **not allowed**, however, multiple commands are fine (e.g. `print 123; stop if {> 4}` is fine).
+The second kind, `if {expression} then {command(s)} end` functions like a normal if statement; it allows any kind of statement(s) to be used inside.
+
+Note that, inside match statements, the top-level boolean operators (`=`, `!=`, `>`, `<`, `>=`, `<=`, `in`, `like`, `and`, `or`, `xor`, `%%`) and bitwise operators (`bitwise and`, `bitwise or`, `bitwise xor`) don't require a left operand.
+Instead, the left operand is implied to be the bound value of the match expression.
+If the operator is left out, then `=` is implied. e.g. `{3}` is the same as `{=3}`.
+
+Of course, like `if` statements, the `else` branch is optional and can be excluded.
+
+## Loops:
+While and For loops each have two variations:
+```
+# While loop
+while {expression is truthy} do
+	...
+end
+
+# Infinite loop
+while do
+	...
+end
+
+# Iterator for loop
+for value in {expression} do
+	...
+end
+
+# Key-value for loop
+for key value in {pairs(object or array)} do
+	...
+end
+```
+
+Note that the iterator (2nd from the bottom) loop type will iterate over all *values* in an array, and all *keys* in an object!
+Also note that the key-value (bottom) loop **must** contain either `pairs()` or `chunk(2)`, to ensure that the key-value pairs are valid.
+
+If you want syntax similar to Lua's integer for loops (`for i = 1, 10 do ... end`), you can use something like `for i in {1:10} do ... end`.
+
+## Variable Assignment:
+Variable assignment always starts with `let`, e.g.
+```
+let pi = 3.14
+let circumference = {2 * pi * r}
+```
+Note that the `let` keyword is required even when reassigning variables.
+For example, consider the following:
+```
+let var = 13
+var = 99
+```
+The second line will **NOT** set var's value to 13. Instead, that would attempt to run a command called "var" with the parameters `["=", "99"]`.
+
+Of course, sometimes a variable will contain an array that you don't want to overwrite, instead you just want to update a *single element* or *append* to the array.
+The following will result in var containing the array `(1, 2, 123, 4, 99)`. Note that giving negative values as the index will start counting from the end, so index of -1 will update the last element.
+```
+let var = 1 2 3 4 5
+let var{3} = 123
+let var{-1} = 99
+```
+
+Appending is just as simple. The following will result in var containing the array `(1, 2, 3, 4, 5, 6)`.
+```
+let var = 1 2 3 4 5
+let var{} = 6
+```
+
+You can also assign multiple variables at the same time.
+```
+let a b c = 1 2 3
+
+#Alternatively, you can assign variables from values in an array
+let list = {1:9}
+let a b c = {list}
+```
+
+To simply define a variable as null, you can just leave off the expression. The following all initialize variables as null.
+```
+let var
+let a b c
+let foo = {null}
+```
+
+Like in other languages, there is also a shorthand syntax for reassigning a variable based on its previous value:
+```
+let x += 1 # Add 1 to x
+let x -= 1 # Subtract 1 from x
+let x *= 2 # Multiply x by 2
+let x /= 2 # Divide x by 2
+let x //= 2 # Integer-divide x by 2
+let x %= 2 # Set x to the remainder of x / 2
+let x %%= 2 # Set x to true if 2 divides x, false otherwise.
+let x &= str # Append "str" to x
+```
+
+### Variable Index Assignment
+
+Assignment of arrays, strings and objects can all be indexed to only alter sub-elements.
+As mentioned above, this uses the `let var{expr} = expr` syntax.
+
+However, some objects may be more deeply nested. For example, suppose you have a 2D array or a complex object:
+```
+let array = {
+	[1, 2, 3],
+	[4, 5, 6],
+}
+let object = {
+	"a" => {
+		"b" => {
+			"c" => 123,
+		}
+	}
+}
+```
+
+If you want to change `array[1][2]` from `2` to `8`, or `object.a.b.c` from `123` to `456`, just add extra values in the index field, separated by commas:
+```
+let array{1, 2} = 8
+let object{'a', 'b', 'c'} = 456
+```
+
+**REMEMBER:** All variables are global, so any "re-definition" of a variable just sets it to the new value.
+
+### Variable Initialization:
+
+There is a special keyword for setting a variable's value if it hasn't been assigned already.
+```
+initial variable = {value}
+```
+Unlike the `let` keyword, `initial` can only define one variable, and it cannot insert or update sub-elements in arrays. The use of `initial` is instead a concise way to set a default value for un-initialized variables. Logically, it is identical to the following:
+```
+if {not (variable exists)} then
+	let variable = {value}
+end
+```
+
+## User-defined functions:
+User-defined functions may be either called as if they were commands, or built-in functions.
+Like commands, they can take parameters and optionally return a value, but they don't have to.
+Unlike commands, they can modify global variables, which may or may not be desired. Just keep it in mind when writing them.
+
+An example function definition and usage might look like the following:
+```
+function print_numbers
+	for i in {0 : @[1]} do
+		if {i > 30} then
+			print "whoa, too big!"
+			return
+		end
+		print {i}
+	end
+end
+
+call print_numbers 10
+call print_numbers 50
+
+function power
+	return {@[1] ^ @[2]}
+end
+
+# You can use call the same as any inline command evaluation.
+print ${call power 2 10}
+
+# However, for calling user-defined functions inside expressions, they can be used like built-in functions!
+# Just prepend a backslash to the function name.
+print {\power(2,10)}
+```
+See how in the above, the `@` variable stores any parameters passed to a function as an array, so the first parameter is `@[1]`, the second is `@[2]` and so on. For constant indexes, the square brackets are optional, e.g. `@1` and `@2` will also work, but **not** `@ 2`.
+Also see that functions return values the same way that commands do, using the inline command evaluation syntax, `${...}`.
+
+Note that it is also possible to jump to functions with an arbitrary label ID. Unlike a regular call, a dynamic call could fail at runtime, and so requires a conditional check `if call {expression} then ... else ... end` to make sure the label is valid.
+See how in the following example, the program will randomly call one of 5 possible functions, and then print "Function exists".
+```
+if call "{random_int(1,5)}" then
+	print "Function exists"
+end
+
+function 1 end
+function 2 end
+function 3 end
+function 4 end
+function 5 end
+```
+
+You can of course also pass arguments to a dynamic call.
+However, any returned value is ignored.
+
+```
+if call "add{random_int(1,5)}" 100 then
+	print "Function exists"
+end
+
+function add1
+	print {@1 + 1}
+end
+...
+function add5
+	print {@1 + 5}
+end
+```
+
+As an aside, note how in the above, the function calls happened *before* their definitions.
+This is totally valid; as long as the function is defined *somewhere*, the compiler doesn't care *where* it's defined.
+
+### User-defined Functions in Expressions:
+Inside of expressions, functions can be called in one of two ways:
+1. Using the inline command evaluation syntax `${...}`, in the same way as commands are used. E.g. `${call my_function {arg1} arg2 "arg3" etc..}`
+2. Using the special function evaluation syntax `\my_function(arg1,arg2,etc...)`. Note that calling functions like this ignores other syntax until the parentheses. So calling `\some.sub.name(arg1)` or `\+(123, 456)` will always be interpreted as function calls.
+
+These both do exactly the same thing: the latter is just syntax sugar for the former, and is supplied for convenience.
+
+### Function Memoization:
+Some functions may take a very long time to compute values, when we only really need them to be computed once for any given input.
+For these kinds of functions, the `cache` keyword can be used to memoize the function and only compute the results once.
+See the following recursive fibonacci example:
+```
+cache function fib
+	if {@1 < 2} then return {@1} end
+	return {\fib(@1 - 1) + \fib(@1 - 2)}
+end
+```
+Subsequent calls to `fib` will be *very* fast, because each fibonacci number only has to be computed once.
+
+If it turns out that you need to invalidate a specific function's cache, you can manually do so:
+```
+break cache fib
+```
+If the function is not memoized, this of course does nothing.
+
+In short, memoization can be a good way to get a significant performance boost, basically for free (there *is* a slight runtime overhead, but it's negligible). Do keep in mind that any side effects (e.g. running commands, modifying variables, etc) of the called function will not trigger if the result is already cached, so do not use this feature if you *want* your function to always cause side effects.
+
+### Function Aliases:
+
+Some functions may have very long names that are unwieldy to type. In such cases you can create an alias with the `using` keyword:
+```
+function very_long_name_thats_annoying_to_type end
+using very_long_name_thats_annoying_to_type as short_name
+call short_name
+
+#If your function name has at least one period in it,
+#then you don't have to manually write the alias name.
+#It will be deduced from the text after the last period.
+function example.sub end
+using example.sub
+call sub
+```
+Do note that aliases are restricted to their scope, for example:
+```
+function example.sub end
+if {x} then
+	using example.sub as mysub
+	call mysub #This is valid.
+end
+call mysub #This is an error; "mysub" alias is not defined in this scope.
+```
+You can also alias functions according to a wildcard, if you end the function name with an asterisk.
+```
+function sub1 end
+function sub2 end
+using sub* as * #Can now do `call 1` and `call 2`
+using sub* as s* #Can now do `call s1` and `call s2`
+using sub* as *s #Can now do `call 1s` and `call 2s`
+using nonexistent.sub.* #Nothing happens unless at least 1 function matches the pattern.
+```
+Note that aliases do NOT work with dynamic calls; those require the full function name, to avoid any ambiguity at runtime.
+
+## Macros:
+Macros are another good way to reuse code, however unlike functions, these are specifically for reusing parts of expressions.
+Macros are defined with the syntax `![expression]`, and are referred to with that same `!` identifier, just without the brackets. Note that the `!` can be any number of exclamation marks, optionally followed by an alphanumeric identifier. So for example, `!!`, `!2`, and `!!macro_1` are all valid macro identifiers, all referring to different macros. Note that macros are not functions; they don't take any parameters, instead they behave exactly as if you had written the contained expression instead of the macro.
+
+Below is an example of macro usage. Both the top and bottom commands will print 5 random numbers in the range 0-100.
+```
+print {![random_int(0, 100)], !, !, !, !}
+
+#do the same thing, but using the define keyword
+define {!rnd[random_int(0, 100)]}
+print {!rnd, !rnd, !rnd, !rnd, !rnd}
+```
+Note that either of the above commands are equivalent to the following:
+```
+print {random_int(0, 100), random_int(0, 100), random_int(0, 100), random_int(0, 100), random_int(0, 100)}
+```
+
+Another fun use of macros is the ability to create auto-incrementing values that are resolved at compile time:
+```
+define {![0]}
+let a = {![!+1]} # `a` is set to 1.
+let b = {![!+1]} # `b` is set to 2.
+let c = {![!+1]} # `c` is set to 3.
+```
+
+Note that, unlike variables, macros are restricted to their scope. Thus, for example, if you define a macro in a function, you cannot use it outside of the function.
+
+## Exceptions:
+Sometimes, parts of a program **will** fail, and the failure point is not always easy to predict. Many languages use exceptions to gracefully handle errors, and Paisley does so as well. To raise an exception, use the `error` command along with any message. And then to handle an exception, you can use a `try/catch` block, where the `catch` can have an optional variable to set.
+
+```
+function this_errors
+	error "your error message"
+end
+
+try
+	call this_errors
+catch e
+	print {json_encode(e)}
+end
+```
+The output variable (in this case `e`) will always be an object that looks like the following:
+```
+{
+	"message": "your error message",
+	"line": 6,
+	"stack": [2],
+	"type": "TypeName" or null,
+}
+```
+Where `line` is the line where the exception was caught, and `stack` is the line numbers for the function call stack.
+
+## Scopes:
+Every time you enter into a new "block" of code, the scope is incremented.
+For global variables this doesn't matter, but macros for example cannot exist outside of the scope where they were defined.
+Any structure that naturally isolates a block of code increments the scope.
+```
+#[[ This is the global scope #]]
+
+while ... do #[[ New scope A #]] end
+#[[ Scope A doesn't exist here #]]
+
+for ... do #[[ New scope B #]] end
+#[[ Scope B doesn't exist here #]]
+
+if ... then
+	#[[ New scope C #]]
+elif ... then
+	#[[ New scope D. C doesn't exist here #]]
+else
+	#[[ New scope E. D doesn't exist here #]]
+end
+#[[ Scopes C, D, E don't exist here #]]
+
+match ... do
+	if ... then #[[ New scope F #]] end
+else
+	# You get the picture
+end
+
+function my_sub
+	# You guessed it! This function has its own scope.
+end
+
+try
+	# Scope F
+except err
+	# Scope G
+end
+```
+
+In some cases, you may want to intentionally create a scope to isolate a block of code. You can do so with the `do ... end` block:
+```
+# The real value for pi is about 3.14
+define {!pi[3.14]}
+
+do
+	# But sometimes, 3 might be a good enough estimate
+	define {!pi[3]}
+
+	print "My estimate for pi is {!pi}"
+end
+
+print "The real value of pi is {!pi}"
+```
+
+## Importing other files:
+To allow organization and minimize bloat of individual scripts, Paisley does allow importing of other scripts with the `require` keyword. You can even import multiple files in the same statement.
+
+```
+#Import ./file1.pai or ./file1.paisley
+require file1
+
+#Import:
+# ./file2.pai
+# ./path/to/file3.pai
+# ./"filename with spaces".pai
+require file2 path.to.file3 "filename with spaces"
+```
+
+Note that these imports follow a strict top-down file structure (you can never go up a directory) and importing the same file more than once is an error.
+
+## Other statements:
+- `break` or `break 1` or `break 2` etc, will exit as many while/for loops as are specified (defaults to 1 if not specified)
+- `continue` or `continue 1` or `continue 2` etc, will skip an iteration of as many while/for loops as are specified (defaults to 1 if not specified)
+- `delete` will delete the variables listed, e.g. `delete x y z`
+- `stop` will immediately halt program execution.
+- `return` returns from a function back to the caller.
+- `define` will parse the following expression(s) but will ignore them at run time. This is most useful for defining macros outside of where they're used.
+
+## Expressions:
+First and foremost, expressions will only be evaluated inside curly braces, `{}`. If you place an expression outside of braces, it will be treated as plain text. For example `print {1+2}` will print "3" but `print 1+2` will print the actual string "1+2".
+
+Expressions can be placed anywhere inside a command or statement operand. In addition, they can also be placed inside double-quoted strings (e.g. `"a = {1+2}"` gives `a = 3`) to perform easy string interpolation. Note that single-quoted strings **do not** interpolate expressions, so for example `'a = {1+2}'` would give exactly `a = {1+2}` without parsing any expression.
+
+If you would like to avoid interpolation in double-quoted strings, simply escape the opening curly brace with a backslash, e.g.
+```
+print "the expression \{1+2} evaluates to {1+2}"
+print "you can also put \"quotes\" and line breaks (\n) inside strings!"
+```
+There are a few special escape sequences:
+- `\n` outputs a line ending.
+- `\t` outputs a tab.
+- `\r` outputs a carriage return.
+- `\v` outputs a vertical tab.
+- `\"` outputs a double quote.
+- `\'` outputs a single quote.
+- `\{` outputs a left curly brace.
+- `\}` outputs a right curly brace.
+- `\ ` (backslash + space) outputs a non-breaking space.
+- `\x` followed by any 2 hexadecimal digits outputs the respective byte.
+- `\u` followed by any 4 hexadecimal digits outputs the respective Unicode character.
+- `\U` followed by any 8 hexadecimal digits outputs the respective Unicode character.
+
+There are also a bunch of escape sequences that correspond to emoticons, included for convenience:
+- `^-^` outputs `😌`
+- `:relaxed:` outputs `😌`
+- `:P` outputs `😋`
+- `:yum:` outputs `😋`
+- `<3` outputs `❤️`
+- `:heart_eyes:` outputs `❤️`
+- `B)` outputs `😎`
+- `:sunglasses:` outputs `😎`
+- `:D` outputs `😀`
+- `:grinning:` outputs `😀`
+- `^o^` outputs `😄`
+- `:smile:` outputs `😄`
+- `XD` outputs `😆`
+- `:laughing:` outputs `😆`
+- `:lol:` outputs `😆`
+- `=D` outputs `😃`
+- `:smiley:` outputs `😃`
+- `:sweat_smile:` outputs `😅`
+- `DX` outputs `😱`
+- `:tired_face:` outputs `😫`
+- `;P` outputs `😜`
+- `:stuck_out_tongue_winking_eye:` outputs `😜`
+- `:-*` outputs `😘`
+- `;-*` outputs `😘`
+- `:kissing_heart:` outputs `😘`
+- `:kissing:` outputs `😘`
+- `:rofl:` outputs `🤣`
+- `:)` outputs `🙂`
+- `:slight_smile:` outputs `🙂`
+- `:(` outputs `🙁`
+- `:frown:` outputs `🙁`
+- `:frowning:` outputs `🙁`
+
+Expressions also give access to a full suite of operators and functions, listed below:
+
+### Operators:
+
+Paisley has a suite of operators that can be used inside expressions.
+Along with the regular arithmetic operators, there are also ternary and array-related operators.
+[See here for a complete list.](docs/operators.md)
+
+### Allowed values:
+- Hexadecimal numbers, `0xFFFF`
+- Octal numbers, `0c7777`
+- Binary numbers, `0b1111`
+- Decimal numbers, `1.2345` or `12345` or `1_000_000`. Note that underscores are ignored by the compiler, you can use them for readability purposes.
+- Booleans, `true` or `false`
+- `null`, equivalent to Lua's "nil"
+- Strings with interpolation allowed, `"some text"`
+- Strings with NO interpolation, `'some text'`
+- Multi-line strings with interpoation, `"""some text"""`
+- Multi-line strings with NO interpolation, `'''some text'''`
+- Variables, `var_name`, `x`, etc.
+- `@`, the "parameter list" variable, an array containing any values passed to the current function. If used outside of a function, it instead contains any arguments passed to the script.
+- `$`, the "command list" variable, an array containing the names of all the commands the current script has access to.
+- `_VARS`, the "variables" variable, an object that contains the names and values of all variables in the current script as key-value pairs.
+- `_VERSION`, the "version number" variable, a string formatted as `MAJOR.MINOR.PATCH`.
+- `_ENV`, the "environment variables" variable, an object that reads an environment variable when indexed. Note that unlike other variables, only individual keys of `_ENV` are allowed to be accessed, not the entire object.
+- Arrays, e.g. `(1,2,3,4,5)`. See [the docs for details](docs/arrays.md).
+- Objects, e.g. `("a" => 1, "b" => 2)`. See [the docs for details](docs/objects.md).
+
+### Built-in functions:
+
+Paisley has a **lot** of functions included in its standard library. [See here for a complete list.](docs/functions.md)
+
+Note that functions can be called in one of two ways:
+1. The usual syntax, e.g. `split(var, delim)`
+2. Using dot-notation, e.g. `var.split(delim)`
+
+Both are exactly equivalent, the latter syntax is included simply for convenience.
+
+### Arrays in expressions
+See the [array documentation](docs/arrays.md) for a full run-down of how arrays work.
+
+### Objects in expressions
+See the [object documentation](docs/objects.md) for a full run-down of how objects work.
+
+### List comprehension
+Often you need to take an array and mutate every element in some way. While you could very well use a for loop for this, this operation comes up often enough that there is a convenient shorthand for it. See how in the following script, we're taking the array `x` and multiplying every element by `2`, then assigning the result to `y`.
+```
+let x = {1,2,3}
+let y = {,}
+for i in {x} do
+	let y{} = {i * 2}
+end
+```
+The above could be written much more succinctly as the following:
+```
+let x = {1,2,3}
+let y = {i * 2 for i in x}
+```
+
+Those of you familiar with Python will realize where the syntax comes from, and like in Python, you can filter out array elements based on a condition. See how in the following script, `x` is all numbers from 1 to 100, and we're selecting only those numbers divisible by `5`, and storing the result in `y`.
+```
+let x = {1:100}
+let y = {,}
+for i in {x} do
+	if {i % 5 = 0} then
+		let y{} = {i}
+	end
+end
+```
+The above could instead be written as the following:
+```
+let x = {1:100}
+let y = {i for i in x if i % 5 = 0}
+```
+
+One important caveat to note about list comprehension is that the intermediate variable does not actually change the values of any global variables.
+So, while the above examples are *computationally* the same, list comprehension has the benefits of being more terse, more performant, and encapsulated.
+For example,
+```
+let i = 123
+let values = {i + 1 for i in 0:9}
+print {i} # This is still `123`! The list comprehension did not affect the actual variable `i`.
+```
+
+## Commands
+
+### Inline Command Evaluation
+Since commands can return values to Paisley after execution, you can also use those values in further calculations. For example:
+```
+#Get an integer value representing in-game time, and convert it to a human-readable format
+let t = {floor(${time})}
+let hour = {t // 3600}
+let minute = {(t // 60) % 60}
+let second = {t % 60}
+print {hour ":" minute ":" second}
+```
+Of course, there is also a simpler version that does the same thing:
+```
+print {${time}.clocktime()[1:3].join(":")}
+```
+
+### Built-in commands
+For ease of use and consistency, there are 7 built-in commands that will always be the same regardless of what the target environment is.
+- `time`: Returns a number representing the clock time. If in a game engine, this is the in-game time. If on PC, this is the same as `systime`. Arguments are ignored.
+- `systime`: Returns a number representing the system time (seconds since midnight). Arguments are ignored.
+- `sysdate`: Returns a numeric array containing the system day, month, and year (in that order). Arguments are ignored.
+- `print`: Prints any params to the 'print' or 'stdout' output.
+- `error`: Raises an exception with the line number, message, and stack info. If not caught, outputs the error and ends the program.
+- `sleep`: Pause script execution for the given amount of seconds. If the first argument is not a positive number, delay defaults to minimum value (0.02s).
+- `.`: No-op. Calculates the value of its arguments and discards the result. Returns null.
+
+In the PC build, the following commands are also available:
+- `clear`: Clears the screen.
+- `stdin`: Reads a line of text from stdin.
+- `stdout`: Prints text to stdout, without a line ending.
+- `stderr`: Prints text to stderr, without a line ending.
+- `=`: Executes a unix command, capturing the return value. Run with no params to output the result of the last command.
+- `?`: Executes a unix command, capturing the stdout output. Run with no params to output the result of the last command.
+- `!`: Executes a unix command, capturing the stderr output. Run with no params to output the result of the last command.
+- `?!`: Executes a unix command, capturing both the stdout and stderr output. Run with no params to output the result of the last command.
+
+### Shell command coersion
+If the `--shell` or `-l` flag is passed, then Paisley will assume that any undefined commands are programs available on this system.
+```
+# Plain commands will not capture stdout or stderr, so the following are equivalent:
+wget https://127.0.0.1/example
+= wget https://127.0.0.1/example
+
+# But inline command evaluation captures stdout, so the following are equivalent:
+let x = ${wget https://127.0.0.1/example}
+let x = ${? wget https://127.0.0.1/example}
+# And NOT equivalent to the following which captures the RETURN value of wget:
+let x = ${= wget https://127.0.0.1/example}
+```
+
+### Command piping
+
+Like Bash, the stdout of commands can be piped into other commands, or from and to files. This uses the same syntax as bash, for familiarity, and because the syntax is simple enough.
+```
+echo "some text" > my_file.txt
+cat my_file.txt | grep "some"
+grep "something <<<"text input"
+grep "something" <"file input"
+```
+There is one difference however, and it's that the stdout and stderr files are not called `1` and `2` respectively, instead they are `?` and `!` to remain consistent with other syntax. For example, to pipe stderr into a file:
+```
+wget https://127.0.0.1/example !>my_file.txt
+```
+Also note that unlike in Bash, you must explicitly specify the input stream:
+```
+echo "text" >file.txt #This will not work!
+
+echo "text" ?>file.text #Pipes stdout into the file.
+echo "text" !>file.text #Pipes stderr into the file.
+echo "text" ?!>file.text #Pipes BOTH stdout and stderr into the file.
+echo "text" !>? #Pipes stderr to stdout.
+```
+
+## Comments
+
+As mentioned briefly at the top, comments start with `#` and continue until the end of the line.
+Comments can also be used to annotate parts of the program and slightly modify compiler behavior.
+
+### Comment annotations
+
+Every comment annotation starts with `@`. They will look something like the following:
+```
+#Some example function
+#@param n number The number to square.
+#@return number The square of the input number.
+function square
+	return {@1 * @1}
+end
+```
+
+The following is a complete list of annotations and what their effects are:
+- `@brief` : A single-line description of a function or variable.
+- `@param` : Indicate a function parameter of a specific type.
+- `@return` : Indicate a function return value of a specific type.
+- `@type`: Indicate that the variable is guaranteed to have the given data type.
+- `@allow_elision`: Allow this function to be overridden by external code.
+- `@export` : Don't mark this function or variable as dead code. Only used when running Paisley as a language server.
+- `@shell`: Apply the `--shell` flag to the current compilation unit.
+- `@sandbox`: Apply the `--sandbox` flag to the current compilation unit. Overrides `--shell`.
+- `@plasma`: Apply the `--plasma` flag to the current compilation unit. Overrides `--shell` and `--sandbox`.
+- `@commands`: Postpone "command not found" errors for the given command(s) until run-time, and assume that they return the given types (e.g. `#@commands cmd1:type1 cmd2:type2`)
+- `@debug`: Validate command or function arguments at compile time (e.g. `#@debug command_name` ... `#@end`). see the [docs on debug annotations](docs/debug_annotations.md) for more info.
+
+## Conditional compilation via Compiler Directives
+
+In very rare cases, it may be beneficial to only parse code if certain compiler flags are set.
+In C/C++, this is done with macros like `#ifdef DEF_NAME ... #endif`.
+
+You can achieve similar functionality in Paisley, where code will not be parsed if certain conditions aren't met at compile time.
+In paisley, compiler directives start with `$` and continue until a line ending, `;` or `$`.
+They cannot be used inside strings or expressions, but they can wrap expressions on the same line.
+
+```
+# Conditions can be chained with `and`, `or` and `()`.
+$if (version >= 1.2.3 or build = desktop) and target = lua
+...
+$elif <expression>
+...
+$else
+...
+$end
+
+# You can also warn or error at compile time if certain conditions aren't met
+$if version < 1
+$error "At least version 1.0.0 is required!"
+$elif version >= 2
+$warn "This might work in version 2.x.x, but we're not sure."
+$else
+$info "You've got the correct version :)"
+$end
+```
+
+```
+# This example uses the deprecated length operator if still supported.
+# Otherwise, the `len()` function is used.
+let array = {0:9}
+let length = $if version >= 2$ {len(array)} $else$ {&array} $end$
+print {length}
+```
+
+The following build flags are supported:
+- `version`: The Paisley version at compile time, formatted as `X.Y.Z`.
+- `build`: The build of Paisley that's being targeted. Valid values are `plasma` or `desktop`.
+- `target`: The runtime that's being targeted. Valid values are `lua`, `c` or `cpp`.
