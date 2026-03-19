@@ -1697,38 +1697,39 @@ try_stmt = function(span)
 	if not parser.accept(TOK.kwd_try) then return parser.out(false) end
 
 	local ok, list
-	local has_var = true
 
-	--`try` program `catch` text? program `end`
+	--`try` program `catch` exception_type (`as` variable)? program `end`
 	ok, list = parser.expect_list({
 		program,
 		TOK.kwd_catch,
-		function()
-			local ok, child = parser.accept(TOK.text)
-			if not ok then has_var = false end
-			return true, child
-		end,
-		program,
-		TOK.kwd_end,
+		TOK.text,
 	}, {
 		TOK.program,
 		'catch',
-		'variable name',
-		TOK.program,
-		'end',
+		'exception_type',
 	}, TOK.line_ending)
 	if not ok then return parser.out(false) end
+
+	local kids = { list[1], list[3] }
+
+	local var
+	if parser.accept(TOK.kwd_as) then
+		ok, var = parser.expect(TOK.text, 'variable')
+		if not ok then return parser.out(false) end
+	end
+
+	ok, list = parser.expect_list({ program, TOK.kwd_end }, { 'catch block', 'end' }, TOK.line_ending)
+	if not ok then return parser.out(false) end
+	table.insert(kids, list[1])
+
+	--Note that the variable name always goes last since it's optional
+	if var then table.insert(kids, var) end
 
 	local node = {
 		id = TOK.try_stmt,
 		span = Span:merge(span, list[#list].span),
-		children = {
-			list[1],
-			list[4],
-		},
+		children = kids,
 	}
-	--Note that the variable always goes last since it's optional
-	if has_var then table.insert(node.children, list[3]) end
 
 	return true, node
 end
