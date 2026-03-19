@@ -47,7 +47,7 @@ local function ast_error(symbol, valid_tokens)
 		error_msg = error_msg .. last .. '.'
 	end
 
-	parse_error((token or last_token).span, error_msg, file_name)
+	parse_error(((token.id ~= TOK.line_ending and token) or last_token).span, error_msg, file_name)
 end
 
 ---@brief Get the next symbol from the token list

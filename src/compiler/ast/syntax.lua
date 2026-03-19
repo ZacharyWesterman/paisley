@@ -25,6 +25,7 @@ local try_stmt
 local stop_stmt
 local import_stmt
 local scope_stmt
+local error_stmt
 local command
 
 --Expressions
@@ -1533,6 +1534,7 @@ match_if_stmt_terse = function(span)
 			continue_stmt,
 			return_stmt,
 			stop_stmt,
+			error_stmt,
 			command,
 		}, {}, false)
 	end)
@@ -1829,6 +1831,32 @@ scope_stmt = function(span)
 	}
 end
 
+error_stmt = function(span)
+	if not parser.accept(TOK.kwd_error) then return parser.out(false) end
+
+
+	local ok, arg = parser.expect(argument, 'error message')
+	if not ok then return parser.out(false) end
+
+	local except
+	if parser.accept(TOK.kwd_as) then
+		ok, except = parser.expect(TOK.text, { 'exception type' })
+		if not ok then return parser.out(false) end
+	else
+		except = {
+			id = TOK.text,
+			text = 'exception',
+			span = span,
+		}
+	end
+
+	return true, {
+		id = TOK.error_stmt,
+		span = Span:merge(span, arg.span),
+		children = { arg, except },
+	}
+end
+
 statement = function()
 	return parser.any_of({
 		TOK.line_ending,
@@ -1848,6 +1876,7 @@ statement = function()
 		stop_stmt,
 		--[[minify-delete]] import_stmt, --[[/minify-delete]]
 		scope_stmt,
+		error_stmt,
 		command,
 	}, {}, false)
 end

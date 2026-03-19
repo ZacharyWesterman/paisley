@@ -37,6 +37,7 @@ TOK = {
 	kwd_try = k(),
 	kwd_catch = k(),
 	catch_expr = k(),
+	kwd_error = k(),
 
 	expr_open = k(),
 	expr_close = k(),
@@ -147,6 +148,7 @@ TOK = {
 	alias_stmt = k(),
 	try_stmt = k(),
 	scope_stmt = k(),
+	error_stmt = k(),
 	statement = k(),
 
 	lit_array = k(), --This only gets created during constant folding

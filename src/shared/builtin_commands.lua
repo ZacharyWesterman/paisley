@@ -4,7 +4,6 @@ BUILTIN_COMMANDS = {
 	"time:number",
 	"sleep:null",
 	"print:null",
-	"error:null",
 	"systime:number",
 	"sysdate:array[number]",
 	".:null",

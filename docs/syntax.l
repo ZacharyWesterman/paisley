@@ -16,6 +16,7 @@ statement :=
 	| match_stmt
 	| alias_stmt
 	| try_stmt
+	| error_stmt
 	| delete_stmt
 	| stop_stmt
 	| import_stmt
@@ -100,6 +101,7 @@ terse_match_statement :=
 	| return_stmt
 	| delete_stmt
 	| stop_stmt
+	| error_stmt
 	| command
 
 alias_stmt :=
@@ -114,6 +116,10 @@ stop_stmt :=
 
 import_stmt :=
 	| `require` text+
+
+error_stmt :=
+	| `error` argument `as` text
+	| `error` argument
 
 command :=
 	| (argument | pipeio)+
