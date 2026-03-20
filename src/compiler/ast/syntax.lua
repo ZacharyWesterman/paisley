@@ -22,6 +22,7 @@ local match_if_stmt_verbose
 local match_if_stmt_terse
 local alias_stmt
 local try_stmt
+local catch_block
 local stop_stmt
 local import_stmt
 local scope_stmt
@@ -1696,42 +1697,46 @@ end
 try_stmt = function(span)
 	if not parser.accept(TOK.kwd_try) then return parser.out(false) end
 
-	local ok, list
+	local ok, body, list
+	ok, body = parser.expect(program, {})
 
-	--`try` program `catch` exception_type (`as` variable)? program `end`
-	ok, list = parser.expect_list({
-		program,
-		TOK.kwd_catch,
-		TOK.text,
-	}, {
-		TOK.program,
-		'catch',
-		'exception_type',
-	}, TOK.line_ending)
+	ok, list = parser.one_or_more(catch_block)
 	if not ok then return parser.out(false) end
 
-	local kids = { list[1], list[3] }
+	if not parser.expect(TOK.kwd_end) then return parser.out(false) end
 
-	local var
-	if parser.accept(TOK.kwd_as) then
-		ok, var = parser.expect(TOK.text, 'variable')
-		if not ok then return parser.out(false) end
-	end
-
-	ok, list = parser.expect_list({ program, TOK.kwd_end }, { 'catch block', 'end' }, TOK.line_ending)
-	if not ok then return parser.out(false) end
-	table.insert(kids, list[1])
-
-	--Note that the variable name always goes last since it's optional
-	if var then table.insert(kids, var) end
-
-	local node = {
+	table.insert(list, 1, body)
+	return true, {
 		id = TOK.try_stmt,
 		span = Span:merge(span, list[#list].span),
-		children = kids,
+		children = list,
 	}
+end
 
-	return true, node
+catch_block = function(span)
+	if parser.peek(1)[1] == TOK.kwd_end then return parser.out(false) end
+
+	if not parser.expect(TOK.kwd_catch, { 'catch', 'end' }) then return parser.out(false) end
+
+	local ok, list = parser.one_or_more(TOK.text)
+	if not ok then return parser.out(false) end
+
+	if parser.accept(TOK.kwd_as) then
+		local var
+		ok, var = parser.expect(TOK.text, 'variable name')
+		if not ok then return parser.out(false) end
+		table.insert(list, var)
+	end
+
+	local body
+	ok, body = parser.expect(program, {})
+	table.insert(list, 1, body)
+
+	return true, {
+		id = TOK.catch_block,
+		span = Span:merge(span, body.span),
+		children = list,
+	}
 end
 
 ---@brief Syntax rule for `delete` statement

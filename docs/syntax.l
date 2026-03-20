@@ -109,7 +109,11 @@ alias_stmt :=
 	| `using` argument
 
 try_stmt :=
-	| `try` program `catch` <text>? program `end`
+	| `try` program catch_block+ `end`
+
+catch_block :=
+	| `catch` text+
+	| `catch` text+ as text
 
 stop_stmt :=
 	| `stop`
