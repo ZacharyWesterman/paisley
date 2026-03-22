@@ -1725,6 +1725,7 @@ catch_block = function(span)
 		local var
 		ok, var = parser.expect(TOK.text, 'variable name')
 		if not ok then return parser.out(false) end
+		var.id = TOK.var_assign
 		table.insert(list, var)
 	end
 
