@@ -368,9 +368,20 @@ function this_errors
 	error "your error message"
 end
 
+function other_error
+	error "another error message" as my_exception
+end
+
 try
 	call this_errors
-catch e
+	call other_error
+catch exception_type1 exception_type2
+	# You can handle multiple exception types with the same logic.
+	# And capturing the variable is optional.
+catch my_exception as e
+	# other_error function would land here (if it were to get called)
+catch exception as e
+	# this_errors function will land here
 	print {json_encode(e)}
 end
 ```
@@ -380,7 +391,7 @@ The output variable (in this case `e`) will always be an object that looks like 
 	"message": "your error message",
 	"line": 6,
 	"stack": [2],
-	"type": "TypeName" or null,
+	"type": "exception_type",
 }
 ```
 Where `line` is the line where the exception was caught, and `stack` is the line numbers for the function call stack.
