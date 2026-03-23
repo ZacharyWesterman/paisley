@@ -210,7 +210,6 @@ return {
 			end,
 		},
 
-
 		[TOK.kv_for_stmt] = {
 			function(token)
 				local key_var, val_var, expr = token.children[1], token.children[2], token.children[3]
@@ -257,6 +256,16 @@ return {
 				set_var(key_var, key_var.type)
 				set_var(val_var, val_var.type)
 			end,
+		},
+
+		[TOK.catch_block] = {
+			function(token)
+				local var = token.children[#token.children]
+				if var.id == TOK.var_assign then
+					set_var(var, TYPE_OBJECT)
+					set_type(var, TYPE_OBJECT)
+				end
+			end
 		},
 	},
 
@@ -756,15 +765,6 @@ return {
 					end
 				end
 			end,
-		},
-
-		[TOK.try_stmt] = {
-			function(token)
-				if token.children[3] then
-					set_var(token.children[3], TYPE_OBJECT)
-					token.children[3].type = TYPE_OBJECT
-				end
-			end
 		},
 	},
 }

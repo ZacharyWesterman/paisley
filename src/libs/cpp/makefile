@@ -41,5 +41,8 @@ functions/pairs.o: functions/pairs.cpp functions/pairs.hpp
 actions/pop_catch_or_throw.o: actions/pop_catch_or_throw.cpp actions/pop_catch_or_throw.hpp
 	$(CXX) $(CXXFLAGS) -Wno-maybe-uninitialized -c $< -o $@
 
+actions/throw_exception.o: actions/throw_exception.cpp actions/throw_exception.hpp
+	$(CXX) $(CXXFLAGS) -Wno-maybe-uninitialized -c $< -o $@
+
 %.o: %.cpp %.hpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@

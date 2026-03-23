@@ -27,4 +27,5 @@ return {
 	--[[minify-delete]]['require'] = TOK.kwd_import_file, --[[/minify-delete]]
 	['try'] = TOK.kwd_try,
 	['catch'] = TOK.kwd_catch,
+	['error'] = TOK.kwd_error,
 }

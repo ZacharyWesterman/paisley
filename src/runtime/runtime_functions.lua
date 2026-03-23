@@ -261,6 +261,12 @@ COMMANDS = {
 	require 'src.runtime.actions.variable_insert',
 	--DESTRUCTURE VALUE INTO A LIST OF VARIABLES
 	require 'src.runtime.actions.destructure',
+	--COPY THE EXCEPTION TYPE ONTO THE STACK
+	require 'src.runtime.actions.get_exception_type',
+	--PUSH AN EXCEPTION ONTO THE STACK
+	require 'src.runtime.actions.push_exception',
+	--THROW AN EXCEPTION
+	require 'src.runtime.actions.throw_exception',
 }
 
 return vm

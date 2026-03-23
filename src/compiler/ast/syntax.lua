@@ -22,9 +22,11 @@ local match_if_stmt_verbose
 local match_if_stmt_terse
 local alias_stmt
 local try_stmt
+local catch_block
 local stop_stmt
 local import_stmt
 local scope_stmt
+local error_stmt
 local command
 
 --Expressions
@@ -1533,6 +1535,7 @@ match_if_stmt_terse = function(span)
 			continue_stmt,
 			return_stmt,
 			stop_stmt,
+			error_stmt,
 			command,
 		}, {}, false)
 	end)
@@ -1694,41 +1697,47 @@ end
 try_stmt = function(span)
 	if not parser.accept(TOK.kwd_try) then return parser.out(false) end
 
-	local ok, list
-	local has_var = true
+	local ok, body, list
+	ok, body = parser.expect(program, {})
 
-	--`try` program `catch` text? program `end`
-	ok, list = parser.expect_list({
-		program,
-		TOK.kwd_catch,
-		function()
-			local ok, child = parser.accept(TOK.text)
-			if not ok then has_var = false end
-			return true, child
-		end,
-		program,
-		TOK.kwd_end,
-	}, {
-		TOK.program,
-		'catch',
-		'variable name',
-		TOK.program,
-		'end',
-	}, TOK.line_ending)
+	ok, list = parser.one_or_more(catch_block)
 	if not ok then return parser.out(false) end
 
-	local node = {
+	if not parser.expect(TOK.kwd_end) then return parser.out(false) end
+
+	table.insert(list, 1, body)
+	return true, {
 		id = TOK.try_stmt,
 		span = Span:merge(span, list[#list].span),
-		children = {
-			list[1],
-			list[4],
-		},
+		children = list,
 	}
-	--Note that the variable always goes last since it's optional
-	if has_var then table.insert(node.children, list[3]) end
+end
 
-	return true, node
+catch_block = function(span)
+	if parser.peek(1)[1] == TOK.kwd_end then return parser.out(false) end
+
+	if not parser.expect(TOK.kwd_catch, { 'catch', 'end' }) then return parser.out(false) end
+
+	local ok, list = parser.one_or_more(TOK.text)
+	if not ok then return parser.out(false) end
+
+	if parser.accept(TOK.kwd_as) then
+		local var
+		ok, var = parser.expect(TOK.text, 'variable name')
+		if not ok then return parser.out(false) end
+		var.id = TOK.var_assign
+		table.insert(list, var)
+	end
+
+	local body
+	ok, body = parser.expect(program, {})
+	table.insert(list, 1, body)
+
+	return true, {
+		id = TOK.catch_block,
+		span = Span:merge(span, body.span),
+		children = list,
+	}
 end
 
 ---@brief Syntax rule for `delete` statement
@@ -1829,6 +1838,32 @@ scope_stmt = function(span)
 	}
 end
 
+error_stmt = function(span)
+	if not parser.accept(TOK.kwd_error) then return parser.out(false) end
+
+
+	local ok, arg = parser.expect(argument, 'error message')
+	if not ok then return parser.out(false) end
+
+	local except
+	if parser.accept(TOK.kwd_as) then
+		ok, except = parser.expect(TOK.text, { 'exception type' })
+		if not ok then return parser.out(false) end
+	else
+		except = {
+			id = TOK.text,
+			text = 'exception',
+			span = span,
+		}
+	end
+
+	return true, {
+		id = TOK.error_stmt,
+		span = Span:merge(span, arg.span),
+		children = { arg, except },
+	}
+end
+
 statement = function()
 	return parser.any_of({
 		TOK.line_ending,
@@ -1848,6 +1883,7 @@ statement = function()
 		stop_stmt,
 		--[[minify-delete]] import_stmt, --[[/minify-delete]]
 		scope_stmt,
+		error_stmt,
 		command,
 	}, {}, false)
 end

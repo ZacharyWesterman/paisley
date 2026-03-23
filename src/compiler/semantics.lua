@@ -484,7 +484,7 @@ function SemanticAnalyzer(root, root_file)
 	}
 
 	local this_var = nil
-	recurse(root, { TOK.var_assign, TOK.inline_command, TOK.try_stmt }, function(token, file)
+	recurse(root, { TOK.var_assign, TOK.inline_command, TOK.catch_block }, function(token, file)
 		local ix = token.span.from
 		if token.id == TOK.var_assign then
 			this_var = token.text
@@ -501,7 +501,7 @@ function SemanticAnalyzer(root, root_file)
 
 			if not assigned_vars[this_var] then assigned_vars[this_var] = {} end
 			assigned_vars[this_var][ix.line .. '|' .. ix.col] = token
-		elseif token.id == TOK.try_stmt then
+		elseif token.id == TOK.catch_block then
 			local var = token.children[3]
 			if var then
 				if not assigned_vars[var.text] then assigned_vars[var.text] = {} end
