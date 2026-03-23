@@ -8,7 +8,7 @@ end
 
 try
     call f
-catch e
+catch exception as e
     print "Caught error: {e.json_encode()}"
 end
 
