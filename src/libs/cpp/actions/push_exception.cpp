@@ -3,7 +3,16 @@
 void push_exception(VirtualMachine &vm) noexcept
 {
 	auto &instruction = vm.instructions[vm.instruction_index];
-	auto arg = std::get<std::vector<Value>>(vm.get_const(instruction.operand[0]));
+	std::vector<Value> arg;
+
+	if (instruction.operand[1])
+	{
+		arg = std::get<std::vector<Value>>(vm.stack.pop());
+	}
+	else
+	{
+		arg = std::get<std::vector<Value>>(vm.get_const(instruction.operand[0]));
+	}
 
 	std::map<std::string, Value> err;
 	err["message"] = arg[0];

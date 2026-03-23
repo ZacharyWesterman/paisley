@@ -1,5 +1,7 @@
 #include "run_command.hpp"
 #include "replace.hpp"
+#include "push_exception.hpp"
+#include "throw_exception.hpp"
 
 #include <iostream>
 #include <chrono>
@@ -67,6 +69,8 @@ void run_command(VirtualMachine &vm)
 	}
 	else if (command == "error")
 	{
+		vm.last_cmd_result = Null();
+
 		std::string msg;
 		for (size_t i = 1; i < value.size(); ++i)
 		{
@@ -76,9 +80,13 @@ void run_command(VirtualMachine &vm)
 			}
 			msg += value[i];
 		}
-		vm.last_cmd_result = Null();
 
-		throw std::runtime_error(msg);
+		vm.stack.push({msg, "exception"});
+		auto &instruction = vm.instructions[vm.instruction_index];
+		instruction.operand[1] = 1;
+
+		push_exception(vm);
+		throw_exception(vm);
 	}
 	else if (command == "time" || command == "systime" || command == "sysdate")
 	{
