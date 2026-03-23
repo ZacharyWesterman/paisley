@@ -361,28 +361,18 @@ let c = {![!+1]} # `c` is set to 3.
 Note that, unlike variables, macros are restricted to their scope. Thus, for example, if you define a macro in a function, you cannot use it outside of the function.
 
 ## Exceptions:
-Sometimes, parts of a program **will** fail, and the failure point is not always easy to predict. Many languages use exceptions to gracefully handle errors, and Paisley does so as well. To raise an exception, use the `error` command along with any message. And then to handle an exception, you can use a `try/catch` block, where the `catch` can have an optional variable to set.
+Sometimes, parts of a program **will** fail, and the failure point is not always easy to predict. Paisley handles this with exceptions. To raise an exception, use the `error` statement along with any message, and an optional `as <exception_type>` at the end. See the following example:
 
 ```
 function this_errors
 	error "your error message"
 end
 
-function other_error
-	error "another error message" as my_exception
-end
-
 try
 	call this_errors
-	call other_error
-catch exception_type1 exception_type2
-	# You can handle multiple exception types with the same logic.
-	# And capturing the variable is optional.
-catch my_exception as e
-	# other_error function would land here (if it were to get called)
-catch exception as e
-	# this_errors function will land here
-	print {json_encode(e)}
+catch exception as ex
+	# Caught error will land here
+	print "Exception caught: {json_encode(ex)}"
 end
 ```
 The output variable (in this case `e`) will always be an object that looks like the following:
@@ -390,11 +380,13 @@ The output variable (in this case `e`) will always be an object that looks like 
 {
 	"message": "your error message",
 	"line": 6,
-	"stack": [2],
+	"stack": [2, 6],
 	"type": "exception_type",
 }
 ```
 Where `line` is the line where the exception was caught, and `stack` is the line numbers for the function call stack.
+
+This is just a basic overview of error handling with exceptions. There are more features than are written here, so I do recommend you [take a quick peek at the docs](docs/exceptions.md) for a more detailed breakdown.
 
 ## Scopes:
 Every time you enter into a new "block" of code, the scope is incremented.
