@@ -47,47 +47,17 @@ return function(vm, line, p1, p2)
 			local msg = std.join(command_array, ' ')
 			output_array({ cmd_name, msg }, 7)
 		elseif cmd_name == 'error' then
+			--If `error` is called as a command instead of an explicit error statement,
+			--(e.g. `"error" some msg` with the 'error' part either non-const or in quotes)
+			--then just treat it as a generic exception.
 			table.remove(command_array, 1)
 			local msg = std.join(command_array, ' ')
 
-			if #EXCEPT_STACK > 0 then
-				--if exception is caught, unroll the stack and return to the catch block
+			local push_exception = require 'src.runtime.actions.push_exception'
+			local throw_exception = require 'src.runtime.actions.throw_exception'
 
-				local err = std.object()
-				err.message = msg
-				err.stack = { line }
-
-				--Unroll program stack
-				local catch = table.remove(EXCEPT_STACK)
-				while #STACK > catch.stack do
-					table.remove(STACK)
-				end
-
-				--Unroll call stack
-				while #INSTR_STACK > catch.instr_stack do
-					table.remove(INSTR_STACK) --Remove any function parameters
-					table.remove(INSTR_STACK) --Remove stack size value
-					local instr_id = table.remove(INSTR_STACK)
-					table.insert(err.stack, 1, INSTRUCTIONS[instr_id][2])
-				end
-				CURRENT_INSTRUCTION = catch.instr
-
-				err.line = table.remove(err.stack, 1)
-
-				vm.push(err)
-				return false --Don't output the error
-			else
-				--If exception is not caught, end the program immediately and output the error
-				CURRENT_INSTRUCTION = #INSTRUCTIONS + 1
-
-				---@diagnostic disable-next-line
-				if FILE and #FILE > 0 then
-					msg = '["' .. FILE .. '": ' .. line .. '] ' .. msg
-				else
-					msg = '[line ' .. line .. '] ' .. msg
-				end
-				output_array({ "error", 'ERROR: ' .. msg .. '\nError not caught, program terminated.' }, 7)
-			end
+			push_exception(vm, line, { msg, 'exception' })
+			throw_exception(vm, line)
 
 			--[[minify-delete]]
 		elseif cmd_name == '!' or cmd_name == '?' or cmd_name == '?!' or cmd_name == '=' then

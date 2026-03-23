@@ -72,15 +72,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		try
-		{
-			OPERATIONS[opcode](vm);
-		}
-		catch (const std::exception &e)
-		{
-			vm.stack.push(e.what());
-			OPERATIONS[OPERATION_COUNT](vm);
-		}
+		OPERATIONS[opcode](vm);
 
 		vm.instruction_index++;
 	}
