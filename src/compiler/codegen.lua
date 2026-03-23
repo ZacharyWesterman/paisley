@@ -21,7 +21,8 @@ local bc = {
 	variable_insert = 18,
 	destructure = 19,
 	get_exception_type = 20,
-	throw_exception = 21,
+	push_exception = 21,
+	throw_exception = 22,
 }
 
 require "src.compiler.functions.codes"
@@ -43,7 +44,7 @@ function print_bytecode(instructions, file)
 		local instr_text = bc_get_key(instr[1], bc)
 		local call_text = instr[3]
 
-		if (instr[1] == bc.push or instr[1] == bc.set or instr[1] == bc.get or instr[1] == bc.throw_exception) and call_text ~= nil then
+		if (instr[1] == bc.push or instr[1] == bc.set or instr[1] == bc.get or instr[1] == bc.push_exception) and call_text ~= nil then
 			call_text = lookup[call_text]
 		end
 
@@ -1219,6 +1220,9 @@ function generate_bytecode(root, file)
 				enter(token.children[i])
 			end
 
+			--If not handled, raise the exception to the next block
+			emit(bc.throw_exception)
+
 			emit(bc.label, end_label)
 			table.remove(exception_end)
 		end,
@@ -1237,17 +1241,19 @@ function generate_bytecode(root, file)
 				table.insert(types, kids[i].text)
 			end
 			--If not in exception list, skip this block
-			emit(bc.push, types)
 			emit(bc.get_exception_type)
+			emit(bc.push, types)
 			emit(bc.call, 'inarray')
 			emit(bc.call, 'jumpiffalse', end_label)
 
 			--If IS in exception list, handle.
+			emit(bc.pop)
+
 
 			--If we're assigning the error to a variable, do so.
 			--Othersise just ignore the error message.
-			if token.children[3] then
-				emit(bc.set, token.children[3].text)
+			if var then
+				emit(bc.set, var.text)
 			else
 				emit(bc.pop)
 			end
@@ -1266,7 +1272,8 @@ function generate_bytecode(root, file)
 
 		--Emit an error
 		[TOK.error_stmt] = function(token, file)
-			emit(bc.throw_exception, { token.children[1].text, token.children[2].text })
+			emit(bc.push_exception, { token.children[1].text, token.children[2].text })
+			emit(bc.throw_exception)
 		end,
 
 		--[[minify-delete]]
@@ -1341,7 +1348,7 @@ function generate_bytecode(root, file)
 			[bc.push] = true,
 			[bc.delete] = true,
 			[bc.destructure] = true,
-			[bc.throw_exception] = true,
+			[bc.push_exception] = true,
 		}
 		if instr_consts[instr[1]] and instr[3] ~= nil then
 			local text = json.stringify(instr[3])
