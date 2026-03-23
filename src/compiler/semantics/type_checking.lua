@@ -260,9 +260,10 @@ return {
 
 		[TOK.catch_block] = {
 			function(token)
-				if token.children[3] then
-					set_var(token.children[3], TYPE_OBJECT)
-					set_type(token.children[3], TYPE_OBJECT)
+				local var = token.children[#token.children]
+				if var.id == TOK.var_assign then
+					set_var(var, TYPE_OBJECT)
+					set_type(var, TYPE_OBJECT)
 				end
 			end
 		},

@@ -1249,7 +1249,6 @@ function generate_bytecode(root, file)
 			--If IS in exception list, handle.
 			emit(bc.pop)
 
-
 			--If we're assigning the error to a variable, do so.
 			--Othersise just ignore the error message.
 			if var then
