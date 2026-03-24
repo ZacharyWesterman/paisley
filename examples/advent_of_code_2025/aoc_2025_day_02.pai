@@ -1,0 +1,27 @@
+# https://adventofcode.com/2025/day/2
+
+function range
+	let r = {@1.split('-')}
+	return {
+		'from' => r[1].int(),
+		'to' => r[2].int(),
+	}
+end
+
+let ranges = {i.\range() for i in ${stdin}.split(',')}
+let invalid_ids = {,}
+
+function range_invalid_ids
+	for i in {str(i) for i in @1.from:@1.to} do
+		let lhs rhs = {i[1:(len(i)//2)]} {i[(len(i)//2 + 1)::]}
+		if {lhs = rhs} then
+			let invalid_ids{} = {int(i)}
+		end
+	end
+end
+
+for range in {ranges} do
+	call range_invalid_ids {range}
+end
+
+print {invalid_ids.sum()}

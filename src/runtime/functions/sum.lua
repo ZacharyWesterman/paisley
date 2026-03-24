@@ -1,7 +1,6 @@
 return function(vm)
 	local v, total = vm.pop(), 0
 	for i = 1, #v do
-		print(v[i])
 		if type(v[i]) == 'table' then
 			for k = 1, #v[i] do total = total + std.num(v[i][k]) end
 		else

@@ -1,0 +1,18 @@
+# https://adventofcode.com/2025/day/1
+
+let dial_position = 50
+let zero_count = 0
+
+let instruction = ${stdin}
+while {instruction} do
+	let direction amount = {instruction[1]} {instruction[2::].int()}
+
+	if {direction = 'L'} then let amount = {-amount} end
+	let dial_position = {(dial_position + amount) % 100}
+
+	if {dial_position = 0} then let zero_count += 1 end
+
+	let instruction = ${stdin}
+end
+
+print {zero_count}
