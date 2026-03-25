@@ -20,6 +20,7 @@ statement :=
 	| delete_stmt
 	| stop_stmt
 	| import_stmt
+	| define_stmt
 	| command
 
 if_stmt :=
@@ -124,6 +125,9 @@ import_stmt :=
 error_stmt :=
 	| `error` argument `as` text
 	| `error` argument
+
+define_stmt :=
+	| `define` argument+
 
 command :=
 	| (argument | pipeio)+

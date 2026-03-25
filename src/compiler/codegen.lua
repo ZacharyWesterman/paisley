@@ -181,11 +181,11 @@ function generate_bytecode(root, file)
 			end
 		end,
 
+		--Ignore DEFINE statements
+		[TOK.define_stmt] = function() end,
+
 		--CODEGEN FOR COMMANDS
 		[TOK.command] = function(token, file)
-			--ignore "define" pseudo-command
-			if token.children[1].value == 'define' then return end
-
 			local all_const, p = true, {}
 			for i = 1, #token.children do
 				if not is_const(token.children[i]) then
