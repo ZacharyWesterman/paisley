@@ -38,9 +38,6 @@ local function command(token, file)
 
 	if token.id == TOK.inline_command then ch = ch.children[1] end
 
-	--ignore "define" pseudo-command
-	if ch.value == 'define' then return end
-
 	if ch.value ~= nil and ch.id ~= TOK.lit_null and token.id == TOK.command then
 		if not ALLOWED_COMMANDS[ch.value] and not BUILTIN_COMMANDS[ch.value] then
 			--[[minify-delete]]
