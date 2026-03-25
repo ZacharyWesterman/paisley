@@ -27,6 +27,7 @@ local stop_stmt
 local import_stmt
 local scope_stmt
 local error_stmt
+local define_stmt
 local command
 
 --Expressions
@@ -1864,6 +1865,18 @@ error_stmt = function(span)
 	}
 end
 
+define_stmt = function(span)
+	if not parser.accept(TOK.kwd_define) then return parser.out(false) end
+
+	local ok, list = parser.zero_or_more(argument)
+
+	return true, {
+		id = TOK.define_stmt,
+		span = Span:merge(span, list[#list].span),
+		children = list,
+	}
+end
+
 statement = function()
 	return parser.any_of({
 		TOK.line_ending,
@@ -1884,6 +1897,7 @@ statement = function()
 		--[[minify-delete]] import_stmt, --[[/minify-delete]]
 		scope_stmt,
 		error_stmt,
+		define_stmt,
 		command,
 	}, {}, false)
 end

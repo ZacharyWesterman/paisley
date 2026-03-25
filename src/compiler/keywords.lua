@@ -28,4 +28,5 @@ return {
 	['try'] = TOK.kwd_try,
 	['catch'] = TOK.kwd_catch,
 	['error'] = TOK.kwd_error,
+	['define'] = TOK.kwd_define,
 }
