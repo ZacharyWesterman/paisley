@@ -220,3 +220,18 @@ function string.ordinal
 
 	return {_r 'th'}
 end
+
+
+#[[
+@export
+@brief Split a string at a given index, returning two substrings.
+
+For example, `\string.split("abcdefg", 3)` would result in `("abc", "defg")`
+
+@param text string The string to split.
+@param index number The index to split at.
+@return array[string] Two strings, split at the given index.
+#]]
+function string.split
+	return {@1[1:@2], @1[(@2+1)::]}
+end
