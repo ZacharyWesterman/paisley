@@ -310,6 +310,7 @@ INFO = {
 	dead_code = function(span, msg, file) lsp_msg(span, 'dead_code', 'D', file) end,
 	func_call = function(span, file) lsp_msg(span, 'func_call', 'D', file) end,
 	constant  = function(span, file) lsp_msg(span, 'constant', 'D', file) end,
+	type      = function(span, file) lsp_msg(span, 'type', 'D', file) end,
 	root_file = nil,
 }
 --[[/minify-delete]]

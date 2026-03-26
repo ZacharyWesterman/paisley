@@ -112,7 +112,7 @@ local function function_text(token)
 		--Print the situations in which the function might raise an error.
 		text = text .. '\n**Errors**:'
 		for _, t in ipairs(token.tags.error) do
-			text = text .. '\n- ' .. t
+			text = text .. '\n- ' .. vscode.color(t.type, vscode.theme.type) .. ' ' .. t.text
 		end
 	end
 
@@ -390,6 +390,24 @@ return {
 				INFO.hint(var.span, text, file)
 			end,
 		},
+
+		[TOK.catch_block] = {
+			function(token, file)
+				for _, i in ipairs(token.children) do
+					if i.id == TOK.text then
+						INFO.type(i.span, file)
+					end
+				end
+			end,
+		},
+
+		[TOK.error_stmt] = {
+			function(token, file)
+				if token.children[2] then
+					INFO.type(token.children[2].span, file)
+				end
+			end,
+		}
 	},
 
 	exit = {},

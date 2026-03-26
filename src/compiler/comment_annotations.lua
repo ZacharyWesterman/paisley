@@ -305,7 +305,11 @@ local function process_comment_annotations(text, line, file)
 		elseif i == '@ERROR' then
 			if not NEXT_TAGS.error then NEXT_TAGS.error = {} end
 			local t = line:gsub('@[eE][rR][rR][oO][rR]%s*', '')
-			table.insert(NEXT_TAGS.error, t)
+			local err_tp = t:match('^[^%s]+')
+			table.insert(NEXT_TAGS.error, {
+				type = err_tp,
+				text = t:sub(#err_tp + 1),
+			})
 		elseif i == '@DEBUG' then
 			if not imported_annotation(line) then
 				inline_annotation(line)
