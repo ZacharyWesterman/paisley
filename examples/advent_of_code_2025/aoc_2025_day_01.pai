@@ -3,16 +3,22 @@
 let dial_position = 50
 let zero_count = 0
 
-let instruction = ${stdin}
-while {instruction} do
+# Read stdin until there is no more input left
+function stdin
+	let x = ${stdin}
+	if {x} else error '' as eof end
+	return {x}
+end
+
+try while do
+	let instruction = ${call stdin}
+
 	let direction amount = {instruction[1]} {instruction[2::].int()}
 
 	if {direction = 'L'} then let amount = {-amount} end
 	let dial_position = {(dial_position + amount) % 100}
 
 	if {dial_position = 0} then let zero_count += 1 end
-
-	let instruction = ${stdin}
-end
+end catch eof end
 
 print {zero_count}

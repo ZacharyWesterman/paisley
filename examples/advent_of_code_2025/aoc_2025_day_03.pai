@@ -4,8 +4,15 @@ require string using string.split
 
 let total_joltage = 0
 
-let batteries = ${stdin}
-while {batteries} do
+# Read stdin until there is no more input left
+function stdin
+	let x = ${stdin}
+	if {x} else error '' as eof end
+	return {x}
+end
+
+try while do
+	let batteries = ${call stdin}
 
 	let possible_first_digits = {int(i) for i in batteries.\split(batteries.len() - 1)[1].split('')}
 	let first_digit_index = {possible_first_digits.index(possible_first_digits.max())}
@@ -16,8 +23,6 @@ while {batteries} do
 
 	let largest_joltage = {int(first_digit second_digit)}
 	let total_joltage += {largest_joltage}
-
-	let batteries = ${stdin}
-end
+end catch eof end
 
 print {total_joltage}
