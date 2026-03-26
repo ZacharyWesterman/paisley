@@ -2,30 +2,19 @@
 
 require string using string.split
 
-function get_index_of_max
-	let max max_index = 0 {len(@1)}
-	for i num in {pairs(i for i in @1.split(''))} do
-		if {num > max} then
-			let max max_index = {num} {i}
-		end
-	end
-
-	return {max_index}
-end
-
 let total_joltage = 0
 
 let batteries = ${stdin}
 while {batteries} do
 
-	let maybe_max = {batteries.\split(batteries.len() - 1)[1]}
-	let index = {\get_index_of_max(maybe_max)}
+	let possible_first_digits = {int(i) for i in batteries.\split(batteries.len() - 1)[1].split('')}
+	let first_digit_index = {possible_first_digits.index(possible_first_digits.max())}
 
-	let lhs rhs = {batteries.\split(index)}
-	let lhs = {max(int(i) for i in lhs.split(''))}
-	let rhs = {max(int(i) for i in rhs.split(''))}
+	let lhs rhs = {batteries.\split(first_digit_index)}
+	let first_digit = {max(int(i) for i in lhs.split(''))}
+	let second_digit = {max(int(i) for i in rhs.split(''))}
 
-	let largest_joltage = {int(lhs rhs)}
+	let largest_joltage = {int(first_digit second_digit)}
 	let total_joltage += {largest_joltage}
 
 	let batteries = ${stdin}
