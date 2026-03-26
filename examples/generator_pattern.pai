@@ -16,7 +16,7 @@ end
 function generator.next
 	let i += 1
 	if {iter_list[i] = null} then
-		error 'End of iterator' as generator_end
+		error 'End of generator' as generator_end
 	end
 	return "<{iter_list[i]}>"
 end
