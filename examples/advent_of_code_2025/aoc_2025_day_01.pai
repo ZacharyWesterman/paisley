@@ -3,12 +3,7 @@
 let dial_position = 50
 let zero_count = 0
 
-# Read stdin until there is no more input left
-function stdin
-	let x = ${stdin}
-	if {x} else error '' as eof end
-	return {x}
-end
+require file using file.stdin
 
 try while do
 	let instruction = ${call stdin}

@@ -1,0 +1,10 @@
+#[[
+@brief Read a line from stdin, or error if no more data.
+@return string The line read from stdin.
+@error eof When no more data exists in stdin.
+#]]
+function file.stdin
+	let _ln = ${stdin}
+	if {_ln} then return {_ln} end
+	error 'No more data in stdin.' as eof
+end

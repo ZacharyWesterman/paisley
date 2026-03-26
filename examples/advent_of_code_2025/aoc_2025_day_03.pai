@@ -1,15 +1,9 @@
 # https://adventofcode.com/2025/day/3
 
 require string using string.split
+require file using file.stdin
 
 let total_joltage = 0
-
-# Read stdin until there is no more input left
-function stdin
-	let x = ${stdin}
-	if {x} else error '' as eof end
-	return {x}
-end
 
 try while do
 	let batteries = ${call stdin}
