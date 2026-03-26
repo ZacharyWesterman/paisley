@@ -1,0 +1,32 @@
+# Using exceptions, you can easily create generator behavior.
+
+#[[
+@brief Create a new generator that lists the arguments passed to the generator one by one.
+@return null
+#]]
+function generator.new
+	let iter_list i = {@} 0
+end
+
+#[[
+@brief Generate the next item in the list, if any.
+@return any The next item in the list.
+@error generator_end When there are no more items to pop off the list.
+#]]
+function generator.next
+	let i += 1
+	if {iter_list[i] = null} then
+		error 'End of iterator' as generator_end
+	end
+	return "<{iter_list[i]}>"
+end
+
+# Create a new generator
+call generator.new A B C D E F
+
+# Iterate over it until there are no more items.
+try while do
+	print "Generated item: {\generator.next()}"
+end catch generator_end end
+
+print "Execution finished."
