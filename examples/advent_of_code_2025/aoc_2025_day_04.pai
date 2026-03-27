@@ -1,0 +1,51 @@
+# https://adventofcode.com/2025/day/4
+
+require file using file.stdin
+
+# Build the grid
+let grid = {,}
+try while do
+	let grid{} = {i = '@' for i in \stdin().split('')}
+end catch eof end
+
+# Get the number of neighbors at the given X,Y coordinate
+function neighbors
+	let _x _y = {@}
+	let neighbor_indexes = {
+		(_x + i[1], _y + i[2])
+		for i in
+		(
+			(-1,-1),
+			(-1, 0),
+			(-1, 1),
+			( 0,-1),
+			( 0, 1),
+			( 1,-1),
+			( 1, 0),
+			( 1, 1),
+		)
+	}
+
+	let count = 0
+
+	for index in {neighbor_indexes} do
+		let _x _y = {index}
+		if {_y and grid[_y]} else continue end
+		if {_x and grid[_y][_x]} else continue end
+		let count += 1
+	end
+
+	return {count}
+end
+
+# Perform computation
+let total = 0
+for y in {1:len(grid)} do
+	for x in {1:len(grid)} do
+		if {grid[y][x]} else continue end
+		if {\neighbors(x,y) >= 4} then continue end
+		let total += 1
+	end
+end
+
+print {total}
