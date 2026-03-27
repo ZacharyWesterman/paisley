@@ -742,7 +742,7 @@ return {
 				local vars_tp = TYPE_NULL
 
 				if #var.children > 0 and SIMILAR_TYPE(var1_tp, TYPE_ARRAY) then
-					var1_tp = MERGE_TYPES(GET_SUBTYPES(var1_tp), TYPE_NULL)
+					var1_tp = MERGE_TYPES(var1_tp and GET_SUBTYPES(var1_tp), TYPE_NULL)
 					vars_tp = var1_tp
 				end
 
