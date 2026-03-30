@@ -145,10 +145,8 @@ function SemanticAnalyzer(root, root_file)
 				INFO.hint(node.children[i].span, node.value[i], file)
 			end
 
-			if imported_files[filename] then
-				parse_error(node.children[i].span, 'File is already imported in ' .. imported_files[filename], root_file)
-				break
-			else
+			--Just ignore any redundant imports!
+			if not imported_files[filename] then
 				imported_files[filename] = root_file
 
 				local lexer, tokens = Lexer(text, filename), {}
