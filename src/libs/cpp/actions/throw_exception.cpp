@@ -30,7 +30,7 @@ void throw_exception(VirtualMachine &vm) noexcept
 		auto retn = vm.return_indices.back();
 		vm.return_indices.pop_back();
 		auto line = vm.instructions[retn.index].line_no;
-		std::get<std::vector<Value>>(err["line"]).push_back(line);
+		std::get<std::vector<Value>>(err["stack"]).push_back(line);
 	}
 
 	vm.instruction_index = info.goto_index - 1;

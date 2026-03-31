@@ -1,9 +1,9 @@
 return function(vm, line, p1, p2)
 	--Build the exception object to handle or throw later.
 	local err = std.object()
-	err.message = p1[1]
+	err.message = vm.pop()
 	err.stack = { line }
-	err.type = p1[2]
+	err.type = p1
 	err.file = FILE
 	err.line = line
 

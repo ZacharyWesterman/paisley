@@ -9,3 +9,80 @@ function file.stdin
 	if {_ln} then return {_ln} end
 	error 'No more data in stdin.' as eof
 end
+
+
+#[[
+@brief Open a file stream which can be read in a generator construct.
+@param 1 string The path of the file to open.
+@return number The file handle.
+@error fs_error If the file could not be read.
+@export
+#]]
+function file.open
+	#@type array[string]
+	initial _files = {,}
+
+	let _txt = {file_read(@1)}
+	if {_txt = null} then
+		delete _txt
+		error "Failed to read `{@1}`." as fs_error
+	end
+
+	let _files{} = {_txt}
+	delete _txt
+	return {len(_files)}
+end
+
+#[[
+@brief Read a line from a file, or error if the file has no more data (or was never opened).
+@param 1 number The file handle.
+@return string The line read from the file.
+@error eof If there's no more data in the file, or the handle is invalid.
+@export
+#]]
+function file.nextline
+	let _handle = {@1}
+
+	if {not _files[_handle]} then
+		error "Invalid file handle `{_handle}`." as eof
+	end
+
+	if {_files[_handle] = ''} then
+		delete _handle
+		error 'End of file.' as eof
+	end
+
+	let _index = {_files[_handle].index('\n') else _files[_handle].len() + 1}
+	let _line = {_files[_handle][1:(_index - 1)]}
+	let _files{_handle} = {_files[_handle][(_index+1)::]}
+
+	delete _index _handle
+	return {_line}
+end
+
+#[[
+@brief Read a single character from a file, or error if the file has no more data (or was never opened).
+@param 1 number The file handle.
+@return string The character read from the file.
+@error eof If there's no more data in the file, or the handle is invalid.
+@export
+#]]
+function file.nextchar
+	let _handle = {@1}
+
+	if {not _files[_handle]} then
+		error "Invalid file handle `{_handle}`." as eof
+	end
+
+	if {_files[_handle] = ''} then
+		delete _handle
+		error 'End of file.' as eof
+	end
+
+	let _index = {_files[_handle].index('\n') else _files[_handle].len() + 1}
+	let _line = {_files[_handle][1]}
+	let _files{_handle} = {_files[_handle][2::]}
+
+	delete _index _handle
+	return {_line}
+end

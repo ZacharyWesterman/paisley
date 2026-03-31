@@ -454,9 +454,17 @@ require file1
 # ./path/to/file3.pai
 # ./"filename with spaces".pai
 require file2 path.to.file3 "filename with spaces"
+
+#Import ../file4.pai
+require ..file4
+
+#Import ../../file5.pai
+require ...file5
 ```
 
-Note that these imports follow a strict top-down file structure (you can never go up a directory) and importing the same file more than once is an error.
+See how it's possible to import files from N levels above, by prepending N+1 periods to the beginning of a path name.
+
+Note that files can only be imported once, that is, any redundant imports are ignored.
 
 ## Other statements:
 - `break` or `break 1` or `break 2` etc, will exit as many while/for loops as are specified (defaults to 1 if not specified)
