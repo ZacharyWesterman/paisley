@@ -16,10 +16,11 @@ end
 #As an extra bit of homework, try comparing the speed of various compilation methods, after removing the `cache` keyword.
 # 1. Interpreted: `time paisley examples/fibonacci.pai`
 #   This is the slowest, by a small margin.
-# 2. Compiled to a Lua VM running Paisley bytecode: `paisley examples/fibonacci.pai --standalone --target=lua --output=test_pgm && time ./test_pgm`
-#   This is faster than the first, but still slow,
-#   because it's a C program that's running a Lua program that's running a Paisley program.
-#   The compilation step is however very fast.
+# 2. Compiled to a Lua VM running Paisley bytecode: `paisley examples/fibonacci.pai --standalone --target=c --output=test_pgm && time ./test_pgm`
+#   This has no speed improvement over the previous option.
+#   The only benefit here is that the program is completely standalone,
+#   and does not require either Lua or Paisley to be installed on the host machine.
 # 3. Compiled to a C++ VM running the bytecode: `paisley examples/fibonacci.pai --standalone --target=cpp --output=test_pgm && time ./test_pgm`
 #   This is the fastest, by a large margin.
-#   The initial compilation step is the slowest (only the first time), but the resulting program is very fast by comparison.
+#   The initial compilation step is by far the slowest (the initial compile of the runtime may take a minute or two, but is only compiled once),
+#   but the resulting program runs blazingly fast by comparison.
