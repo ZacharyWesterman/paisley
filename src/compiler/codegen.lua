@@ -1271,7 +1271,8 @@ function generate_bytecode(root, file)
 
 		--Emit an error
 		[TOK.error_stmt] = function(token, file)
-			emit(bc.push_exception, { token.children[1].text, token.children[2].text })
+			enter(token.children[1])
+			emit(bc.push_exception, token.children[2].text)
 			emit(bc.throw_exception)
 		end,
 
