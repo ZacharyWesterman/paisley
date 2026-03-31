@@ -1332,9 +1332,10 @@ let_stmt = function(span)
 				return parser.out(false)
 			end
 
-			--Must be only an assignment
-			if op.text ~= '=' then
-				parse_error(op.span, 'Indexed math-assignment is not supported yet!', parser.filename())
+			--Syntax like `let x{} += 1` makes no sense, so don't allow it.
+			if op.text ~= '=' and child.id == TOK.expr_open then
+				parse_error(op.span, 'Cannot perform math-assignment on a null value!', parser.filename())
+				return parser.out(false)
 			end
 
 			--and then at least one value
@@ -1350,8 +1351,24 @@ let_stmt = function(span)
 				ch2 = ch2.children[1]
 			end
 
-			table.insert(node.children, ch2)
-			table.insert(node.children, child)
+			--Apply syntax sugar for indexed math-assignment, e.g. `let x{1} += 1`.
+			if op.text ~= '=' then
+				local index = child
+				child = math_assign_sugar(list[1], op, ch2)
+				child.children[1] = {
+					id = TOK.index,
+					span = child.span,
+					children = {
+						child.children[1],
+						index,
+					},
+				}
+				table.insert(node.children, child)
+				table.insert(node.children, index)
+			else
+				table.insert(node.children, ch2)
+				table.insert(node.children, child)
+			end
 
 			return true, node
 		end
