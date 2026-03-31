@@ -32,7 +32,7 @@
 #@param 2 object The configuration for the arguments.
 #@param 3 object The information about the program (name and description).
 #@return object The parsed arguments.
-#@error If the argument is not a list, or if args don't match the expected format.
+#@error exception If the argument is not a list, or if args don't match the expected format.
 function arg.parse
     #Parse name/description
     if {@3.type() != 'object' or not @3.name or not @3.description} then
@@ -187,7 +187,7 @@ function arg.parse
 end
 
 #@private
-#@error If the value is not valid for the flag.
+#@error exception If the value is not valid for the flag.
 function arg._parse_type
     match {@1} do
         if boolean then
@@ -230,9 +230,10 @@ function arg._help_text
         print
         print FLAGS:
         for i in {flags} do
+            #@type string object
             let k v = {i}
 
-            print {"-{v.short} /".lpad(' ', 5) if v.short else '     '} "--{k}" {("[{v.type}]" if v.type else '')} "{v.description}"
+            print {"-{v.short} /".lpad(' ', 5) if {v.short} else '     '} "--{k}" {("[{v.type}]" if v.type else '')} "{v.description}"
         end
     end
 
