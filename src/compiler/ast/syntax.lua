@@ -1781,8 +1781,19 @@ import_stmt = function(span)
 	local file = parser.filename() or LSP_FILENAME or ''
 	local current_script_dir = file:match('(.-)([^\\/]-%.?([^%.\\/]*))$')
 
-	local function pai(filename)
-		local fname = filename:gsub('%.', '/')
+	local function pai(working_dir, filename)
+		local dots, rest = filename:match('^(%.+)(.*)$')
+
+		local prefix = ''
+		if dots and #dots >= 2 then
+			prefix = ('../'):rep(#dots - 1)
+		else
+			rest = filename
+		end
+
+		local fname = working_dir .. '/' .. prefix .. rest:gsub('/', ''):gsub('%.', '/')
+		fname = fname:gsub('//+', '/')
+
 		local fp = io.open(fname .. '.pai')
 		if fp then
 			return fp, fname .. '.pai'
@@ -1797,7 +1808,7 @@ import_stmt = function(span)
 		local orig_filename = list[i].text
 
 		--Make sure import points to a valid file
-		local fp, filename = pai(current_script_dir .. orig_filename)
+		local fp, filename = pai(current_script_dir, orig_filename)
 
 		--If the file doesn't exist locally, try the stdlib
 		if fp == nil then
