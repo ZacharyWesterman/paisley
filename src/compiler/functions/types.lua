@@ -439,6 +439,15 @@ TYPESIG = {
 		category = 'strings',
 		--[[/minify-delete]]
 	},
+	binary = {
+		valid = { { 'number' } },
+		out = 'string',
+		--[[minify-delete]]
+		params = { 'value' },
+		description = 'Convert a number to a binary string. This is identical to `to_base(value, 2, 0)`.',
+		category = 'strings',
+		--[[/minify-delete]]
+	},
 	filter = {
 		valid = { { 'string', 'string' } },
 		out = 'string',

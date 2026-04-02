@@ -45,6 +45,7 @@ BUILTIN_FUNCS = {
 	lpad = 3,
 	rpad = 3,
 	hex = 1,
+	binary = 1,
 	filter = 2,
 	matches = 2,
 	clocktime = 1,

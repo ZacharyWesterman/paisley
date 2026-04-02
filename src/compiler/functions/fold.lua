@@ -232,6 +232,9 @@ return {
 	hex = function(value)
 		return std.to_base(value, 16, 0)
 	end,
+	binary = function(value)
+		return std.to_base(value, 2, 0)
+	end,
 
 	filter = function(text, pattern)
 		return std.filter(text, pattern)

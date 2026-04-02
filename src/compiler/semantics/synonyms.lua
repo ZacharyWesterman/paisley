@@ -225,4 +225,24 @@ return {
 		--Convert "len(x)" into old length operator
 		token.id = TOK.length
 	end,
+
+	binary = function(token)
+		--Convert "binary(x)" into "to_base(x, 2, 0)"
+		token.text = 'to_base'
+		token.children = {
+			token.children[1],
+			{
+				id = TOK.lit_number,
+				span = token.span,
+				value = 16,
+				children = {},
+			},
+			{
+				id = TOK.lit_number,
+				span = token.span,
+				value = 0,
+				children = {},
+			}
+		}
+	end,
 }
