@@ -234,7 +234,7 @@ return {
 			{
 				id = TOK.lit_number,
 				span = token.span,
-				value = 16,
+				value = 2,
 				children = {},
 			},
 			{
