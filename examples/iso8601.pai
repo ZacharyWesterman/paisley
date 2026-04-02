@@ -1,6 +1,7 @@
 #[[
 @brief Get the current date and time in ISO-8601 format.
 @return string an ISO formatted datetime string.
+@debug {annotations.no_args}
 #]]
 function iso_time
 	return "{${sysdate}.date()}T{${systime}.floor().time()}"
