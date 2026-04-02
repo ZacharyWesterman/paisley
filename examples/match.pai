@@ -4,36 +4,30 @@
 # 2. It can check for more than just equality; any boolean operation can be used.
 
 # Here's an example that's most similar to a `switch` statement:
-let day = {random_int(1,7)}
-
-match {day} do
-    if 1 then print "Monday" end
-    if 2 then print "Tuesday" end
-    if 3 then print "Wednesday" end
-    if 4 then print "Thursday" end
-    if 5 then print "Friday" end
-    if 6 then print "Saturday" end
-    if 7 then print "Sunday" end
+match {random_int(1,7)} do
+    print Monday if 1
+    print Tuesday if 2
+    print Wednesday if 3
+    print Thursday if 4
+    print Friday if 5
+    print Saturday if 6
+    print Sunday if 7
 else
     print "Invalid day"
 end
 
 # But a match block can also do more fuzzy matching:
-let score = {random_int(40,100)}
-
-match {score} do
-    if {>= 90} then print "Grade: A" end
-    if {>= 80} then print "Grade: B" end
-    if {>= 70} then print "Grade: C" end
-    if {>= 60} then print "Grade: D" end
+match {random_int(40,100)} do
+    print Grade: A if {>= 90}
+    print Grade: B if {>= 80}
+    print Grade: C if {>= 70}
+    print Grade: D if {>= 60}
 else
-    print "Grade: F"
+    print Grade: F
 end
 
 # And it can match against text patterns:
-let input = "hello123"
-
-match {input} do
+match 'hello123' do
     if {like '^%d+$'} then print "Input contains only digits" end
     if {like '^%a+$'} then print "Input contains only letters" end
     if {like '^%w+$'} then print "Input contains only letters and digits" end
