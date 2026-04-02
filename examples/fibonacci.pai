@@ -15,7 +15,7 @@ end
 
 #As an extra bit of homework, try comparing the speed of various compilation methods, after removing the `cache` keyword.
 # 1. Interpreted: `time paisley examples/fibonacci.pai`
-#   This is the slowest, by a small margin.
+#   This is the default way to run scripts.
 # 2. Compiled to a Lua VM running Paisley bytecode: `paisley examples/fibonacci.pai --standalone --target=c --output=test_pgm && time ./test_pgm`
 #   This has no speed improvement over the previous option.
 #   The only benefit here is that the program is completely standalone,
