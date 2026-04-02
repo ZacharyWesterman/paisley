@@ -8,4 +8,3 @@ function iso_time
 end
 
 print ${call iso_time}
- 
