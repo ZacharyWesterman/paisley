@@ -97,7 +97,7 @@
   - List all files and directories in the given directory. If the directory does not exist, an empty array is returned.
 - `file_append(file_path: string, data: string) -> boolean`
   - Append a string to the end of a file, creating it if it does not exist. Returns true on success, or false if the file could not be written.
-- `file_copy(source_path: string, dest_path: string) -> boolean`
+- `file_copy(source_path: string, dest_path: string [, overwrite: boolean]) -> boolean`
   - Copy a file from source_path to dest_path. If overwrite is true, any existing file at dest_path will be overwritten. Returns true on success, or false if the file could not be copied.
 - `file_delete(file_path: string) -> boolean`
   - Delete a file. Returns true on success, or false if the file could not be deleted.
@@ -223,6 +223,8 @@
 ## Strings
 - `beginswith(search: string, substring: string) -> boolean`
   - Check if the search string begins with the given substring.
+- `binary(value: number) -> string`
+  - Convert a number to a binary string. This is identical to `to_base(value, 2, 0)`.
 - `camel(text: string) -> string`
   - Capitalize the first letter of every word.
 - `endswith(search: string, substring: string) -> boolean`

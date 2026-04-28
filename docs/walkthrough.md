@@ -375,7 +375,7 @@ catch exception as ex
 	print "Exception caught: {json_encode(ex)}"
 end
 ```
-The output variable (in this case `e`) will always be an object that looks like the following:
+The output variable (in this case `ex`) will always be an object that looks like the following:
 ```
 {
 	"message": "your error message",

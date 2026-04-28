@@ -37,7 +37,7 @@ BUILTIN_FUNCS = {
 	upper = 1,
 	camel = 1,
 	replace = 3,
-	json_encode = -2, --value of -N means that the function must have at least 1, and up to N, params.
+	json_encode = -2, --value of -N means that the function must have at least N-1, and up to N, params.
 	json_decode = 1,
 	json_valid = 1,
 	b64_encode = 1,
@@ -130,7 +130,7 @@ BUILTIN_FUNCS = {
 	dir_delete = -2,
 	file_type = 1,
 	file_stat = 1,
-	file_copy = 2,
+	file_copy = -3,
 	file_move = 2,
 	--[[/minify-delete]]
 }

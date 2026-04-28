@@ -65,7 +65,7 @@ The only exception to this is the `.` no-op command. It does not actually intera
 
 ### Escape sequences
 
-All escape sequences work the same, however internally the emoji sequences are represented differently. Instead of unicode symbols, they're stored as `<sprite=XX>` tags.
+All escape sequences work the same, however internally the emoji sequences are represented differently. Instead of unicode symbols, they're stored as `<sprite=XX>` tags. The following escape sequences are changed in the Plasma version:
 
 - `\^-^` outputs `<sprite=0>`
 - `\:relaxed:` outputs `<sprite=0>`

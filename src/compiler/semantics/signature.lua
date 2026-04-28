@@ -46,7 +46,8 @@ return function(func_name --[[minify-delete]], colorize --[[/minify-delete]])
 			--[[/minify-delete]]
 
 			--Indicate that some parameters are optional.
-			if param_ct < 0 and i == 1 then params = params .. ' [' end
+			if param_ct == -1 and i == 1 then params = params .. '[' end
+			if param_ct < 1 and i == -param_ct - 1 then params = params .. ' [' end
 
 			if i < math.abs(param_ct) then params = params .. ',' end
 			--[[minify-delete]]

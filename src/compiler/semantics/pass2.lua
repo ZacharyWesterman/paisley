@@ -72,7 +72,7 @@ return {
 					if param_ct ~= 1 then verb = 'were' end
 
 					if func < 0 then
-						--"-1" means any non-zero num of params, any other negative (-N) means "min 1, max N"
+						--"-1" means any non-zero num of params, any other negative (-N) means "min N-1, max N"
 
 						if func == -1 then
 							if param_ct == 0 then
@@ -83,15 +83,13 @@ return {
 									FUNCSIG(token.text) .. ')" expects at least 1 parameter, but ' ..
 									param_ct .. ' ' .. verb .. ' given', file)
 							end
-						elseif param_ct > -func or param_ct < 1 then
-							local plural = ''
-							if func < -1 then plural = 's' end
+						elseif param_ct > -func or param_ct < (-func - 1) then
 							parse_error(token.span,
 								'Function "' ..
 								token.text ..
 								'(' ..
 								FUNCSIG(token.text) ..
-								')" expects 1 to ' .. (-func) .. ' parameter' .. plural ..
+								')" expects ' .. (-func - 1) .. ' to ' .. (-func) .. ' parameters' .. plural ..
 								', but ' .. param_ct .. ' ' .. verb .. ' given', file)
 						end
 					else
