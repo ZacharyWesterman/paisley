@@ -3,6 +3,7 @@ FAILED=0
 
 if ! which lua &>/dev/null; then
 	echo >&2 'ERROR: Lua is not installed! Please install it and try again.'
+	echo >&2 'On Ubuntu, this would be `apt install lua5.3 liblua5.3-dev`.'
 	FAILED=1
 fi
 
