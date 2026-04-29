@@ -13,7 +13,7 @@ local function ast_error(symbol, valid_tokens)
 	local list = {}
 
 	if type(symbol) == 'table' then symbol = symbol[1] end
-	if not symbol then symbol = token end
+	if not symbol then symbol = token or last_token end
 	if not symbol then
 		error_msg = 'Unexpected EOF.'
 	elseif symbol == '\n' then
@@ -47,7 +47,7 @@ local function ast_error(symbol, valid_tokens)
 		error_msg = error_msg .. last .. '.'
 	end
 
-	parse_error(((token.id ~= TOK.line_ending and token) or last_token).span, error_msg, file_name)
+	parse_error((token and (token.id ~= TOK.line_ending) or last_token).span, error_msg, file_name)
 end
 
 ---@brief Get the next symbol from the token list

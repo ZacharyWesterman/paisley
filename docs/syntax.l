@@ -16,6 +16,7 @@ statement :=
 	| match_stmt
 	| alias_stmt
 	| try_stmt
+	| until_stmt
 	| error_stmt
 	| delete_stmt
 	| stop_stmt
@@ -111,6 +112,9 @@ alias_stmt :=
 
 try_stmt :=
 	| `try` program catch_block+ `end`
+
+until_stmt :=
+	| `until` text+ `do` program `end`
 
 catch_block :=
 	| `catch` text+

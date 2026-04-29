@@ -22,6 +22,7 @@ local match_if_stmt_verbose
 local match_if_stmt_terse
 local alias_stmt
 local try_stmt
+local until_stmt
 local catch_block
 local stop_stmt
 local import_stmt
@@ -1731,6 +1732,49 @@ try_stmt = function(span)
 	}
 end
 
+---@brief Syntax rule for `until` syntax sugar.
+until_stmt = function(span)
+	if not parser.accept(TOK.kwd_until) then return parser.out(false) end
+
+	local ok, body_ok, list, body, term
+	ok, list = parser.one_or_more(TOK.text)
+	if not ok then parser.out(false) end
+	table.insert(list, 1, {
+		id = TOK.program,
+		span = span,
+	})
+
+	if not parser.expect(TOK.kwd_do) then return parser.out(false) end
+
+	ok, body = parser.expect(program, {})
+	ok, term = parser.expect(TOK.kwd_end)
+	if not ok then return parser.out(false) end
+
+	return true, {
+		id = TOK.try_stmt,
+		span = Span:merge(span, term.span),
+		children = {
+			{
+				id = TOK.while_stmt,
+				span = Span:merge(span, term.span),
+				children = {
+					{
+						id = TOK.lit_boolean,
+						value = true,
+						span = span,
+					},
+					body,
+				},
+			},
+			{
+				id = TOK.catch_block,
+				span = Span:merge(list[1].span, list[#list].span),
+				children = list,
+			},
+		},
+	}
+end
+
 catch_block = function(span)
 	if parser.peek(1)[1] == TOK.kwd_end then return parser.out(false) end
 
@@ -1921,6 +1965,7 @@ statement = function()
 		match_stmt,
 		alias_stmt,
 		try_stmt,
+		until_stmt,
 		stop_stmt,
 		--[[minify-delete]] import_stmt, --[[/minify-delete]]
 		scope_stmt,

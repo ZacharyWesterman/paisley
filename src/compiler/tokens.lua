@@ -38,6 +38,7 @@ TOK = {
 	kwd_catch = k(),
 	kwd_error = k(),
 	kwd_define = k(),
+	kwd_until = k(),
 
 	expr_open = k(),
 	expr_close = k(),
