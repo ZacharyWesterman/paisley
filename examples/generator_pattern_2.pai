@@ -1,0 +1,56 @@
+# A more advanced generator example.
+
+#[[
+@brief Create a new generator that lists the arguments passed to the generator one by one, flattening any array arguments.
+@return string A handle for this generator's data.
+#]]
+function generator.new
+	initial _gen_data = {=>}
+	let _handle = {uuid()}
+	let _gen_data{_handle} = {0, @.flatten()}
+	return {_handle}
+end
+
+#[[
+@brief Generate the next item in the list, if any.
+@param handle string The handle for this generator's data.
+@return any The next item in the list.
+@error generator_end When there are no more items to pop off the list.
+@error generator_invalid If a handle is passed that does not correspond to a valid generator.
+#]]
+function generator.next
+	let _uuid = {@1}
+	if {not _gen_data[_uuid]} then
+		error 'No such generator' as generator_invalid
+	end
+
+	let _i = {_gen_data[_uuid][1] + 1}
+	let _gen_data{_uuid,1} = {_i}
+
+	let _val = {_gen_data[_uuid][2][_i]}
+	
+	if {_val = null} then
+		let _gen_data{_uuid} = {null}
+		error 'End of generator' as generator_end
+	end
+	return {_val}
+end
+
+# Create a new generator
+let gen1 = ${call generator.new A B C D E F}
+let gen2 = {\generator.new(1:6)}
+
+# Iterate over the generators until there are no more items.
+print First generator:
+until generator_end do
+	print "Generated <{\generator.next(gen1)}>"
+end
+print
+
+print Second generator:
+until generator_end do
+	print "Generated <{\generator.next(gen2)}>"
+end
+print
+
+print "Execution finished."
