@@ -25,8 +25,8 @@ end
 call generator.new A B C D E F
 
 # Iterate over it until there are no more items.
-try while do
+until generator_end do
 	print "Generated item: {\generator.next()}"
-end catch generator_end end
+end
 
 print "Execution finished."

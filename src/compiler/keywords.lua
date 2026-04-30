@@ -29,4 +29,5 @@ return {
 	['catch'] = TOK.kwd_catch,
 	['error'] = TOK.kwd_error,
 	['define'] = TOK.kwd_define,
+	['until'] = TOK.kwd_until,
 }
