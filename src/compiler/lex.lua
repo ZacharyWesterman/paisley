@@ -70,8 +70,16 @@ function Lexer(text, file, keep_comments)
 		end
 	end
 
-	local directive = 0
-	local dir_ignore_until = nil
+	local dir_stack = {}
+
+	local function current_directive_active()
+		return #dir_stack == 0 or dir_stack[#dir_stack].active
+	end
+
+	local function current_parent_active()
+		if #dir_stack <= 1 then return true end
+		return dir_stack[#dir_stack - 1].active
+	end
 
 	local function token_iterator()
 		while #text > 0 do
@@ -174,7 +182,7 @@ function Lexer(text, file, keep_comments)
 						local dir = require 'src.compiler.directives'
 						local expr, res = dir.compile(match, line, col)
 
-						if (expr == 'else' or expr == 'elif' or expr == 'end') and directive == 0 then
+						if (expr == 'else' or expr == 'elif' or expr == 'end') and #dir_stack == 0 then
 							parse_error(
 								Span:new(line, col, line, col),
 								'Unexpected `$' .. expr .. '` directive.',
@@ -182,7 +190,7 @@ function Lexer(text, file, keep_comments)
 							)
 						end
 
-						if not dir_ignore_until then
+						if current_directive_active() then
 							local logfn = ({
 								error = parse_error,
 								warn = parse_warning,
@@ -197,34 +205,31 @@ function Lexer(text, file, keep_comments)
 							end
 						end
 
-
-						if expr == 'if' then directive = directive + 1 end
-
-						if expr == 'if' and not res then
-							dir_ignore_until = directive
-						end
-
-						if expr == 'else' then
-							if dir_ignore_until == directive then
-								dir_ignore_until = nil
-							elseif not dir_ignore_until then
-								dir_ignore_until = directive
+						if expr == 'if' then
+							local block_active = current_directive_active() and res
+							table.insert(dir_stack, {
+								active = block_active,
+								branch_taken = block_active,
+							})
+						elseif expr == 'elif' then
+							local block = dir_stack[#dir_stack]
+							if current_parent_active() and not block.branch_taken and res then
+								block.active = true
+								block.branch_taken = true
+							else
+								block.active = false
 							end
-						end
-
-						if expr == 'elif' then
-							if dir_ignore_until == directive and res then
-								dir_ignore_until = nil
-							elseif not dir_ignore_until then
-								dir_ignore_until = directive
+						elseif expr == 'else' then
+							local block = dir_stack[#dir_stack]
+							if current_parent_active() and not block.branch_taken then
+								block.active = true
+								block.branch_taken = true
+							else
+								block.active = false
 							end
+						elseif expr == 'end' then
+							table.remove(dir_stack)
 						end
-
-						if expr == 'end' and dir_ignore_until == directive then
-							dir_ignore_until = nil
-						end
-
-						if expr == 'end' then directive = directive - 1 end
 						tok_ignore = not keep_comments
 					end
 				end
@@ -559,7 +564,7 @@ function Lexer(text, file, keep_comments)
 							col = col + #this_str
 
 							--Skip tokens inside ignored compiler directives.
-							if keep_comments or not dir_ignore_until then
+							if keep_comments or current_directive_active() then
 								return out
 							end
 						end
@@ -706,7 +711,7 @@ function Lexer(text, file, keep_comments)
 				text = text:sub(#match + 1, #text)
 
 				--Skip tokens inside ignored compiler directives.
-				if not keep_comments and dir_ignore_until then
+				if not keep_comments and not current_directive_active() then
 					tok_ignore = true
 				end
 
