@@ -403,8 +403,12 @@ return {
 
 		[TOK.error_stmt] = {
 			function(token, file)
-				if token.children[2] then
+				if not token.children[2] then return end
+
+				if not token.children[2].implied then
 					INFO.type(token.children[2].span, file)
+				else
+					INFO.imply_after(token.span, 'as exception', file)
 				end
 			end,
 		}
