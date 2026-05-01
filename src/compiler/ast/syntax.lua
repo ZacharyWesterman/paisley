@@ -1942,6 +1942,7 @@ error_stmt = function(span)
 			id = TOK.text,
 			text = 'exception',
 			span = span,
+			implied = true,
 		}
 	end
 

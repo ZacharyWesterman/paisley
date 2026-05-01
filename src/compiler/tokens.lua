@@ -304,15 +304,16 @@ local function lsp_msg(span, msg, loglevel, file)
 end
 
 INFO = {
-	hint      = function(span, msg, file) lsp_msg(span, msg, 'H', file) end,
-	warning   = function(span, msg, file) lsp_msg(span, msg, 'W', file) end,
-	info      = function(span, msg, file) lsp_msg(span, msg, 'I', file) end,
-	error     = function(span, msg, file) lsp_msg(span, msg, 'E', file) end,
-	dead_code = function(span, msg, file) lsp_msg(span, 'dead_code', 'D', file) end,
-	func_call = function(span, file) lsp_msg(span, 'func_call', 'D', file) end,
-	constant  = function(span, file) lsp_msg(span, 'constant', 'D', file) end,
-	type      = function(span, file) lsp_msg(span, 'type', 'D', file) end,
-	root_file = nil,
+	hint        = function(span, msg, file) lsp_msg(span, msg, 'H', file) end,
+	warning     = function(span, msg, file) lsp_msg(span, msg, 'W', file) end,
+	info        = function(span, msg, file) lsp_msg(span, msg, 'I', file) end,
+	error       = function(span, msg, file) lsp_msg(span, msg, 'E', file) end,
+	dead_code   = function(span, msg, file) lsp_msg(span, 'dead_code', 'D', file) end,
+	func_call   = function(span, file) lsp_msg(span, 'func_call', 'D', file) end,
+	constant    = function(span, file) lsp_msg(span, 'constant', 'D', file) end,
+	type        = function(span, file) lsp_msg(span, 'type', 'D', file) end,
+	imply_after = function(span, msg, file) lsp_msg(span, 'imply_after ' .. msg, 'D', file) end,
+	root_file   = nil,
 }
 --[[/minify-delete]]
 
