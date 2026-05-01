@@ -1,0 +1,7 @@
+# Make sure that multi-indexed math assignment works as expected
+
+let var = {(1,2,3),4}
+
+let var{1,2} += 10
+
+print {var.json_encode()}

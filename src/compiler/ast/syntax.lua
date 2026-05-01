@@ -1356,14 +1356,29 @@ let_stmt = function(span)
 			if op.text ~= '=' then
 				local index = child
 				child = math_assign_sugar(list[1], op, ch2)
-				child.children[1] = {
-					id = TOK.index,
-					span = child.span,
-					children = {
-						child.children[1],
-						index,
-					},
-				}
+
+				if index.id == TOK.array_concat then
+					for _, c in ipairs(index.children) do
+						child.children[1] = {
+							id = TOK.index,
+							span = child.span,
+							children = {
+								child.children[1],
+								c,
+							},
+						}
+					end
+				else
+					child.children[1] = {
+						id = TOK.index,
+						span = child.span,
+						children = {
+							child.children[1],
+							index,
+						},
+					}
+				end
+
 				table.insert(node.children, child)
 				table.insert(node.children, index)
 			else
