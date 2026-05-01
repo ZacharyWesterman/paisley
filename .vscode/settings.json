@@ -5,10 +5,6 @@
 	],
 	"editor.formatOnSave": true,
 	"files.insertFinalNewline": true,
-	"autopep8.args": [
-		"--max-line-length",
-		"256"
-	],
 	"editor.insertSpaces": false,
 	"files.associations": {
 		"vector": "cpp",

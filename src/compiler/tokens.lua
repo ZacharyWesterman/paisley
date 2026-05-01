@@ -312,7 +312,7 @@ INFO = {
 	func_call   = function(span, file) lsp_msg(span, 'func_call', 'D', file) end,
 	constant    = function(span, file) lsp_msg(span, 'constant', 'D', file) end,
 	type        = function(span, file) lsp_msg(span, 'type', 'D', file) end,
-	imply_after = function(span, msg, file) lsp_msg(span, 'imply_after' .. msg, 'D', file) end,
+	imply_after = function(span, msg, file) lsp_msg(span, 'imply_after ' .. msg, 'D', file) end,
 	root_file   = nil,
 }
 --[[/minify-delete]]
