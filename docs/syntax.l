@@ -61,7 +61,8 @@ call_stmt :=
 
 let_stmt :=
 	| `let` <variable> `{` `}` `=` argument+
-	| `let` <variable> `{` expression `}` `=` argument+
+	| `let` <variable> `{` expression `}` `{` `}` `=` argument+
+	| `let` <variable> `{` expression `}` (`=`|`+=`|`-=`|`*=`|`/=`|`%=`|`%%=`|`&=`) argument+
 	| `let` <variable>+ `=` argument+
 	| `let` <variable>+
 	| `let` <variable> (`+=`|`-=`|`*=`|`/=`|`%=`|`%%=`|`&=`) argument+

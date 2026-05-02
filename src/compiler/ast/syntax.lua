@@ -1320,9 +1320,21 @@ let_stmt = function(span)
 				return parser.out(false)
 			end
 
-			if not parser.accept(TOK.expr_close) then
+			local appending, has_expr = false, false
+			if parser.accept(TOK.expr_close) then
+				appending = true
+			else
+				has_expr = true
 				ok, child = parser.expect(expression, 'expression')
 				if not ok or not parser.expect(TOK.expr_close, '}') then
+					return parser.out(false)
+				end
+			end
+
+			--Allow appending to sub-elements of an array/object
+			if parser.accept(TOK.expr_open) then
+				appending = true
+				if not parser.expect(TOK.expr_close, '}') then
 					return parser.out(false)
 				end
 			end
@@ -1334,8 +1346,8 @@ let_stmt = function(span)
 			end
 
 			--Syntax like `let x{} += 1` makes no sense, so don't allow it.
-			if op.text ~= '=' and child.id == TOK.expr_open then
-				parse_error(op.span, 'Cannot perform math-assignment on a null value!', parser.filename())
+			if op.text ~= '=' and appending then
+				parse_error(op.span, 'Modify-assignment while appending makes no sense!', parser.filename())
 				return parser.out(false)
 			end
 
@@ -1381,6 +1393,34 @@ let_stmt = function(span)
 
 				table.insert(node.children, child)
 				table.insert(node.children, index)
+			elseif has_expr and appending then
+				--Apply syntax sugar for sub-value appends. E.g.
+				--`let var{expr1}{} = {expr2}` becomes
+				--`let var{expr1} = {append(var[expr1], expr2)}`
+
+				local new_expr = {
+					id = TOK.func_call,
+					text = 'append',
+					span = span,
+					children = {
+						{
+							id = TOK.index,
+							span = span,
+							children = {
+								{
+									id = TOK.variable,
+									text = list[1].text,
+									span = list[1].span,
+								},
+								child,
+							}
+						},
+						ch2,
+					},
+				}
+
+				table.insert(node.children, new_expr)
+				table.insert(node.children, child)
 			else
 				table.insert(node.children, ch2)
 				table.insert(node.children, child)

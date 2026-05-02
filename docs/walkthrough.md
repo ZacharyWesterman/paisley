@@ -168,6 +168,12 @@ let var = 1 2 3 4 5
 let var{} = 6
 ```
 
+And if you want to append to a sub-value of some object, use both of the above two syntaxes.
+```
+let var = {"a" => (1,2,3)}
+let var{"a"}{} = 4
+```
+
 You can also assign multiple variables at the same time.
 ```
 let a b c = 1 2 3
