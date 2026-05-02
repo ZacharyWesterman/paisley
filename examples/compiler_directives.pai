@@ -1,19 +1,21 @@
 # The info that is printed will change depending on how this file is compiled.
+let var = {
+	'a' => (1,2,3),
+	'b' => (4,5,6),
+	'c' => (7,8,9),
+}
 
-$if version >= 2.0.0
-print "Version is 2.0.0 or greater"
-$else
-print "Version is less than 2.0.0"
-$end
+function print_var
+	print "{@1}:"
+	for key value in {var.pairs().sort()} do
+		print "{key} => {value.json_encode()}"
+	end
+	print
+end
 
-$if target = cpp
-print "Target is C++"
-$elif target = c
-print "Target is C"
-$elif target = lua
-print "Target is Lua"
-$else
-$error "This should never happen!"
-$end
+call print_var Original
 
-$warn "This will warn at compile time"
+# Append another element to var.c
+let var{'c'}{} = 10
+
+call print_var Modified
