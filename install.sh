@@ -32,9 +32,19 @@ fi
 ./paisley --install || exit 1
 
 install_dependency() {
+	local rock_name, version, failed
+	rock_name="$1"
+
 	#Try to install both versions, 5.3 and 5.4, in case one fails.
-	sudo luarocks --lua-version 5.3 install "$1" &>/dev/null
-	sudo luarocks --lua-version 5.4 install "$1" &>/dev/null
+	for version in 5.3 5.4; do
+		# Only install the rock if it's not already installed.
+		if luarocks list --lua-version $version "$rock_name" | grep "$rock_name" &>/dev/null; then continue; fi
+		sudo luarocks --lua-version 5.3 install "$1" &>/dev/null
+
+		if ! luarocks list --lua-version $version "$rock_name" | grep "$rock_name" &>/dev/null; then
+			echo >&2 "ERROR: Failed to install rock \"$rock_name\" for Lua $version!"
+		fi
+	done
 }
 
 wait_on_process() {
@@ -54,10 +64,11 @@ wait_on_process() {
 }
 
 echo
-echo 'Installing Lua rocks...'
+echo -n 'Installing Lua rocks...'
 
 #Prompt once for password
 if ! sudo echo -n; then
+	echo ' Failed.'
 	echo >&2 'WARNING: Failed to install dependencies: user permission denied.'
 	echo >&2 '         It will still work, but some features may be missing.'
 else
@@ -72,6 +83,7 @@ else
 			wait_on_process $! "$rock" "$item" "$total"
 		fi
 	done <requires.txt
+	echo ' Done.'
 fi
 
 echo
