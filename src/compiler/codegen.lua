@@ -1196,7 +1196,7 @@ function generate_bytecode(root, file)
 			emit(bc.call, 'jump', endif_label)
 			emit(bc.label, else_label)
 
-			--Don't re-eval if conditional and false branche are identical
+			--Don't re-eval if conditional and false branches are identical
 			if not false_cond_same then
 				emit(bc.pop)
 				codegen_rules.recur_push(if_false)
