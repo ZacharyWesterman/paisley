@@ -183,6 +183,10 @@ local function validate_expression(dir, filename, get_token)
 		table.insert(stack, table.remove(op_stack))
 	end
 
+	local function eval(token)
+		return type(token) == 'table' and token.text or token
+	end
+
 	--[[
 	Evaluate the expression
 	--]]
@@ -198,9 +202,11 @@ local function validate_expression(dir, filename, get_token)
 				return
 			end
 
-			if flags[lhs.text] then lhs = { text = flags[lhs.text](lhs.span) } end
+			-- print(lhs.text)
 
-			local val = ops[token.text].oper(lhs.text, rhs.text)
+			if type(lhs) == 'table' and flags[lhs.text] then lhs = { text = flags[lhs.text](lhs.span) } end
+
+			local val = ops[token.text].oper(eval(lhs), eval(rhs))
 			table.insert(result, val)
 		end
 	end
