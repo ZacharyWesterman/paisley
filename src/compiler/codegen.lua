@@ -863,9 +863,23 @@ function generate_bytecode(root, file)
 				if not const then
 					else_label = LABEL_ID()
 					endif_label = LABEL_ID()
-					if token.children[1].id == TOK.call_stmt then token.children[1].dynamic = true end
-					enter(token.children[1])
-					emit(bc.call, 'jumpiffalse', else_label)
+
+					local op = token.children[1]
+
+					if op.id == TOK.comparison and op.text == '!=' and
+						(
+							op.children[1].id == TOK.lit_null or
+							op.children[2].id == TOK.lit_null
+						)
+					then
+						enter(op.children[1].id == TOK.lit_null and op.children[2] or op.children[1])
+						emit(bc.call, 'jumpifnil', else_label)
+					else
+						if token.children[1].id == TOK.call_stmt then token.children[1].dynamic = true end
+						enter(token.children[1])
+						emit(bc.call, 'jumpiffalse', else_label)
+					end
+
 					emit(bc.pop)
 				end
 
@@ -1141,6 +1155,18 @@ function generate_bytecode(root, file)
 			local false_cond_same = nodes_identical(condition, if_false)
 			local true_false_same = nodes_identical(if_true, if_false)
 
+			--Optimize null checks a bit.
+			local null_comp = false
+			if condition.id == TOK.comparison and condition.text == '!=' and
+				(
+					condition.children[1].id == TOK.lit_null or
+					condition.children[2].id == TOK.lit_null
+				)
+			then
+				null_comp = true
+				condition = condition.children[1].id == TOK.lit_null and condition.children[2] or condition.children[1]
+			end
+
 			--Evaluate the condition
 			codegen_rules.recur_push(condition)
 
@@ -1159,7 +1185,7 @@ function generate_bytecode(root, file)
 			local else_label = LABEL_ID()
 			local endif_label = LABEL_ID()
 
-			emit(bc.call, 'jumpiffalse', else_label)
+			emit(bc.call, null_comp and 'jumpifnil' or 'jumpiffalse', else_label)
 
 			--Don't re-eval if conditional and true branch are identical
 			if not true_cond_same then

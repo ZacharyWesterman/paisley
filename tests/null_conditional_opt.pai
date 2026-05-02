@@ -1,0 +1,4 @@
+
+if {random_int(1,9) ?else 0} then
+	print "Gary"
+end
