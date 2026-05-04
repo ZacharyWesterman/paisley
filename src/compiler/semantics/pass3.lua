@@ -196,6 +196,22 @@ return {
 			end,
 		},
 		--[[/minify-delete]]
+
+		[TOK.comparison] = {
+			--For `=` or `!=` operators, we can completely optimize away both branches
+			--if the types are guaranteed to be different.
+			function(token)
+				if token.text ~= '=' and token.text ~= '!=' then return end
+
+				local lhs, rhs = token.children[1], token.children[2]
+				if SIMILAR_TYPE(lhs.type, rhs.type) then return end
+
+				--Type is different, so `!=` is guaranteed true, and `=` is guaranteed false.
+				token.id = TOK.lit_boolean
+				token.value = token.text == '!='
+				token.children = {}
+			end,
+		},
 	},
 
 	exit = {},

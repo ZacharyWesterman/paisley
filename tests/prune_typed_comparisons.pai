@@ -1,0 +1,7 @@
+# If the types of 2 values are guaranteed to be different, `=` and `!=` can be totally optimized away.
+
+let x = {'test' if random_int(0,1) else 1}
+
+if {(=>) = x} then
+	print "This will get optimized away!"
+end
