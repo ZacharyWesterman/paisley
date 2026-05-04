@@ -457,7 +457,7 @@ comparison = function(span)
 	ok, rhs = exp(comparison)
 	if not ok then return parser.out(false) end
 
-	--DEPRECATED: Warn about old comparison operators
+	--DEPRECATED: These will be removed in v2.0!
 	if op.text == '~=' or op.text == '==' then
 		local coerce = op.text == '==' and '=' or '!='
 		local msg = 'The operator `' ..
@@ -586,6 +586,7 @@ exponent = function(span)
 end
 
 ---Syntax rule for length
+---DEPRECATED: This will change to string concatenation in v2.0!
 length = function(span)
 	if not parser.accept(TOK.op_concat) then return exp(dot_and_index) end
 

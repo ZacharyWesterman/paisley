@@ -31,10 +31,10 @@ string concatenation `a b` (two expressions separated by a space)<br>
 - boolean operators, `and`, `or`, `xor`, `not`. Note that the `and` and `or` operators can short-circuit, i.e. given an expression `a and b`: if `a` is false, then the whole expression *can never be true*, so `b` is not even evaluated.
 - bitwise operators, `bitwise and`, `bitwise or`, `bitwise xor`, `bitwise not`. Unlike the boolean operators, these do not short-circuit.
 - comparison, `>`, `>=`, `<`, `<=`
-- comparison (equality), `=` or `==` (the latter is deprecated)
-- comparison (not equal), `!=` or `~=` (the latter is deprecated)
+- comparison (equality), `=` or `==` (the latter is <span style="color:orange;">deprecated</span>)
+- comparison (not equal), `!=` or `~=` (the latter is <span style="color:orange;">deprecated</span>)
 - check for whether variables are set, `exists` (e.g. `x exists`)
-- string or array length, `&` (e.g. `&variable`)
+- string or array length, `&` (e.g. `&variable`) (<span style="color:orange;">deprecated</span>, will be string concatenation in v2.0. use `len()` instead)
 - array slicing, `:`. Note that slices are inclusive of both their upper and lower bounds (e.g. `0:5` gives `(0,1,2,3,4,5)`)
   - Note that when slicing an array or a string, it's possible to replace the second number with a colon, to indicate that the slice should go from the start index all the way to the end of the string or array. So for example, `"abcdef"[4::]` would result in `"def"`, `(5,4,3,2,1)[2::]` would result in `(4,3,2,1)`, etc.
 - array listing, `,` (e.g. `1,2,3` is an array with 3 elements, `(1,)` is an array with 1 element, `(,)` has 0 elements, etc). You can combine this with slicing, e.g. `1,3:5,9` gives `(1,3,4,5,9)`.
