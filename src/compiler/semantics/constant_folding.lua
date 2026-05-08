@@ -284,6 +284,7 @@ return {
 
 					token.value = result
 					token.id = ({
+						null = TOK.lit_null,
 						boolean = TOK.lit_boolean,
 						number = TOK.lit_number,
 						string = TOK.string_open,
