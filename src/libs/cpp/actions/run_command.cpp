@@ -10,7 +10,7 @@
 #include <thread>
 #include <unistd.h>
 
-int LAST_COMMAND_RESULT = 0;
+bool LAST_COMMAND_RESULT = false;
 std::string LAST_COMMAND_STDOUT;
 std::string LAST_COMMAND_STDERR;
 const char RAW_SH_TEXT_SENTINEL = -1;
@@ -120,7 +120,7 @@ void run_command(VirtualMachine &vm)
 		// If command is run with any parameters, treat them as a shell command to execute
 		if (value.size() > 1)
 		{
-			LAST_COMMAND_RESULT = 0;
+			LAST_COMMAND_RESULT = false;
 			LAST_COMMAND_STDOUT.clear();
 			LAST_COMMAND_STDERR.clear();
 
@@ -148,7 +148,7 @@ void run_command(VirtualMachine &vm)
 				{
 					LAST_COMMAND_STDOUT += buffer;
 				}
-				LAST_COMMAND_RESULT = pclose(in);
+				LAST_COMMAND_RESULT = !pclose(in);
 			}
 
 			if (command != "?!")
