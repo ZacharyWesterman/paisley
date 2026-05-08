@@ -8,6 +8,7 @@ define {!e[2.71828182845904523536]}
 @brief Compute the factorial of a positive integer.
 @param n number The positive integer to compute the factorial of.
 @return number The factorial of the given integer, or 1 if n is non-positive.
+@debug {annotations.type.integer.positive}
 #]]
 function math.factorial
 	return {(1:@1).reduce(*)}
@@ -18,6 +19,7 @@ end
 @brief Check if a number is prime.
 @param n number The number to check for primality.
 @return boolean True if the number is prime, false otherwise.
+@debug {annotations.type.integer.positive}
 #]]
 function math.isprime
 	let _n = {@1}
@@ -44,6 +46,7 @@ end
 @param a number The first integer.
 @param b number The second integer.
 @return number The GCD of the two integers.
+@debug {annotations.type.integer}
 #]]
 function math.gcd
 	let _a = {@1.abs().floor()}
@@ -63,6 +66,7 @@ end
 @param a number The first integer.
 @param b number The second integer.
 @return number The LCM of the two integers.
+@debug {annotations.type.integer}
 #]]
 function math.lcm
 	let _a = {@1.floor()}
