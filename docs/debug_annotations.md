@@ -147,7 +147,7 @@ NODE = {
 
 --Data type layout is always the same.
 DATA_TYPE = {
-	is_subset_of = function(self, other_type: DATA_TYPE|string) -> boolean, --Returns true if other_type is a subset of self. E.g. `string` is a subset of `any` or `string|nil`, but is NOT a subset of `string|number`.
+	is_subset_of = function(self, other_type: DATA_TYPE|string) -> boolean, --Returns true if other_type is a subset of self. E.g. `string` is a subset of `any` or `string|nil`, but is NOT a subset of `boolean|number`.
 	is_superset_of = function(self, other_type: DATA_TYPE|string) -> boolean, --Returns true if other_type is a superset of self. E.g. `string|number|nil` is a superset of `string|nil`, but `string|number` is not.
 	is_exactly = function(self, other_type: DATA_TYPE|string) -> boolean, --Returns true if other_type is exactly the same type as self.
 	tostring = function(self) -> string, --Returns the string representation of the data type.
