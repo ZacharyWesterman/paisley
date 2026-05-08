@@ -235,3 +235,23 @@ For example, `\string.split("abcdefg", 3)` would result in `("abc", "defg")`
 function string.split
 	return {@1[1:@2], @1[(@2+1)::]}
 end
+
+#[[
+@export
+@brief Convert a CamelCase string to snake_case.
+@param text string The string to convert.
+@return string A snake_case string.
+#]]
+function string.camel_to_snake
+	return {(i.lower() for i in @1.matches('[A-Z]?[^A-Z]*')).join('_')}
+end
+
+#[[
+@export
+@brief Convert a snake_case string to camelCase.
+@param text string The string to convert.
+@return string A snake_case string.
+#]]
+function string.snake_to_camel
+	return "{@1.match('^[^_]*').lower()}{(i.replace('_', '').lower().camel() for i in @1.matches('_+[^_]*')).join('')}"
+end
