@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
 
-cmd=./../../../paisley
-if [ ! -e "$cmd" ]; then
-    if ! which paisley &>/dev/null; then
-        # Paisley isn't installed on this system;
-        # No way to verify
-        exit 0
-    fi
-    
-    cmd=paisley
+cmd=paisley
+psl_dir=.
+if [ -e "./../../../paisley" ]; then
+    psl_dir=../../..
+    cmd=./paisley
+elif ! which paisley &>/dev/null; then
+    # Paisley isn't installed on this system;
+    # No way to verify
+    exit 0
 fi
 
 error() {
@@ -24,7 +24,8 @@ strip() {
     done
 }
 
-readarray -t a1 < <($cmd --introspect --functions --synonyms=none)
+dir=$(pwd)
+readarray -t a1 < <(cd "$psl_dir"; "$cmd" --introspect --functions --synonyms=none; cd "$pwd")
 a2=(
     add
     arrayindex
