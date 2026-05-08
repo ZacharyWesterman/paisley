@@ -1,7 +1,6 @@
 #include "json_decode.hpp"
 #include <stdexcept>
 #include <string_view>
-#include <iostream>
 
 class JsonError : public std::runtime_error
 {
@@ -322,8 +321,6 @@ void json_decode(Context &context)
 	}
 
 	const std::string &json_str = std::get<std::string>(json);
-
-	std::cout << json_str << std::endl;
 
 	std::string::const_iterator it = json_str.begin();
 	auto value = json_decode_recursive(it, json_str.end(), context.line_number);
