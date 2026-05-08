@@ -487,6 +487,8 @@ return {
 				local signature
 				local override_tp
 
+				if token.text == 'env_get' then return end
+
 				if TYPESIG[token.id] ~= nil then
 					signature = TYPESIG[token.id]
 				elseif TYPESIG[token.text] ~= nil then
