@@ -58,6 +58,8 @@ Optional extra features include:
 - Compressing Paisley bytecode with zlib compression.
 - Advanced controls in REPL mode, along with syntax highlighting.
 
+**Note:** If most rocks install fine, but the `lua-zlib` rock specifically fails, you probably need to install zlib development files on your system. On Ubuntu, that would be `sudo apt install zlib1g-dev`.
+
 #### If you have all the requirements to build standalone applications
 On Linux systems, just run `./install.sh` and it will install Lua rocks for all extra features, then compile Paisley into a single file and install on your system.
 To uninstall, just run `./uninstall.sh`.
