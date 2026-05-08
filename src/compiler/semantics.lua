@@ -149,13 +149,17 @@ function SemanticAnalyzer(root, root_file)
 			if not imported_files[filename] then
 				imported_files[filename] = root_file
 
+				--Iterate to get tokens.
 				local lexer, tokens = Lexer(text, filename), {}
-				for t in lexer do table.insert(tokens, t) end --Iterate to get tokens.
+				for t in lexer do table.insert(tokens, t) end
 
 				--Parse into AST and add to the list.
-				local parser = SyntaxParser(tokens, filename)
-				local ast = parser()
-				ast.filename = filename
+				local ast
+				if not ERRORED then
+					local parser = SyntaxParser(tokens, filename)
+					ast = parser()
+					ast.filename = filename
+				end
 
 				if not ERRORED then
 					autofill(ast)

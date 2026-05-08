@@ -533,6 +533,10 @@ function Lexer(text, file, keep_comments)
 						if REPL then
 							this_chr = curr_scope
 							ERRORED = false
+						else
+							--[[/minify-delete]]
+							return
+							--[[minify-delete]]
 						end
 						--[[/minify-delete]]
 					end
@@ -545,8 +549,11 @@ function Lexer(text, file, keep_comments)
 						--Hack to get REPL version to not loop forever
 						if REPL then
 							this_chr = curr_scope
+						else
+							--[[/minify-delete]]
+							return
+							--[[minify-delete]]
 						end
-						--[[/minify-delete]]
 					end
 
 					--Once string ends, add text to token list and exit string.

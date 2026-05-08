@@ -51,7 +51,6 @@ end
 --[[/minify-delete]]
 
 local lexer = Lexer(expression, file)
-local t
 local tokens = {}
 for t in lexer do table.insert(tokens, t) end --Iterate to get tokens.
 
