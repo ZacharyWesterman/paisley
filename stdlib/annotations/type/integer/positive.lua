@@ -1,5 +1,4 @@
 return function(args, info)
-	info('AAAAA')
 	for _, arg in ipairs(args) do
 		info(arg.type:tostring())
 		--@param type annotations should already make sure that this is a number.
