@@ -3,6 +3,7 @@ EXPORT_LINES = {}
 ELIDE_LINES = {}
 local NEXT_TAGS = {}
 DEBUG_FUNCS = {}
+local module_description = ''
 local in_debug = nil
 
 local function get_tags()
@@ -11,6 +12,10 @@ end
 
 local function wipe_tags()
 	NEXT_TAGS = {}
+end
+
+local function get_module_description()
+	return module_description
 end
 
 ---Some comments can give hints about what commands exist, and suppress "unknown command" errors.
@@ -314,6 +319,11 @@ local function process_comment_annotations(text, line, file)
 			if not imported_annotation(line) then
 				inline_annotation(line)
 			end
+		elseif i == '@FILE' then
+			module_description = text:gsub('@[fF][iI][lL][eE]', '')
+				:gsub('^#%[%[', ''):gsub('^#', '')
+				:gsub('#%]%]', '')
+				:gsub('^%s+', ''):gsub('%s*$', '')
 		else
 			append_text(line)
 		end
@@ -330,5 +340,5 @@ local function process_comment_annotations(text, line, file)
 end
 
 return function()
-	return process_comment_annotations, get_tags, wipe_tags
+	return process_comment_annotations, get_tags, wipe_tags, get_module_description
 end
