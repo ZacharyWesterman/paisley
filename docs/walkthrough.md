@@ -2,7 +2,7 @@
 
 The following is a detailed breakdown of every language feature in Paisley. For some hands-on examples of programs, check out the `examples/` or `stdlib/` directories.
 
-I'd also recommend checking out the [syntax specification](docs/syntax.l) for an organized view of the syntax.
+I'd also recommend checking out the [syntax specification](syntax.l) for an organized view of the syntax.
 
 ## Main program structures
 
