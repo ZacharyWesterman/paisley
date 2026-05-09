@@ -7,6 +7,9 @@ ALIASES_TOPLEVEL = { {} }
 MACROS_TOPLEVEL = { {} }
 --[[/minify-delete]]
 
+local req = require 'src.compiler.comment_annotations'
+local _, _, _, get_module_description = req()
+
 function SemanticAnalyzer(root, root_file)
 	--[[minify-delete]]
 	SHOW_MULTIPLE_ERRORS = true
@@ -140,18 +143,16 @@ function SemanticAnalyzer(root, root_file)
 				break
 			end
 
-			if LANGUAGE_SERVER then
-				--Print the filename that is imported.
-				INFO.hint(node.children[i].span, node.value[i], file)
-			end
-
 			--Just ignore any redundant imports!
 			if not imported_files[filename] then
-				imported_files[filename] = root_file
-
 				--Iterate to get tokens.
 				local lexer, tokens = Lexer(text, filename), {}
 				for t in lexer do table.insert(tokens, t) end
+
+				imported_files[filename] = {
+					from = root_file,
+					desc = get_module_description(),
+				}
 
 				--Parse into AST and add to the list.
 				local ast
@@ -170,6 +171,17 @@ function SemanticAnalyzer(root, root_file)
 				if ERRORED then
 					parse_error(node.children[i].span, 'Error in included file', root_file)
 				end
+			end
+
+			if LANGUAGE_SERVER then
+				--Print info about the file that is imported.
+				local msg = '*Required file*\n'
+				local desc = imported_files[filename].desc
+				if desc ~= '' then
+					msg = msg .. desc .. '\n'
+				end
+				msg = msg .. '\n' .. node.value[i]
+				INFO.hint(node.children[i].span, msg, file)
 			end
 		end
 
