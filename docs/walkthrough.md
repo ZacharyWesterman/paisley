@@ -748,6 +748,7 @@ end
 ```
 
 The following is a complete list of annotations and what their effects are:
+- `@file` : A description for the current file. This can be multi-line, continuing until the end of the comment.
 - `@brief` : A single-line description of a function or variable.
 - `@param` : Indicate a function parameter of a specific type.
 - `@return` : Indicate a function return value of a specific type.
