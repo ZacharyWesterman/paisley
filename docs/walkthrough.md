@@ -426,7 +426,7 @@ The output variable (in this case `ex`) will always be an object that looks like
 ```
 Where `line` is the line where the exception was caught, and `stack` is the line numbers for the function call stack.
 
-This is just a basic overview of error handling with exceptions. There are more features than are written here, so I do recommend you [take a quick peek at the docs](docs/exceptions.md) for a more detailed breakdown.
+This is just a basic overview of error handling with exceptions. There are more features than are written here, so I do recommend you [take a quick peek at the docs](exceptions.md) for a more detailed breakdown.
 
 ## Scopes:
 Every time you enter into a new "block" of code, the scope is incremented.
