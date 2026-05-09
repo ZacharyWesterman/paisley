@@ -1,4 +1,14 @@
 #[[
+@file This module adds functions for making HTTP requests.
+
+# Functions:
+```
+function http.get ... end
+function http.post ... end
+```
+#]]
+
+#[[
 @brief Sends an HTTP GET request to the specified URL.
 @param url string The URL to send the GET request to.
 @return string The response body from the server if successful.
