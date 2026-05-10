@@ -175,12 +175,12 @@ function SemanticAnalyzer(root, root_file)
 
 			if LANGUAGE_SERVER then
 				--Print info about the file that is imported.
-				local msg = '*Required file*\n'
+				local msg = '*Required file*\n\n'
 				local desc = imported_files[filename].desc
 				if desc ~= '' then
 					msg = msg .. desc .. '\n'
 				end
-				msg = msg .. '\n' .. node.value[i]
+				msg = msg .. '\n\n' .. node.value[i]
 				INFO.hint(node.children[i].span, msg, file)
 			end
 		end
