@@ -1,4 +1,16 @@
 #[[
+@file Utility functions for array manipulation.
+
+### Functions:
+```
+function array.zip ... end # Zip multiple arrays together.
+function array.take ... end # Pop N elements from the front of an array.
+function array.drop ... end # Remove N elements from the front of an array.
+function array.permute ... end # Generate array permutations.
+```
+#]]
+
+#[[
 @export
 @brief Zip multiple arrays into a single array of arrays.
 @param ... array The arrays to zip.

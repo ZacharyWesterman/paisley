@@ -1,4 +1,13 @@
 #[[
+@file Serialization functions for various data formats.
+
+### Functions:
+```
+function serialize.int ... end # Serialize a 32-bit integer to a 4-byte string.
+```
+#]]
+
+#[[
 @export
 @brief Serialize a 32-bit integer to a 4-byte string.
 @param value number The integer to serialize.

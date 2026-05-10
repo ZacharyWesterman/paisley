@@ -1,3 +1,13 @@
+#[[
+@file Image manipulation functions.
+
+### Functions:
+```
+function image.new ... end # Create a new image of a set size.
+function image.bitmap ... end # Serialize an image to BMP format.
+```
+#]]
+
 require serialize
 require color
 
@@ -25,8 +35,8 @@ function image.new
 	return {_image}
 end
 
-#@brief Convert an image into a bitmap format (BMP) string.
-#@param image array[array[number]] The RGBA color image to convert.
+#@brief Serialize an image into a bitmap format (BMP) string.
+#@param image array[array[array[number]]] The RGBA color image to convert.
 #@return string A string containing the BMP representation of the image.
 #@export
 function image.bitmap

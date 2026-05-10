@@ -1,3 +1,13 @@
+#[[
+@file This module allows for simple, yet powerful, parsing of command line arguments and flags.
+
+### Functions:
+```
+function arg.parse ... end
+```
+#]]
+
+
 #@export
 #@brief Parse command line arguments.
 #
@@ -186,7 +196,6 @@ function arg.parse
     return {_res}
 end
 
-#@private
 #@error exception If the value is not valid for the flag.
 function arg._parse_type
     match {@1} do
@@ -213,7 +222,6 @@ function arg._parse_type
     return {@2}
 end
 
-#@private
 function arg._help_text
     let flags = {i for i in @1.pairs() if i[2].type() = 'object'}
     let values = {@1['-']}
