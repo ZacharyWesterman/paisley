@@ -1,3 +1,22 @@
+#[[
+@file Mathematical helper functions and constant definitions.
+
+### Definitions:
+```
+{ !pi, !e }
+```
+
+### Functions:
+```
+function math.factorial ... end # Compute the factorial of a positive integer.
+function math.isprime ... end # Check if a number is prime.
+function math.gcd ... end # Compute the greatest common divisor of two integers.
+function math.lcm ... end # Compute the least common multiple of two integers.
+function math.flagify ... end # Convert a list of characters to a bit flag integer.
+function math.bits ... end # Convert an unsigned integer into a bit field.
+```
+#]]
+
 # The numerical constant pi.
 define {!pi[3.14159265358979323846]}
 # Euler's constant.

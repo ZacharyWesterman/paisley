@@ -1,4 +1,16 @@
 #[[
+@file Utility functions for array manipulation.
+
+### Functions:
+```
+function array.zip ... end # Zip multiple arrays together.
+function array.take ... end # Pop N elements from the front of an array.
+function array.drop ... end # Remove N elements from the front of an array.
+function array.permute ... end # Generate array permutations.
+```
+#]]
+
+#[[
 @export
 @brief Zip multiple arrays into a single array of arrays.
 @param ... array The arrays to zip.
@@ -54,7 +66,8 @@ end
 @export
 @brief Generate the next lexicographical permutation of an array.
 @param arr array The input array.
-@return array? The next permutation of the array, or null if it is the last permutation.
+@return array The next permutation of the array.
+@error generator_end If there are no more permutations.
 #]]
 function array.permute
 	let _array = {@1.reverse()}
@@ -66,8 +79,8 @@ function array.permute
 	end
 
 	if {_k = 0} then
-		# This is the last permutation.
-		return
+		# We've already reached the last permutation.
+		error 'No more permutations' as generator_end
 	end
 	
 	# Find the largest index _l greater than _k such that _array[_k] < _array[_l].

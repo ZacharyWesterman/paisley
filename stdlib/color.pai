@@ -1,3 +1,24 @@
+#[[
+@file Functions for RGBA color manipulation and common color definitions.
+
+### Functions:
+```
+function color.hex_to_rgba ... end # Convert a hex color code to RGB values.
+function color.rgba_to_hex ... end # Convert an RGBA color value to a hex color code.
+function color.blend ... end # Blend two colors together.
+function color.new ... end # Create a new color from RGB values.
+```
+
+### Definitions:
+```
+{
+	!white   !red     !yellow
+	!gray    !green   !cyan
+	!black   !blue    !magenta
+}
+```
+#]]
+
 # Common color definitions.
 define {
 	!white[0xffffffff.bytes(4)]
