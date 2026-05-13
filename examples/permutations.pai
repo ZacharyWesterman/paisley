@@ -1,18 +1,16 @@
 # Generate all permutations of an array.
 
+require array using array.permute
+
 # Note that the array must be sorted in ascending order to start.
 # Basically, you want to start with the "last" permutation.
-let orig = 1 2 3 4 # Could also do {some_array.sort()}
-
-require array
-using array.permute
-
+let list = 1 2 3 4 # Could also do {some_array.sort()}
 let count = 0
-let list = {orig}
-while {list} do
+
+until generator_end do
 	print {json_encode(list)}
 	let list = {\permute(list)}
 	let count = {count + 1}
 end
 
-print "Generated {count} permutations for a {len(orig)} element array."
+print "Generated {count} permutations for a {len(list)} element array."
