@@ -8,7 +8,7 @@ function image.bitmap ... end # Serialize an image to BMP format.
 ```
 #]]
 
-require serialize
+require serial
 require color
 
 #[[

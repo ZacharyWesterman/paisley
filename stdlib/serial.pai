@@ -4,6 +4,7 @@
 ### Functions:
 ```
 function serialize.int ... end # Serialize a 32-bit integer to a 4-byte string.
+function deserialize.int ... end # Deserialize a 32-bit integer from a 4-byte string.
 ```
 #]]
 
@@ -18,5 +19,18 @@ function serialize.int
 		(
 			char(i) for i in @1.bytes(4).reverse()
 		).join("")
+	}
+end
+
+#[[
+@export
+@brief Deserialize a 32-bit integer from a 4-byte string.
+If the string is longer than 4-bytes, any remaining bytes are ignored.
+@param text string The string to deserialize from.
+@return number A 32-bit integer.
+#]]
+function deserialize.int
+	return {
+		(ascii(i) for i in @1[1:4].split('')).reverse().frombytes()
 	}
 end
