@@ -1,3 +1,25 @@
+#[[
+@file Text formatting functions and definitions for terminal applications.
+
+All entities adapt to the currently targeted build (plasma/desktop).
+
+### Definitions:
+```
+{
+!!black  !!yellow   !!cyan
+!!red    !!blue     !!white
+!!green  !!magenta
+}
+```
+### Functions:
+```
+function fmt.color ... end # Format text with a given color.
+function fmt.bold ... end # Format bold text.
+function fmt.italic ... end # Format italic text.
+function fmt.underline ... end # Format underline text.
+```
+#]]
+
 $if build = plasma
 define {
 	!!black["black"]

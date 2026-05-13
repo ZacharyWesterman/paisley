@@ -1,3 +1,22 @@
+#[[
+@file Utility functions for common string manipulations.
+
+### Functions:
+```
+function string.truncate ... end # Truncate a string with ellipsis.
+function string.is_numeric ... end # Check if a string is numeric.
+function string.is_alpha ... end # Check if a string only contains letters.
+function string.is_alphanumeric ... end # Check if a string is alphanumeric.
+function string.urlencode ... end # URL-encode a string.
+function string.urldecode ... end # URL-decode a string.
+function string.numeral ... end # Convert a number to its English numeral representation (e.g., 123 -> "one hundred twenty-three").
+function string.ordinal ... end # Convert a number to its English ordinal representation (e.g., 1 -> "first", 2 -> "second", 3 -> "third").
+function string.split ... end # Split a string at a given index, returning two substrings.
+function string.camel_to_snake ... end # Convert a CamelCase string to snake_case.
+function string.snake_to_camel ... end # Convert a snake_case string to camelCase.
+```
+#]]
+
 # @brief Truncate a string with ellipsis
 # @param text string The string to truncate
 # @param length number The max character length
