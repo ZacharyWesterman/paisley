@@ -1,7 +1,7 @@
 #[[
 @file This module adds functions for making HTTP requests.
 
-# Functions:
+### Functions:
 ```
 function http.get ... end
 function http.post ... end

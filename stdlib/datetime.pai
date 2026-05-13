@@ -1,3 +1,18 @@
+#[[
+@file Datetime formatting and manipulation functions.
+
+### Functions:
+```
+function datetime.now ... end # Get the current date and time.
+function datetime.isoformat ... end # Format a datetime object as a string in ISO 8601 format.
+function datetime.fromiso ... end # Parse a string in ISO 8601 format.
+function datetime.isiso ... end # Check if a string is in ISO 8601 format.
+function datetime.duration ... end # Parse a duration string (e.g., "1h30m") into an elapsed datetime object.
+function datetime.add ... end # Add a duration to a datetime object.
+function datetime.sub ... end # Subtract a duration from a datetime object.
+```
+#]]
+
 #@export
 #@brief Get the current date and time.
 #@return object The current date and time.
@@ -82,6 +97,11 @@ end
 @return object The new datetime object after addition.
 #]]
 function datetime.add
+	let _t = {@1.time + @2.time}
+	let _d = {@1.date[1] + @2.date[1]}
+	let _m = {@1.date[2] + @2.date[2]}
+	let _y = {@1.date[3] + @2.date[3]}
+
 	define {
 		!january[31],
 		!february[28],
@@ -111,11 +131,6 @@ function datetime.add
 			!december,
 		)[_m]]
 	}
-
-	let _t = {@1.time + @2.time}
-	let _d = {@1.date[1] + @2.date[1]}
-	let _m = {@1.date[2] + @2.date[2]}
-	let _y = {@1.date[3] + @2.date[3]}
 
 	while {_t >= 60 * 60 * 24} do
 		let _t = {_t - 60 * 60 * 24}
@@ -146,12 +161,17 @@ end
 
 #[[
 @export
-@brief Add a duration to a datetime object.
+@brief Subtract a duration from a datetime object.
 @param dt object The original datetime object.
-@param duration object The duration to add.
+@param duration object The duration to subtract.
 @return object The new datetime object after addition.
 #]]
 function datetime.sub
+	let _t = {@1.time - @2.time}
+	let _d = {@1.date[1] - @2.date[1]}
+	let _m = {@1.date[2] - @2.date[2]}
+	let _y = {@1.date[3] - @2.date[3]}
+
 	define {
 		!january[31],
 		!february[28],
@@ -181,11 +201,6 @@ function datetime.sub
 			!december,
 		)[_m]]
 	}
-
-	let _t = {@1.time - @2.time}
-	let _d = {@1.date[1] - @2.date[1]}
-	let _m = {@1.date[2] - @2.date[2]}
-	let _y = {@1.date[3] - @2.date[3]}
 
 	while {_t < 0} do
 		let _t = {_t + 60 * 60 * 24}

@@ -16,8 +16,8 @@ for key, val in pairs(kwds) do
 end
 
 local function return_text(type, desc)
-	local text = '\n**Returns:** '
-	if desc then text = text .. '\n  (' end
+	local text = '\n\n**Returns:** '
+	if desc then text = text .. '\n\n  (' end
 	text = text .. TYPE_TEXT(type, true)
 	if desc then text = text .. ') ' .. desc end
 	return text
@@ -77,19 +77,17 @@ local function function_text(token)
 
 	local tags = {}
 	if token.memoize then table.insert(tags, 'memoized') end
-	if token.tags.private then table.insert(tags, 'private') end
-	-- if token.tags.export then table.insert(tags, 'exported') end
 	if token.tags.elide then table.insert(tags, 'elision allowed') end
 	if #tags > 0 then
-		text = text .. '\n*' .. vscode.color(table.concat(tags, ', '), vscode.theme.gray) .. '*'
+		text = text .. '\n\n*' .. vscode.color(table.concat(tags, ', '), vscode.theme.gray) .. '*'
 	end
 
 	if token.tags.text then
-		text = text .. '\n' .. token.tags.text
+		text = text .. '\n\n' .. token.tags.text
 	end
 
 	if token.tags.params then
-		text = text .. '\n**Params**:'
+		text = text .. '\n\n**Params**:'
 		for i, param in ipairs(token.tags.params) do
 			text = text .. '\n' .. i .. '. '
 			if param.name then
@@ -110,7 +108,7 @@ local function function_text(token)
 
 	if token.tags.error then
 		--Print the situations in which the function might raise an error.
-		text = text .. '\n**Errors**:'
+		text = text .. '\n\n**Errors**:'
 		for _, t in ipairs(token.tags.error) do
 			text = text .. '\n- ' .. vscode.color(t.type, vscode.theme.type) .. ' ' .. t.text
 		end
@@ -137,7 +135,7 @@ local function func_call_lsp(token, filename)
 		funcsig = funcsig .. TYPE_TEXT(TYPESIG[name].out, true)
 	end
 
-	local text = funcsig .. '\n' .. TYPESIG[name].description
+	local text = funcsig .. '\n\n' .. TYPESIG[name].description
 	INFO.hint(token.span, text, filename)
 end
 
@@ -190,9 +188,9 @@ return {
 				INFO.constant(token.span, filename)
 
 				local text = data_type('_ENV', TYPE_ENV)
-				text = text .. '\nReads an environment variable when indexed.'
+				text = text .. '\n\nReads an environment variable when indexed.'
 				text = text ..
-					'\nNote that unlike other variables, only individual keys of `_ENV` are allowed to be accessed, not the entire object.'
+					'\n\nNote that unlike other variables, only individual keys of `_ENV` are allowed to be accessed, not the entire object.'
 
 				INFO.hint(token.span, text, filename)
 			end,
@@ -284,12 +282,12 @@ return {
 				end
 
 				for _, kid in ipairs(var.children) do
-					text = text .. '\n' .. data_type(kid.text, kid.type)
+					text = text .. '\n\n' .. data_type(kid.text, kid.type)
 					span = Span:merge(span, kid.span)
 				end
 
 				if token.tags and token.tags.brief and #token.tags.brief > 0 then
-					text = text .. '\n' .. token.tags.brief
+					text = text .. '\n\n' .. token.tags.brief
 				end
 
 				INFO.hint(span, text, filename)
