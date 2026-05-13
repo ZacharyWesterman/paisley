@@ -1,4 +1,16 @@
 #[[
+@file Utility functions for file manipulation.
+
+### Functions:
+```
+function file.stdin ... end # Read a line from stdin, or error if no more data.
+function file.open ... end # Open a file stream which can be read in a generator construct.
+function file.nextline ... end # Read a line from a file, or error if the file has no more data (or was never opened).
+function file.nextchar ... end # Read a single character from a file, or error if the file has no more data (or was never opened).
+```
+#]]
+
+#[[
 @brief Read a line from stdin, or error if no more data.
 @return string The line read from stdin.
 @error eof When no more data exists in stdin.

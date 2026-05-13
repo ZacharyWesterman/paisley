@@ -1,3 +1,12 @@
+#[[
+@file Utility functions for object manipulation.
+
+### Functions:
+```
+function object.pick ... end # Pick specific keys from an object.
+function object.omit ... end # Omit specific keys from an object.
+```
+#]]
 
 #[[
 @export
