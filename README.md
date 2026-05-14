@@ -70,11 +70,12 @@ To uninstall, just run `./uninstall.sh`.
 
 Running a basic Paisley script is pretty straightforward.
 ```
-#If Paisley is installed on your machine, you can run the following:
+# If Paisley is installed on your machine, you can run the following:
 paisley examples/helloworld.pai
 paisley --help
 
-#If it's not installed, just keep in mind that this is a Lua project; you can run Paisley as you would any other Lua script:
+# If it's not installed, just keep in mind that this is a Lua project;
+# you can run Paisley as you would any other Lua script:
 lua paisley examples/helloworld.pai
 lua paisley --help
 ```
