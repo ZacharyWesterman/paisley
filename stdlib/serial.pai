@@ -4,7 +4,12 @@
 ### Functions:
 ```
 function serialize.int ... end # Serialize a 32-bit integer to a 4-byte string.
+function serialize.long ... end # Serialize a 64-bit integer to an 8-byte string.
+function serialize.string ... end # Serialize a variable-length string.
+
 function deserialize.int ... end # Deserialize a 32-bit integer from a 4-byte string.
+function deserialize.long ... end # Deserialize a 64-bit integer from an 8-byte string.
+function deserialize.string ... end # Deserialize a variable-length string.
 ```
 #]]
 
@@ -27,10 +32,68 @@ end
 @brief Deserialize a 32-bit integer from a 4-byte string.
 If the string is longer than 4-bytes, any remaining bytes are ignored.
 @param text string The string to deserialize from.
-@return number A 32-bit integer.
+@return array[number|string] A 32-bit integer, and any remaining text.
 #]]
 function deserialize.int
 	return {
-		(ascii(i) for i in @1[1:4].split('')).reverse().frombytes()
+		(ascii(i) for i in @1[1:4].split('')).reverse().frombytes(),
+		@1[5::],
 	}
+end
+
+#[[
+@export
+@brief Serialize a 64-bit integer to an 8-byte string.
+@param value number The integer to serialize.
+@return string A string of 8 bytes.
+#]]
+function serialize.long
+	return {
+		(
+			char(i) for i in @1.bytes(8).reverse()
+		).join("")
+	}
+end
+
+#[[
+@export
+@brief Deserialize a 64-bit integer from an 8-byte string.
+If the string is longer than 8-bytes, any remaining bytes are ignored.
+@param text string The string to deserialize from.
+@return array[number|string] A 64-bit integer, and any remaining text.
+#]]
+function deserialize.long
+	return {
+		(ascii(i) for i in @1[1:8].split('')).reverse().frombytes(),
+		@1[9::],
+	}
+end
+
+#[[
+@export
+@brief Serialize a variable-length string.
+@param value string The string to serialize.
+@return string The serialized string.
+#]]
+function serialize.string
+	return "{\serialize.int(len(@1))}{@1}"
+end
+
+#[[
+@export
+@brief Deserialize a variable-length string.
+@param text string The string to deserialize from.
+@return array[string] The deserialized string, and any remaining text.
+#]]
+function deserialize.string
+	#@type number string
+	let _len _remd = {\deserialize.int(@1)}
+	return {
+		_remd[1:_len],
+		_remd[(_len+1)::],
+	}
+end
+
+function serialize.float
+
 end
