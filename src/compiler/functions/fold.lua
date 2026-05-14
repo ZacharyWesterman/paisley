@@ -535,4 +535,6 @@ return {
 		end
 		return false
 	end,
+
+	int = function(value) return math.floor(std.num(value)) end,
 }
