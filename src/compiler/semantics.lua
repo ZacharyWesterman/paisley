@@ -584,6 +584,14 @@ function SemanticAnalyzer(root, root_file)
 			variable_assignment, variable_unassignment)
 	end
 
+	--Print a subset language server information that needs to happen before constant folding.
+	--[[minify-delete]]
+	if LANGUAGE_SERVER then
+		config = require "src.compiler.semantics.lsp_info_pre_fold"
+		recurse2(root, config, root_file)
+	end
+	--[[/minify-delete]]
+
 	config = require 'src.compiler.semantics.type_checking'
 	config.set(labels, funcsig, set_var, get_var, push_var)
 
@@ -595,7 +603,7 @@ function SemanticAnalyzer(root, root_file)
 		recurse2(root, config, root_file)
 
 		--Fold any newly deduced constants
-		if not ERRORED --[[minify-delete]] and not LANGUAGE_SERVER --[[/minify-delete]] then
+		if not ERRORED then
 			recurse2(root, folding, root_file)
 		end
 
@@ -709,10 +717,10 @@ function SemanticAnalyzer(root, root_file)
 		end
 	end)
 
-	--Print language server information.
+	--Print any language server information that can/must happen after constant folding and type deduction.
 	--[[minify-delete]]
 	if LANGUAGE_SERVER then
-		config = require "src.compiler.semantics.lsp_info"
+		config = require "src.compiler.semantics.lsp_info_post_fold"
 		config.init(labels, variables)
 		recurse2(root, config, root_file)
 	end
