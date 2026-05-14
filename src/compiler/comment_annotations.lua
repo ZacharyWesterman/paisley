@@ -342,3 +342,4 @@ end
 return function()
 	return process_comment_annotations, get_tags, wipe_tags, get_module_description
 end
+--[[/minify-delete]]

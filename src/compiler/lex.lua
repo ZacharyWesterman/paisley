@@ -551,6 +551,7 @@ function Lexer(text, file, keep_comments)
 							return
 							--[[minify-delete]]
 						end
+						--[[/minify-delete]]
 					end
 
 					--Once string ends, add text to token list and exit string.

@@ -345,8 +345,14 @@ LUA = {
 					while tokens[i].type ~= 'comment' or tokens[i].text ~= '--[[/minify-delete]]' do
 						i = i + 1
 						--Check for minification errors
-						if tokens[i].type == 'comment' and tokens[i].text == '--[[minify-delete]]' then
-							local msg = 'ERROR: Unexpected `--[[minify-delete]]` inside a `--[[minify-delete]]` block.'
+						if not tokens[i] or (tokens[i].type == 'comment' and tokens[i].text == '--[[minify-delete]]') then
+							local msg
+							if not tokens[i] then
+								msg = 'ERROR: Unterminated `--[[minify-delete]]` block.'
+							else
+								msg = 'ERROR: Unexpected `--[[minify-delete]]` inside a `--[[minify-delete]]` block.'
+							end
+
 							msg = msg .. '\nCONTEXT:\n'
 							for j = beg - 1, i do
 								if tokens[j] then
