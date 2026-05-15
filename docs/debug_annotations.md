@@ -154,4 +154,4 @@ DATA_TYPE = {
 }
 ```
 
-See [the data type docs](docs/types.md) for information on string representation of types.
+See [the data type docs](types.md) for information on string representation of types.
