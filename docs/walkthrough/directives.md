@@ -42,7 +42,6 @@ The following build flags are supported:
 
 ---
 
-### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
+### [< Prev][prev] | [Home](../walkthrough.md) | Next >
 
 [prev]: [comments.md]
-[next]: []
