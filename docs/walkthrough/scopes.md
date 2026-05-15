@@ -1,7 +1,7 @@
 ## Scopes:
 Every time you enter into a new "block" of code, the scope is incremented.
 For global variables this doesn't matter, but macros for example cannot exist outside of the scope where they were defined.
-Any structure that naturally isolates a block of code increments the scope.
+Any structure that *naturally isolates a block of code* also increments the scope.
 ```
 #[[ This is the global scope #]]
 
@@ -37,7 +37,8 @@ except err
 end
 ```
 
-In some cases, you may want to intentionally create a scope to isolate a block of code. You can do so with the `do ... end` block:
+In some cases, you may want to intentionally create a scope to isolate a block of code. You can do so with the `do ... end` block.
+This may look similar to for/while loops, but don't be fooled! It's essentially a no-op, only there to isolate the scope of the contained code.
 ```
 # The real value for pi is about 3.14
 define {!pi[3.14]}
