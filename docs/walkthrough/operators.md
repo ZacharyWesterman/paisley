@@ -51,7 +51,7 @@ string concatenation `a b` (two expressions separated by a space)<br>
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [lang_functions.md]
 [next]: [arrays.md]

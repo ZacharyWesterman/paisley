@@ -53,7 +53,7 @@ print "The real value of pi is {!pi}"
 ```
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [exceptions.md]
 [next]: [misc_statements.md]

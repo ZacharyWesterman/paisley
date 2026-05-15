@@ -42,7 +42,7 @@ The following build flags are supported:
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [comments.md]
 [next]: []

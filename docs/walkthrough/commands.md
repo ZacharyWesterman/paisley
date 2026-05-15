@@ -74,7 +74,7 @@ echo "text" !>? #Pipes stderr to stdout.
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [list_comprehension.md]
 [next]: [comments.md]

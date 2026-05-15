@@ -55,7 +55,7 @@ Of course, like `if` statements, the `else` branch is optional and can be exclud
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: []
 [next]: [loops.md]

@@ -63,7 +63,7 @@ end
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [conditionals.md]
 [next]: [variables.md]

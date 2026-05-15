@@ -130,7 +130,7 @@ Note that aliases do NOT work with dynamic calls; those require the full functio
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [variables.md]
 [next]: [macros.md]

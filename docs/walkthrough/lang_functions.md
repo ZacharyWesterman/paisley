@@ -298,7 +298,7 @@ Both are exactly equivalent, the latter syntax is included simply for convenienc
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [expressions.md]
 [next]: [operators.md]

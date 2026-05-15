@@ -27,7 +27,7 @@ Note that, unlike variables, macros are restricted to their scope. Thus, for exa
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [functions.md]
 [next]: [exceptions.md]

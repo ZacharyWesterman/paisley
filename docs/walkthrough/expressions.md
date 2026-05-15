@@ -82,7 +82,7 @@ Expressions also give access to a full suite of operators and functions, listed 
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [misc_statements.md]
 [next]: [lang_functions.md]

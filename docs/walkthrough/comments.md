@@ -32,7 +32,7 @@ The following is a complete list of annotations and what their effects are:
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [commands.md]
 [next]: [directives.md]

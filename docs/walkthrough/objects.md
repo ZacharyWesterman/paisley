@@ -54,7 +54,7 @@ Empty objects are `falsey`.
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [arrays.md]
 [next]: [list_comprehension.md]

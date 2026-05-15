@@ -40,7 +40,7 @@ print {i} # This is still `123`! The list comprehension did not affect the actua
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [objects.md]
 [next]: [commands.md]

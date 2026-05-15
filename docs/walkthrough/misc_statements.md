@@ -32,7 +32,7 @@ Note that files can only be imported once, that is, any redundant imports are ig
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [scopes.md]
 [next]: [expressions.md]

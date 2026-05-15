@@ -103,7 +103,7 @@ end
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [loops.md]
 [next]: [functions.md]

@@ -60,7 +60,7 @@ Empty arrays are `falsey`.
 
 ---
 
-{% shared.navigate %}
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
 [prev]: [operators.md]
 [next]: [objects.md]
