@@ -1,0 +1,69 @@
+## Loops:
+While and For loops each have two variations:
+```
+# While loop
+while {expression is truthy} do
+	...
+end
+
+# Infinite loop
+while do
+	...
+end
+
+# Iterator for loop
+for value in {expression} do
+	...
+end
+
+# Key-value for loop
+for key value in {pairs(object or array)} do
+	...
+end
+```
+
+Note that the iterator (2nd from the bottom) loop type will iterate over all *values* in an array, and all *keys* in an object!
+Also note that the key-value (bottom) loop **must** contain either `pairs()` or `chunk(2)`, to ensure that the key-value pairs are valid.
+
+If you want syntax similar to Lua's integer for loops (`for i = 1, 10 do ... end`), you can use something like `for i in {1:10} do ... end`.
+
+### Generator-exception loops
+
+A common pattern is to use exceptions to give generator behavior. For example, suppose you have a function that generates numbers from 0-9, and then raises an exception when done, to indicate there is no more data that can be generated:
+```
+function next
+	initial i = 0
+	if {i >= 10} then
+		error 'End of generator' as generator_end
+	end
+	let i += 1
+	return {i}
+end
+```
+
+This can easily be handled with
+```
+try
+	while {true} do
+		print "Generated item: {\next()}"
+		# Do other stuff
+	end
+catch generator_end
+end
+```
+
+While that works, it's not immediately obvious that you're just looping until the generator is empty.
+So, there is syntax sugar that does the same thing but is more explicit about it:
+```
+until generator_end do
+	print "Generated item: {\next()}"
+	# Do other stuff
+end
+```
+
+---
+
+{% shared.navigate %}
+
+[prev]: [conditionals.md]
+[next]: [variables.md]

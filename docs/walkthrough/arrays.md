@@ -57,3 +57,10 @@ Keep in mind that array indexes start at 1, and can be negative to start from th
 
 If an array contains any values, it is `truthy`.
 Empty arrays are `falsey`.
+
+---
+
+{% shared.navigate %}
+
+[prev]: [operators.md]
+[next]: [objects.md]

@@ -49,3 +49,9 @@ string concatenation `a b` (two expressions separated by a space)<br>
 - Indexing, `[]`. Like most languages, this lets you get an element from a string, array, or object (e.g. `"string"[2]` gives "t", `('a','b','c')[3]` gives "c", and `('a'=>'v1', 'b'=>'v2')['a']` gives "v1"), however Paisley also lets you select multiple items at once in a single index expression. E.g. `"abcde"[2,5,5]` gives "bee", `"abcde"[1:3]` gives "abc", `(6,7,8,9,0)[3,1,5]` gives `(8,6,0)`.
 - dot-notation, `.`. This is purely syntax sugar. When used with functions, the left side of the dot is treated as the first argument to the function, e.g. `val1.func(val2, ...)` = `func(val1, val2, ...)`. When used with identifiers, a dot is shorthand for object indexing, e.g. `obj.attr` = `obj["attr"]`.
 
+---
+
+{% shared.navigate %}
+
+[prev]: [lang_functions.md]
+[next]: [arrays.md]
