@@ -76,5 +76,5 @@ echo "text" !>? #Pipes stderr to stdout.
 
 ### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
-[prev]: [list_comprehension.md]
-[next]: [comments.md]
+[prev]: list_comprehension.md
+[next]: comments.md

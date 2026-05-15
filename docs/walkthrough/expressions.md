@@ -84,5 +84,5 @@ Expressions also give access to a full suite of operators and functions, listed 
 
 ### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
-[prev]: [misc_statements.md]
-[next]: [lang_functions.md]
+[prev]: misc_statements.md
+[next]: lang_functions.md

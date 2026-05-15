@@ -29,5 +29,5 @@ Note that, unlike variables, macros are restricted to their scope. Thus, for exa
 
 ### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
-[prev]: [functions.md]
-[next]: [exceptions.md]
+[prev]: functions.md
+[next]: exceptions.md

@@ -132,5 +132,5 @@ Note that aliases do NOT work with dynamic calls; those require the full functio
 
 ### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
-[prev]: [variables.md]
-[next]: [macros.md]
+[prev]: variables.md
+[next]: macros.md

@@ -53,5 +53,5 @@ string concatenation `a b` (two expressions separated by a space)<br>
 
 ### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
-[prev]: [lang_functions.md]
-[next]: [arrays.md]
+[prev]: lang_functions.md
+[next]: arrays.md

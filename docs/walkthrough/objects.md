@@ -56,5 +56,5 @@ Empty objects are `falsey`.
 
 ### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
-[prev]: [arrays.md]
-[next]: [list_comprehension.md]
+[prev]: arrays.md
+[next]: list_comprehension.md

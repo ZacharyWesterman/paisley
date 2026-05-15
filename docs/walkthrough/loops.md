@@ -65,5 +65,5 @@ end
 
 ### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
-[prev]: [conditionals.md]
-[next]: [variables.md]
+[prev]: conditionals.md
+[next]: variables.md

@@ -62,5 +62,5 @@ Empty arrays are `falsey`.
 
 ### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
-[prev]: [operators.md]
-[next]: [objects.md]
+[prev]: operators.md
+[next]: objects.md

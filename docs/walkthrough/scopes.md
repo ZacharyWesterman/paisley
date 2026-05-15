@@ -55,5 +55,5 @@ print "The real value of pi is {!pi}"
 
 ### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
-[prev]: [exceptions.md]
-[next]: [misc_statements.md]
+[prev]: exceptions.md
+[next]: misc_statements.md

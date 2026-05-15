@@ -44,4 +44,4 @@ The following build flags are supported:
 
 ### [< Prev][prev] | [Home](../walkthrough.md) | Next >
 
-[prev]: [comments.md]
+[prev]: comments.md

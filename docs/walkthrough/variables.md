@@ -105,5 +105,5 @@ end
 
 ### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
-[prev]: [loops.md]
-[next]: [functions.md]
+[prev]: loops.md
+[next]: functions.md

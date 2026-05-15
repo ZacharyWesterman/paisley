@@ -34,5 +34,5 @@ The following is a complete list of annotations and what their effects are:
 
 ### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
-[prev]: [commands.md]
-[next]: [directives.md]
+[prev]: commands.md
+[next]: directives.md

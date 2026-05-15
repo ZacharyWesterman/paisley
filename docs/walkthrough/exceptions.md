@@ -30,5 +30,5 @@ This is just a basic overview of error handling with exceptions. There are more 
 
 ### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
-[prev]: [macros.md]
-[next]: [scopes.md]
+[prev]: macros.md
+[next]: scopes.md

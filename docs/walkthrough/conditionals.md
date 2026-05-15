@@ -57,4 +57,4 @@ Of course, like `if` statements, the `else` branch is optional and can be exclud
 
 ### < Prev | [Home](../walkthrough.md) | [Next >][next]
 
-[next]: [loops.md]
+[next]: loops.md

@@ -34,5 +34,5 @@ Note that files can only be imported once, that is, any redundant imports are ig
 
 ### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
 
-[prev]: [scopes.md]
-[next]: [expressions.md]
+[prev]: scopes.md
+[next]: expressions.md
