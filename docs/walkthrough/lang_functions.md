@@ -1,5 +1,11 @@
 # Paisley Standard Library Functions
 
+Note that functions can be called in one of two ways:
+1. The usual syntax, e.g. `split(var, delim)`
+2. Using dot-notation, e.g. `var.split(delim)`
+
+Both are exactly equivalent, the latter syntax is included simply for convenience.
+
 ## Arrays
 - `all(list: array[any]) -> boolean`
   - Check if all elements in an array are truthy. This is identical to calling `reduce(..., and)`.
@@ -290,3 +296,9 @@
 - `type(data: any) -> string`
   - Get the data type of a value. Possible return values are "number", "string", "boolean", "null", "array" or "object".
 
+---
+
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
+
+[prev]: expressions.md
+[next]: operators.md

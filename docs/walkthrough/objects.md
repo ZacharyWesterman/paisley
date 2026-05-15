@@ -3,7 +3,7 @@
 Objects function much like JavaScript objects in the sense that they are just a collection of key-value pairs, where the keys are always strings, and the values can be anything.
 Like tables in Lua, the keys of an object *are not guaranteed to be in any order*, and setting a value in an object to `null` deletes it from the object.
 However, objects differ from Lua tables in two major ways:
-1. The keys are always strings. If you use a key that is not a string, it will be cast to one using [Paisley's type-casting rules](docs/type-casting.md).
+1. The keys are always strings. If you use a key that is not a string, it will be cast to one using [Paisley's type-casting rules](../type-casting.md).
 2. You **cannot** mix array and object construction syntax; it's either one or the other. (e.g. `{"a" => 123, "b"}` is not allowed!)
 
 To define an object, use the arrow operator `=>` between two values, such as `"key" => 123` or `var => 123`. 
@@ -51,3 +51,10 @@ let object{} = 'some value'
 
 If an object contains any values, it is `truthy`.
 Empty objects are `falsey`.
+
+---
+
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
+
+[prev]: arrays.md
+[next]: list_comprehension.md
