@@ -7,10 +7,12 @@ fi
 
 rm -rf html
 mkdir html
+cp images/paisley-logo-small.png html/logo.png
 
 find docs/* -type d | while read dir; do
 	dir=${dir/docs/html}
 	mkdir "$dir"
+	cp images/paisley-logo-small.png "$dir/logo.png"
 done
 
 # Automatically convert .md links into .html
