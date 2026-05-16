@@ -17,6 +17,7 @@ print {${time}.clocktime()[1:3].join(":")}
 
 ### Built-in commands
 For ease of use and consistency, there are 7 built-in commands that will always be the same regardless of what the target environment is.
+
 - `time`: Returns a number representing the clock time. If in a game engine, this is the in-game time. If on PC, this is the same as `systime`. Arguments are ignored.
 - `systime`: Returns a number representing the system time (seconds since midnight). Arguments are ignored.
 - `sysdate`: Returns a numeric array containing the system day, month, and year (in that order). Arguments are ignored.
@@ -26,6 +27,7 @@ For ease of use and consistency, there are 7 built-in commands that will always 
 - `.`: No-op. Calculates the value of its arguments and discards the result. Returns null.
 
 In the PC build, the following commands are also available:
+
 - `clear`: Clears the screen.
 - `stdin`: Reads a line of text from stdin.
 - `stdout`: Prints text to stdout, without a line ending.
@@ -52,7 +54,7 @@ let x = ${= wget https://127.0.0.1/example}
 ### Command piping
 
 Like Bash, the stdout of commands can be piped into other commands, or from and to files. This uses the same syntax as bash, for familiarity, and because the syntax is simple enough.
-```
+```sh
 echo "some text" > my_file.txt
 cat my_file.txt | grep "some"
 grep "something <<<"text input"

@@ -9,6 +9,7 @@ Additionally, debug annotations *can never* emit errors, and since warnings can 
 The only compiler message that can be emitted is "info" level messages, or using Lua's `print()` function.
 
 There are 3 flavors of debug annotations. All start with `@debug`
+
 1. Command debugging
 2. In-place function debugging
 3. Imported function debugging
@@ -155,3 +156,7 @@ DATA_TYPE = {
 ```
 
 See [the data type docs](types.md) for information on string representation of types.
+
+---
+
+### [Home](walkthrough.md)

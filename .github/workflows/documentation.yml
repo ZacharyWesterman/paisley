@@ -1,0 +1,26 @@
+name: Deploy Documentation
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Dependencies
+      run: sudo apt-get install -y --no-install-recommends pandoc
+    - name: Build Documentation
+      run: |
+        git fetch --unshallow
+        ./docs_to_html.sh
+    - name: Deploy Documentation
+      uses: peaceiris/actions-gh-pages@v3.9.3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./html
