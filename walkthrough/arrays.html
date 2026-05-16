@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h1 id="arrays">Arrays</h1>
+<p>Arrays function much like arrays in other languages, with one caveat:
+<strong>null values are not allowed in arrays</strong>. This has to do
+with the oddities of Lua’s <code>nil</code> in tables, so to avoid
+having to handle it, they’re just not allowed when constructing
+arrays.</p>
+<p>Like in Lua, <strong>arrays are 1-indexed</strong>.</p>
+<p>The comma <code>,</code> and slice <code>:</code> operators always
+indicate an array. For example, <code>(1,2,3)</code> is an array, as are
+<code>(1,2,3,)</code>, <code>(1,)</code> and <code>(,)</code>. Note that
+expressions <em>are</em> allowed to have a trailing comma, which simply
+indicates that the expression is an array with a single element.
+Likewise, a single comma by itself indicates an empty array.</p>
+<p>Note that an expression must contain a comma <code>,</code> or slice
+<code>:</code> operator to be considered an array, just parentheses is
+not enough. So <code>(1,)</code> is an array and <code>(1:1)</code> is
+an equivalent array, but <code>(1)</code> is a number, not an array.</p>
+<p>Basically, if there’s a comma, you have an array.</p>
+<h2 id="constructing-arrays">Constructing Arrays</h2>
+<p>Here are some example array constructions:</p>
+<pre><code>let array = {
+    &quot;a&quot;,
+    123,
+    true,
+}
+let numbers = {0:9} #Contains (0, 1, 2, ... 8, 9)
+let empty_array = {,}
+let one_element_array = {123,} #That comma is necessary!
+let nested_1_elem_array = {(123,),} #This is an array with 1 element. That element is an array with 1 element.
+
+#You can also mix slices and single elements!
+let array_mix = {
+    1,
+    5,
+    10:15,
+    100,
+    500,
+} #Contains (1, 5, 10, 11, 12, 13, 14, 15, 100, 500)</code></pre>
+<h2 id="accessing-array-elements">Accessing Array Elements</h2>
+<p>To access an array’s elements, use the usual square-brackets syntax
+seen in most languages, e.g.</p>
+<pre><code>let array = {&#39;a&#39;, &#39;b&#39;, &#39;c&#39;}
+print {array[1]} #prints &quot;a&quot;</code></pre>
+<p>And to change an array’s elements,</p>
+<pre><code>let array{2} = &#39;d&#39; #array is now (&#39;a&#39;, &#39;d&#39;, &#39;c&#39;)
+let array{-1} = &#39;e&#39; #array is now (&#39;a&#39;, &#39;d&#39;, &#39;e&#39;)</code></pre>
+<p>You can also append to an array,</p>
+<pre><code>let array{} = &#39;f&#39; #array is now (&#39;a&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;)</code></pre>
+<p>Keep in mind that array indexes start at 1, and can be negative to
+start from the end of the array instead of the beginning (e.g. -1 is the
+last element, -2 is the second to last, etc).</p>
+<h2 id="truthiness">Truthiness</h2>
+<p>If an array contains any values, it is <code>truthy</code>. Empty
+arrays are <code>falsey</code>.</p>
+<hr />
+<h3 id="prevprev-home-next-next"><a href="operators.html">&lt; Prev</a>
+| <a href="../walkthrough.html">Home</a> | <a href="objects.html">Next
+&gt;</a></h3>
+</body>
+</html>

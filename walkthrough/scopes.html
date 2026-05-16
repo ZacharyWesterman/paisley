@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h2 id="scopes">Scopes:</h2>
+<p>Every time you enter into a new “block” of code, the scope is
+incremented. For global variables this doesn’t matter, but macros for
+example cannot exist outside of the scope where they were defined. Any
+structure that <em>naturally isolates a block of code</em> also
+increments the scope.</p>
+<pre><code>#[[ This is the global scope #]]
+
+while ... do #[[ New scope A #]] end
+#[[ Scope A doesn&#39;t exist here #]]
+
+for ... do #[[ New scope B #]] end
+#[[ Scope B doesn&#39;t exist here #]]
+
+if ... then
+    #[[ New scope C #]]
+elif ... then
+    #[[ New scope D. C doesn&#39;t exist here #]]
+else
+    #[[ New scope E. D doesn&#39;t exist here #]]
+end
+#[[ Scopes C, D, E don&#39;t exist here #]]
+
+match ... do
+    if ... then #[[ New scope F #]] end
+else
+    # You get the picture
+end
+
+function my_sub
+    # You guessed it! This function has its own scope.
+end
+
+try
+    # Scope F
+except err
+    # Scope G
+end</code></pre>
+<p>In some cases, you may want to intentionally create a scope to
+isolate a block of code. You can do so with the <code>do ... end</code>
+block. This may look similar to for/while loops, but don’t be fooled!
+It’s essentially a no-op, only there to isolate the scope of the
+contained code.</p>
+<pre><code># The real value for pi is about 3.14
+define {!pi[3.14]}
+
+do
+    # But sometimes, 3 might be a good enough estimate
+    define {!pi[3]}
+
+    print &quot;My estimate for pi is {!pi}&quot;
+end
+
+print &quot;The real value of pi is {!pi}&quot;</code></pre>
+<hr />
+<h3 id="prevprev-home-next-next"><a href="exceptions.html">&lt; Prev</a>
+| <a href="../walkthrough.html">Home</a> | <a
+href="misc_statements.html">Next &gt;</a></h3>
+</body>
+</html>

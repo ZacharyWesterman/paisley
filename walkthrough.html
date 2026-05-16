@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<h1 id="a-comprehensive-guide-to-paisley">A Comprehensive Guide to
+Paisley</h1>
+<p>The following is a detailed breakdown of every language feature in
+Paisley. For some hands-on examples of programs, check out the
+<code>examples/</code> or <code>stdlib/</code> directories.</p>
+<p>I’d also recommend checking out the <a href="syntax.l">syntax
+specification</a> for an organized view of the syntax.</p>
+<h2 id="main-program-structures">Main program structures</h2>
+<p>As a general rule, white space and line endings <em>do not
+matter</em> in Paisley. The only use of line endings is to separate
+commands, which can also be done with a semicolon <code>;</code>
+character.</p>
+<p>A Paisley script may consist of a series of comments, statements, and
+commands. - Single-line comments begin with a <code>#</code> character
+and continue to the end of the line. - Multi-line comments begin with
+<code>#[[</code> and continue until <code>#]]</code> is reached, or the
+end of the file. - There are 5 types of statements: conditionals
+(if/else/elif/match/try), loops (for/while), variable assignment,
+function definitions, and miscellaneous statements (return/break/etc). -
+Any text that is not a keyword or otherwise part of a statement is
+considered a command. More on that later.</p>
+<p>Before continuing, note that commands do not have to be hard-coded.
+You can put expressions in them, such as</p>
+<pre><code>let r = 500
+print &quot;r = {r}, d = {3.14 * r * r}&quot;</code></pre>
+<p>See how in the above, expressions are contained inside curly braces,
+<code>{}</code>. More on that later.</p>
+<hr />
+<h3 id="index">Index</h3>
+<ol type="1">
+<li><a href="walkthrough/conditionals.html">conditionals</a></li>
+<li><a href="walkthrough/loops.html">loops</a></li>
+<li><a href="walkthrough/variables.html">variables</a></li>
+<li><a href="walkthrough/functions.html">user functions</a></li>
+<li><a href="walkthrough/macros.html">macros</a></li>
+<li><a href="walkthrough/exceptions.html">exceptions</a></li>
+<li><a href="walkthrough/scopes.html">scopes</a></li>
+<li><a href="walkthrough/misc_statements.html">miscellaneous
+statements</a></li>
+<li><a href="walkthrough/expressions.html">expressions</a></li>
+<li><a href="walkthrough/lang_functions.html">built-in
+functions</a></li>
+<li><a href="walkthrough/operators.html">operators</a></li>
+<li><a href="walkthrough/arrays.html">arrays</a></li>
+<li><a href="walkthrough/objects.html">objects</a></li>
+<li><a href="walkthrough/list_comprehension.html">list
+comprehension</a></li>
+<li><a href="walkthrough/commands.html">commands</a></li>
+<li><a href="walkthrough/comments.html">comments</a></li>
+<li><a href="walkthrough/directives.html">directives</a></li>
+</ol>
+<h3 id="other-useful-links">Other useful links</h3>
+<ul>
+<li><a href="debug_annotations.html">debug annotations</a></li>
+<li><a href="type_casting.html">type casting rules</a></li>
+</ul>
+<hr />
+<h3 id="begin"><a href="walkthrough/conditionals.html">Begin
+&gt;</a></h3>
+</body>
+</html>

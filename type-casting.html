@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<h1 id="type-casting">Type Casting</h1>
+<p>Paisley does not coerce values to other types, except in the case of
+conditionals, where types are coerced into booleans.</p>
+<p>In all other cases, values must be manually cast to different types
+by the programmer.</p>
+<h3 id="casting-to-strings">Casting to strings</h3>
+<ul>
+<li>null - converts to an empty string <code>""</code>.</li>
+<li>true and false - convert to <code>"1"</code> and <code>"0"</code>
+respectively.</li>
+<li>numbers - convert to the usual decimal text representation.</li>
+<li>arrays - for historical reasons, arrays are cast to space-delimited
+strings, e.g. <code>("a",123,"b")</code> is converted to
+<code>"a 123 b"</code>.</li>
+<li>objects - for historical reasons, objects’ values and keys are cast
+to space-delimited strings, e.g. <code>{"a" =&gt; 1, "b" =&gt; 2}</code>
+is converted to <code>"a 1 b 2"</code></li>
+</ul>
+<h3 id="casting-to-numbers">Casting to numbers</h3>
+<ul>
+<li>null - converts to zero.</li>
+<li>true and false - convert to <code>1</code> and <code>0</code>
+respectively.</li>
+<li>strings - convert to zero if not numeric, otherwise are converted
+using the usual decimal text representation.</li>
+<li>arrays - always convert to zero.</li>
+<li>objects - always convert to zero.</li>
+</ul>
+<h3 id="casting-to-booleans">Casting to booleans</h3>
+<ul>
+<li>null - converts to <code>false</code></li>
+<li>numbers - zero converts to <code>false</code>, anything else is
+<code>true</code>.</li>
+<li>strings - empty strings convert to <code>false</code>, anything else
+is <code>true</code>.</li>
+<li>arrays - empty arrays convert to <code>false</code>, anything else
+is <code>true</code>.</li>
+<li>objects - empty objects convert to <code>false</code>, anything else
+is <code>true</code>.</li>
+</ul>
+<h3 id="other-type-casting">Other type-casting</h3>
+<p>Arrays and objects may be cast between each other, but nothing can be
+cast to an array or object (what would converting a number to an object
+even mean?). Instead, arrays and objects must be constructed using the
+supported syntax.</p>
+</body>
+</html>

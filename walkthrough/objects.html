@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h1 id="objects">Objects</h1>
+<p>Objects function much like JavaScript objects in the sense that they
+are just a collection of key-value pairs, where the keys are always
+strings, and the values can be anything. Like tables in Lua, the keys of
+an object <em>are not guaranteed to be in any order</em>, and setting a
+value in an object to <code>null</code> deletes it from the object.
+However, objects differ from Lua tables in two major ways: 1. The keys
+are always strings. If you use a key that is not a string, it will be
+cast to one using <a href="../type-casting.html">Paisley’s type-casting
+rules</a>. 2. You <strong>cannot</strong> mix array and object
+construction syntax; it’s either one or the other.
+(e.g. <code>{"a" =&gt; 123, "b"}</code> is not allowed!)</p>
+<p>To define an object, use the arrow operator <code>=&gt;</code>
+between two values, such as <code>"key" =&gt; 123</code> or
+<code>var =&gt; 123</code>. Like with arrays, key-value pairs are
+allowed to have an optional trailing comma.</p>
+<pre><code>let object = {
+    &#39;name&#39; =&gt; &#39;Jerry&#39;,
+    &#39;age&#39; =&gt; 30,
+    &#39;friend&#39; =&gt; (
+        &#39;name&#39; =&gt; &#39;Susan&#39;,
+        &#39;age&#39; =&gt; 35,
+    ),
+}</code></pre>
+<p>To create an empty object, just use the arrow operator by itself.</p>
+<pre><code>let object = {=&gt;}
+let array_of_empties = {
+    (=&gt;),
+    (=&gt;),
+    (=&gt;),
+}</code></pre>
+<p>Object values can of course be accessed the same way array values
+can, with the regular indexing <code>[]</code> syntax. However,
+attributes can also be accessed with dot notation if they contain only
+alphanumeric characters (that is, they match the pattern
+<code>[a-zA-Z_][0-9a-zA-Z_]*</code>). The following lines do the exact
+same thing.</p>
+<pre><code>print {object[&#39;name&#39;]}
+print {object.name}</code></pre>
+<p>Like with arrays, object values can be added or changed with the
+following syntax,</p>
+<pre><code>let object{&#39;name&#39;} = &#39;Jekyll&#39;
+let object{&#39;friend&#39;, &#39;name&#39;} = &#39;Hyde&#39;</code></pre>
+<p>However, you cannot use the append syntax on an object, as it does
+not make sense in that context. So the following will not work:</p>
+<pre><code>let object{} = &#39;some value&#39;</code></pre>
+<h2 id="truthiness">Truthiness</h2>
+<p>If an object contains any values, it is <code>truthy</code>. Empty
+objects are <code>falsey</code>.</p>
+<hr />
+<h3 id="prevprev-home-next-next"><a href="arrays.html">&lt; Prev</a> |
+<a href="../walkthrough.html">Home</a> | <a
+href="list_comprehension.html">Next &gt;</a></h3>
+</body>
+</html>

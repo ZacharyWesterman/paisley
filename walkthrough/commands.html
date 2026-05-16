@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+      }
+    pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+    div.sourceCode
+      { color: #cccccc; background-color: #303030; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ffcfaf; } /* Alert */
+    code span.an { color: #7f9f7f; font-weight: bold; } /* Annotation */
+    code span.at { } /* Attribute */
+    code span.bn { color: #dca3a3; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #f0dfaf; } /* ControlFlow */
+    code span.ch { color: #dca3a3; } /* Char */
+    code span.cn { color: #dca3a3; font-weight: bold; } /* Constant */
+    code span.co { color: #7f9f7f; } /* Comment */
+    code span.cv { color: #7f9f7f; font-weight: bold; } /* CommentVar */
+    code span.do { color: #7f9f7f; } /* Documentation */
+    code span.dt { color: #dfdfbf; } /* DataType */
+    code span.dv { color: #dcdccc; } /* DecVal */
+    code span.er { color: #c3bf9f; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #c0bed1; } /* Float */
+    code span.fu { color: #efef8f; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #7f9f7f; font-weight: bold; } /* Information */
+    code span.kw { color: #f0dfaf; } /* Keyword */
+    code span.op { color: #f0efd0; } /* Operator */
+    code span.ot { color: #efef8f; } /* Other */
+    code span.pp { color: #ffcfaf; font-weight: bold; } /* Preprocessor */
+    code span.sc { color: #dca3a3; } /* SpecialChar */
+    code span.ss { color: #cc9393; } /* SpecialString */
+    code span.st { color: #cc9393; } /* String */
+    code span.va { } /* Variable */
+    code span.vs { color: #cc9393; } /* VerbatimString */
+    code span.wa { color: #7f9f7f; font-weight: bold; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h2 id="commands">Commands</h2>
+<h3 id="inline-command-evaluation">Inline Command Evaluation</h3>
+<p>Since commands can return values to Paisley after execution, you can
+also use those values in further calculations. For example:</p>
+<pre><code>#Get an integer value representing in-game time, and convert it to a human-readable format
+let t = {floor(${time})}
+let hour = {t // 3600}
+let minute = {(t // 60) % 60}
+let second = {t % 60}
+print {hour &quot;:&quot; minute &quot;:&quot; second}</code></pre>
+<p>Of course, there is also a simpler version that does the same
+thing:</p>
+<pre><code>print {${time}.clocktime()[1:3].join(&quot;:&quot;)}</code></pre>
+<h3 id="built-in-commands">Built-in commands</h3>
+<p>For ease of use and consistency, there are 7 built-in commands that
+will always be the same regardless of what the target environment
+is.</p>
+<ul>
+<li><code>time</code>: Returns a number representing the clock time. If
+in a game engine, this is the in-game time. If on PC, this is the same
+as <code>systime</code>. Arguments are ignored.</li>
+<li><code>systime</code>: Returns a number representing the system time
+(seconds since midnight). Arguments are ignored.</li>
+<li><code>sysdate</code>: Returns a numeric array containing the system
+day, month, and year (in that order). Arguments are ignored.</li>
+<li><code>print</code>: Prints any params to the ‘print’ or ‘stdout’
+output.</li>
+<li><code>error</code>: Raises an exception with the line number,
+message, and stack info. If not caught, outputs the error and ends the
+program.</li>
+<li><code>sleep</code>: Pause script execution for the given amount of
+seconds. If the first argument is not a positive number, delay defaults
+to minimum value (0.02s).</li>
+<li><code>.</code>: No-op. Calculates the value of its arguments and
+discards the result. Returns null.</li>
+</ul>
+<p>In the PC build, the following commands are also available:</p>
+<ul>
+<li><code>clear</code>: Clears the screen.</li>
+<li><code>stdin</code>: Reads a line of text from stdin.</li>
+<li><code>stdout</code>: Prints text to stdout, without a line
+ending.</li>
+<li><code>stderr</code>: Prints text to stderr, without a line
+ending.</li>
+<li><code>=</code>: Executes a unix command, capturing the return value.
+Run with no params to output the result of the last command.</li>
+<li><code>?</code>: Executes a unix command, capturing the stdout
+output. Run with no params to output the result of the last
+command.</li>
+<li><code>!</code>: Executes a unix command, capturing the stderr
+output. Run with no params to output the result of the last
+command.</li>
+<li><code>?!</code>: Executes a unix command, capturing both the stdout
+and stderr output. Run with no params to output the result of the last
+command.</li>
+</ul>
+<h3 id="shell-command-coersion">Shell command coersion</h3>
+<p>If the <code>--shell</code> or <code>-l</code> flag is passed, then
+Paisley will assume that any undefined commands are programs available
+on this system.</p>
+<pre><code># Plain commands will not capture stdout or stderr, so the following are equivalent:
+wget https://127.0.0.1/example
+= wget https://127.0.0.1/example
+
+# But inline command evaluation captures stdout, so the following are equivalent:
+let x = ${wget https://127.0.0.1/example}
+let x = ${? wget https://127.0.0.1/example}
+# And NOT equivalent to the following which captures the RETURN value of wget:
+let x = ${= wget https://127.0.0.1/example}</code></pre>
+<h3 id="command-piping">Command piping</h3>
+<p>Like Bash, the stdout of commands can be piped into other commands,
+or from and to files. This uses the same syntax as bash, for
+familiarity, and because the syntax is simple enough.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;some text&quot;</span> <span class="op">&gt;</span> my_file.txt</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> my_file.txt <span class="kw">|</span> <span class="fu">grep</span> <span class="st">&quot;some&quot;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="st">&quot;something &lt;&lt;&lt;&quot;</span>text input<span class="st">&quot;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="st">grep &quot;</span>something<span class="st">&quot; &lt;&quot;</span>file input<span class="st">&quot;</span></span></code></pre></div>
+<p>There is one difference however, and it’s that the stdout and stderr
+files are not called <code>1</code> and <code>2</code> respectively,
+instead they are <code>?</code> and <code>!</code> to remain consistent
+with other syntax. For example, to pipe stderr into a file:</p>
+<pre><code>wget https://127.0.0.1/example !&gt;my_file.txt</code></pre>
+<p>Also note that unlike in Bash, you must explicitly specify the input
+stream:</p>
+<pre><code>echo &quot;text&quot; &gt;file.txt #This will not work!
+
+echo &quot;text&quot; ?&gt;file.text #Pipes stdout into the file.
+echo &quot;text&quot; !&gt;file.text #Pipes stderr into the file.
+echo &quot;text&quot; ?!&gt;file.text #Pipes BOTH stdout and stderr into the file.
+echo &quot;text&quot; !&gt;? #Pipes stderr to stdout.</code></pre>
+<hr />
+<h3 id="prevprev-home-next-next"><a href="list_comprehension.html">&lt;
+Prev</a> | <a href="../walkthrough.html">Home</a> | <a
+href="comments.html">Next &gt;</a></h3>
+</body>
+</html>

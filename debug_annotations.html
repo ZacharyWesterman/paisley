@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+      }
+    pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+    div.sourceCode
+      { color: #cccccc; background-color: #303030; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ffcfaf; } /* Alert */
+    code span.an { color: #7f9f7f; font-weight: bold; } /* Annotation */
+    code span.at { } /* Attribute */
+    code span.bn { color: #dca3a3; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #f0dfaf; } /* ControlFlow */
+    code span.ch { color: #dca3a3; } /* Char */
+    code span.cn { color: #dca3a3; font-weight: bold; } /* Constant */
+    code span.co { color: #7f9f7f; } /* Comment */
+    code span.cv { color: #7f9f7f; font-weight: bold; } /* CommentVar */
+    code span.do { color: #7f9f7f; } /* Documentation */
+    code span.dt { color: #dfdfbf; } /* DataType */
+    code span.dv { color: #dcdccc; } /* DecVal */
+    code span.er { color: #c3bf9f; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #c0bed1; } /* Float */
+    code span.fu { color: #efef8f; } /* Function */
+    code span.im { } /* Import */
+    code span.in { color: #7f9f7f; font-weight: bold; } /* Information */
+    code span.kw { color: #f0dfaf; } /* Keyword */
+    code span.op { color: #f0efd0; } /* Operator */
+    code span.ot { color: #efef8f; } /* Other */
+    code span.pp { color: #ffcfaf; font-weight: bold; } /* Preprocessor */
+    code span.sc { color: #dca3a3; } /* SpecialChar */
+    code span.ss { color: #cc9393; } /* SpecialString */
+    code span.st { color: #cc9393; } /* String */
+    code span.va { } /* Variable */
+    code span.vs { color: #cc9393; } /* VerbatimString */
+    code span.wa { color: #7f9f7f; font-weight: bold; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<h1 id="debug-comment-annotations">Debug Comment Annotations</h1>
+<p>Debug annotations are a powerful tool that allows for compile-time
+validation of the usage of commands or user-defined functions. This
+validation is performed with an arbitrary Lua script inside the comment,
+giving the programmer the ability to perform nearly any sort of analysis
+on functions or commands.</p>
+<p>For security purposes, all debug annotations are entirely sandboxed.
+That is, they do not have access to <code>io</code>, <code>os</code>, or
+<code>require</code>, and the global variable <code>_G</code> is
+entirely empty.</p>
+<p>Additionally, debug annotations <em>can never</em> emit errors, and
+since warnings can be promoted to errors with the <code>--werror</code>
+flag, they cannot emit warnings either. The only compiler message that
+can be emitted is “info” level messages, or using Lua’s
+<code>print()</code> function.</p>
+<p>There are 3 flavors of debug annotations. All start with
+<code>@debug</code></p>
+<ol type="1">
+<li>Command debugging</li>
+<li>In-place function debugging</li>
+<li>Imported function debugging</li>
+</ol>
+<h2 id="command-debugging">Command debugging</h2>
+<p>Debug annotations for commands must start with <code>@debug</code>
+some identifier, and continue until <code>@end</code> is reached. The
+identifier can contain anything except <code>{}$()</code> or whitespace.
+These annotations can go anywhere, and will apply to all uses of the
+command.</p>
+<p>Below is an example debug annotation that could be used to verify
+arguments passed to the <code>sleep</code> command.</p>
+<pre><code>#[[
+@debug sleep (args, info, json)
+    -- Even though `sleep` command is syntactically allowed to have any number
+    -- of arguments passed to it (as are all commands),
+    -- It really should only be given exactly one.
+    if #args ~= 1 then
+        info(&#39;Expected 1 argument, but got&#39; .. #args .. &#39;.&#39;)
+        return
+    end
+
+    -- If the type is `unknown`, then we don&#39;t know if it&#39;s invalid or not.
+    if not args[1].type then return end
+
+    -- Users should only pass a number, or at least a value that *may be* a number.
+    -- E.g. if they pass some value of type `number|string|null`, then that&#39;s valid,
+    -- but passing a value of type `string|null` is invalid, because it&#39;s for sure not a number.
+    if not args[1].type:is_superset_of(&#39;number&#39;) then
+        args[1].info(
+            &#39;Argument of type `&#39; ..
+            args[1].type:tostring() ..
+            &#39;` is incompatible with `number`.&#39;
+        )
+    end
+@end
+#]]</code></pre>
+<h2 id="function-debugging">Function debugging</h2>
+<h3 id="in-place-debug-annotations">In-place debug annotations:</h3>
+<p>The syntax for function debug annotations is very similar to that of
+command annotations, except that there is no identifier in the
+annotation. Additionally, unlike the command annotations, these must go
+in comments directly above a function, as you would for any other
+annotations that are meant to apply to the function.</p>
+<p>So an example annotation could be something like:</p>
+<pre><code>#[[
+@debug (args, info, json)
+    --This function should not take any arguments
+    if #args &gt; 0 then
+        info(&#39;Function expects zero arguments, but &#39; .. #args .. &#39; given.&#39;)
+    end
+@end
+#]]
+function no_args
+    # Function body goes here
+end</code></pre>
+<h3 id="imported-debug-annotations">Imported debug annotations:</h3>
+<p>Writing annotations like the above, while useful, do tend to clutter
+up the function’s documentation or other annotations, not to mention
+that if you want to use the annotation on multiple functions, you have
+to duplicate it each time.</p>
+<p>To solve this, you can import annotations using
+<code>@debug {lua.import.path}</code> (no <code>@end</code> in this
+case). This import path is relative to the current script, or the stdlib
+if not found at the aforementioned. The imported file is just a normal
+lua script that returns a function.</p>
+<p>So for example, you could implement the above <code>no_args</code>
+function and annotation with something like the given directory
+structure:</p>
+<pre><code>project/
+├─ main.pai
+└─ annotations/
+   └─ no_args.lua</code></pre>
+<h4 id="main.pai">main.pai</h4>
+<pre><code># @debug {annotations.no_args}
+function no_args
+    # Function body goes here
+end</code></pre>
+<h4 id="annotationsno_args.lua">annotations/no_args.lua</h4>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> <span class="kw">function</span> <span class="op">(</span><span class="va">args</span><span class="op">,</span> <span class="va">info</span><span class="op">,</span> <span class="va">json</span><span class="op">)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">--This function should not take any arguments</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">#</span><span class="va">args</span> <span class="op">&gt;</span> <span class="dv">0</span> <span class="cf">then</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        info<span class="op">(</span><span class="st">&#39;Function expects zero arguments, but &#39;</span> <span class="op">..</span> <span class="op">#</span><span class="va">args</span> <span class="op">..</span> <span class="st">&#39; given.&#39;</span><span class="op">)</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">end</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<p>Obviously, the exact file structure is up to you, but that would be a
+totally fine way to structure it. And the benefits here are that not
+only do the annotations themselves take up very little space, but they
+are easy to reuse, and if you need to change the annotation’s behavior,
+you don’t have to change a million source files, only one.</p>
+<h2 id="debug-arguments">Debug Arguments</h2>
+<p>All debug functions - for commands or user-defined functions - take
+the same 3 arguments, <code>args</code>, <code>info</code>, and
+<code>json</code>.</p>
+<ul>
+<li><strong>args</strong>: A list of <em>AST nodes</em> passed to the
+function/command as arguments. so <code>args[1]</code> will be the first
+argument, etc. AST node layout is detailed below.</li>
+<li><strong>info</strong>: A function of the form
+<code>function info(message: string) -&gt; nil</code>. Calling this
+function will trigger an <code>INFO</code> level compiler message with
+the context being the <em>entire</em> function/command call expression.
+Most often this would be used when either there are no arguments, or
+it’s not just a specific argument that’s at fault.</li>
+<li><strong>json</strong>: Allows for converting arbitrary data to and
+from JSON strings. The following methods are available:
+<ul>
+<li><code>json.stringify(data: any) -&gt; string</code>: Serialize data
+to JSON.</li>
+<li><code>json.parse(text: string) -&gt; any, string|nil</code>:
+Deserialize data from a JSON string. If an error is encountered, the
+error message is returned as the second value.</li>
+<li><code>json.verify(text: string) -&gt; boolean</code>: Check if a
+string is in valid JSON format. Returns true if valid, false if
+not.</li>
+</ul></li>
+</ul>
+<h3 id="ast-node-layout">AST Node Layout</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">--Node layout is always the same for every type of AST node.</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="cn">NODE</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">id</span> <span class="op">=</span> <span class="dv">123</span><span class="op">,</span> <span class="co">--An integer indicating the type of node this is.</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">text</span> <span class="op">=</span> <span class="st">&#39;string&#39;</span><span class="op">,</span> <span class="co">--Contains the actual text the node represents (e.g. addition is `+`, boolean literals are `true` or `false`, etc.)</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="va">span</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">from</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>            <span class="va">line</span> <span class="op">=</span> <span class="dv">123</span><span class="op">,</span> <span class="co">--The line number this node begins at.</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>            <span class="va">col</span> <span class="op">=</span> <span class="dv">123</span><span class="op">,</span> <span class="co">--The column number this node begins at.</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        <span class="op">},</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="va">to</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>            <span class="va">line</span> <span class="op">=</span> <span class="dv">123</span><span class="op">,</span> <span class="co">--The line number this node ends at.</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>            <span class="va">col</span> <span class="op">=</span> <span class="dv">123</span><span class="op">,</span> <span class="co">--The column number this node ends at.</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">},</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="op">},</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="va">is_const</span> <span class="op">=</span> <span class="kw">function</span><span class="op">()</span> <span class="op">-&gt;</span> <span class="va">boolean</span><span class="op">,</span> <span class="co">--Returns true if the node was able to be coerced to a constant value.</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="va">value</span> <span class="op">=</span> <span class="op">...,</span> <span class="co">--If the node was able to be coerced to a constant value, that will be stored here.</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">type</span> <span class="op">=</span> <span class="cn">DATA_TYPE</span><span class="op">|</span><span class="kw">nil</span><span class="op">,</span> <span class="co">--The datatype of the node, if any was deduced. Nil if not applicable, or the compiler isn&#39;t sure on the type.</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="va">children</span> <span class="op">=</span> <span class="op">{...},</span> <span class="co">--A list of any child nodes that this node has. E.g. for `A + B`, the `+` node will have 2 children, `A` and `B`.</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="va">info</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">message</span><span class="op">:</span> <span class="va">string</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="kw">nil</span><span class="op">,</span> <span class="co">--Similar to the main `info()` function, but the context is limited to this node instead of the whole expression.</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="co">--Data type layout is always the same.</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="cn">DATA_TYPE</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="va">is_subset_of</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">,</span> <span class="va">other_type</span><span class="op">:</span> <span class="cn">DATA_TYPE</span><span class="op">|</span><span class="va">string</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">boolean</span><span class="op">,</span> <span class="co">--Returns true if other_type is a subset of self. E.g. `string` is a subset of `any` or `string|nil`, but is NOT a subset of `boolean|number`.</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="va">is_superset_of</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">,</span> <span class="va">other_type</span><span class="op">:</span> <span class="cn">DATA_TYPE</span><span class="op">|</span><span class="va">string</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">boolean</span><span class="op">,</span> <span class="co">--Returns true if other_type is a superset of self. E.g. `string|number|nil` is a superset of `string|nil`, but `string|number` is not.</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    <span class="va">is_exactly</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">,</span> <span class="va">other_type</span><span class="op">:</span> <span class="cn">DATA_TYPE</span><span class="op">|</span><span class="va">string</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">boolean</span><span class="op">,</span> <span class="co">--Returns true if other_type is exactly the same type as self.</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tostring</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="va">string</span><span class="op">,</span> <span class="co">--Returns the string representation of the data type.</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>See <a href="types.html">the data type docs</a> for information on
+string representation of types.</p>
+<hr />
+<h3 id="home"><a href="walkthrough.html">Home</a></h3>
+</body>
+</html>

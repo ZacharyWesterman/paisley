@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h2 id="comments">Comments</h2>
+<p>As mentioned briefly at the beginning, single-line comments start
+with <code>#</code> and continue until the end of the line, and
+multi-line comments start with <code>#[[</code> and continue until
+<code>#]]</code>. Comments can also be used to annotate parts of the
+program and slightly modify compiler behavior.</p>
+<h3 id="comment-annotations">Comment annotations</h3>
+<p>Every comment annotation starts with <code>@</code>. They will look
+something like the following:</p>
+<pre><code>#Some example function
+#@param n number The number to square.
+#@return number The square of the input number.
+function square
+    return {@1 * @1}
+end</code></pre>
+<p>The following is a complete list of annotations and what their
+effects are: - <code>@file</code> : A description for the current file.
+This can be multi-line, continuing until the end of the comment. -
+<code>@brief</code> : A single-line description of a function or
+variable. - <code>@param</code> : Indicate a function parameter of a
+specific type. - <code>@return</code> : Indicate a function return value
+of a specific type. - <code>@type</code>: Indicate that the variable is
+guaranteed to have the given data type. - <code>@allow_elision</code>:
+Allow this function to be overridden by external code. -
+<code>@export</code> : Don’t mark this function or variable as dead
+code. Only used when running Paisley as a language server. -
+<code>@shell</code>: Apply the <code>--shell</code> flag to the current
+compilation unit. - <code>@sandbox</code>: Apply the
+<code>--sandbox</code> flag to the current compilation unit. Overrides
+<code>--shell</code>. - <code>@plasma</code>: Apply the
+<code>--plasma</code> flag to the current compilation unit. Overrides
+<code>--shell</code> and <code>--sandbox</code>. -
+<code>@commands</code>: Postpone “command not found” errors for the
+given command(s) until run-time, and assume that they return the given
+types (e.g. <code>#@commands cmd1:type1 cmd2:type2</code>) -
+<code>@debug</code>: Validate command or function arguments at compile
+time (e.g. <code>#@debug command_name</code> … <code>#@end</code>). see
+the <a href="../debug_annotations.html">docs on debug annotations</a>
+for more info.</p>
+<hr />
+<h3 id="prevprev-home-next-next"><a href="commands.html">&lt; Prev</a> |
+<a href="../walkthrough.html">Home</a> | <a href="directives.html">Next
+&gt;</a></h3>
+</body>
+</html>

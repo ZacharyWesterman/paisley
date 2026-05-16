@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h2 id="expressions">Expressions:</h2>
+<p>First and foremost, expressions will only be evaluated inside curly
+braces, <code>{}</code>. If you place an expression outside of braces,
+it will be treated as plain text. For example <code>print {1+2}</code>
+will print “3” but <code>print 1+2</code> will print the actual string
+“1+2”.</p>
+<p>Expressions can be placed anywhere inside a command or statement
+operand. In addition, they can also be placed inside double-quoted
+strings (e.g. <code>"a = {1+2}"</code> gives <code>a = 3</code>) to
+perform easy string interpolation. Note that single-quoted strings
+<strong>do not</strong> interpolate expressions, so for example
+<code>'a = {1+2}'</code> would give exactly <code>a = {1+2}</code>
+without parsing any expression.</p>
+<h3 id="allowed-values">Allowed values:</h3>
+<ul>
+<li>Hexadecimal numbers, <code>0xFFFF</code></li>
+<li>Octal numbers, <code>0c7777</code></li>
+<li>Binary numbers, <code>0b1111</code></li>
+<li>Decimal numbers, <code>1.2345</code> or <code>12345</code> or
+<code>1_000_000</code>. Note that underscores are ignored by the
+compiler, you can use them for readability purposes.</li>
+<li>Booleans, <code>true</code> or <code>false</code></li>
+<li><code>null</code>, equivalent to Lua’s “nil”</li>
+<li>Strings with interpolation allowed, <code>"some text"</code></li>
+<li>Strings with NO interpolation, <code>'some text'</code></li>
+<li>Multi-line strings with interpoation,
+<code>"""some text"""</code></li>
+<li>Multi-line strings with NO interpolation,
+<code>'''some text'''</code></li>
+<li>Variables, <code>var_name</code>, <code>x</code>, etc.</li>
+<li><code>@</code>, the “parameter list” variable, an array containing
+any values passed to the current function. If used outside of a
+function, it instead contains any arguments passed to the script.</li>
+<li><code>$</code>, the “command list” variable, an array containing the
+names of all the commands the current script has access to.</li>
+<li><code>_VARS</code>, the “variables” variable, an object that
+contains the names and values of all variables in the current script as
+key-value pairs.</li>
+<li><code>_VERSION</code>, the “version number” variable, a string
+formatted as <code>MAJOR.MINOR.PATCH</code>.</li>
+<li><code>_ENV</code>, the “environment variables” variable, an object
+that reads an environment variable when indexed. Note that unlike other
+variables, only individual keys of <code>_ENV</code> are allowed to be
+accessed, not the entire object.</li>
+<li>Arrays, e.g. <code>(1,2,3,4,5)</code>. See <a href="arrays.html">the
+docs for details</a>.</li>
+<li>Objects, e.g. <code>("a" =&gt; 1, "b" =&gt; 2)</code>. See <a
+href="objects.html">the docs for details</a>.</li>
+</ul>
+<h3 id="escape-sequences">Escape sequences:</h3>
+<p>If you would like to avoid interpolation in double-quoted strings,
+simply escape the opening curly brace with a backslash, e.g.</p>
+<pre><code>print &quot;the expression \{1+2} evaluates to {1+2}&quot;
+print &quot;you can also put \&quot;quotes\&quot; and line breaks (\n) inside strings!&quot;</code></pre>
+<p>There are a few special escape sequences:</p>
+<ul>
+<li><code>\n</code> outputs a line ending.</li>
+<li><code>\t</code> outputs a tab.</li>
+<li><code>\r</code> outputs a carriage return.</li>
+<li><code>\v</code> outputs a vertical tab.</li>
+<li><code>\"</code> outputs a double quote.</li>
+<li><code>\'</code> outputs a single quote.</li>
+<li><code>\{</code> outputs a left curly brace.</li>
+<li><code>\}</code> outputs a right curly brace.</li>
+<li><code>\</code> (backslash + space) outputs a non-breaking
+space.</li>
+<li><code>\x</code> followed by any 2 hexadecimal digits outputs the
+respective byte.</li>
+<li><code>\u</code> followed by any 4 hexadecimal digits outputs the
+respective Unicode character.</li>
+<li><code>\U</code> followed by any 8 hexadecimal digits outputs the
+respective Unicode character.</li>
+</ul>
+<p>There are also a bunch of escape sequences that correspond to
+emoticons, included for convenience:</p>
+<ul>
+<li><code>^-^</code> outputs <code>😌</code></li>
+<li><code>:relaxed:</code> outputs <code>😌</code></li>
+<li><code>:P</code> outputs <code>😋</code></li>
+<li><code>:yum:</code> outputs <code>😋</code></li>
+<li><code>&lt;3</code> outputs <code>❤️</code></li>
+<li><code>:heart_eyes:</code> outputs <code>❤️</code></li>
+<li><code>B)</code> outputs <code>😎</code></li>
+<li><code>:sunglasses:</code> outputs <code>😎</code></li>
+<li><code>:D</code> outputs <code>😀</code></li>
+<li><code>:grinning:</code> outputs <code>😀</code></li>
+<li><code>^o^</code> outputs <code>😄</code></li>
+<li><code>:smile:</code> outputs <code>😄</code></li>
+<li><code>XD</code> outputs <code>😆</code></li>
+<li><code>:laughing:</code> outputs <code>😆</code></li>
+<li><code>:lol:</code> outputs <code>😆</code></li>
+<li><code>=D</code> outputs <code>😃</code></li>
+<li><code>:smiley:</code> outputs <code>😃</code></li>
+<li><code>:sweat_smile:</code> outputs <code>😅</code></li>
+<li><code>DX</code> outputs <code>😱</code></li>
+<li><code>:tired_face:</code> outputs <code>😫</code></li>
+<li><code>;P</code> outputs <code>😜</code></li>
+<li><code>:stuck_out_tongue_winking_eye:</code> outputs
+<code>😜</code></li>
+<li><code>:-*</code> outputs <code>😘</code></li>
+<li><code>;-*</code> outputs <code>😘</code></li>
+<li><code>:kissing_heart:</code> outputs <code>😘</code></li>
+<li><code>:kissing:</code> outputs <code>😘</code></li>
+<li><code>:rofl:</code> outputs <code>🤣</code></li>
+<li><code>:)</code> outputs <code>🙂</code></li>
+<li><code>:slight_smile:</code> outputs <code>🙂</code></li>
+<li><code>:(</code> outputs <code>🙁</code></li>
+<li><code>:frown:</code> outputs <code>🙁</code></li>
+<li><code>:frowning:</code> outputs <code>🙁</code></li>
+</ul>
+<p>Expressions also give access to a full suite of operators and
+functions, listed on the next page.</p>
+<hr />
+<h3 id="prevprev-home-next-next"><a href="misc_statements.html">&lt;
+Prev</a> | <a href="../walkthrough.html">Home</a> | <a
+href="lang_functions.html">Next &gt;</a></h3>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<h1 id="data-types">Data Types</h1>
+<p>Paisley has 6 data types:</p>
+<ul>
+<li>object</li>
+<li>array</li>
+<li>string</li>
+<li>number</li>
+<li>boolean</li>
+<li>null</li>
+</ul>
+<p>Of those, <code>object</code> and <code>array</code> may have
+sub-types depending on what values they contain. The only exception is
+that objects and arrays may <strong>not</strong> contain
+<code>null</code> values. Setting a value to null will simply delete if
+from an object, or do nothing in an array.</p>
+<p>There is also another pseudo-type, which means that the actual type
+could be anything: - any</p>
+<p>When representing types, the compiler will use syntax like the
+following: <code>TYPE1|TYPE2[SUBTYPE1|SUBTYPE2]</code> which means that
+the value may be of type <code>TYPE1</code> or <code>TYPE2</code>, and
+that type2 has sub-values, which may be of type <code>SUBTYPE1</code> or
+<code>SUBTYPE2</code>. The subtype is optional, and if not specified,
+will be assumed to be <code>any</code>. - <code>[...]</code>: Contains
+sub-values of the following type(s). - <code>A|B</code>: Type A or B,
+(can chain, like <code>A|B|C</code> to mean A or B or C). -
+<code>A?</code>: Shorthand for <code>A|null</code>.</p>
+<p>For example, <code>string|number|array</code> would mean that the
+type may be a string, a number, or an array whose values could be
+anything. Likewise, <code>object[boolean]?</code> means that the type
+may be either null, or an object that only contains booleans.</p>
+<hr />
+<h3 id="home"><a href="walkthrough.html">Home</a></h3>
+</body>
+</html>

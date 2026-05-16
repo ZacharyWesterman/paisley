@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<h1 id="paisley-plasma-build">Paisley (Plasma Build)</h1>
+<p>Note: this only applies to the Plasma build of Paisley. Most features
+are supported, but some are disallowed, and are specified below the
+FAQ.</p>
+<hr />
+<p><strong>PAISLey</strong> (Plasma Automation / Instruction Scripting
+Language) is a scripting language designed to allow for easy
+command-based behavior scripting. The purpose of this language is NOT to
+be fast. Instead, Paisley is designed to be a simple, light-weight way
+to chain together more complex behavior (think NPC logic, device
+automation, etc.). This language is meant to make complex device logic
+very easy to implement, while also being as easy to learn as
+possible.</p>
+<hr />
+<h2 id="faq">FAQ</h2>
+<p><strong>Q:</strong> <em>Why not use Lua instead?</em><br>
+<strong>A:</strong> The biggest advantage Paisley has over Lua nodes is
+that the script does not require any “pausing” logic that one would have
+to implement in order to get the same functionality in Lua; the Paisley
+runtime will automatically pause execution periodically to avoid Lua
+timeouts or performance drops, and will always wait on results from a
+command before continuing execution.</p>
+<p><strong>Q:</strong> <em>Why not use sketch nodes instead?</em><br>
+<strong>A:</strong> Paisley was designed as a language for scripting NPC
+behavior, and the thing about NPCs is that their behavior needs to be
+able to change in response to various events. First off, when using just
+sketch nodes, dynamically changing an NPC’s programming is downright
+impossible. Second, connecting all the nodes necessary for every
+possible event is difficult and time consuming (for example NPC chatter,
+a sequence of movements, events that only happen ONCE, etc). TL;DR: NPC
+logic is difficult to implement using just sketch nodes. Trust me, I’ve
+done it.</p>
+<p><strong>Q:</strong> <em>How do I connect the Paisley engine to my
+device?</em><br> <strong>A:</strong> Get the Paisley Engine device from
+the Steam workshop (ID <strong>3087775427</strong>), and attach it to
+your device. Then in a different controller, set the inputs (Paisley
+code, a list of valid commands for this device, and optional file name),
+and make sure the “Run Command” output will eventually flow back into
+the “Command Return” input. Keep in mind this MUST have a slight delay
+(0.02s at least) or Plasma will detect it as an infinite loop!</p>
+<p><strong>Q:</strong> Why???<br> <strong>A:</strong> haha</p>
+<p><strong>Q:</strong> Isn’t writing an entire compiler in Plasma a bit
+overkill?<br> <strong>A:</strong> Your face is overkill. Compilers are
+fun, fight me.</p>
+<hr />
+<h2 id="differences-from-the-main-build.">Differences from the main
+build.</h2>
+<p>Compiler Differences: - The <code>require</code> statement is not
+supported when compiling code inside Plasma, as there is no arbitrary
+file system. However, it may be used when compiling code
+<em>outside</em> Plasma and copying the bytecode output into Plasma. -
+Command piping (<code>cmd1 | cmd2 &gt; file1 &lt; file2</code>) is not
+supported. Any pipe operators are treated as plain text.</p>
+<p>The following commands will not work in the Plasma build, unless the
+commands are defined in the target device: - Any shell commands,
+<code>!</code>, <code>?</code>, <code>?!</code> or <code>=</code>. -
+<code>clear</code> - <code>stdin</code> - <code>stdout</code> -
+<code>stderr</code></p>
+<p>The following functions will not work in the Plasma build: -
+<code>toepoch</code> - <code>fromepoch</code> - <code>epochnow</code> -
+<code>file_glob</code> - <code>file_exists</code> -
+<code>file_size</code> - <code>file_read</code> -
+<code>file_write</code> - <code>file_append</code> -
+<code>file_delete</code> - <code>dir_create</code> -
+<code>dir_list</code> - <code>dir_delete</code> - <code>file_type</code>
+- <code>file_stat</code> - <code>file_copy</code> -
+<code>file_move</code></p>
+<p>Note that all commands take a little bit of time to run (at least
+0.02s), whether they’re built-in or not. This is to prevent “infinite
+loop” errors or performance drops. The only exception to this is the
+<code>.</code> no-op command. It does not actually interact with the
+outside world, so it will complete immediately.</p>
+<h3 id="escape-sequences">Escape sequences</h3>
+<p>All escape sequences work the same, however internally the emoji
+sequences are represented differently. Instead of unicode symbols,
+they’re stored as <code>&lt;sprite=XX&gt;</code> tags. The following
+escape sequences are changed in the Plasma version:</p>
+<ul>
+<li><code>\^-^</code> outputs <code>&lt;sprite=0&gt;</code></li>
+<li><code>\:relaxed:</code> outputs <code>&lt;sprite=0&gt;</code></li>
+<li><code>\:P</code> outputs <code>&lt;sprite=1&gt;</code></li>
+<li><code>\:yum:</code> outputs <code>&lt;sprite=1&gt;</code></li>
+<li><code>\&lt;3</code> outputs <code>&lt;sprite=2&gt;</code></li>
+<li><code>\:heart_eyes:</code> outputs
+<code>&lt;sprite=2&gt;</code></li>
+<li><code>\B)</code> outputs <code>&lt;sprite=3&gt;</code></li>
+<li><code>\:sunglasses:</code> outputs
+<code>&lt;sprite=3&gt;</code></li>
+<li><code>\:D</code> outputs <code>&lt;sprite=4&gt;</code></li>
+<li><code>\:grinning:</code> outputs <code>&lt;sprite=4&gt;</code></li>
+<li><code>\^o^</code> outputs <code>&lt;sprite=5&gt;</code></li>
+<li><code>\:smile:</code> outputs <code>&lt;sprite=5&gt;</code></li>
+<li><code>\XD</code> outputs <code>&lt;sprite=6&gt;</code></li>
+<li><code>\:laughing:</code> outputs <code>&lt;sprite=6&gt;</code></li>
+<li><code>\:lol:</code> outputs <code>&lt;sprite=6&gt;</code></li>
+<li><code>\=D</code> outputs <code>&lt;sprite=7&gt;</code></li>
+<li><code>\:smiley:</code> outputs <code>&lt;sprite=7&gt;</code></li>
+<li><code>\:sweat_smile:</code> outputs
+<code>&lt;sprite=9&gt;</code></li>
+<li><code>\DX</code> outputs <code>&lt;sprite=10&gt;</code></li>
+<li><code>\:tired_face:</code> outputs
+<code>&lt;sprite=10&gt;</code></li>
+<li><code>\;P</code> outputs <code>&lt;sprite=11&gt;</code></li>
+<li><code>\:stuck_out_tongue_winking_eye:</code> outputs
+<code>&lt;sprite=11&gt;</code></li>
+<li><code>\:-*</code> outputs <code>&lt;sprite=12&gt;</code></li>
+<li><code>\;-*</code> outputs <code>&lt;sprite=12&gt;</code></li>
+<li><code>\:kissing_heart:</code> outputs
+<code>&lt;sprite=12&gt;</code></li>
+<li><code>\:kissing:</code> outputs <code>&lt;sprite=12&gt;</code></li>
+<li><code>\:rofl:</code> outputs <code>&lt;sprite=13&gt;</code></li>
+<li><code>\:)</code> outputs <code>&lt;sprite=14&gt;</code></li>
+<li><code>\:slight_smile:</code> outputs
+<code>&lt;sprite=14&gt;</code></li>
+<li><code>\:(</code> outputs <code>&lt;sprite=15&gt;</code></li>
+<li><code>\:frown:</code> outputs <code>&lt;sprite=15&gt;</code></li>
+<li><code>\:frowning:</code> outputs <code>&lt;sprite=15&gt;</code></li>
+</ul>
+</body>
+</html>

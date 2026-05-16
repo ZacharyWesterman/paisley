@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h2 id="variable-assignment">Variable Assignment:</h2>
+<p>Variable assignment always starts with <code>let</code>, e.g.</p>
+<pre><code>let pi = 3.14
+let circumference = {2 * pi * r}</code></pre>
+<p>Note that the <code>let</code> keyword is required even when
+reassigning variables. For example, consider the following:</p>
+<pre><code>let var = 13
+var = 99</code></pre>
+<p>The second line will <strong>NOT</strong> set var’s value to 13.
+Instead, that would attempt to run a command called “var” with the
+parameters <code>["=", "99"]</code>.</p>
+<p>Of course, sometimes a variable will contain an array that you don’t
+want to overwrite, instead you just want to update a <em>single
+element</em> or <em>append</em> to the array. The following will result
+in var containing the array <code>(1, 2, 123, 4, 99)</code>. Note that
+giving negative values as the index will start counting from the end, so
+index of -1 will update the last element.</p>
+<pre><code>let var = 1 2 3 4 5
+let var{3} = 123
+let var{-1} = 99</code></pre>
+<p>Appending is just as simple. The following will result in var
+containing the array <code>(1, 2, 3, 4, 5, 6)</code>.</p>
+<pre><code>let var = 1 2 3 4 5
+let var{} = 6</code></pre>
+<p>And if you want to append to a sub-value of some object, use both of
+the above two syntaxes.</p>
+<pre><code>let var = {&quot;a&quot; =&gt; (1,2,3)}
+let var{&quot;a&quot;}{} = 4</code></pre>
+<p>You can also assign multiple variables at the same time.</p>
+<pre><code>let a b c = 1 2 3
+
+#Alternatively, you can assign variables from values in an array
+let list = {1:9}
+let a b c = {list}</code></pre>
+<p>To simply define a variable as null, you can just leave off the
+expression. The following all initialize variables as null.</p>
+<pre><code>let var
+let a b c
+let foo = {null}</code></pre>
+<p>Like in other languages, there is also a shorthand syntax for
+reassigning a variable based on its previous value:</p>
+<pre><code>let x += 1 # Add 1 to x
+let x -= 1 # Subtract 1 from x
+let x *= 2 # Multiply x by 2
+let x /= 2 # Divide x by 2
+let x //= 2 # Integer-divide x by 2
+let x %= 2 # Set x to the remainder of x / 2
+let x %%= 2 # Set x to true if 2 divides x, false otherwise.
+let x &amp;= str # Append &quot;str&quot; to x</code></pre>
+<h3 id="variable-index-assignment">Variable Index Assignment</h3>
+<p>Assignment of arrays, strings and objects can all be indexed to only
+alter sub-elements. As mentioned above, this uses the
+<code>let var{expr} = expr</code> syntax.</p>
+<p>However, some objects may be more deeply nested. For example, suppose
+you have a 2D array or a complex object:</p>
+<pre><code>let array = {
+    [1, 2, 3],
+    [4, 5, 6],
+}
+let object = {
+    &quot;a&quot; =&gt; {
+        &quot;b&quot; =&gt; {
+            &quot;c&quot; =&gt; 123,
+        }
+    }
+}</code></pre>
+<p>If you want to change <code>array[1][2]</code> from <code>2</code> to
+<code>8</code>, or <code>object.a.b.c</code> from <code>123</code> to
+<code>456</code>, just add extra values in the index field, separated by
+commas:</p>
+<pre><code>let array{1, 2} = 8
+let object{&#39;a&#39;, &#39;b&#39;, &#39;c&#39;} = 456</code></pre>
+<p><strong>REMEMBER:</strong> All variables are global, so any
+“re-definition” of a variable just sets it to the new value.</p>
+<h3 id="variable-initialization">Variable Initialization:</h3>
+<p>There is a special keyword for setting a variable’s value if it
+hasn’t been assigned already.</p>
+<pre><code>initial variable = {value}</code></pre>
+<p>Unlike the <code>let</code> keyword, <code>initial</code> can only
+define one variable, and it cannot insert or update sub-elements in
+arrays. The use of <code>initial</code> is instead a concise way to set
+a default value for un-initialized variables. Logically, it is identical
+to the following:</p>
+<pre><code>if {not (variable exists)} then
+    let variable = {value}
+end</code></pre>
+<hr />
+<h3 id="prevprev-home-next-next"><a href="loops.html">&lt; Prev</a> | <a
+href="../walkthrough.html">Home</a> | <a href="functions.html">Next
+&gt;</a></h3>
+</body>
+</html>

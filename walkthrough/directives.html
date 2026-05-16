@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h2 id="conditional-compilation-via-compiler-directives">Conditional
+compilation via Compiler Directives</h2>
+<p>In very rare cases, it may be beneficial to only parse code if
+certain compiler flags are set. In C/C++, this is done with macros like
+<code>#ifdef DEF_NAME ... #endif</code>.</p>
+<p>You can achieve similar functionality in Paisley, where code will not
+be parsed if certain conditions aren’t met at compile time. In paisley,
+compiler directives start with <code>$</code> and continue until a line
+ending, <code>;</code> or <code>$</code>. They cannot be used inside
+strings or expressions, but they can wrap expressions on the same
+line.</p>
+<pre><code># Conditions can be chained with `and`, `or` and `()`.
+$if (version &gt;= 1.2.3 or build = desktop) and target = lua
+...
+$elif &lt;expression&gt;
+...
+$else
+...
+$end
+
+# You can also warn or error at compile time if certain conditions aren&#39;t met
+$if version &lt; 1
+$error &quot;At least version 1.0.0 is required!&quot;
+$elif version &gt;= 2
+$warn &quot;This might work in version 2.x.x, but we&#39;re not sure.&quot;
+$else
+$info &quot;You&#39;ve got the correct version :)&quot;
+$end</code></pre>
+<pre><code># This example uses the deprecated length operator if still supported.
+# Otherwise, the `len()` function is used.
+let array = {0:9}
+let length = $if version &gt;= 2$ {len(array)} $else$ {&amp;array} $end$
+print {length}</code></pre>
+<p>The following build flags are supported: - <code>version</code>: The
+Paisley version at compile time, formatted as <code>X.Y.Z</code>. -
+<code>build</code>: The build of Paisley that’s being targeted. Valid
+values are <code>plasma</code> or <code>desktop</code>. -
+<code>target</code>: The runtime that’s being targeted. Valid values are
+<code>lua</code>, <code>c</code> or <code>cpp</code>.</p>
+<hr />
+<h3 id="prevprev-home-next"><a href="comments.html">&lt; Prev</a> | <a
+href="../walkthrough.html">Home</a> | Next &gt;</h3>
+</body>
+</html>

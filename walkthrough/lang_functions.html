@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h1 id="paisley-standard-library-functions">Paisley Standard Library
+Functions</h1>
+<p>Note that functions can be called in one of two ways: 1. The usual
+syntax, e.g. <code>split(var, delim)</code> 2. Using dot-notation,
+e.g. <code>var.split(delim)</code></p>
+<p>Both are exactly equivalent, the latter syntax is included simply for
+convenience.</p>
+<h2 id="arrays">Arrays</h2>
+<ul>
+<li><code>all(list: array[any]) -&gt; boolean</code>
+<ul>
+<li>Check if all elements in an array are truthy. This is identical to
+calling <code>reduce(..., and)</code>.</li>
+</ul></li>
+<li><code>any(list: array[any]) -&gt; boolean</code>
+<ul>
+<li>Check if any element in an array is truthy. This is identical to
+calling <code>reduce(..., or)</code>.</li>
+</ul></li>
+<li><code>append(list: array[any], value: any) -&gt; array[any]</code>
+<ul>
+<li>Append a value to an array.</li>
+</ul></li>
+<li><code>chunk(list: array[any], chunk_size: number) -&gt; array[array[any]]</code>
+<ul>
+<li>Split an array into chunks of a given size. The last chunk may be
+smaller than the given size if the array length is not a multiple of the
+chunk size.</li>
+</ul></li>
+<li><code>delete(list: array[any], index: number) -&gt; array[any]</code>
+<ul>
+<li>Delete an element from an array at the given index. If the index is
+out of bounds, the original array is returned.</li>
+</ul></li>
+<li><code>flatten(list: array[any] [, depth: number]) -&gt; array[any]</code>
+<ul>
+<li>Flatten an array of any dimension into a 1D array. E.g. ((1, 2), (3,
+(4, 5))) -&gt; (1, 2, 3, 4, 5). Optionally specify a depth to only
+flatten that many levels.</li>
+</ul></li>
+<li><code>insert(list: array[any], before_index: number, value: any) -&gt; array[any]</code>
+<ul>
+<li>Insert an element in an array at the given index. If the index is
+out of bounds, then the value will either be added to the beginning or
+the end of the array.</li>
+</ul></li>
+<li><code>interleave(list1: array[any], list2: array[any]) -&gt; array[any]</code>
+<ul>
+<li>Interleave the values of two arrays. E.g. (1, 2, 3) and (4, 5, 6)
+-&gt; (1, 4, 2, 5, 3, 6).</li>
+</ul></li>
+<li><code>max(...: number|array[number]) -&gt; number</code>
+<ul>
+<li>Find the maximum of a list of values.</li>
+</ul></li>
+<li><code>merge(list1: array[any], list2: array[any]) -&gt; array[any]</code>
+<ul>
+<li>Concatenate two arrays together.</li>
+</ul></li>
+<li><code>min(...: number|array[number]) -&gt; number</code>
+<ul>
+<li>Find the minimum of a list of values.</li>
+</ul></li>
+<li><code>mult(...: number|array[number]) -&gt; number</code>
+<ul>
+<li>Calculate the product of a list of values. This is identical to
+calling <code>reduce(..., *)</code>.</li>
+</ul></li>
+<li><code>reduce(list: array[any], op: operator|function) -&gt; any</code>
+<ul>
+<li>Reduce an array to a single element based on a repeated binary
+operation. The <code>op</code> param may be a binary operator, or the
+name of a 2-argument built-in or user-defined function (the latter must
+be written like <code>\sub_name</code>).</li>
+</ul></li>
+<li><code>sort(list: array[any]) -&gt; array[any]</code>
+<ul>
+<li>Sort an array in ascending order.</li>
+</ul></li>
+<li><code>sorted(list: array[any]) -&gt; boolean</code>
+<ul>
+<li>Check if an array is sorted in ascending order.</li>
+</ul></li>
+<li><code>splice(list: array[any], start: number, end: number, replacement: array[any]) -&gt; array[any]</code>
+<ul>
+<li>Remove or replace elements from an array.</li>
+</ul></li>
+<li><code>sum(...: number|array[number]) -&gt; number</code>
+<ul>
+<li>Calculate the sum of a list of values. This is identical to calling
+<code>reduce(..., +)</code>.</li>
+</ul></li>
+<li><code>update(list: array[any], index: number, new_value: any) -&gt; array[any]</code>
+<ul>
+<li>Replace an element in an array at the given index. If the index is
+out of bounds, the original array is returned.</li>
+</ul></li>
+</ul>
+<h3 id="sets">Sets</h3>
+<ul>
+<li><code>difference(set1: array[any], set2: array[any]) -&gt; array[any]</code>
+<ul>
+<li>Get the difference of two sets. Note that if either set contains
+duplicate elements, they may or may not be preserved.</li>
+</ul></li>
+<li><code>intersection(set1: array[any], set2: array[any]) -&gt; array[any]</code>
+<ul>
+<li>Get the intersection of two sets. Note that if either set contains
+duplicate elements, they may or may not be preserved.</li>
+</ul></li>
+<li><code>is_disjoint(set1: array[any], set2: array[any]) -&gt; boolean</code>
+<ul>
+<li>Check if two sets are disjoint. Returns true if they have no
+elements in common.</li>
+</ul></li>
+<li><code>is_subset(set1: array[any], set2: array[any]) -&gt; boolean</code>
+<ul>
+<li>Check if the first set is a subset of the second. Returns true if
+all elements of the first set are in the second set.</li>
+</ul></li>
+<li><code>is_superset(set1: array[any], set2: array[any]) -&gt; boolean</code>
+<ul>
+<li>Check if the first set is a superset of the second. Returns true if
+all elements of the second set are in the first set.</li>
+</ul></li>
+<li><code>symmetric_difference(set1: array[any], set2: array[any]) -&gt; array[any]</code>
+<ul>
+<li>Get the symmetric difference of two sets. Note that if either set
+contains duplicate elements, they may or may not be preserved.</li>
+</ul></li>
+<li><code>union(set1: array[any], set2: array[any]) -&gt; array[any]</code>
+<ul>
+<li>Get the union of two sets. Note that if either set contains
+duplicate elements, they may or may not be preserved.</li>
+</ul></li>
+<li><code>unique(list: array[any]) -&gt; array[any]</code>
+<ul>
+<li>Remove duplicate values from an array. This function is most useful
+for creating a set, which can then be passed to other set
+operations.</li>
+</ul></li>
+</ul>
+<h3 id="vectors">Vectors</h3>
+<ul>
+<li><code>dist(point1: number|array[number], point2: number|array[number]) -&gt; number</code>
+<ul>
+<li>Get the euclidean distance between numbers or vectors of the same
+dimension</li>
+</ul></li>
+<li><code>normalize(vector: array[number]) -&gt; array[number]</code>
+<ul>
+<li>Normalize a vector to length 1. E.g. (3, 4) -&gt; (0.6, 0.8).</li>
+</ul></li>
+</ul>
+<h2 id="characters">Characters</h2>
+<ul>
+<li><code>ascii(character: string) -&gt; number</code>
+<ul>
+<li>Convert a character to its ASCII value. Only the first character is
+considered, all others are ignored.</li>
+</ul></li>
+<li><code>bytes(value: number, byte_ct: number) -&gt; array[number]</code>
+<ul>
+<li>Split a number into bytes. The number is interpreted as an unsigned
+32-bit integer.</li>
+</ul></li>
+<li><code>char(ascii_code: number) -&gt; string</code>
+<ul>
+<li>Convert an ASCII number to a character. If outside of the range
+0-255, an empty string is returned. Non-integers are rounded down.</li>
+</ul></li>
+<li><code>frombytes(bytes: array[number]) -&gt; number</code>
+<ul>
+<li>Convert a list of bytes into a number. The resultant number is
+constructed as an unsigned 32-bit integer.</li>
+</ul></li>
+</ul>
+<h2 id="encoding">Encoding</h2>
+<ul>
+<li><code>b64_decode(text: string) -&gt; string</code>
+<ul>
+<li>Convert base64 text to a string.</li>
+</ul></li>
+<li><code>b64_encode(text: string) -&gt; string</code>
+<ul>
+<li>Convert a string to base64.</li>
+</ul></li>
+<li><code>json_decode(text: string) -&gt; any</code>
+<ul>
+<li>Deserialize data from a JSON string.</li>
+</ul></li>
+<li><code>json_encode(data: any [, pretty: boolean]) -&gt; string</code>
+<ul>
+<li>Serialize data to a JSON string.</li>
+</ul></li>
+<li><code>json_valid(text: any) -&gt; boolean</code>
+<ul>
+<li>Check if a JSON string is formatted correctly.</li>
+</ul></li>
+<li><code>xml_decode(text: string) -&gt; array[object[any]]</code>
+<ul>
+<li>Deserialize data from an XML string.</li>
+</ul></li>
+<li><code>xml_encode(data: array[object[any]]) -&gt; string</code>
+<ul>
+<li>Serialize data to an XML string.</li>
+</ul></li>
+</ul>
+<h2 id="files">Files</h2>
+<ul>
+<li><code>dir_create(dir_path: string [, create_parents: boolean]) -&gt; boolean</code>
+<ul>
+<li>Create a directory. Returns true on success, or false if the
+directory could not be created. If create_parents is true, any missing
+parent directories will also be created.</li>
+</ul></li>
+<li><code>dir_delete(dir_path: string [, recursive: boolean]) -&gt; boolean</code>
+<ul>
+<li>Delete a directory. Returns true on success, or false if the
+directory could not be deleted. If recursive is true, all files and
+subdirectories will also be deleted.</li>
+</ul></li>
+<li><code>dir_list(dir_path: string) -&gt; array[string]</code>
+<ul>
+<li>List all files and directories in the given directory. If the
+directory does not exist, an empty array is returned.</li>
+</ul></li>
+<li><code>file_append(file_path: string, data: string) -&gt; boolean</code>
+<ul>
+<li>Append a string to the end of a file, creating it if it does not
+exist. Returns true on success, or false if the file could not be
+written.</li>
+</ul></li>
+<li><code>file_copy(source_path: string, dest_path: string [, overwrite: boolean]) -&gt; boolean</code>
+<ul>
+<li>Copy a file from source_path to dest_path. If overwrite is true, any
+existing file at dest_path will be overwritten. Returns true on success,
+or false if the file could not be copied.</li>
+</ul></li>
+<li><code>file_delete(file_path: string) -&gt; boolean</code>
+<ul>
+<li>Delete a file. Returns true on success, or false if the file could
+not be deleted.</li>
+</ul></li>
+<li><code>file_exists(file_path: string) -&gt; boolean</code>
+<ul>
+<li>Check if a file exists at the given path.</li>
+</ul></li>
+<li><code>file_glob(glob_pattern: string) -&gt; array[string]</code>
+<ul>
+<li>List all files that match a glob pattern. E.g.
+<code>file_glob("*.txt")</code> -&gt; (“file1.txt”, “file2.txt”),
+depending on the files in your current directory.</li>
+</ul></li>
+<li><code>file_move(source_path: string, dest_path: string) -&gt; boolean</code>
+<ul>
+<li>Move a file from source_path to dest_path. If overwrite is true, any
+existing file at dest_path will be overwritten. Returns true on success,
+or false if the file could not be moved.</li>
+</ul></li>
+<li><code>file_read(file_path: string) -&gt; null|string</code>
+<ul>
+<li>Read the entire contents of a file as a string. If the file does not
+exist or cannot be read, null is returned.</li>
+</ul></li>
+<li><code>file_size(file_path: string) -&gt; number</code>
+<ul>
+<li>Get the size of a file in bytes. If the file does not exist, 0 is
+returned.</li>
+</ul></li>
+<li><code>file_stat(file_path: string) -&gt; null|object[any]</code>
+<ul>
+<li>Get information about a filesystem object. If the file does not
+exist, null is returned.</li>
+</ul></li>
+<li><code>file_type(file_path: string) -&gt; null|string</code>
+<ul>
+<li>Get the type of a file. Possible return values are “file”,
+“directory”, or “other”. If the file does not exist, null is
+returned.</li>
+</ul></li>
+<li><code>file_write(file_path: string, data: string) -&gt; boolean</code>
+<ul>
+<li>Write a string to a file, overwriting it if it already exists.
+Returns true on success, or false if the file could not be written.</li>
+</ul></li>
+</ul>
+<h2 id="iterables">Iterables</h2>
+<ul>
+<li><code>count(iter: array[any]|string, value: any|string) -&gt; number</code>
+<ul>
+<li>Count the number of occurrences of a value in an array or
+string.</li>
+</ul></li>
+<li><code>find(iterable: array[any]|string, value: any|string, occurrence: number) -&gt; number</code>
+<ul>
+<li>Find the index of the nth occurrence of a value in an array or
+string.</li>
+</ul></li>
+<li><code>index(iterable: array[any]|string, value: any|string) -&gt; number</code>
+<ul>
+<li>Find the index of the first occurrence of a value in an array or
+string.</li>
+</ul></li>
+<li><code>len(iterable: array[any]|string) -&gt; number</code>
+<ul>
+<li>Get the length of a string or array.</li>
+</ul></li>
+<li><code>reverse(iter: array[any]|string) -&gt; any</code>
+<ul>
+<li>Reverse an array or a string.</li>
+</ul></li>
+</ul>
+<h2 id="math">Math</h2>
+<ul>
+<li><code>abs(x: number) -&gt; number</code>
+<ul>
+<li>Get the absolute value of a number.</li>
+</ul></li>
+<li><code>acos(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the arccosine of a number.</li>
+</ul></li>
+<li><code>acot(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the arccotangent of a number.</li>
+</ul></li>
+<li><code>acsc(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the arccosecant of a number.</li>
+</ul></li>
+<li><code>asec(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the arcsecant of a number.</li>
+</ul></li>
+<li><code>asin(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the arcsine of a number.</li>
+</ul></li>
+<li><code>atan(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the arctangent of a number.</li>
+</ul></li>
+<li><code>atan2(x: number, y: number) -&gt; number</code>
+<ul>
+<li>Calculate the signed arctangent of y/x.</li>
+</ul></li>
+<li><code>ceil(x: number) -&gt; number</code>
+<ul>
+<li>Round up to the nearest integer.</li>
+</ul></li>
+<li><code>clamp(value: number, min: number, max: number) -&gt; number</code>
+<ul>
+<li>Keep a value inside the given range.</li>
+</ul></li>
+<li><code>cos(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the cosine of a number.</li>
+</ul></li>
+<li><code>cosh(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the hyperbolic cosine of a number.</li>
+</ul></li>
+<li><code>cot(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the cotangent of a number.</li>
+</ul></li>
+<li><code>csc(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the cosecant of a number.</li>
+</ul></li>
+<li><code>floor(x: number) -&gt; number</code>
+<ul>
+<li>Round down to the nearest integer.</li>
+</ul></li>
+<li><code>fmod(x: number, y: number) -&gt; number</code>
+<ul>
+<li>Calculate the floating-point remainder of x / y.</li>
+</ul></li>
+<li><code>lerp(ratio: number, start: number|array[number], end: number|array[number]) -&gt; number</code>
+<ul>
+<li>Linearly interpolate between two numbers or vectors.</li>
+</ul></li>
+<li><code>log(base: number [, value: number]) -&gt; number</code>
+<ul>
+<li>Calculate the logarithm of a number with a given base, or the
+natural logarithm if no base is provided.</li>
+</ul></li>
+<li><code>modf(x: number) -&gt; array[number]</code>
+<ul>
+<li>Split a number into its integer and fractional parts. E.g. 3.14
+-&gt; (3, 0.14).</li>
+</ul></li>
+<li><code>round(x: number) -&gt; number</code>
+<ul>
+<li>Round to the nearest integer.</li>
+</ul></li>
+<li><code>sec(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the secant of a number.</li>
+</ul></li>
+<li><code>sign(x: number) -&gt; number</code>
+<ul>
+<li>Get the signedness of a number. returns -1 if negative, 0 if zero, 1
+if positive.</li>
+</ul></li>
+<li><code>sin(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the sine of a number.</li>
+</ul></li>
+<li><code>sinh(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the hyperbolic sine of a number.</li>
+</ul></li>
+<li><code>smoothstep(value: number, min: number, max: number) -&gt; number</code>
+<ul>
+<li>Smoothly transition from 0 to 1 in a given range.</li>
+</ul></li>
+<li><code>sqrt(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the square root of a number.</li>
+</ul></li>
+<li><code>tan(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the tangent of a number.</li>
+</ul></li>
+<li><code>tanh(x: number) -&gt; number</code>
+<ul>
+<li>Calculate the hyperbolic tangent of a number.</li>
+</ul></li>
+</ul>
+<h2 id="miscellaneous">Miscellaneous</h2>
+<ul>
+<li><code>hash(text: string) -&gt; string</code>
+<ul>
+<li>Generate the SHA256 hash of a string.</li>
+</ul></li>
+<li><code>uuid() -&gt; string</code>
+<ul>
+<li>Generate a universally unique identifier (UUID). See
+https://en.wikipedia.org/wiki/Universally_unique_identifier for more
+information.</li>
+</ul></li>
+</ul>
+<h2 id="objects">Objects</h2>
+<ul>
+<li><code>array(obj: object[any]) -&gt; array[any]</code>
+<ul>
+<li>Convert an object into an array. The array will be a list of
+key-value pairs, e.g. {key1: value1, key2: value2, …} -&gt; (key1,
+value1, key2, value2, …).</li>
+</ul></li>
+<li><code>keys(obj: object[any]) -&gt; array[string]</code>
+<ul>
+<li>List an object’s keys.</li>
+</ul></li>
+<li><code>object(list: array[any]) -&gt; object[any]</code>
+<ul>
+<li>Convert an array into an object. The array is assumed to be a list
+of ordered key-value pairs, e.g. (key1, value1, key2, value2, …) -&gt; {
+key1: value1, key2: value2, … }</li>
+</ul></li>
+<li><code>pairs(data: object[any]|array[any]) -&gt; array[any]</code>
+<ul>
+<li>Get a list of key-value pairs for an object or array. The output
+will be a list of 2-element lists, e.g. {key1: value1, key2: value2, …}
+-&gt; ((key1, value1), (key2, value2), …).</li>
+</ul></li>
+<li><code>values(obj: object[any]) -&gt; array[any]</code>
+<ul>
+<li>List an object’s values.</li>
+</ul></li>
+</ul>
+<h2 id="randomization">Randomization</h2>
+<ul>
+<li><code>random_element(list: array[any]) -&gt; any</code>
+<ul>
+<li>Select a random element from a list with uniform distribution.</li>
+</ul></li>
+<li><code>random_elements(list: array[any], count: number) -&gt; any</code>
+<ul>
+<li>Select non-repeating random elements from a list. If count is
+greater than the number of elements in the list, all elements will be
+returned in random order.</li>
+</ul></li>
+<li><code>random_float(min: number, max: number) -&gt; number</code>
+<ul>
+<li>Generate a random real number from min to max (inclusive) with
+uniform distribution.</li>
+</ul></li>
+<li><code>random_int(min: number, max: number) -&gt; number</code>
+<ul>
+<li>Generate a random integer from min to max (inclusive) with uniform
+distribution.</li>
+</ul></li>
+<li><code>random_weighted(list: array[any], weights: array[number]) -&gt; any</code>
+<ul>
+<li>Select a random element from a list according to a weight
+distribution. Weights will be normalized to sum to 1, so weights like
+(1, 2, 3) are fine and will be treated as (0.166, 0.333, 0.5); that is,
+the third element will be three times more likely to be selected than
+the first element.</li>
+</ul></li>
+<li><code>shuffle(list: array[any]) -&gt; array[any]</code>
+<ul>
+<li>Shuffle an array’s elements into a random order. This is identical
+to calling random_elements with count set to the length of the
+array.</li>
+</ul></li>
+</ul>
+<h2 id="strings">Strings</h2>
+<ul>
+<li><code>beginswith(search: string, substring: string) -&gt; boolean</code>
+<ul>
+<li>Check if the search string begins with the given substring.</li>
+</ul></li>
+<li><code>binary(value: number) -&gt; string</code>
+<ul>
+<li>Convert a number to a binary string. This is identical to
+<code>to_base(value, 2, 0)</code>.</li>
+</ul></li>
+<li><code>camel(text: string) -&gt; string</code>
+<ul>
+<li>Capitalize the first letter of every word.</li>
+</ul></li>
+<li><code>endswith(search: string, substring: string) -&gt; boolean</code>
+<ul>
+<li>Check if the search string ends with the given substring.</li>
+</ul></li>
+<li><code>filter(text: string, valid_chars: string) -&gt; string</code>
+<ul>
+<li>Remove all characters that do not match the given pattern.</li>
+</ul></li>
+<li><code>from_base(text: string, base: number) -&gt; number</code>
+<ul>
+<li>Convert a numeric string of any base from 2 to 36 into a number.
+E.g. “2A” in base 16 would be 42. If the string contains invalid
+characters, 0 is returned.</li>
+</ul></li>
+<li><code>glob(...: string) -&gt; array[string]</code>
+<ul>
+<li>Convert a glob pattern into a list of strings. E.g.
+<code>glob("a?*", "b", "c")</code> or
+<code>glob("a?*", ("b", "c"))</code> -&gt; (“a?b”, “a?c”).</li>
+</ul></li>
+<li><code>hex(value: number) -&gt; string</code>
+<ul>
+<li>Convert a number to a hexadecimal string. This is identical to
+<code>to_base(value, 16, 0)</code>.</li>
+</ul></li>
+<li><code>join(list: array[any], delim: string) -&gt; string</code>
+<ul>
+<li>Join an array into a single string with a delimiter between
+elements.</li>
+</ul></li>
+<li><code>lower(text: string) -&gt; string</code>
+<ul>
+<li>Convert a string to lowercase.</li>
+</ul></li>
+<li><code>lpad(text: string, pad_char: string, width: number) -&gt; string</code>
+<ul>
+<li>Left-pad a string with a given character.</li>
+</ul></li>
+<li><code>match(text: string, pattern: string) -&gt; null|string</code>
+<ul>
+<li>Get the first substring that matches the given pattern. If no match
+is found, null is returned.</li>
+</ul></li>
+<li><code>matches(text: string, pattern: string) -&gt; array[string]</code>
+<ul>
+<li>Get all substrings that match the given pattern.</li>
+</ul></li>
+<li><code>replace(text: string, search: string, replace: string) -&gt; string</code>
+<ul>
+<li>Replace all occurrences of a substring.</li>
+</ul></li>
+<li><code>rpad(text: string, pad_char: string, width: number) -&gt; string</code>
+<ul>
+<li>Right-pad a string with a given character.</li>
+</ul></li>
+<li><code>split(text: string, delim: string) -&gt; array[string]</code>
+<ul>
+<li>Split a string into an array based on a delimiter. If the delimiter
+is an empty string, the string is split into individual characters.</li>
+</ul></li>
+<li><code>to_base(number: number, base: number, pad_width: number) -&gt; string</code>
+<ul>
+<li>Convert a number to a numeric string of any base from 2 to 36.
+Optionally pad the string with leading zeros to a given width. E.g. 42
+in base 16 with padding of 4 would be “002A”.</li>
+</ul></li>
+<li><code>trim(text: string [, chars: string]) -&gt; string</code>
+<ul>
+<li>Remove any of the given characters from the beginning and end of a
+string. If chars is not provided, any whitespace will be removed.</li>
+</ul></li>
+<li><code>upper(text: string) -&gt; string</code>
+<ul>
+<li>Convert a string to uppercase.</li>
+</ul></li>
+<li><code>word_diff(word1: string, word2: string) -&gt; number</code>
+<ul>
+<li>Get the levenshtein difference between two strings. See
+https://en.wikipedia.org/wiki/Levenshtein_distance for more
+information.</li>
+</ul></li>
+</ul>
+<h2 id="time">Time</h2>
+<ul>
+<li><code>clocktime(timestamp: number) -&gt; array[number]</code>
+<ul>
+<li>Convert a “seconds since midnight” timestamp into (hour, min, sec,
+milli).</li>
+</ul></li>
+<li><code>date(date_array: array[number]) -&gt; string</code>
+<ul>
+<li>Convert an array representation of a date (day, month, year) into an
+ISO compliant date string.</li>
+</ul></li>
+<li><code>epochnow() -&gt; number</code>
+<ul>
+<li>Get the current epoch time (seconds since Jan 1, 1970).</li>
+</ul></li>
+<li><code>fromepoch(timestamp: number) -&gt; object[any]</code>
+<ul>
+<li>Convert epoch time (seconds since Jan 1, 1970) to a datetime object.
+The datetime object will have the following form: { date: (day, month,
+year), time: (hour, min, sec) }.</li>
+</ul></li>
+<li><code>time(timestamp: array[number]|number) -&gt; string</code>
+<ul>
+<li>Convert a number or array representation of a time (timestamp OR
+[hour, min, sec, milli]) into an ISO compliant time string.</li>
+</ul></li>
+<li><code>timestamp(time_array: array[number]) -&gt; number</code>
+<ul>
+<li>Convert an (hour, min, sec, milli) array into a “seconds since
+midnight” timestamp.</li>
+</ul></li>
+<li><code>toepoch(datetime: object[any]) -&gt; number</code>
+<ul>
+<li>Convert a datetime object to epoch time (seconds since Jan 1, 1970).
+The datetime object is expected to have the following form: { date:
+(day, month, year), time: (hour, min, sec) }.</li>
+</ul></li>
+</ul>
+<h2 id="types">Types</h2>
+<ul>
+<li><code>bool(data: any) -&gt; boolean</code>
+<ul>
+<li>Convert a value to a boolean. Returns false for null, 0, empty
+strings, empty arrays, and empty objects. All other values return
+true.</li>
+</ul></li>
+<li><code>int(data: any) -&gt; number</code>
+<ul>
+<li>Convert a value to an integer. Converts a value to a number, then
+floors it.</li>
+</ul></li>
+<li><code>num(data: any) -&gt; number</code>
+<ul>
+<li>Convert a value to a number. Returns 1 for true, and if a string is
+numeric, returns the number. All other non-number values return 0.</li>
+</ul></li>
+<li><code>str(data: any) -&gt; string</code>
+<ul>
+<li>Convert a value to a string. Null is converted to an empty string,
+and booleans are converted to a 1 or 0. Arrays are joined into a
+space-separated list like “value1 value2 etc”, and objects are joined in
+a similar fashion e.g. “key1 value1 key2 value2 etc”.</li>
+</ul></li>
+<li><code>type(data: any) -&gt; string</code>
+<ul>
+<li>Get the data type of a value. Possible return values are “number”,
+“string”, “boolean”, “null”, “array” or “object”.</li>
+</ul></li>
+</ul>
+<hr />
+<h3 id="prevprev-home-next-next"><a href="expressions.html">&lt;
+Prev</a> | <a href="../walkthrough.html">Home</a> | <a
+href="operators.html">Next &gt;</a></h3>
+</body>
+</html>

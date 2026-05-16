@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h2 id="user-defined-functions">User-defined functions:</h2>
+<p>User-defined functions may be either called as if they were commands,
+or built-in functions. Like commands, they can take parameters and
+optionally return a value, but they don’t have to. Unlike commands, they
+can modify global variables, which may or may not be desired. Just keep
+it in mind when writing them.</p>
+<p>An example function definition and usage might look like the
+following:</p>
+<pre><code>function print_numbers
+    for i in {0 : @[1]} do
+        if {i &gt; 30} then
+            print &quot;whoa, too big!&quot;
+            return
+        end
+        print {i}
+    end
+end
+
+call print_numbers 10
+call print_numbers 50
+
+function power
+    return {@[1] ^ @[2]}
+end
+
+# You can use call the same as any inline command evaluation.
+print ${call power 2 10}
+
+# However, for calling user-defined functions inside expressions, they can be used like built-in functions!
+# Just prepend a backslash to the function name.
+print {\power(2,10)}</code></pre>
+<p>See how in the above, the <code>@</code> variable stores any
+parameters passed to a function as an array, so the first parameter is
+<code>@[1]</code>, the second is <code>@[2]</code> and so on. For
+constant indexes, the square brackets are optional, e.g. <code>@1</code>
+and <code>@2</code> will also work, but <strong>not</strong>
+<code>@ 2</code>. Also see that functions return values the same way
+that commands do, using the inline command evaluation syntax,
+<code>${...}</code>.</p>
+<p>Note that it is also possible to jump to functions with an arbitrary
+label ID. Unlike a regular call, a dynamic call could fail at runtime,
+and so requires a conditional check
+<code>if call {expression} then ... else ... end</code> to make sure the
+label is valid. See how in the following example, the program will
+randomly call one of 5 possible functions, and then print “Function
+exists”.</p>
+<pre><code>if call &quot;{random_int(1,5)}&quot; then
+    print &quot;Function exists&quot;
+end
+
+function 1 end
+function 2 end
+function 3 end
+function 4 end
+function 5 end</code></pre>
+<p>You can of course also pass arguments to a dynamic call. However, any
+returned value is ignored.</p>
+<pre><code>if call &quot;add{random_int(1,5)}&quot; 100 then
+    print &quot;Function exists&quot;
+end
+
+function add1
+    print {@1 + 1}
+end
+...
+function add5
+    print {@1 + 5}
+end</code></pre>
+<p>As an aside, note how in the above, the function calls happened
+<em>before</em> their definitions. This is totally valid; as long as the
+function is defined <em>somewhere</em>, the compiler doesn’t care
+<em>where</em> it’s defined.</p>
+<h3 id="user-defined-functions-in-expressions">User-defined Functions in
+Expressions:</h3>
+<p>Inside of expressions, functions can be called in one of two ways: 1.
+Using the inline command evaluation syntax <code>${...}</code>, in the
+same way as commands are used. E.g.
+<code>${call my_function {arg1} arg2 "arg3" etc..}</code> 2. Using the
+special function evaluation syntax
+<code>\my_function(arg1,arg2,etc...)</code>. Note that calling functions
+like this ignores other syntax until the parentheses. So calling
+<code>\some.sub.name(arg1)</code> or <code>\+(123, 456)</code> will
+always be interpreted as function calls.</p>
+<p>These both do exactly the same thing: the latter is just syntax sugar
+for the former, and is supplied for convenience.</p>
+<h3 id="function-memoization">Function Memoization:</h3>
+<p>Some functions may take a very long time to compute values, when we
+only really need them to be computed once for any given input. For these
+kinds of functions, the <code>cache</code> keyword can be used to
+memoize the function and only compute the results once. See the
+following recursive fibonacci example:</p>
+<pre><code>cache function fib
+    if {@1 &lt; 2} then return {@1} end
+    return {\fib(@1 - 1) + \fib(@1 - 2)}
+end</code></pre>
+<p>Subsequent calls to <code>fib</code> will be <em>very</em> fast,
+because each fibonacci number only has to be computed once.</p>
+<p>If it turns out that you need to invalidate a specific function’s
+cache, you can manually do so:</p>
+<pre><code>break cache fib</code></pre>
+<p>If the function is not memoized, this of course does nothing.</p>
+<p>In short, memoization can be a good way to get a significant
+performance boost, basically for free (there <em>is</em> a slight
+runtime overhead, but it’s negligible). Do keep in mind that any side
+effects (e.g. running commands, modifying variables, etc) of the called
+function will not trigger if the result is already cached, so do not use
+this feature if you <em>want</em> your function to always cause side
+effects.</p>
+<h3 id="function-aliases">Function Aliases:</h3>
+<p>Some functions may have very long names that are unwieldy to type. In
+such cases you can create an alias with the <code>using</code>
+keyword:</p>
+<pre><code>function very_long_name_thats_annoying_to_type end
+using very_long_name_thats_annoying_to_type as short_name
+call short_name
+
+#If your function name has at least one period in it,
+#then you don&#39;t have to manually write the alias name.
+#It will be deduced from the text after the last period.
+function example.sub end
+using example.sub
+call sub</code></pre>
+<p>Do note that aliases are restricted to their scope, for example:</p>
+<pre><code>function example.sub end
+if {x} then
+    using example.sub as mysub
+    call mysub #This is valid.
+end
+call mysub #This is an error; &quot;mysub&quot; alias is not defined in this scope.</code></pre>
+<p>You can also alias functions according to a wildcard, if you end the
+function name with an asterisk.</p>
+<pre><code>function sub1 end
+function sub2 end
+using sub* as * #Can now do `call 1` and `call 2`
+using sub* as s* #Can now do `call s1` and `call s2`
+using sub* as *s #Can now do `call 1s` and `call 2s`
+using nonexistent.sub.* #Nothing happens unless at least 1 function matches the pattern.</code></pre>
+<p>Note that aliases do NOT work with dynamic calls; those require the
+full function name, to avoid any ambiguity at runtime.</p>
+<hr />
+<h3 id="prevprev-home-next-next"><a href="variables.html">&lt; Prev</a>
+| <a href="../walkthrough.html">Home</a> | <a href="macros.html">Next
+&gt;</a></h3>
+</body>
+</html>

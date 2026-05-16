@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h2 id="loops">Loops:</h2>
+<p>While and For loops each have two variations:</p>
+<pre><code># While loop
+while {expression is truthy} do
+    ...
+end
+
+# Infinite loop
+while do
+    ...
+end
+
+# Iterator for loop
+for value in {expression} do
+    ...
+end
+
+# Key-value for loop
+for key value in {pairs(object or array)} do
+    ...
+end</code></pre>
+<p>Note that the iterator (2nd from the bottom) loop type will iterate
+over all <em>values</em> in an array, and all <em>keys</em> in an
+object! Also note that the key-value (bottom) loop <strong>must</strong>
+contain either <code>pairs()</code> or <code>chunk(2)</code>, to ensure
+that the key-value pairs are valid.</p>
+<p>If you want syntax similar to Lua’s integer for loops
+(<code>for i = 1, 10 do ... end</code>), you can use something like
+<code>for i in {1:10} do ... end</code>.</p>
+<h3 id="generator-exception-loops">Generator-exception loops</h3>
+<p>A common pattern is to use exceptions to give generator behavior. For
+example, suppose you have a function that generates numbers from 0-9,
+and then raises an exception when done, to indicate there is no more
+data that can be generated:</p>
+<pre><code>function next
+    initial i = 0
+    if {i &gt;= 10} then
+        error &#39;End of generator&#39; as generator_end
+    end
+    let i += 1
+    return {i}
+end</code></pre>
+<p>This can easily be handled with</p>
+<pre><code>try
+    while {true} do
+        print &quot;Generated item: {\next()}&quot;
+        # Do other stuff
+    end
+catch generator_end
+end</code></pre>
+<p>While that works, it’s not immediately obvious that you’re just
+looping until the generator is empty. So, there is syntax sugar that
+does the same thing but is more explicit about it:</p>
+<pre><code>until generator_end do
+    print &quot;Generated item: {\next()}&quot;
+    # Do other stuff
+end</code></pre>
+<hr />
+<h3 id="prevprev-home-next-next"><a href="conditionals.html">&lt;
+Prev</a> | <a href="../walkthrough.html">Home</a> | <a
+href="variables.html">Next &gt;</a></h3>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h1 id="operators">Operators</h1>
+<ul>
+<li>addition, <code>+</code></li>
+<li>subtraction or negative, <code>-</code></li>
+<li>multiplication, <code>*</code></li>
+<li>division, <code>/</code></li>
+<li><em>integer</em> division, <code>//</code> (divide then round
+down)</li>
+<li>remainder/modulo, <code>%</code></li>
+<li>divisibility, <code>%%</code>. Returns true if the right operand
+evenly divides the left operand. (That is, <code>a %% b</code> is the
+same as <code>a % b = 0</code>)</li>
+<li>exponentiation, <code>^</code>, e.g. <code>a^3</code> raises
+<code>a</code> to the 3rd power.</li>
+<li>boolean operators, <code>and</code>, <code>or</code>,
+<code>xor</code>, <code>not</code>. Note that the <code>and</code> and
+<code>or</code> operators can short-circuit, i.e. given an expression
+<code>a and b</code>: if <code>a</code> is false, then the whole
+expression <em>can never be true</em>, so <code>b</code> is not even
+evaluated.</li>
+<li>bitwise operators, <code>bitwise and</code>,
+<code>bitwise or</code>, <code>bitwise xor</code>,
+<code>bitwise not</code>. Unlike the boolean operators, these do not
+short-circuit.</li>
+<li>comparison, <code>&gt;</code>, <code>&gt;=</code>,
+<code>&lt;</code>, <code>&lt;=</code></li>
+<li>comparison (equality), <code>=</code> or <code>==</code> (the latter
+is deprecated)</li>
+<li>comparison (not equal), <code>!=</code> or <code>~=</code> (the
+latter is deprecated)</li>
+<li>check for whether variables are set, <code>exists</code>
+(e.g. <code>x exists</code>)</li>
+<li>string or array length, <code>&amp;</code>
+(e.g. <code>&amp;variable</code>)</li>
+<li>array slicing, <code>:</code>. Note that slices are inclusive of
+both their upper and lower bounds (e.g. <code>0:5</code> gives
+<code>(0,1,2,3,4,5)</code>)
+<ul>
+<li>Note that when slicing an array or a string, it’s possible to
+replace the second number with a colon, to indicate that the slice
+should go from the start index all the way to the end of the string or
+array. So for example, <code>"abcdef"[4::]</code> would result in
+<code>"def"</code>, <code>(5,4,3,2,1)[2::]</code> would result in
+<code>(4,3,2,1)</code>, etc.</li>
+</ul></li>
+<li>array listing, <code>,</code> (e.g. <code>1,2,3</code> is an array
+with 3 elements, <code>(1,)</code> is an array with 1 element,
+<code>(,)</code> has 0 elements, etc). You can combine this with
+slicing, e.g. <code>1,3:5,9</code> gives <code>(1,3,4,5,9)</code>.</li>
+<li>pattern matching, <code>like</code>, checks whether a string matches
+a given pattern (e.g. <code>"123" like "%d+"</code> gives
+<code>true</code>).</li>
+<li>array searching <code>in</code> (e.g. <code>3 in (1,2,4,5,6)</code>
+gives <code>false</code>)</li>
+<li>implicit string concatenation: There is no string concatenation
+operator. Seriously, two values next to each other, without an operator
+between them, results in string concatenation.</li>
+<li>ternary expression, <code>val1 if expression else val2</code>. Like
+Python’s ternary syntax, this will result in <code>val1</code> if
+<code>expression</code> evaluates to true, otherwise it will result in
+<code>val2</code>.</li>
+<li>falsey fallback operator, <code>val1 else val2</code>. Results in
+<code>val1</code> if val1 is truthy, otherwise results in
+<code>val2</code>. Syntax sugar for
+<code>val1 if val1 else val2</code>.</li>
+<li>truthy fallback operator, <code>val1 then val2</code>. Results in
+<code>val2</code> if val1 is truthy, otherwise results in
+<code>val1</code>. Syntax sugar for
+<code>val2 if val1 else val2</code>.</li>
+<li>null fallback operator, <code>val1 ?else val2</code>. Results in
+<code>val1</code> if val1 is <em>not null</em>, otherwise results in
+<code>val2</code>. Syntax sugar for
+<code>val1 if val1 != null else val2</code>.</li>
+<li>non-null fallback operator, <code>val1 ?then val2</code>. Results in
+<code>val2</code> if val1 is <em>not null</em>, otherwise results in
+<code>val1</code>. Syntax sugar for
+<code>val1 if val1 = null else val2</code>.</li>
+<li>Indexing, <code>[]</code>. Like most languages, this lets you get an
+element from a string, array, or object (e.g. <code>"string"[2]</code>
+gives “t”, <code>('a','b','c')[3]</code> gives “c”, and
+<code>('a'=&gt;'v1', 'b'=&gt;'v2')['a']</code> gives “v1”), however
+Paisley also lets you select multiple items at once in a single index
+expression. E.g. <code>"abcde"[2,5,5]</code> gives “bee”,
+<code>"abcde"[1:3]</code> gives “abc”, <code>(6,7,8,9,0)[3,1,5]</code>
+gives <code>(8,6,0)</code>.</li>
+<li>dot-notation, <code>.</code>. This is purely syntax sugar. When used
+with functions, the left side of the dot is treated as the first
+argument to the function, e.g. <code>val1.func(val2, ...)</code> =
+<code>func(val1, val2, ...)</code>. When used with identifiers, a dot is
+shorthand for object indexing, e.g. <code>obj.attr</code> =
+<code>obj["attr"]</code>.</li>
+</ul>
+<h2 id="precedence">Precedence</h2>
+<p>Operator precedence in Paisley follows the table below, from higher
+to lower priority:</p>
+<p><code>.</code> <code>[]</code><br> <code>&amp;</code><br>
+<code>^</code><br>
+<code>-</code> <code>not</code> <code>bitwise not</code> (unary
+operators)<br> <code>:</code><br>
+<code>*</code> <code>/</code> <code>//</code> <code>%</code> <code>%%</code><br>
+<code>+</code> <code>-</code><br>
+<code>&gt;</code> <code>&lt;</code> <code>&gt;=</code> <code>&lt;=</code> <code>=</code> <code>!=</code> <code>in</code> <code>like</code> <code>not in</code> <code>not like</code><br>
+string concatenation <code>a b</code> (two expressions separated by a
+space)<br>
+<code>exists</code> <code>and</code> <code>or</code> <code>xor</code>
+and any <code>bitwise</code> versions of the latter 4.<br>
+<code>a for b in c</code> <code>a for b in c if d</code><br>
+<code>a if b else c</code> <code>a else b</code>  <code>a ?else b</code> <code>a then b</code> <code>a ?then b</code><br>
+<code>=&gt;</code><br> <code>,</code><br></p>
+<hr />
+<h3 id="prevprev-home-next-next"><a href="lang_functions.html">&lt;
+Prev</a> | <a href="../walkthrough.html">Home</a> | <a
+href="arrays.html">Next &gt;</a></h3>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h2 id="macros">Macros:</h2>
+<p>Macros are another good way to reuse code, however unlike functions,
+these are specifically for reusing parts of expressions. Macros are
+defined with the syntax <code>![expression]</code>, and are referred to
+with that same <code>!</code> identifier, just without the brackets.
+Note that the <code>!</code> can be any number of exclamation marks,
+optionally followed by an alphanumeric identifier. So for example,
+<code>!!</code>, <code>!2</code>, and <code>!!macro_1</code> are all
+valid macro identifiers, all referring to different macros. Note that
+macros are not functions; they don’t take any parameters, instead they
+behave exactly as if you had written the contained expression instead of
+the macro.</p>
+<p>Below is an example of macro usage. Both the top and bottom commands
+will print 5 random numbers in the range 0-100.</p>
+<pre><code>print {![random_int(0, 100)], !, !, !, !}
+
+#do the same thing, but using the define keyword
+define {!rnd[random_int(0, 100)]}
+print {!rnd, !rnd, !rnd, !rnd, !rnd}</code></pre>
+<p>Note that either of the above commands are equivalent to the
+following:</p>
+<pre><code>print {random_int(0, 100), random_int(0, 100), random_int(0, 100), random_int(0, 100), random_int(0, 100)}</code></pre>
+<p>Another fun use of macros is the ability to create auto-incrementing
+values that are resolved at compile time:</p>
+<pre><code>define {![0]}
+let a = {![!+1]} # `a` is set to 1.
+let b = {![!+1]} # `b` is set to 2.
+let c = {![!+1]} # `c` is set to 3.</code></pre>
+<p>Note that, unlike variables, macros are restricted to their scope.
+Thus, for example, if you define a macro in a function, you cannot use
+it outside of the function.</p>
+<hr />
+<h3 id="prevprev-home-next-next"><a href="functions.html">&lt; Prev</a>
+| <a href="../walkthrough.html">Home</a> | <a
+href="exceptions.html">Next &gt;</a></h3>
+</body>
+</html>

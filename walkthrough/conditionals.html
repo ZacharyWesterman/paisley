@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h2 id="conditionals">Conditionals:</h2>
+<p>“If” statements have the following structure:</p>
+<pre><code>if {expression is truthy} then
+    ...
+elif {expression is truthy} then
+    ...
+else
+    ...
+end</code></pre>
+<p>You can also leave out the “then” clause if all that’s needed is the
+“else” clause, e.g.:</p>
+<pre><code>if {expression is truthy} else
+    ... do this if expression is falsey ...
+end</code></pre>
+<p>Keep in mind that <code>if</code> statements convert the expression
+to a boolean, and so use a few rules to test an expression’s truthiness:
+false, null, zero, empty strings, empty arrays and empty objects are all
+falsey, everything else is truthy. See <a
+href="../type-casting.html">the type-casting docs</a> for more info on
+truthiness and other type-casting rules.</p>
+<p>There is also the <code>match</code> structure, which is similar to
+c-like languages’ <code>switch/case</code> structure (or Rust’s
+<code>match</code>). This structure is included to allow for more
+readable logic with less repeated code.</p>
+<pre><code>match {expression} do
+    ... if {case 1}
+    ... if {case 2}
+    if {case 3} then ...complex logic, loops, etc... end
+    ...
+else
+    ... default action if no cases match ...
+end</code></pre>
+<p>For example:</p>
+<pre><code>match {random_int(1,5)} do
+    print one if 1
+    print two if 2
+    print 4 or 5 if {&gt; 4}
+    if {like &#39;%d+&#39;} then error &quot;it&#39;s a string?!&quot; end
+else
+    print &quot;some other number&quot;
+end</code></pre>
+<p>See how there are two possible syntaxes for the match branches. The
+first kind, <code>{command(s)} if {expression}</code> only allows a list
+of simple commands, that is, any block statements (e.g. <code>if</code>,
+<code>while</code>, etc.)are <strong>not allowed</strong>, however,
+multiple commands are fine
+(e.g. <code>print 123; stop if {&gt; 4}</code> is fine). The second
+kind, <code>if {expression} then {command(s)} end</code> functions like
+a normal if statement; it allows any kind of statement(s) to be used
+inside.</p>
+<p>Note that, inside match statements, the top-level boolean operators
+(<code>=</code>, <code>!=</code>, <code>&gt;</code>, <code>&lt;</code>,
+<code>&gt;=</code>, <code>&lt;=</code>, <code>in</code>,
+<code>like</code>, <code>and</code>, <code>or</code>, <code>xor</code>,
+<code>%%</code>) and bitwise operators (<code>bitwise and</code>,
+<code>bitwise or</code>, <code>bitwise xor</code>) don’t require a left
+operand. Instead, the left operand is implied to be the bound value of
+the match expression. If the operator is left out, then <code>=</code>
+is implied. e.g. <code>{3}</code> is the same as <code>{=3}</code>.</p>
+<p>Of course, like <code>if</code> statements, the <code>else</code>
+branch is optional and can be excluded.</p>
+<hr />
+<h3 id="prev-home-next-next">&lt; Prev | <a
+href="../walkthrough.html">Home</a> | <a href="loops.html">Next
+&gt;</a></h3>
+</body>
+</html>

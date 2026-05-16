@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h2 id="importing-other-files">Importing other files:</h2>
+<p>To allow organization and minimize bloat of individual scripts,
+Paisley does allow importing of other scripts with the
+<code>require</code> keyword. You can even import multiple files in the
+same statement.</p>
+<pre><code>#Import ./file1.pai or ./file1.paisley
+require file1
+
+#Import:
+# ./file2.pai
+# ./path/to/file3.pai
+# ./&quot;filename with spaces&quot;.pai
+require file2 path.to.file3 &quot;filename with spaces&quot;
+
+#Import ../file4.pai
+require ..file4
+
+#Import ../../file5.pai
+require ...file5</code></pre>
+<p>See how it’s possible to import files from N levels above, by
+prepending N+1 periods to the beginning of a path name.</p>
+<p>Note that files can only be imported once, that is, any redundant
+imports are ignored.</p>
+<h2 id="other-statements">Other statements:</h2>
+<ul>
+<li><code>break</code> or <code>break 1</code> or <code>break 2</code>
+etc, will exit as many while/for loops as are specified (defaults to 1
+if not specified)</li>
+<li><code>continue</code> or <code>continue 1</code> or
+<code>continue 2</code> etc, will skip an iteration of as many while/for
+loops as are specified (defaults to 1 if not specified)</li>
+<li><code>delete</code> will delete the variables listed,
+e.g. <code>delete x y z</code></li>
+<li><code>stop</code> will immediately halt program execution.</li>
+<li><code>return</code> returns from a function back to the caller.</li>
+<li><code>define</code> will parse the following expression(s) but will
+ignore them at run time. This is most useful for defining macros outside
+of where they’re used.</li>
+</ul>
+<hr />
+<h3 id="prevprev-home-next-next"><a href="scopes.html">&lt; Prev</a> |
+<a href="../walkthrough.html">Home</a> | <a href="expressions.html">Next
+&gt;</a></h3>
+</body>
+</html>

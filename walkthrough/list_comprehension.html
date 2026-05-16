@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+<h3 id="list-comprehension">List comprehension</h3>
+<p>Often you need to take an array and mutate every element in some way.
+While you could very well use a for loop for this, this operation comes
+up often enough that there is a convenient shorthand for it. See how in
+the following script, we’re taking the array <code>x</code> and
+multiplying every element by <code>2</code>, then assigning the result
+to <code>y</code>.</p>
+<pre><code>let x = {1,2,3}
+let y = {,}
+for i in {x} do
+    let y{} = {i * 2}
+end</code></pre>
+<p>The above could be written much more succinctly as the following:</p>
+<pre><code>let x = {1,2,3}
+let y = {i * 2 for i in x}</code></pre>
+<p>Those of you familiar with Python will realize where the syntax comes
+from, and like in Python, you can filter out array elements based on a
+condition. See how in the following script, <code>x</code> is all
+numbers from 1 to 100, and we’re selecting only those numbers divisible
+by <code>5</code>, and storing the result in <code>y</code>.</p>
+<pre><code>let x = {1:100}
+let y = {,}
+for i in {x} do
+    if {i % 5 = 0} then
+        let y{} = {i}
+    end
+end</code></pre>
+<p>The above could instead be written as the following:</p>
+<pre><code>let x = {1:100}
+let y = {i for i in x if i % 5 = 0}</code></pre>
+<p>One important caveat to note about list comprehension is that the
+intermediate variable does not actually change the values of any global
+variables. So, while the above examples are <em>computationally</em> the
+same, list comprehension has the benefits of being more terse, more
+performant, and encapsulated. For example,</p>
+<pre><code>let i = 123
+let values = {i + 1 for i in 0:9}
+print {i} # This is still `123`! The list comprehension did not affect the actual variable `i`.</code></pre>
+<hr />
+<h3 id="prevprev-home-next-next"><a href="objects.html">&lt; Prev</a> |
+<a href="../walkthrough.html">Home</a> | <a href="commands.html">Next
+&gt;</a></h3>
+</body>
+</html>
