@@ -44,3 +44,5 @@ main.c
 standalone_binary
 
 PAISLEY_BYTECODE.cpp
+
+html/

@@ -1,6 +1,7 @@
 # Data Types
 
 Paisley has 6 data types:
+
 - object
 - array
 - string
@@ -27,3 +28,7 @@ The subtype is optional, and if not specified, will be assumed to be `any`.
 
 For example, `string|number|array` would mean that the type may be a string, a number, or an array whose values could be anything.
 Likewise, `object[boolean]?` means that the type may be either null, or an object that only contains booleans.
+
+---
+
+### [Home](walkthrough.md)

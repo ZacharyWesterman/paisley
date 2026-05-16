@@ -24,4 +24,31 @@ See how in the above, expressions are contained inside curly braces, `{}`. More 
 
 ---
 
+### Index
+
+1. [conditionals](walkthrough/conditionals.md)
+2. [loops](walkthrough/loops.md)
+3. [variables](walkthrough/variables.md)
+4. [user functions](walkthrough/functions.md)
+5. [macros](walkthrough/macros.md)
+6. [exceptions](walkthrough/exceptions.md)
+7. [scopes](walkthrough/scopes.md)
+8. [miscellaneous statements](walkthrough/misc_statements.md)
+9. [expressions](walkthrough/expressions.md)
+10. [built-in functions](walkthrough/lang_functions.md)
+11. [operators](walkthrough/operators.md)
+12. [arrays](walkthrough/arrays.md)
+13. [objects](walkthrough/objects.md)
+14. [list comprehension](walkthrough/list_comprehension.md)
+15. [commands](walkthrough/commands.md)
+16. [comments](walkthrough/comments.md)
+17. [directives](walkthrough/directives.md)
+
+### Other useful links
+
+- [debug annotations](debug_annotations.md)
+- [type casting rules](type_casting.md)
+
+---
+
 ### [Begin >](walkthrough/conditionals.md)

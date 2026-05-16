@@ -30,7 +30,9 @@ If you would like to avoid interpolation in double-quoted strings, simply escape
 print "the expression \{1+2} evaluates to {1+2}"
 print "you can also put \"quotes\" and line breaks (\n) inside strings!"
 ```
+
 There are a few special escape sequences:
+
 - `\n` outputs a line ending.
 - `\t` outputs a tab.
 - `\r` outputs a carriage return.
@@ -45,6 +47,7 @@ There are a few special escape sequences:
 - `\U` followed by any 8 hexadecimal digits outputs the respective Unicode character.
 
 There are also a bunch of escape sequences that correspond to emoticons, included for convenience:
+
 - `^-^` outputs `😌`
 - `:relaxed:` outputs `😌`
 - `:P` outputs `😋`
