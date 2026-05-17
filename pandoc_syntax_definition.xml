@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language [
+  <!ENTITY escape_sequence "\\(n|t|r|v|&quot;|'|\\|\{|\}| |\^-\^|:relaxed:|:P|:yum:|&lt;3|:heart_eyes:|B\)|:sunglasses:|:D|:grinning:|\^o\^|:smile:|XD|:laughing:|:lol:|:smiley:|:sweat_smile:|DX|:tired_face:|;P|:stuck_out_tongue_winking_eye:|:-\*|;-\*|:kissing_heart:|:kissing:|:rofl:|:\)|:slight_smile:|:\(|:frown:|:frowning:|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})">
+  <!ENTITY number "0[xcb][0-9_a-fA-F]*|\.[0-9]+|[0-9][0-9_]">
+]>
+<language name="Paisley" section="Scripts" version="10" kateversion="2.4"
+  extensions="*.pai;*.paisley" mimetype="application/pai;application/paisley"
+  author="Zachary Westerman (westerman.zachary@gmail.com)" license="GPL3">
+  <highlighting>
+    <list name="Constants">
+      <item>null</item>
+      <item>true</item>
+      <item>false</item>
+    </list>
+
+    <list name="Keywords">
+      <item>for</item>
+      <item>while</item>
+      <item>in</item>
+      <item>do</item>
+      <item>if</item>
+      <item>then</item>
+      <item>elif</item>
+      <item>else</item>
+      <item>end</item>
+      <item>continue</item>
+      <item>break</item>
+      <item>delete</item>
+      <item>subroutine</item>
+      <item>function</item>
+      <item>gosub</item>
+      <item>call</item>
+      <item>return</item>
+      <item>let</item>
+      <item>initial</item>
+      <item>stop</item>
+      <item>match</item>
+      <item>cache</item>
+      <item>using</item>
+      <item>as</item>
+      <item>require</item>
+      <item>try</item>
+      <item>catch</item>
+      <item>error</item>
+      <item>define</item>
+      <item>until</item>
+    </list>
+
+    <list name="Operators">
+      <item>for</item>
+      <item>if</item>
+      <item>else</item>
+      <item>then</item>
+      <item>+</item>
+      <item>-</item>
+      <item>*</item>
+      <item>/</item>
+      <item>%</item>
+      <item>^</item>
+      <item>:</item>
+      <item>&amp;</item>
+      <item>not</item>
+      <item>and</item>
+      <item>or</item>
+      <item>xor</item>
+      <item>in</item>
+      <item>exists</item>
+      <item>like</item>
+      <item>&gt;</item>
+      <item>&lt;</item>
+      <item>=</item>
+      <item>!=</item>
+      <item>,</item>
+      <item>.</item>
+      <item>bitwise</item>
+      <item>?</item>
+    </list>
+
+    <contexts>
+      <context name="Normal" lineEndContext="#stay" attribute="Style_Normal">
+        <DetectSpaces context="#stay" attribute="Style_Normal" />
+
+        <IncludeRules context="Strings" />
+        <IncludeRules context="Comments" />
+
+        <keyword attribute="Keyword" context="#stay" String="Keywords" />
+
+        <IncludeRules context="Command" />
+      </context>
+
+      <context name="Command" lineEndContext="#pop">
+        <DetectChar char=';' context="#pop" attribute="Comment" />
+        <RegExpr String="[^'\&quot;\$\{\} \t#;&lt;&gt;\|]+" context="#stay"
+          attribute="Command" />
+      </context>
+
+      <!-- STRINGS -->
+
+      <context name="Strings">
+        <DetectChar char="&quot;" context="StringInterpolatedSingleLine" attribute="String" />
+        <DetectChar char="'" context="StringBasicSingleLine" attribute="String" />
+        <StringDetect String="&quot;&quot;&quot;" context="StringInterpolatedMultiLine"
+          attribute="String" />
+        <StringDetect String="'''" context="StringBasicMultiLine" attribute="String" />
+      </context>
+
+      <context name="StringInterpolatedSingleLine" lineEndContext="#pop" attribute="String">
+        <DetectChar char="&quot;" context="#pop" attribute="String" />
+        <RegExpr context="#stay" String="&escape_sequence;" attribute="EscapeSequence" />
+        <!-- TODO: interpolated values -->
+      </context>
+
+      <context name="StringBasicSingleLine" lineEndContext="#pop" attribute="String">
+        <DetectChar char="'" context="#pop" attribute="String" />
+        <RegExpr context="#stay" String="&escape_sequence;" attribute="EscapeSequence" />
+      </context>
+
+      <context name="StringInterpolatedMultiLine" lineEndContext="#stay" attribute="String">
+        <StringDetect String="&quot;&quot;&quot;" context="#pop" attribute="String" />
+        <RegExpr context="#stay" String="&escape_sequence;" attribute="EscapeSequence" />
+        <!-- TODO: interpolated values -->
+      </context>
+
+      <context name="StringBasicMultiLine" lineEndContext="#stay" attribute="String">
+        <StringDetect String="'''" context="#pop" attribute="String" />
+        <RegExpr context="#stay" String="&escape_sequence;" attribute="EscapeSequence" />
+      </context>
+
+      <!-- COMMENTS -->
+
+      <context name="Comments">
+        <StringDetect String="#[[" context="CommentMultiLine" attribute="Comment" />
+        <DetectChar char="#" context="CommentSingleLine" attribute="Comment" />
+      </context>
+
+      <context name="CommentSingleLine" lineEndContext="#pop" attribute="Comment">
+        <!-- TODO: Comment Annotations. -->
+      </context>
+
+      <context name="CommentMultiLine" lineEndContext="#stay" attribute="Comment">
+        <StringDetect String="#]]" context="#pop" attribute="Comment" />
+        <!-- TODO: Comment Annotations. -->
+      </context>
+
+    </contexts>
+
+    <itemDatas>
+      <itemData name="Style_Normal" defStyleNum="dsNormal" />
+
+      <itemData name="Style_Seperator_Pair" defStyleNum="dsFunction" bold="true" />
+      <itemData name="Style_Seperator_Array" defStyleNum="dsOthers" bold="true" />
+
+      <itemData name="Style_Decimal" defStyleNum="dsDecVal" />
+      <itemData name="Style_Float" defStyleNum="dsFloat" />
+      <itemData name="EscapeSequence" defStyleNum="dsDataType" />
+      <itemData name="Style_String_Key_Char" defStyleNum="dsChar" />
+      <itemData name="Style_String_Value_Char" defStyleNum="dsChar" />
+
+      <itemData name="String" defStyleNum="dsString" />
+      <itemData name="Keyword" defStyleNum="dsKeyword" />
+      <itemData name="Comment" defStyleNum="dsComment" />
+      <itemData name="Command" defStyleNum="dsFunction" />
+    </itemDatas>
+  </highlighting>
+</language>
