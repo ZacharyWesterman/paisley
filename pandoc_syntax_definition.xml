@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE language [
   <!ENTITY escape_sequence "\\(n|t|r|v|&quot;|'|\\|\{|\}| |\^-\^|:relaxed:|:P|:yum:|&lt;3|:heart_eyes:|B\)|:sunglasses:|:D|:grinning:|\^o\^|:smile:|XD|:laughing:|:lol:|:smiley:|:sweat_smile:|DX|:tired_face:|;P|:stuck_out_tongue_winking_eye:|:-\*|;-\*|:kissing_heart:|:kissing:|:rofl:|:\)|:slight_smile:|:\(|:frown:|:frowning:|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})">
-  <!ENTITY number "0[xcb][0-9_a-fA-F]*|\.[0-9]+|[0-9][0-9_]">
+  <!ENTITY number "0[xcb][0-9_a-fA-F]*|\.[0-9]+|[0-9][0-9_]*">
+  <!ENTITY loose_ident "[^'\&quot;\$\{\} \t#;]+">
+  <!ENTITY ident "[a-zA-Z_]\w*">
+  <!ENTITY macro "!+\w*">
 ]>
 <language name="Paisley" section="Scripts" version="10" kateversion="2.4"
   extensions="*.pai;*.paisley" mimetype="application/pai;application/paisley"
@@ -79,24 +82,61 @@
     <contexts>
       <context name="Normal" lineEndContext="#stay" attribute="Normal">
         <DetectSpaces context="#stay" attribute="Normal" />
-
-        <IncludeRules context="Strings" />
         <IncludeRules context="Comments" />
+        <IncludeRules context="Strings" />
+        <StringDetect String="${" context="InlineCommand" attribute="Special" />
+        <DetectChar char="$" context="Directive" attribute="Keyword" />
+        <DetectChar char="{" context="Expression" attribute="Normal" />
+
+        <RegExpr String="&number;" attribute="Number" />
 
         <keyword attribute="Keyword" context="#stay" String="Keywords" />
+        <keyword attribute="Operator" context="#stay" String="Operators" />
 
-        <IncludeRules context="Command" />
+        <RegExpr
+          String="(?&lt;=\b(?:subroutine|function|gosub|call|break[ \t]+cache)[ \t]+)&loose_ident;"
+          attribute="Function" />
+        <RegExpr String="\b&ident;(?=[ \t]*\()" attribute="Function" />
+        <RegExpr String="\b&ident;\b" attribute="Identifier" />
       </context>
 
-      <context name="Command" lineEndContext="#pop">
-        <DetectChar char=';' context="#pop" attribute="Comment" />
-        <RegExpr String="[^'\&quot;\$\{\} \t#;&lt;&gt;\|]+" context="#stay"
-          attribute="Command" />
+      <context name="Directive" lineEndContext="#pop" attribute="Keyword">
+        <DetectChar char=";" context="#pop" attribute="Keyword" />
+        <IncludeRules context="Strings" />
+        <keyword attribute="Operator" context="#stay" String="Operators" />
+        <RegExpr String="&number;" attribute="Number" />
+        <RegExpr String="\b&ident;\b" attribute="Identifier" />
       </context>
 
-      <!-- STRINGS -->
+      <context name="Expression" lineEndContext="#stay" attribute="Normal">
+        <DetectChar char="}" context="#pop" attribute="Normal" />
+        <IncludeRules context="Comments" />
+        <IncludeRules context="Strings" />
+        <StringDetect String="${" context="InlineCommand" attribute="Special" />
+        <DetectChar char="{" context="Expression" attribute="Normal" />
 
-      <context name="Strings">
+        <keyword attribute="Keyword" context="#stay" String="Keywords" />
+        <keyword attribute="Operator" context="#stay" String="Operators" />
+
+        <RegExpr String="&number;" attribute="Number" />
+
+        <RegExpr String="\$" attribute="Identifier" />
+        <RegExpr String="@[0-9]*" attribute="Identifier" />
+        <RegExpr String="\b&ident;(?=[ \t]*\()" attribute="Function" />
+        <RegExpr String="\b&ident;\b" attribute="Identifier" />
+
+        <RegExpr String="&macro;" attribute="Macro" />
+      </context>
+
+      <context name="InlineCommand" lineEndContext="#pop" attribute="Special">
+        <DetectChar char="}" context="#pop" attribute="Special" />
+        <IncludeRules context="Strings" />
+        <keyword attribute="Keyword" context="#stay" String="Keywords" />
+        <RegExpr String="\b(?:gosub|call)\b" attribute="Keyword" />
+        <RegExpr String="\b&ident;\b" attribute="Identifier" />
+      </context>
+
+      <context name="Strings" lineEndContext="#stay" attribute="String">
         <DetectChar char="&quot;" context="StringInterpolatedSingleLine" attribute="String" />
         <DetectChar char="'" context="StringBasicSingleLine" attribute="String" />
         <StringDetect String="&quot;&quot;&quot;" context="StringInterpolatedMultiLine"
@@ -107,7 +147,8 @@
       <context name="StringInterpolatedSingleLine" lineEndContext="#pop" attribute="String">
         <DetectChar char="&quot;" context="#pop" attribute="String" />
         <RegExpr context="#stay" String="&escape_sequence;" attribute="EscapeSequence" />
-        <!-- TODO: interpolated values -->
+        <StringDetect String="${" context="InlineCommand" attribute="Special" />
+        <DetectChar char="{" context="Expression" attribute="Normal" />
       </context>
 
       <context name="StringBasicSingleLine" lineEndContext="#pop" attribute="String">
@@ -118,7 +159,8 @@
       <context name="StringInterpolatedMultiLine" lineEndContext="#stay" attribute="String">
         <StringDetect String="&quot;&quot;&quot;" context="#pop" attribute="String" />
         <RegExpr context="#stay" String="&escape_sequence;" attribute="EscapeSequence" />
-        <!-- TODO: interpolated values -->
+        <StringDetect String="${" context="InlineCommand" attribute="Special" />
+        <DetectChar char="{" context="Expression" attribute="Normal" />
       </context>
 
       <context name="StringBasicMultiLine" lineEndContext="#stay" attribute="String">
@@ -126,30 +168,31 @@
         <RegExpr context="#stay" String="&escape_sequence;" attribute="EscapeSequence" />
       </context>
 
-      <!-- COMMENTS -->
-
-      <context name="Comments">
+      <context name="Comments" lineEndContext="#stay" attribute="Comment">
         <StringDetect String="#[[" context="CommentMultiLine" attribute="Comment" />
         <DetectChar char="#" context="CommentSingleLine" attribute="Comment" />
       </context>
 
       <context name="CommentSingleLine" lineEndContext="#pop" attribute="Comment">
-        <!-- TODO: Comment Annotations. -->
       </context>
 
       <context name="CommentMultiLine" lineEndContext="#stay" attribute="Comment">
         <StringDetect String="#]]" context="#pop" attribute="Comment" />
-        <!-- TODO: Comment Annotations. -->
       </context>
-
     </contexts>
 
     <itemDatas>
       <itemData name="Normal" defStyleNum="dsNormal" />
       <itemData name="String" defStyleNum="dsString" />
-      <itemData name="Keyword" defStyleNum="dsKeyword" />
       <itemData name="Comment" defStyleNum="dsComment" />
-      <itemData name="Command" defStyleNum="dsFunction" />
+      <itemData name="Keyword" defStyleNum="dsKeyword" />
+      <itemData name="Operator" defStyleNum="dsOthers" />
+      <itemData name="Number" defStyleNum="dsDecVal" />
+      <itemData name="Function" defStyleNum="dsFunction" />
+      <itemData name="Identifier" defStyleNum="dsDataType" />
+      <itemData name="Special" defStyleNum="dsOthers" />
+      <itemData name="EscapeSequence" defStyleNum="dsChar" />
+      <itemData name="Macro" defStyleNum="dsDataType" />
     </itemDatas>
   </highlighting>
 </language>

@@ -5,6 +5,9 @@ if ! command -v pandoc &>/dev/null; then
 	exit 1
 fi
 
+# Generate the syntax xml from the vscode extension
+./pandoc_generate_xml.py >.syntax.xml &
+
 rm -rf html
 mkdir html
 cp images/paisley-logo-small.png html/logo.png
@@ -21,13 +24,16 @@ echo "function Link(el)
 	return el
 end" > .filter.lua
 
+wait
+
 while read file; do
+	echo "$file"
 	tofile=${file/docs/html}
 	tofile=${tofile/.md/.html}
 	csspath="$(dirname "${tofile/html\//}" | sed -E 's|\w[^/]*|..|g')/style.css"
 	pandoc -f markdown -t html5 "$file" --css "$csspath" -s \
 		--lua-filter=.filter.lua --metadata title="Paisley Documentation" -V title:"" \
-		--highlight-style zenburn --syntax-definition pandoc_syntax_definition.xml \
+		--highlight-style breezedark --syntax-definition test.xml \
 	> "$tofile" &
 done < <(find docs -type f -name '*.md')
 wait
@@ -36,4 +42,4 @@ find docs -type f -not -name '*.md' | while read file; do
 	cp "$file" "${file/docs/html}"
 done
 
-rm -f .filter.lua
+rm -f .filter.lua .syntax.xml
