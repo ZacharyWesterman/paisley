@@ -22,7 +22,7 @@ These annotations can go anywhere, and will apply to all uses of the command.
 
 Below is an example debug annotation that could be used to verify arguments passed to the `sleep` command.
 
-```
+```pai
 #[[
 @debug sleep (args, info, json)
 	-- Even though `sleep` command is syntactically allowed to have any number
@@ -59,7 +59,7 @@ Additionally, unlike the command annotations, these must go in comments directly
 
 So an example annotation could be something like:
 
-```
+```pai
 #[[
 @debug (args, info, json)
 	--This function should not take any arguments
@@ -91,7 +91,7 @@ project/
 ```
 
 #### main.pai
-```
+```pai
 # @debug {annotations.no_args}
 function no_args
 	# Function body goes here

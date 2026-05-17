@@ -7,7 +7,7 @@ You can achieve similar functionality in Paisley, where code will not be parsed 
 In paisley, compiler directives start with `$` and continue until a line ending, `;` or `$`.
 They cannot be used inside strings or expressions, but they can wrap expressions on the same line.
 
-```
+```pai
 # Conditions can be chained with `and`, `or` and `()`.
 $if (version >= 1.2.3 or build = desktop) and target = lua
 ...
@@ -27,7 +27,7 @@ $info "You've got the correct version :)"
 $end
 ```
 
-```
+```pai
 # This example uses the deprecated length operator if still supported.
 # Otherwise, the `len()` function is used.
 let array = {0:9}

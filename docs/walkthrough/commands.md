@@ -2,7 +2,7 @@
 
 ### Inline Command Evaluation
 Since commands can return values to Paisley after execution, you can also use those values in further calculations. For example:
-```
+```pai
 #Get an integer value representing in-game time, and convert it to a human-readable format
 let t = {floor(${time})}
 let hour = {t // 3600}
@@ -11,7 +11,7 @@ let second = {t % 60}
 print {hour ":" minute ":" second}
 ```
 Of course, there is also a simpler version that does the same thing:
-```
+```pai
 print {${time}.clocktime()[1:3].join(":")}
 ```
 
@@ -39,7 +39,7 @@ In the PC build, the following commands are also available:
 
 ### Shell command coersion
 If the `--shell` or `-l` flag is passed, then Paisley will assume that any undefined commands are programs available on this system.
-```
+```pai
 # Plain commands will not capture stdout or stderr, so the following are equivalent:
 wget https://127.0.0.1/example
 = wget https://127.0.0.1/example
@@ -61,11 +61,11 @@ grep "something <<<"text input"
 grep "something" <"file input"
 ```
 There is one difference however, and it's that the stdout and stderr files are not called `1` and `2` respectively, instead they are `?` and `!` to remain consistent with other syntax. For example, to pipe stderr into a file:
-```
+```pai
 wget https://127.0.0.1/example !>my_file.txt
 ```
 Also note that unlike in Bash, you must explicitly specify the input stream:
-```
+```pai
 echo "text" >file.txt #This will not work!
 
 echo "text" ?>file.text #Pipes stdout into the file.
