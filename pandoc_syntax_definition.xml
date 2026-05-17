@@ -77,8 +77,8 @@
     </list>
 
     <contexts>
-      <context name="Normal" lineEndContext="#stay" attribute="Style_Normal">
-        <DetectSpaces context="#stay" attribute="Style_Normal" />
+      <context name="Normal" lineEndContext="#stay" attribute="Normal">
+        <DetectSpaces context="#stay" attribute="Normal" />
 
         <IncludeRules context="Strings" />
         <IncludeRules context="Comments" />
@@ -145,17 +145,7 @@
     </contexts>
 
     <itemDatas>
-      <itemData name="Style_Normal" defStyleNum="dsNormal" />
-
-      <itemData name="Style_Seperator_Pair" defStyleNum="dsFunction" bold="true" />
-      <itemData name="Style_Seperator_Array" defStyleNum="dsOthers" bold="true" />
-
-      <itemData name="Style_Decimal" defStyleNum="dsDecVal" />
-      <itemData name="Style_Float" defStyleNum="dsFloat" />
-      <itemData name="EscapeSequence" defStyleNum="dsDataType" />
-      <itemData name="Style_String_Key_Char" defStyleNum="dsChar" />
-      <itemData name="Style_String_Value_Char" defStyleNum="dsChar" />
-
+      <itemData name="Normal" defStyleNum="dsNormal" />
       <itemData name="String" defStyleNum="dsString" />
       <itemData name="Keyword" defStyleNum="dsKeyword" />
       <itemData name="Comment" defStyleNum="dsComment" />
