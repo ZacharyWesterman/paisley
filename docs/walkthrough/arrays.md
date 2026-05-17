@@ -45,7 +45,7 @@ And to change an array's elements,
 ```pai
 let array{2} = 'd' #array is now ('a', 'd', 'c')
 let array{-1} = 'e' #array is now ('a', 'd', 'e')
-```pai
+```
 You can also append to an array,
 ```pai
 let array{} = 'f' #array is now ('a', 'd', 'e', 'f')
