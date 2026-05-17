@@ -21,12 +21,16 @@ echo "function Link(el)
 	return el
 end" > .filter.lua
 
-find docs -type f -name '*.md' | while read file; do
+while read file; do
 	tofile=${file/docs/html}
 	tofile=${tofile/.md/.html}
 	csspath="$(dirname "${tofile/html\//}" | sed -E 's|\w[^/]*|..|g')/style.css"
-	pandoc -f markdown -t html5 "$file" --css "$csspath" -s --lua-filter=.filter.lua --metadata title="Paisley Documentation" -V title:"" --highlight-style zenburn > "$tofile"
-done
+	pandoc -f markdown -t html5 "$file" --css "$csspath" -s \
+		--lua-filter=.filter.lua --metadata title="Paisley Documentation" -V title:"" \
+		--highlight-style zenburn --syntax-definition pandoc_syntax_definition.xml \
+	> "$tofile" &
+done < <(find docs -type f -name '*.md')
+wait
 
 find docs -type f -not -name '*.md' | while read file; do
 	cp "$file" "${file/docs/html}"
