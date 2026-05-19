@@ -21,18 +21,87 @@
       vertical-align: middle;
     }
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        background-color: #232629;
+        color: #7a7c7d;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #7a7c7d;  padding-left: 4px; }
+    div.sourceCode
+      { color: #cfcfc2; background-color: #232629; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #cfcfc2; } /* Normal */
+    code span.al { color: #95da4c; background-color: #4d1f24; font-weight: bold; } /* Alert */
+    code span.an { color: #3f8058; } /* Annotation */
+    code span.at { color: #2980b9; } /* Attribute */
+    code span.bn { color: #f67400; } /* BaseN */
+    code span.bu { color: #7f8c8d; } /* BuiltIn */
+    code span.cf { color: #fdbc4b; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #3daee9; } /* Char */
+    code span.cn { color: #27aeae; font-weight: bold; } /* Constant */
+    code span.co { color: #7a7c7d; } /* Comment */
+    code span.cv { color: #7f8c8d; } /* CommentVar */
+    code span.do { color: #a43340; } /* Documentation */
+    code span.dt { color: #2980b9; } /* DataType */
+    code span.dv { color: #f67400; } /* DecVal */
+    code span.er { color: #da4453; text-decoration: underline; } /* Error */
+    code span.ex { color: #0099ff; font-weight: bold; } /* Extension */
+    code span.fl { color: #f67400; } /* Float */
+    code span.fu { color: #8e44ad; } /* Function */
+    code span.im { color: #27ae60; } /* Import */
+    code span.in { color: #c45b00; } /* Information */
+    code span.kw { color: #cfcfc2; font-weight: bold; } /* Keyword */
+    code span.op { color: #cfcfc2; } /* Operator */
+    code span.ot { color: #27ae60; } /* Other */
+    code span.pp { color: #27ae60; } /* Preprocessor */
+    code span.re { color: #2980b9; background-color: #153042; } /* RegionMarker */
+    code span.sc { color: #3daee9; } /* SpecialChar */
+    code span.ss { color: #da4453; } /* SpecialString */
+    code span.st { color: #f44f4f; } /* String */
+    code span.va { color: #27aeae; } /* Variable */
+    code span.vs { color: #da4453; } /* VerbatimString */
+    code span.wa { color: #da4453; } /* Warning */
   </style>
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
 <h2 id="variable-assignment">Variable Assignment:</h2>
 <p>Variable assignment always starts with <code>let</code>, e.g.</p>
-<pre><code>let pi = 3.14
-let circumference = {2 * pi * r}</code></pre>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> pi = <span class="dv">3.14</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> circumference = {<span class="dv">2</span> * pi * r}</span></code></pre></div>
 <p>Note that the <code>let</code> keyword is required even when
 reassigning variables. For example, consider the following:</p>
-<pre><code>let var = 13
-var = 99</code></pre>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> var = <span class="dv">13</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">var</span> = <span class="dv">99</span></span></code></pre></div>
 <p>The second line will <strong>NOT</strong> set var’s value to 13.
 Instead, that would attempt to run a command called “var” with the
 parameters <code>["=", "99"]</code>.</p>
@@ -42,75 +111,85 @@ element</em> or <em>append</em> to the array. The following will result
 in var containing the array <code>(1, 2, 123, 4, 99)</code>. Note that
 giving negative values as the index will start counting from the end, so
 index of -1 will update the last element.</p>
-<pre><code>let var = 1 2 3 4 5
-let var{3} = 123
-let var{-1} = 99</code></pre>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> var = <span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span> <span class="dv">5</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> var{<span class="dv">3</span>} = <span class="dv">123</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> var{<span class="dv">-1</span>} = <span class="dv">99</span></span></code></pre></div>
 <p>Appending is just as simple. The following will result in var
 containing the array <code>(1, 2, 3, 4, 5, 6)</code>.</p>
-<pre><code>let var = 1 2 3 4 5
-let var{} = 6</code></pre>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> var = <span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span> <span class="dv">5</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> var{} = <span class="dv">6</span></span></code></pre></div>
 <p>And if you want to append to a sub-value of some object, use both of
 the above two syntaxes.</p>
-<pre><code>let var = {&quot;a&quot; =&gt; (1,2,3)}
-let var{&quot;a&quot;}{} = 4</code></pre>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> var = {<span class="st">&quot;a&quot;</span> =&gt; (<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>)}</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> var{<span class="st">&quot;a&quot;</span>}{} = <span class="dv">4</span></span></code></pre></div>
 <p>You can also assign multiple variables at the same time.</p>
-<pre><code>let a b c = 1 2 3
-
-#Alternatively, you can assign variables from values in an array
-let list = {1:9}
-let a b c = {list}</code></pre>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> a b c = <span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Alternatively, you can assign variables from values in an array</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> list = {<span class="dv">1</span>:<span class="dv">9</span>}</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> a b c = {list}</span></code></pre></div>
 <p>To simply define a variable as null, you can just leave off the
 expression. The following all initialize variables as null.</p>
-<pre><code>let var
-let a b c
-let foo = {null}</code></pre>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> var</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> a b c</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> foo = {<span class="ot">null</span>}</span></code></pre></div>
 <p>Like in other languages, there is also a shorthand syntax for
 reassigning a variable based on its previous value:</p>
-<pre><code>let x += 1 # Add 1 to x
-let x -= 1 # Subtract 1 from x
-let x *= 2 # Multiply x by 2
-let x /= 2 # Divide x by 2
-let x //= 2 # Integer-divide x by 2
-let x %= 2 # Set x to the remainder of x / 2
-let x %%= 2 # Set x to true if 2 divides x, false otherwise.
-let x &amp;= str # Append &quot;str&quot; to x</code></pre>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> x += <span class="dv">1</span> <span class="co"># Add 1 to x</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> x -= <span class="dv">1</span> <span class="co"># Subtract 1 from x</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> x *= <span class="dv">2</span> <span class="co"># Multiply x by 2</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> x /= <span class="dv">2</span> <span class="co"># Divide x by 2</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> x //= <span class="dv">2</span> <span class="co"># Integer-divide x by 2</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> x %= <span class="dv">2</span> <span class="co"># Set x to the remainder of x / 2</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> x %%= <span class="dv">2</span> <span class="co"># Set x to true if 2 divides x, false otherwise.</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> x &amp;= str <span class="co"># Append &quot;str&quot; to x</span></span></code></pre></div>
 <h3 id="variable-index-assignment">Variable Index Assignment</h3>
 <p>Assignment of arrays, strings and objects can all be indexed to only
 alter sub-elements. As mentioned above, this uses the
 <code>let var{expr} = expr</code> syntax.</p>
 <p>However, some objects may be more deeply nested. For example, suppose
 you have a 2D array or a complex object:</p>
-<pre><code>let array = {
-    [1, 2, 3],
-    [4, 5, 6],
-}
-let object = {
-    &quot;a&quot; =&gt; {
-        &quot;b&quot; =&gt; {
-            &quot;c&quot; =&gt; 123,
-        }
-    }
-}</code></pre>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> array = {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>],</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>],</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> object = {</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;a&quot;</span> =&gt; {</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;b&quot;</span> =&gt; {</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;c&quot;</span> =&gt; <span class="dv">123</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
 <p>If you want to change <code>array[1][2]</code> from <code>2</code> to
 <code>8</code>, or <code>object.a.b.c</code> from <code>123</code> to
 <code>456</code>, just add extra values in the index field, separated by
 commas:</p>
-<pre><code>let array{1, 2} = 8
-let object{&#39;a&#39;, &#39;b&#39;, &#39;c&#39;} = 456</code></pre>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> array{<span class="dv">1</span>, <span class="dv">2</span>} = <span class="dv">8</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> object{<span class="st">&#39;a&#39;</span>, <span class="st">&#39;b&#39;</span>, <span class="st">&#39;c&#39;</span>} = <span class="dv">456</span></span></code></pre></div>
 <p><strong>REMEMBER:</strong> All variables are global, so any
 “re-definition” of a variable just sets it to the new value.</p>
 <h3 id="variable-initialization">Variable Initialization:</h3>
 <p>There is a special keyword for setting a variable’s value if it
 hasn’t been assigned already.</p>
-<pre><code>initial variable = {value}</code></pre>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">initial</span> variable = {value}</span></code></pre></div>
 <p>Unlike the <code>let</code> keyword, <code>initial</code> can only
 define one variable, and it cannot insert or update sub-elements in
 arrays. The use of <code>initial</code> is instead a concise way to set
 a default value for un-initialized variables. Logically, it is identical
 to the following:</p>
-<pre><code>if {not (variable exists)} then
-    let variable = {value}
-end</code></pre>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">if</span> {<span class="at">not</span> (variable <span class="at">exists</span>)} <span class="kw">then</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> variable = {value}</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
 <hr />
 <h3 id="prevprev-home-next-next"><a href="loops.html">&lt; Prev</a> | <a
 href="../walkthrough.html">Home</a> | <a href="functions.html">Next

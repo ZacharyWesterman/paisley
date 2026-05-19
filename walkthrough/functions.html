@@ -21,6 +21,73 @@
       vertical-align: middle;
     }
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        background-color: #232629;
+        color: #7a7c7d;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #7a7c7d;  padding-left: 4px; }
+    div.sourceCode
+      { color: #cfcfc2; background-color: #232629; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #cfcfc2; } /* Normal */
+    code span.al { color: #95da4c; background-color: #4d1f24; font-weight: bold; } /* Alert */
+    code span.an { color: #3f8058; } /* Annotation */
+    code span.at { color: #2980b9; } /* Attribute */
+    code span.bn { color: #f67400; } /* BaseN */
+    code span.bu { color: #7f8c8d; } /* BuiltIn */
+    code span.cf { color: #fdbc4b; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #3daee9; } /* Char */
+    code span.cn { color: #27aeae; font-weight: bold; } /* Constant */
+    code span.co { color: #7a7c7d; } /* Comment */
+    code span.cv { color: #7f8c8d; } /* CommentVar */
+    code span.do { color: #a43340; } /* Documentation */
+    code span.dt { color: #2980b9; } /* DataType */
+    code span.dv { color: #f67400; } /* DecVal */
+    code span.er { color: #da4453; text-decoration: underline; } /* Error */
+    code span.ex { color: #0099ff; font-weight: bold; } /* Extension */
+    code span.fl { color: #f67400; } /* Float */
+    code span.fu { color: #8e44ad; } /* Function */
+    code span.im { color: #27ae60; } /* Import */
+    code span.in { color: #c45b00; } /* Information */
+    code span.kw { color: #cfcfc2; font-weight: bold; } /* Keyword */
+    code span.op { color: #cfcfc2; } /* Operator */
+    code span.ot { color: #27ae60; } /* Other */
+    code span.pp { color: #27ae60; } /* Preprocessor */
+    code span.re { color: #2980b9; background-color: #153042; } /* RegionMarker */
+    code span.sc { color: #3daee9; } /* SpecialChar */
+    code span.ss { color: #da4453; } /* SpecialString */
+    code span.st { color: #f44f4f; } /* String */
+    code span.va { color: #27aeae; } /* Variable */
+    code span.vs { color: #da4453; } /* VerbatimString */
+    code span.wa { color: #da4453; } /* Warning */
   </style>
   <link rel="stylesheet" href="../style.css" />
 </head>
@@ -33,29 +100,30 @@ can modify global variables, which may or may not be desired. Just keep
 it in mind when writing them.</p>
 <p>An example function definition and usage might look like the
 following:</p>
-<pre><code>function print_numbers
-    for i in {0 : @[1]} do
-        if {i &gt; 30} then
-            print &quot;whoa, too big!&quot;
-            return
-        end
-        print {i}
-    end
-end
-
-call print_numbers 10
-call print_numbers 50
-
-function power
-    return {@[1] ^ @[2]}
-end
-
-# You can use call the same as any inline command evaluation.
-print ${call power 2 10}
-
-# However, for calling user-defined functions inside expressions, they can be used like built-in functions!
-# Just prepend a backslash to the function name.
-print {\power(2,10)}</code></pre>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> print_numbers</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> i <span class="kw">in</span> {<span class="dv">0</span> : @[<span class="dv">1</span>]} <span class="kw">do</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> {i &gt; <span class="dv">30</span>} <span class="kw">then</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>            <span class="dt">print</span> <span class="st">&quot;whoa, too big!&quot;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>            <span class="kw">return</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        <span class="dt">print</span> {i}</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="kw">call</span><span class="fu"> print_numbers</span> <span class="dt">10</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="kw">call</span><span class="fu"> print_numbers</span> <span class="dt">50</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> power</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> {@[<span class="dv">1</span>] ^ @[<span class="dv">2</span>]}</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co"># You can use call the same as any inline command evaluation.</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="dt">print</span> ${<span class="kw">call</span><span class="fu"> power</span> <span class="dt">2</span> <span class="dv">10</span>}</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co"># However, for calling user-defined functions inside expressions, they can be used like built-in functions!</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Just prepend a backslash to the function name.</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="dt">print</span> {<span class="fu">\power</span>(<span class="dv">2</span>,<span class="dv">10</span>)}</span></code></pre></div>
 <p>See how in the above, the <code>@</code> variable stores any
 parameters passed to a function as an array, so the first parameter is
 <code>@[1]</code>, the second is <code>@[2]</code> and so on. For
@@ -71,28 +139,30 @@ and so requires a conditional check
 label is valid. See how in the following example, the program will
 randomly call one of 5 possible functions, and then print “Function
 exists”.</p>
-<pre><code>if call &quot;{random_int(1,5)}&quot; then
-    print &quot;Function exists&quot;
-end
-
-function 1 end
-function 2 end
-function 3 end
-function 4 end
-function 5 end</code></pre>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">if</span> <span class="kw">call</span><span class="fu"> </span><span class="st">&quot;</span>{<span class="fu">random_int</span>(<span class="dv">1</span>,<span class="dv">5</span>)}<span class="st">&quot;</span> <span class="kw">then</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">print</span> <span class="st">&quot;Function exists&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> 1</span> <span class="kw">end</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> 2</span> <span class="kw">end</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> 3</span> <span class="kw">end</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> 4</span> <span class="kw">end</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> 5</span> <span class="kw">end</span></span></code></pre></div>
 <p>You can of course also pass arguments to a dynamic call. However, any
 returned value is ignored.</p>
-<pre><code>if call &quot;add{random_int(1,5)}&quot; 100 then
-    print &quot;Function exists&quot;
-end
-
-function add1
-    print {@1 + 1}
-end
-...
-function add5
-    print {@1 + 5}
-end</code></pre>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">if</span> <span class="kw">call</span><span class="fu"> </span><span class="st">&quot;add</span>{<span class="fu">random_int</span>(<span class="dv">1</span>,<span class="dv">5</span>)}<span class="st">&quot;</span> <span class="dv">100</span> <span class="kw">then</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">print</span> <span class="st">&quot;Function exists&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> add1</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">print</span> {@1 + <span class="dv">1</span>}</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="dt">...</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> add5</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">print</span> {@1 + <span class="dv">5</span>}</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
 <p>As an aside, note how in the above, the function calls happened
 <em>before</em> their definitions. This is totally valid; as long as the
 function is defined <em>somewhere</em>, the compiler doesn’t care
@@ -116,15 +186,17 @@ only really need them to be computed once for any given input. For these
 kinds of functions, the <code>cache</code> keyword can be used to
 memoize the function and only compute the results once. See the
 following recursive fibonacci example:</p>
-<pre><code>cache function fib
-    if {@1 &lt; 2} then return {@1} end
-    return {\fib(@1 - 1) + \fib(@1 - 2)}
-end</code></pre>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">cache</span> <span class="kw">function</span><span class="fu"> fib</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> {@1 &lt; <span class="dv">2</span>} <span class="kw">then</span> <span class="kw">return</span> {@1} <span class="kw">end</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> {<span class="fu">\fib</span>(@1 - <span class="dv">1</span>) + <span class="fu">\fib</span>(@1 - <span class="dv">2</span>)}</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
 <p>Subsequent calls to <code>fib</code> will be <em>very</em> fast,
 because each fibonacci number only has to be computed once.</p>
 <p>If it turns out that you need to invalidate a specific function’s
 cache, you can manually do so:</p>
-<pre><code>break cache fib</code></pre>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">break</span> <span class="kw">cache</span> fib</span></code></pre></div>
 <p>If the function is not memoized, this of course does nothing.</p>
 <p>In short, memoization can be a good way to get a significant
 performance boost, basically for free (there <em>is</em> a slight
@@ -137,31 +209,34 @@ effects.</p>
 <p>Some functions may have very long names that are unwieldy to type. In
 such cases you can create an alias with the <code>using</code>
 keyword:</p>
-<pre><code>function very_long_name_thats_annoying_to_type end
-using very_long_name_thats_annoying_to_type as short_name
-call short_name
-
-#If your function name has at least one period in it,
-#then you don&#39;t have to manually write the alias name.
-#It will be deduced from the text after the last period.
-function example.sub end
-using example.sub
-call sub</code></pre>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> very_long_name_thats_annoying_to_type</span> <span class="kw">end</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> very_long_name_thats_annoying_to_type <span class="kw">as</span> short_name</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">call</span><span class="fu"> short_name</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#If your function name has at least one period in it,</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#then you don&#39;t have to manually write the alias name.</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#It will be deduced from the text after the last period.</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> example.sub</span> <span class="kw">end</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> example.sub</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="kw">call</span><span class="fu"> sub</span></span></code></pre></div>
 <p>Do note that aliases are restricted to their scope, for example:</p>
-<pre><code>function example.sub end
-if {x} then
-    using example.sub as mysub
-    call mysub #This is valid.
-end
-call mysub #This is an error; &quot;mysub&quot; alias is not defined in this scope.</code></pre>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> example.sub</span> <span class="kw">end</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="kw">if</span> {x} <span class="kw">then</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">using</span> example.sub <span class="kw">as</span> mysub</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">call</span><span class="fu"> mysub</span> <span class="co">#This is valid.</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="kw">call</span><span class="fu"> mysub</span> <span class="co">#This is an error; &quot;mysub&quot; alias is not defined in this scope.</span></span></code></pre></div>
 <p>You can also alias functions according to a wildcard, if you end the
 function name with an asterisk.</p>
-<pre><code>function sub1 end
-function sub2 end
-using sub* as * #Can now do `call 1` and `call 2`
-using sub* as s* #Can now do `call s1` and `call s2`
-using sub* as *s #Can now do `call 1s` and `call 2s`
-using nonexistent.sub.* #Nothing happens unless at least 1 function matches the pattern.</code></pre>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> sub1</span> <span class="kw">end</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> sub2</span> <span class="kw">end</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> sub* <span class="kw">as</span> * <span class="co">#Can now do `call 1` and `call 2`</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> sub* <span class="kw">as</span> s* <span class="co">#Can now do `call s1` and `call s2`</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> sub* <span class="kw">as</span> *s <span class="co">#Can now do `call 1s` and `call 2s`</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="kw">using</span> nonexistent.sub.* <span class="co">#Nothing happens unless at least 1 function matches the pattern.</span></span></code></pre></div>
 <p>Note that aliases do NOT work with dynamic calls; those require the
 full function name, to avoid any ambiguity at runtime.</p>
 <hr />
