@@ -5,9 +5,6 @@ if ! command -v pandoc &>/dev/null; then
 	exit 1
 fi
 
-# Generate the syntax xml from the vscode extension
-./pandoc_generate_xml.py >.syntax.xml &
-
 rm -rf html
 mkdir html
 cp images/paisley-logo-small.png html/logo.png
