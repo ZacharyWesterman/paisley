@@ -1,7 +1,7 @@
 ## Importing other files:
 To allow organization and minimize bloat of individual scripts, Paisley does allow importing of other scripts with the `require` keyword. You can even import multiple files in the same statement.
 
-```
+```pai
 #Import ./file1.pai or ./file1.paisley
 require file1
 

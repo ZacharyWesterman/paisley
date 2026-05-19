@@ -52,7 +52,7 @@ body {
 	font-size: 16px;
 	line-height: 1.6;
 	color: var(--paisley-text);
-	background-color: var(--paisley-purple);
+	background-color: var(--paisley-dark);
 	height: 100%;
 	max-width: 900px;
 	display: table-cell;
@@ -161,7 +161,7 @@ a:active {
 /* Code */
 code {
 	font-family: var(--font-mono);
-	background-color: var(--paisley-dark);
+	background-color: var(--paisley-purple);
 	color: var(--paisley-teal);
 	padding: var(--space-xs) var(--space-sm);
 	border-radius: 4px;
@@ -170,7 +170,7 @@ code {
 }
 
 pre {
-	background-color: var(--paisley-dark);
+	background-color: var(--paisley-purple);
 	color: #cbd5e1;
 	padding: var(--space-lg);
 	border-radius: 8px;

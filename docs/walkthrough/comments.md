@@ -7,7 +7,7 @@ Comments can also be used to annotate parts of the program and slightly modify c
 ### Comment annotations
 
 Every comment annotation starts with `@`. They will look something like the following:
-```
+```pai
 #Some example function
 #@param n number The number to square.
 #@return number The square of the input number.

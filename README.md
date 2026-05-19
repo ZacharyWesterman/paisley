@@ -69,7 +69,7 @@ To uninstall, just run `./uninstall.sh`.
 ## Running Paisley
 
 Running a basic Paisley script is pretty straightforward.
-```
+```sh
 # If Paisley is installed on your machine, you can run the following:
 paisley examples/helloworld.pai
 paisley --help
@@ -85,11 +85,11 @@ There are lots of options available to play around with, so be sure and run `pai
 A particularly useful feature is the `--introspect` flag, which allows outputting detailed information about functions or commands.
 This information is often more detailed than the readme, though the readme is often plenty detailed.
 For example:
-```
+```sh
 paisley --introspect -ifnormalize
 ```
 The above will print out detailed info about the `normalize()` function.
-```
+```sh
 paisley --introspect -icsleep
 ```
 The above will print out detailed info about the `sleep` command.

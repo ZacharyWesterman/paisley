@@ -8,7 +8,7 @@ However, objects differ from Lua tables in two major ways:
 
 To define an object, use the arrow operator `=>` between two values, such as `"key" => 123` or `var => 123`. 
 Like with arrays, key-value pairs are allowed to have an optional trailing comma.
-```
+```pai
 let object = {
 	'name' => 'Jerry',
 	'age' => 30,
@@ -19,7 +19,7 @@ let object = {
 }
 ```
 To create an empty object, just use the arrow operator by itself.
-```
+```pai
 let object = {=>}
 let array_of_empties = {
 	(=>),
@@ -32,18 +32,18 @@ Object values can of course be accessed the same way array values can, with the 
 However, attributes can also be accessed with dot notation if they contain only alphanumeric characters
 (that is, they match the pattern `[a-zA-Z_][0-9a-zA-Z_]*`).
 The following lines do the exact same thing.
-```
+```pai
 print {object['name']}
 print {object.name}
 ```
 
 Like with arrays, object values can be added or changed with the following syntax,
-```
+```pai
 let object{'name'} = 'Jekyll'
 let object{'friend', 'name'} = 'Hyde'
 ```
 However, you cannot use the append syntax on an object, as it does not make sense in that context. So the following will not work:
-```
+```pai
 let object{} = 'some value'
 ```
 

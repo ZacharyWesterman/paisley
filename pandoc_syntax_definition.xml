@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE language [
+  <!ENTITY escape_sequence "\\(n|t|&quot;|'|\\|r| |\{|\}|x..|u.{4}|U.{8}|\^\-\^|:relaxed:|:P|:yum:|&lt;3|:heart_eyes:|B\)|:sunglasses:|:D|:grinning:|\^o\^|:smile:|XD|:laughing:|:lol:|=D|:smiley:|:sweat_smile:|DX|:tired_face:|;P|:stuck_out_tongue_winking_eye:|:-\*|;-\*|:kissing_heart:|:kissing:|:rofl:|:\)|:slight_smile:|:\(|:frown:|:frowning:)">
+  <!ENTITY identifier "[a-zA-Z_]\w*">
+  <!ENTITY special_ident "\$(?!\{)|@\d*">
+  <!ENTITY argument "[^'&quot;\$\{\} \t#;]+">
+  <!ENTITY assignment "([-+&amp;/&perc;*]|//|&perc;&perc;)?=">
+  <!ENTITY number "0[xcb][0-9a-fA-F]+|-?\d+(\.\d+)?">
+  <!ENTITY escaped_function_call "\\[^'&quot;\$\{\} \t#\(\)]+">
+  <!ENTITY function_call "&identifier;[ \t]*(?=\()">
+  <!ENTITY macro "!+\w+">
+]>
+<language name="Paisley" section="Scripts" version="1" kateversion="2.4"
+  extensions="*.pai;*.paisley" mimetype="application/pai;application/paisley"
+  author="Zachary Westerman (westerman.zachary@gmail.com)" license="GPL3"
+>
+  <highlighting>
+    <list name="keywords">
+      <item>for</item>
+      <item>while</item>
+      <item>in</item>
+      <item>do</item>
+      <item>if</item>
+      <item>then</item>
+      <item>elif</item>
+      <item>else</item>
+      <item>end</item>
+      <item>continue</item>
+      <item>break</item>
+      <item>cache</item>
+      <item>defer</item>
+      <item>function</item>
+      <item>call</item>
+      <item>return</item>
+      <item>stop</item>
+      <item>define</item>
+      <item>require</item>
+      <item>match</item>
+      <item>using</item>
+      <item>as</item>
+      <item>try</item>
+      <item>error</item>
+      <item>catch</item>
+      <item>until</item>
+      <item>delete</item>
+      <item>let</item>
+      <item>initial</item>
+    </list>
+
+    <list name="constants">
+      <item>true</item>
+      <item>false</item>
+      <item>null</item>
+    </list>
+
+    <list name="operators">
+      <item>for</item>
+      <item>if</item>
+      <item>else</item>
+      <item>then</item>
+      <item>in</item>
+      <item>exists</item>
+      <item>like</item>
+      <item>and</item>
+      <item>or</item>
+      <item>not</item>
+      <item>xor</item>
+      <item>bitwise</item>
+      <item>*</item>
+      <item>+</item>
+      <item>=</item>
+      <item>/</item>
+      <item>%</item>
+      <item>!=</item>
+      <item>&lt;</item>
+      <item>&gt;</item>
+      <item>&amp;</item>
+      <item>:</item>
+      <item>-</item>
+      <item>?</item>
+    </list>
+
+    <contexts>
+      <context name="Normal" lineEndContext="#stay" attribute="normal">
+        <RegExpr String="(function|call)\b" context="func_name" attribute="keyword" />
+        <keyword String="keywords" context="arguments" attribute="keyword" />
+
+        <RegExpr String="&argument;" context="arguments" attribute="identifier" />
+        <DetectChar char="{" context="arguments" lookAhead="1" />
+        <IncludeRules context="comments" />
+        <IncludeRules context="inline_commands" />
+        <IncludeRules context="directives" />
+        <DetectChar char=";" attribute="comment" />
+        <DetectChar char="}" attribute="normal" context="#pop" />
+      </context>
+
+      <context name="arguments" lineEndContext="#pop" attribute="normal">
+        <RegExpr String="(function|call)\b" context="func_name" attribute="keyword" />
+        <keyword String="keywords" context="#stay" attribute="keyword" />
+
+        <IncludeRules context="comments" />
+        <IncludeRules context="strings" />
+        <IncludeRules context="expressions" />
+        <RegExpr String="&number;" context="#stay" attribute="number" />
+        <IncludeRules context="inline_commands" />
+        <IncludeRules context="directives" />
+        <DetectChar char=";" attribute="comment" context="#pop" />
+
+        <RegExpr String="&argument;" context="#stay" attribute="normal" />
+        <DetectChar char="}" context="#pop" lookAhead="1" />
+      </context>
+
+      <context name="func_name" lineEndContext="#pop" attribute="function">
+        <AnyChar String="{$;#&quot;'" context="#pop" lookAhead="1" />
+        <RegExpr String="&argument;" context="#pop" attribute="function" />
+      </context>
+
+      <!-- COMMENTS -->
+      <context name="comments" lineEndContext="#stay">
+        <RegExpr String="#\[\[" context="comments_multi_line" attribute="comment" />
+        <RegExpr String="#" context="comments_single_line" attribute="comment" />
+      </context>
+      <context name="comments_multi_line" lineEndContext="#stay" attribute="comment">
+        <IncludeRules context="annotations" />
+        <RegExpr String="#\]\]" context="#pop" attribute="comment" />
+      </context>
+      <context name="comments_single_line" lineEndContext="#pop" attribute="comment">
+        <IncludeRules context="annotations" />
+      </context>
+      <context name="annotations" lineEndContext="#stay">
+        <RegExpr
+          String="@(error|type|param|return|debug|commands|export|brief|shell|plasma|sandbox|allow_elision|file)\b"
+          attribute="special" casesensitive="0" context="#stay" />
+      </context>
+
+      <!-- STRINGS -->
+      <context name="strings" lineEndContext="#stay">
+        <StringDetect String="&quot;&quot;&quot;" context="strings_multi_line_interpolated"
+          attribute="string" />
+        <StringDetect String="'''" context="strings_multi_line_basic" attribute="string" />
+        <DetectChar char="&quot;" context="strings_single_line_interpolated" attribute="string" />
+        <DetectChar char="'" context="strings_single_line_basic" attribute="string" />
+      </context>
+      <context name="strings_multi_line_interpolated" lineEndContext="#stay" attribute="string">
+        <IncludeRules context="escape_sequences" />
+        <IncludeRules context="string_interpolation" />
+        <StringDetect String="&quot;&quot;&quot;" context="#pop" attribute="string" />
+      </context>
+      <context name="strings_multi_line_basic" lineEndContext="#stay" attribute="string">
+        <IncludeRules context="escape_sequences" />
+        <StringDetect String="'''" context="#pop" attribute="string" />
+      </context>
+      <context name="strings_single_line_interpolated" lineEndContext="#stay" attribute="string">
+        <IncludeRules context="escape_sequences" />
+        <IncludeRules context="string_interpolation" />
+        <DetectChar char="&quot;" context="#pop" attribute="string" />
+      </context>
+      <context name="strings_single_line_basic" lineEndContext="#stay" attribute="string">
+        <IncludeRules context="escape_sequences" />
+        <DetectChar char="'" context="#pop" attribute="string" />
+      </context>
+      <context name="escape_sequences" lineEndContext="#stay">
+        <RegExpr String="&escape_sequence;" attribute="escape_sequence" context="#stay" />
+      </context>
+      <context name="string_interpolation" lineEndContext="#stay" attribute="string">
+        <IncludeRules context="expressions" />
+        <!-- <IncludeRules context="inline_commands" /> -->
+      </context>
+
+      <!-- EXPRESSIONS -->
+      <context name="expressions">
+        <DetectChar char="{" context="expression_inner" attribute="normal" />
+      </context>
+      <context name="expression_inner" lineEndContext="#stay" attribute="normal">
+        <DetectChar char="}" context="#pop" attribute="normal" />
+
+        <keyword String="operators" context="#stay" attribute="operator" />
+        <keyword String="constants" context="#stay" attribute="special" />
+        <RegExpr String="&number;" context="#stay" attribute="number" />
+        <RegExpr String="&function_call;" context="#stay" attribute="function" />
+        <RegExpr String="&escaped_function_call;" context="#stay" attribute="function" />
+        <RegExpr String="&identifier;" context="#stay" attribute="normal" />
+        <RegExpr String="&special_ident;" context="#stay" attribute="normal" />
+        <RegExpr String="&macro;" context="#stay" attribute="macro" />
+
+        <IncludeRules context="comments" />
+        <IncludeRules context="strings" />
+        <IncludeRules context="expressions" />
+        <IncludeRules context="inline_commands" />
+      </context>
+
+      <context name="directives" lineEndContext="#stay">
+        <RegExpr String="\$[^\{][^\$;\n]+" context="#stay" attribute="keyword" />
+      </context>
+
+      <context name="inline_commands" lineEndContext="#stay">
+        <StringDetect String="${" context="Normal" attribute="normal" />
+      </context>
+
+    </contexts>
+    <itemDatas>
+      <itemData name="normal" defStyleNum="dsNormal" />
+      <itemData name="string" defStyleNum="dsString" />
+      <itemData name="comment" defStyleNum="dsComment" />
+      <itemData name="keyword" defStyleNum="dsKeyword" />
+      <itemData name="operator" defStyleNum="dsAttribute" />
+      <itemData name="number" defStyleNum="dsDecVal" />
+      <itemData name="function" defStyleNum="dsFunction" />
+      <itemData name="identifier" defStyleNum="dsDataType" />
+      <itemData name="special" defStyleNum="dsOthers" />
+      <itemData name="escape_sequence" defStyleNum="dsChar" />
+      <itemData name="macro" defStyleNum="dsOthers" />
+
+    </itemDatas>
+  </highlighting>
+</language>
