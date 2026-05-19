@@ -10,6 +10,7 @@ function serialize.long ... end # Serialize a 64-bit integer to an 8-byte string
 function serialize.bool ... end # Serialize a boolean.
 function serialize.float ... end # Serialize a float to an 8-byte string.
 function serialize.string ... end # Serialize a variable-length string.
+function serialize.varint ... end # Serialize a variable-length integer.
 
 function deserialize.int ... end # Deserialize a 32-bit integer from a 4-byte string.
 function deserialize.long ... end # Deserialize a 64-bit integer from an 8-byte string.
@@ -41,23 +42,20 @@ function serialize
 		# Numbers
 		if number then
 			if {floor(_data) = _data} then
-				let _byte_ct = {_data.log(2).floor()}
-				return "i{char(_byte_ct)}{(
-					char(i) for i in _data.bytes(_byte_ct).reverse()
-				).join('')}"
+				return "i{\serialize.varint(_data)}"
 			else
 				return "f{\serialize.float(_data)}"
 			end
 		end
 		# Arrays
 		if array then
-			return "a{len(_data).\serialize.int()}{(
+			return "a{len(_data).\serialize.varint()}{(
 				\serialize(i) for i in _data
 			).join('')}"
 		end
 		# Objects
 		if object then
-			return "o{_data.keys().len().\serialize.int()}{(
+			return "o{_data.keys().len().\serialize.varint()}{(
 				\serialize(i) for i in _data.array()
 			).join('')}"
 		end
@@ -90,6 +88,20 @@ function deserialize.int
 		(ascii(i) for i in @1[1:4].split('')).reverse().frombytes(),
 		@1[5::],
 	}
+end
+
+#[[
+@export
+@brief Serialize a variable-length integer to a string of minimal size.
+@param value number The integer to serialize.
+@return string The serialized string.
+#]]
+function serialize.varint
+	let _num = {@1}
+	let _byte_ct = {_num.log(2).floor()}
+	return "{char(_byte_ct)}{(
+		char(i) for i in _num.bytes(_byte_ct)
+	).join('')}"
 end
 
 #[[
@@ -127,7 +139,7 @@ end
 @return string The serialized string.
 #]]
 function serialize.string
-	return "{\serialize.int(len(@1))}{@1}"
+	return "{\serialize.varint(len(@1))}{@1}"
 end
 
 #[[
@@ -177,8 +189,8 @@ end
 function serialize.float
 	let _int _frac = {@1.modf()}
 	return "{
-		\serialize.int(_int)
+		\serialize.varint(_int)
 	}{
-		\serialize.int(floor(1 / _frac))
+		\serialize.varint(floor(1 / _frac))
 	}"
 end

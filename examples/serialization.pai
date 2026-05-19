@@ -1,0 +1,11 @@
+require serial
+
+let data = {
+	'item1' => 1:5,
+	'item2' => true,
+	'item3' => 3.14,
+}
+
+.{
+	"out.bin".file_write(data.\serialize())
+}
