@@ -8,6 +8,7 @@ function serialize ... end # Serialize arbitrary data into a byte string which c
 function serialize.int ... end # Serialize a 32-bit integer to a 4-byte string.
 function serialize.long ... end # Serialize a 64-bit integer to an 8-byte string.
 function serialize.bool ... end # Serialize a boolean.
+function serialize.float ... end # Serialize a float to an 8-byte string.
 function serialize.string ... end # Serialize a variable-length string.
 
 function deserialize.int ... end # Deserialize a 32-bit integer from a 4-byte string.
@@ -31,20 +32,30 @@ without knowing the data structure beforehand.
 function serialize
 	let _data = {@1}
 	match {type(_data)} do
-		if number then
-			#TODO: Add support for floats!
-			let _byte_ct = {_data.log(2).floor()}
-			return "i{char(_byte_ct)}{(
-				char(i) for i in _data.bytes(_byte_ct).reverse()
-			).join('')}"
-		end
+		# Null
+		return n if null
+		# Strings
 		return "s{_data.\serialize.string()}" if string
+		# Booleans
 		return "b{_data.\serialize.bool()}" if boolean
+		# Numbers
+		if number then
+			if {floor(_data) = _data} then
+				let _byte_ct = {_data.log(2).floor()}
+				return "i{char(_byte_ct)}{(
+					char(i) for i in _data.bytes(_byte_ct).reverse()
+				).join('')}"
+			else
+				return "f{\serialize.float(_data)}"
+			end
+		end
+		# Arrays
 		if array then
 			return "a{len(_data).\serialize.int()}{(
 				\serialize(i) for i in _data
 			).join('')}"
 		end
+		# Objects
 		if object then
 			return "o{_data.keys().len().\serialize.int()}{(
 				\serialize(i) for i in _data.array()
@@ -155,4 +166,19 @@ function deserialize.bool
 		@1[1] != '\x00',
 		@1[2::],
 	}
+end
+
+#[[
+@export
+@brief Serialize a float to an 8-byte string.
+@param value number The float to serialize.
+@return string A string of 8 bytes.
+#]]
+function serialize.float
+	let _int _frac = {@1.modf()}
+	return "{
+		\serialize.int(_int)
+	}{
+		\serialize.int(floor(1 / _frac))
+	}"
 end
