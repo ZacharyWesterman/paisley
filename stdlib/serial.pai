@@ -34,7 +34,7 @@ function serialize
 		if number then
 			#TODO: Add support for floats!
 			let _byte_ct = {_data.log(2).floor()}
-			return "i{_byte_ct}{(
+			return "i{char(_byte_ct)}{(
 				char(i) for i in _data.bytes(_byte_ct).reverse()
 			).join('')}"
 		end
