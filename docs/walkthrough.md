@@ -17,9 +17,8 @@ A Paisley script may consist of a series of comments, statements, and commands.
 
 Before continuing, note that commands do not have to be hard-coded. You can put expressions in them, such as
 ```pai
-for i in gary do ... end
-#comments @debug
-print test
+let r = 500
+print "r = {r}, d = {3.14 * r * r}"
 ```
 See how in the above, expressions are contained inside curly braces, `{}`. More on that later.
 
