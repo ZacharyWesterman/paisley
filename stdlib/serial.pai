@@ -33,8 +33,6 @@ without knowing the data structure beforehand.
 function serialize
 	let _data = {@1}
 	match {type(_data)} do
-		# Null
-		return n if null
 		# Strings
 		return "s{_data.\serialize.string()}" if string
 		# Booleans
@@ -59,6 +57,9 @@ function serialize
 				\serialize(i) for i in _data.array()
 			).join('')}"
 		end
+	else
+		# Null
+		return n
 	end
 end
 
