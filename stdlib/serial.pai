@@ -3,15 +3,55 @@
 
 ### Functions:
 ```
+function serialize ... end # Serialize arbitrary data into a byte string which can be easily deserialized.
+
 function serialize.int ... end # Serialize a 32-bit integer to a 4-byte string.
 function serialize.long ... end # Serialize a 64-bit integer to an 8-byte string.
+function serialize.bool ... end # Serialize a boolean.
 function serialize.string ... end # Serialize a variable-length string.
 
 function deserialize.int ... end # Deserialize a 32-bit integer from a 4-byte string.
 function deserialize.long ... end # Deserialize a 64-bit integer from an 8-byte string.
+function deserialize.boolean ... end # Deserialize a boolean.
 function deserialize.string ... end # Deserialize a variable-length string.
 ```
 #]]
+
+#[[
+@export
+@brief Serialize arbitrary data into a byte string.
+
+This byte string differs from the `serialize.*` methods in that each chunk of serialized data
+contains a 1-byte prefix indicating what type it is. In this way, the data is easy to deserialize
+without knowing the data structure beforehand.
+
+@param value any The data to serialize.
+@return string The serialized data.
+#]]
+function serialize
+	let _data = {@1}
+	match {type(_data)} do
+		if number then
+			#TODO: Add support for floats!
+			let _byte_ct = {_data.log(2).floor()}
+			return "i{_byte_ct}{(
+				char(i) for i in _data.bytes(_byte_ct).reverse()
+			).join('')}"
+		end
+		return "s{_data.\serialize.string()}" if string
+		return "b{_data.\serialize.bool()}" if boolean
+		if array then
+			return "a{len(_data).\serialize.int()}{(
+				\serialize(i) for i in _data
+			).join('')}"
+		end
+		if object then
+			return "o{_data.keys().len().\serialize.int()}{(
+				\serialize(i) for i in _data.array()
+			).join('')}"
+		end
+	end
+end
 
 #[[
 @export
@@ -94,6 +134,25 @@ function deserialize.string
 	}
 end
 
-function serialize.float
+#[[
+@export
+@brief Serialize a boolean.
+@param value boolean The boolean to serialize.
+@return string The serialized string.
+#]]
+function serialize.bool
+	return {'\x01' if @1 else '\x00'}
+end
 
+#[[
+@export
+@brief Deserialize a boolean.
+@param text string The string to deserialize from.
+@return array[boolean|string] The deserialized boolean, and any remaining text.
+#]]
+function deserialize.bool
+	return {
+		@1[1] != '\x00',
+		@1[2::],
+	}
 end
