@@ -2,18 +2,18 @@
 "If" statements have the following structure:
 ```pai
 if {expression is truthy} then
-	...
+	# ...
 elif {expression is truthy} then
-	...
+	# ...
 else
-	...
+	# ...
 end
 ```
 
 You can also leave out the "then" clause if all that's needed is the "else" clause, e.g.:
 ```pai
 if {expression is truthy} else
-	... do this if expression is falsey ...
+	# ... do this if expression is falsey ...
 end
 ```
 
@@ -23,12 +23,12 @@ See [the type-casting docs](../type-casting.md) for more info on truthiness and 
 There is also the `match` structure, which is similar to c-like languages' `switch/case` structure (or Rust's `match`). This structure is included to allow for more readable logic with less repeated code.
 ```pai
 match {expression} do
-	... if {case 1}
-	... if {case 2}
-	if {case 3} then ...complex logic, loops, etc... end
-	...
+	action1 if {case 1}
+	action2 if {case 2}
+	if {case 3} then #[[...complex logic, loops, etc...#]] end
+	# ...
 else
-	... default action if no cases match ...
+	# ... default action if no cases match ...
 end
 ```
 For example:
@@ -36,7 +36,7 @@ For example:
 match {random_int(1,5)} do
 	print one if 1
 	print two if 2
-	print 4 or 5 if {> 4}
+	print "4 or 5" if {> 4}
 	if {like '%d+'} then error "it's a string?!" end
 else
 	print "some other number"
