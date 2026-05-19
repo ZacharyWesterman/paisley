@@ -29,7 +29,7 @@ while read file; do
 	csspath="$(dirname "${tofile/html\//}" | sed -E 's|\w[^/]*|..|g')/style.css"
 	pandoc -f markdown -t html5 "$file" --css "$csspath" -s \
 		--lua-filter=.filter.lua --metadata title="Paisley Documentation" -V title:"" \
-		--highlight-style breezedark --syntax-definition test.xml \
+		--highlight-style breezedark --syntax-definition pandoc_syntax_definition.xml \
 	> "$tofile" &
 done < <(find docs -type f -name '*.md')
 wait
