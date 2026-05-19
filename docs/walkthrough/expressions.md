@@ -26,7 +26,7 @@ Expressions can be placed anywhere inside a command or statement operand. In add
 ### Escape sequences:
 
 If you would like to avoid interpolation in double-quoted strings, simply escape the opening curly brace with a backslash, e.g.
-```
+```pai
 print "the expression \{1+2} evaluates to {1+2}"
 print "you can also put \"quotes\" and line breaks (\n) inside strings!"
 ```

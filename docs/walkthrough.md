@@ -16,7 +16,7 @@ A Paisley script may consist of a series of comments, statements, and commands.
 - Any text that is not a keyword or otherwise part of a statement is considered a command. More on that later.
 
 Before continuing, note that commands do not have to be hard-coded. You can put expressions in them, such as
-```
+```pai
 let r = 500
 print "r = {r}, d = {3.14 * r * r}"
 ```

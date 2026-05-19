@@ -4,7 +4,7 @@ Like commands, they can take parameters and optionally return a value, but they 
 Unlike commands, they can modify global variables, which may or may not be desired. Just keep it in mind when writing them.
 
 An example function definition and usage might look like the following:
-```
+```pai
 function print_numbers
 	for i in {0 : @[1]} do
 		if {i > 30} then
@@ -34,7 +34,7 @@ Also see that functions return values the same way that commands do, using the i
 
 Note that it is also possible to jump to functions with an arbitrary label ID. Unlike a regular call, a dynamic call could fail at runtime, and so requires a conditional check `if call {expression} then ... else ... end` to make sure the label is valid.
 See how in the following example, the program will randomly call one of 5 possible functions, and then print "Function exists".
-```
+```pai
 if call "{random_int(1,5)}" then
 	print "Function exists"
 end
@@ -49,7 +49,7 @@ function 5 end
 You can of course also pass arguments to a dynamic call.
 However, any returned value is ignored.
 
-```
+```pai
 if call "add{random_int(1,5)}" 100 then
 	print "Function exists"
 end
@@ -77,7 +77,7 @@ These both do exactly the same thing: the latter is just syntax sugar for the fo
 Some functions may take a very long time to compute values, when we only really need them to be computed once for any given input.
 For these kinds of functions, the `cache` keyword can be used to memoize the function and only compute the results once.
 See the following recursive fibonacci example:
-```
+```pai
 cache function fib
 	if {@1 < 2} then return {@1} end
 	return {\fib(@1 - 1) + \fib(@1 - 2)}
@@ -86,7 +86,7 @@ end
 Subsequent calls to `fib` will be *very* fast, because each fibonacci number only has to be computed once.
 
 If it turns out that you need to invalidate a specific function's cache, you can manually do so:
-```
+```pai
 break cache fib
 ```
 If the function is not memoized, this of course does nothing.
@@ -96,7 +96,7 @@ In short, memoization can be a good way to get a significant performance boost, 
 ### Function Aliases:
 
 Some functions may have very long names that are unwieldy to type. In such cases you can create an alias with the `using` keyword:
-```
+```pai
 function very_long_name_thats_annoying_to_type end
 using very_long_name_thats_annoying_to_type as short_name
 call short_name
@@ -109,7 +109,7 @@ using example.sub
 call sub
 ```
 Do note that aliases are restricted to their scope, for example:
-```
+```pai
 function example.sub end
 if {x} then
 	using example.sub as mysub
@@ -118,7 +118,7 @@ end
 call mysub #This is an error; "mysub" alias is not defined in this scope.
 ```
 You can also alias functions according to a wildcard, if you end the function name with an asterisk.
-```
+```pai
 function sub1 end
 function sub2 end
 using sub* as * #Can now do `call 1` and `call 2`

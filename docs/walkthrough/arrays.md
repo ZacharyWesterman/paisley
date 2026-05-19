@@ -14,7 +14,7 @@ Basically, if there's a comma, you have an array.
 
 ## Constructing Arrays
 Here are some example array constructions:
-```
+```pai
 let array = {
 	"a",
 	123,
@@ -37,17 +37,17 @@ let array_mix = {
 
 ## Accessing Array Elements
 To access an array's elements, use the usual square-brackets syntax seen in most languages, e.g.
-```
+```pai
 let array = {'a', 'b', 'c'}
 print {array[1]} #prints "a"
 ```
 And to change an array's elements,
-```
+```pai
 let array{2} = 'd' #array is now ('a', 'd', 'c')
 let array{-1} = 'e' #array is now ('a', 'd', 'e')
 ```
 You can also append to an array,
-```
+```pai
 let array{} = 'f' #array is now ('a', 'd', 'e', 'f')
 ```
 
