@@ -27,7 +27,6 @@ end" > .filter.lua
 wait
 
 while read file; do
-	echo "$file"
 	tofile=${file/docs/html}
 	tofile=${tofile/.md/.html}
 	csspath="$(dirname "${tofile/html\//}" | sed -E 's|\w[^/]*|..|g')/style.css"

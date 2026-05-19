@@ -55,6 +55,7 @@ let x = ${= wget https://127.0.0.1/example}
 
 Like Bash, the stdout of commands can be piped into other commands, or from and to files. This uses the same syntax as bash, for familiarity, and because the syntax is simple enough.
 ```sh
+# Some sample bash commands.
 echo "some text" > my_file.txt
 cat my_file.txt | grep "some"
 grep "something <<<"text input"
