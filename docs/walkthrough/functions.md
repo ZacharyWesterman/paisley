@@ -68,6 +68,7 @@ This is totally valid; as long as the function is defined *somewhere*, the compi
 
 ### User-defined Functions in Expressions:
 Inside of expressions, functions can be called in one of two ways:
+
 1. Using the inline command evaluation syntax `${...}`, in the same way as commands are used. E.g. `${call my_function {arg1} arg2 "arg3" etc..}`
 2. Using the special function evaluation syntax `\my_function(arg1,arg2,etc...)`. Note that calling functions like this ignores other syntax until the parentheses. So calling `\some.sub.name(arg1)` or `\+(123, 456)` will always be interpreted as function calls.
 
