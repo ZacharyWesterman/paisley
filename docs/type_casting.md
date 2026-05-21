@@ -1,6 +1,7 @@
 # Type Casting
 
 Paisley does not coerce values to other types, except in the case of conditionals, where types are coerced into booleans.
+(e.g. in `if {123} then ... end`, `123` is truthy)
 
 In all other cases, values must be manually cast to different types by the programmer.
 
