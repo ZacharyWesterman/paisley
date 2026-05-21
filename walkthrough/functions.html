@@ -169,15 +169,18 @@ function is defined <em>somewhere</em>, the compiler doesn’t care
 <em>where</em> it’s defined.</p>
 <h3 id="user-defined-functions-in-expressions">User-defined Functions in
 Expressions:</h3>
-<p>Inside of expressions, functions can be called in one of two ways: 1.
-Using the inline command evaluation syntax <code>${...}</code>, in the
-same way as commands are used. E.g.
-<code>${call my_function {arg1} arg2 "arg3" etc..}</code> 2. Using the
-special function evaluation syntax
+<p>Inside of expressions, functions can be called in one of two
+ways:</p>
+<ol type="1">
+<li>Using the inline command evaluation syntax <code>${...}</code>, in
+the same way as commands are used. E.g.
+<code>${call my_function {arg1} arg2 "arg3" etc..}</code></li>
+<li>Using the special function evaluation syntax
 <code>\my_function(arg1,arg2,etc...)</code>. Note that calling functions
 like this ignores other syntax until the parentheses. So calling
 <code>\some.sub.name(arg1)</code> or <code>\+(123, 456)</code> will
-always be interpreted as function calls.</p>
+always be interpreted as function calls.</li>
+</ol>
 <p>These both do exactly the same thing: the latter is just syntax sugar
 for the former, and is supplied for convenience.</p>
 <h3 id="function-memoization">Function Memoization:</h3>
