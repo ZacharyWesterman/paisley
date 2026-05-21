@@ -4,18 +4,21 @@
 ### Functions:
 ```
 function serialize ... end # Serialize arbitrary data into a byte string which can be easily deserialized.
+function deserialize ... end # Deserialize a byte string into arbitrary data.
 
 function serialize.int ... end # Serialize a 32-bit integer to a 4-byte string.
 function serialize.long ... end # Serialize a 64-bit integer to an 8-byte string.
 function serialize.bool ... end # Serialize a boolean.
-function serialize.float ... end # Serialize a float to an 8-byte string.
+function serialize.float ... end # Serialize a float to a byte string.
 function serialize.string ... end # Serialize a variable-length string.
 function serialize.varint ... end # Serialize a variable-length integer.
 
 function deserialize.int ... end # Deserialize a 32-bit integer from a 4-byte string.
 function deserialize.long ... end # Deserialize a 64-bit integer from an 8-byte string.
-function deserialize.boolean ... end # Deserialize a boolean.
+function deserialize.bool ... end # Deserialize a boolean.
+function deserialize.float ... end # Deserialize a float from a byte string.
 function deserialize.string ... end # Deserialize a variable-length string.
+function deserialize.varint ... end # Deserialize a variable-length integer.
 ```
 #]]
 
@@ -53,7 +56,7 @@ function serialize
 		end
 		# Objects
 		if object then
-			return "o{_data.keys().len().\serialize.varint()}{(
+			return "o{\serialize.varint(_data.keys().len() * 2)}{(
 				\serialize(i) for i in _data.array()
 			).join('')}"
 		end
@@ -61,6 +64,21 @@ function serialize
 		# Null
 		return n
 	end
+end
+
+function deserialize
+	#@type string string
+	let _type _text = {@1[1], @1[2::]}
+	match {_type} do
+		return {null} if n
+		return {\deserialize.bool(_text)} if b
+		return {\deserialize.varint(_text)} if i
+		return {\deserialize.float(_text)} if f
+		return {\deserialize.string(_text)} if s
+	end
+
+	# Both arrays and objects are serialized as arrays under the hood
+	# TODO: implement array/object deserialization.
 end
 
 #[[
@@ -103,6 +121,27 @@ function serialize.varint
 	return "{char(_byte_ct)}{(
 		char(i) for i in _num.bytes(_byte_ct)
 	).join('')}"
+end
+
+#[[
+@export
+@brief Deserialize a variable-length integer from a byte string.
+@param text string The string to deserialize from.
+@return array[number|string] An integer and any remaining text.
+#]]
+function deserialize.varint
+	#@type string
+	let _text = {@1}
+	let _len = {_text[1].ascii()}
+	let _num = {(ascii(i) for i in (_text[2:(_len + 1)]).split('')).reverse().frombytes()}
+
+	let _result = {
+		_num,
+		_text[(_len+2)::],
+	}
+	delete _text _len _num
+
+	return {_result}
 end
 
 #[[
@@ -183,9 +222,9 @@ end
 
 #[[
 @export
-@brief Serialize a float to an 8-byte string.
+@brief Serialize a float to a byte string.
 @param value number The float to serialize.
-@return string A string of 8 bytes.
+@return string A string of bytes.
 #]]
 function serialize.float
 	let _int _frac = {@1.modf()}
@@ -194,4 +233,22 @@ function serialize.float
 	}{
 		\serialize.varint(floor(1 / _frac))
 	}"
+end
+
+#[[
+@export
+@brief Deserialize a float from a byte string.
+@param text string The string to deserialize from.
+@return array[number|string] A float and any remaining text.
+#]]
+function deserialize.float
+	#@type number string
+	let _int _text = {\deserialize.varint(@1)}
+	#@type number string
+	let _frac _text = {\deserialize.varint(@1)}
+
+	return {
+		_int + 1 / _frac,
+		_text
+	}
 end
