@@ -5,6 +5,8 @@ if ! command -v pandoc &>/dev/null; then
 	exit 1
 fi
 
+lua build_docs.lua
+
 rm -rf html
 mkdir html
 cp images/paisley-logo-small.png html/logo.png

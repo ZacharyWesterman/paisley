@@ -34,7 +34,7 @@ TYPESIG = {
 		--[[minify-delete]]
 		params = { 'word1', 'word2' },
 		description =
-		'Get the levenshtein difference between two strings. See https://en.wikipedia.org/wiki/Levenshtein_distance for more information.',
+		'Get the levenshtein difference between two strings. See <https://en.wikipedia.org/wiki/Levenshtein_distance> for more information.',
 		category = 'strings',
 		--[[/minify-delete]]
 	},
@@ -843,7 +843,7 @@ TYPESIG = {
 		out = 'string',
 		--[[minify-delete]]
 		description =
-		'Generate a universally unique identifier (UUID). See https://en.wikipedia.org/wiki/Universally_unique_identifier for more information.',
+		'Generate a universally unique identifier (UUID). See <https://en.wikipedia.org/wiki/Universally_unique_identifier> for more information.',
 		category = 'miscellaneous',
 		--[[/minify-delete]]
 	},
