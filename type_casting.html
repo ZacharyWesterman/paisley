@@ -32,38 +32,41 @@ conditionals, where types are coerced into booleans.</p>
 by the programmer.</p>
 <h3 id="casting-to-strings">Casting to strings</h3>
 <ul>
-<li>null - converts to an empty string <code>""</code>.</li>
-<li>true and false - convert to <code>"1"</code> and <code>"0"</code>
-respectively.</li>
-<li>numbers - convert to the usual decimal text representation.</li>
-<li>arrays - for historical reasons, arrays are cast to space-delimited
-strings, e.g. <code>("a",123,"b")</code> is converted to
+<li><strong>null</strong> - converts to an empty string
+<code>""</code>.</li>
+<li><strong>true</strong> and <strong>false</strong> - convert to
+<code>"1"</code> and <code>"0"</code> respectively.</li>
+<li><strong>numbers</strong> - convert to the usual decimal text
+representation.</li>
+<li><strong>arrays</strong> - for historical reasons, arrays are cast to
+space-delimited strings, e.g. <code>("a",123,"b")</code> is converted to
 <code>"a 123 b"</code>.</li>
-<li>objects - for historical reasons, objects’ values and keys are cast
-to space-delimited strings, e.g. <code>{"a" =&gt; 1, "b" =&gt; 2}</code>
-is converted to <code>"a 1 b 2"</code></li>
+<li><strong>objects</strong> - for historical reasons, objects’ values
+and keys are cast to space-delimited strings,
+e.g. <code>{"a" =&gt; 1, "b" =&gt; 2}</code> is converted to
+<code>"a 1 b 2"</code></li>
 </ul>
 <h3 id="casting-to-numbers">Casting to numbers</h3>
 <ul>
-<li>null - converts to zero.</li>
-<li>true and false - convert to <code>1</code> and <code>0</code>
-respectively.</li>
-<li>strings - convert to zero if not numeric, otherwise are converted
-using the usual decimal text representation.</li>
-<li>arrays - always convert to zero.</li>
-<li>objects - always convert to zero.</li>
+<li><strong>null</strong> - converts to zero.</li>
+<li><strong>true</strong> and <strong>false</strong> - convert to
+<code>1</code> and <code>0</code> respectively.</li>
+<li><strong>strings</strong> - if completely numeric, converts via the
+usual decimal text representation. Otherwise, converts to zero.</li>
+<li><strong>arrays</strong> - always convert to zero.</li>
+<li><strong>objects</strong> - always convert to zero.</li>
 </ul>
 <h3 id="casting-to-booleans">Casting to booleans</h3>
 <ul>
-<li>null - converts to <code>false</code></li>
-<li>numbers - zero converts to <code>false</code>, anything else is
-<code>true</code>.</li>
-<li>strings - empty strings convert to <code>false</code>, anything else
-is <code>true</code>.</li>
-<li>arrays - empty arrays convert to <code>false</code>, anything else
-is <code>true</code>.</li>
-<li>objects - empty objects convert to <code>false</code>, anything else
-is <code>true</code>.</li>
+<li><strong>null</strong> - converts to <code>false</code></li>
+<li><strong>numbers</strong> - zero converts to <code>false</code>,
+anything else is <code>true</code>.</li>
+<li><strong>strings</strong> - empty strings convert to
+<code>false</code>, anything else is <code>true</code>.</li>
+<li><strong>arrays</strong> - empty arrays convert to
+<code>false</code>, anything else is <code>true</code>.</li>
+<li><strong>objects</strong> - empty objects convert to
+<code>false</code>, anything else is <code>true</code>.</li>
 </ul>
 <h3 id="other-type-casting">Other type-casting</h3>
 <p>Arrays and objects may be cast between each other, but nothing can be
