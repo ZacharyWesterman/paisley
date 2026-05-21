@@ -8,7 +8,7 @@
   <!ENTITY number "0[xcb][0-9a-fA-F]+|-?\d+(\.\d+)?">
   <!ENTITY escaped_function_call "\\[^'&quot;\$\{\} \t#\(\)]+">
   <!ENTITY function_call "&identifier;[ \t]*(?=\()">
-  <!ENTITY macro "!+\w+">
+  <!ENTITY macro "!+\w*">
 ]>
 <language name="Paisley" section="Scripts" version="1" kateversion="2.4"
   extensions="*.pai;*.paisley" mimetype="application/pai;application/paisley"
