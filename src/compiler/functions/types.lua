@@ -879,7 +879,7 @@ TYPESIG = {
 		valid = { { 'number', 'number' } },
 		out = 'number',
 		--[[minify-delete]]
-		params = { 'base', 'value' },
+		params = { 'value', 'base' },
 		description =
 		'Calculate the logarithm of a number with a given base, or the natural logarithm if no base is provided.',
 		category = 'math',
