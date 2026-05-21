@@ -60,6 +60,7 @@ file:write([[
 # Paisley Standard Library Functions
 
 Note that functions can be called in one of two ways:
+
 1. The usual syntax, e.g. `split(var, delim)`
 2. Using dot-notation, e.g. `var.split(delim)`
 
