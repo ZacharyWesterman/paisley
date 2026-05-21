@@ -107,7 +107,7 @@ the macro.</p>
 <p>Below is an example of macro usage. Both the top and bottom commands
 will print 5 random numbers in the range 0-100.</p>
 <div class="sourceCode" id="cb1"><pre
-class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">print</span> {![<span class="fu">random_int</span>(<span class="dv">0</span>, <span class="dv">100</span>)], !, !, !, !}</span>
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">print</span> {<span class="ot">!</span>[<span class="fu">random_int</span>(<span class="dv">0</span>, <span class="dv">100</span>)], <span class="ot">!</span>, <span class="ot">!</span>, <span class="ot">!</span>, <span class="ot">!</span>}</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#do the same thing, but using the define keyword</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="kw">define</span> {<span class="ot">!rnd</span>[<span class="fu">random_int</span>(<span class="dv">0</span>, <span class="dv">100</span>)]}</span>
@@ -119,10 +119,10 @@ class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id=
 <p>Another fun use of macros is the ability to create auto-incrementing
 values that are resolved at compile time:</p>
 <div class="sourceCode" id="cb3"><pre
-class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">define</span> {![<span class="dv">0</span>]}</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> a = {![!+<span class="dv">1</span>]} <span class="co"># `a` is set to 1.</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> b = {![!+<span class="dv">1</span>]} <span class="co"># `b` is set to 2.</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> c = {![!+<span class="dv">1</span>]} <span class="co"># `c` is set to 3.</span></span></code></pre></div>
+class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">define</span> {<span class="ot">!</span>[<span class="dv">0</span>]}</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> a = {<span class="ot">!</span>[<span class="ot">!</span>+<span class="dv">1</span>]} <span class="co"># `a` is set to 1.</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> b = {<span class="ot">!</span>[<span class="ot">!</span>+<span class="dv">1</span>]} <span class="co"># `b` is set to 2.</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> c = {<span class="ot">!</span>[<span class="ot">!</span>+<span class="dv">1</span>]} <span class="co"># `c` is set to 3.</span></span></code></pre></div>
 <p>Note that, unlike variables, macros are restricted to their scope.
 Thus, for example, if you define a macro in a function, you cannot use
 it outside of the function.</p>
