@@ -4,7 +4,7 @@
 ### Functions:
 ```
 function serialize ... end # Serialize arbitrary data into a byte string which can be easily deserialized.
-function deserialize ... end # Deserialize a byte string into arbitrary data.
+function deserialize ... end # TODO: Deserialize a byte string into arbitrary data.
 
 function serialize.int ... end # Serialize a 32-bit integer to a 4-byte string.
 function serialize.long ... end # Serialize a 64-bit integer to an 8-byte string.
@@ -66,19 +66,48 @@ function serialize
 	end
 end
 
+# TODO: Finish implementing deserialize function.
 function deserialize
 	#@type string string
-	let _type _text = {@1[1], @1[2::]}
+	let _type _txt = {@1[1], @1[2::]}
 	match {_type} do
 		return {null} if n
-		return {\deserialize.bool(_text)} if b
-		return {\deserialize.varint(_text)} if i
-		return {\deserialize.float(_text)} if f
-		return {\deserialize.string(_text)} if s
+		return {\deserialize.bool(_txt)} if b
+		return {\deserialize.varint(_txt)} if i
+		return {\deserialize.float(_txt)} if f
+		return {\deserialize.string(_txt)} if s
 	end
 
-	# Both arrays and objects are serialized as arrays under the hood
-	# TODO: implement array/object deserialization.
+	#@type number string
+	let _len _txt = {\deserialize.varint(_txt)}
+
+	initial _len_stack = {,}
+	initial _data = {,}
+
+	let _len_stack{} = {_len}
+	for i in {1:_len} do
+		#@type any string
+		let _d _txt = {\deserialize(_txt)}
+		let _data{} = {_d}
+	end
+	let _len = {_len_stack[-1]}
+	let _len_stack{-1} = {null}
+	print {_data.json_encode()}
+
+	let _l = {len(_data) - _len}
+	let _d = {_data[_l::]}
+	let _data = {_data[1:(_l-1)]}
+
+	if {not _data} then
+		delete _data _len_stack
+	end
+
+	delete _l _len
+
+	return {
+		(_data.object() if _type = 'o' else _data),
+		_text,
+	}
 end
 
 #[[
@@ -190,7 +219,7 @@ end
 #]]
 function deserialize.string
 	#@type number string
-	let _len _remd = {\deserialize.int(@1)}
+	let _len _remd = {\deserialize.varint(@1)}
 	return {
 		_remd[1:_len],
 		_remd[(_len+1)::],

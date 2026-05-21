@@ -1,11 +1,12 @@
 require serial
 
 let data = {
-	'item1' => 1:5,
+	'item1' => false,
 	'item2' => true,
 	'item3' => 3.14,
 }
 
-.{
-	"out.bin".file_write(data.\serialize())
-}
+let txt = {data.\serialize()}
+let newdata _ = {txt.\deserialize()}
+
+print {newdata.json_encode()}
