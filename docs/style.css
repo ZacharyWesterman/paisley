@@ -57,10 +57,6 @@ body {
 	max-width: 900px;
 	display: table-cell;
 	vertical-align: middle;
-	background-image: url('logo.png');
-	background-repeat: no-repeat;
-	background-attachment: fixed;
-	background-position: 0px 30px;
 }
 
 /* Container and Layout */
@@ -279,6 +275,32 @@ nav a:hover {
 	background-color: rgba(20, 184, 166, 0.2);
 	border-bottom: none;
 	color: var(--paisley-orange);
+}
+
+/* Adjust logo based on display size */
+body {
+	background-image: url('logo.png');
+	background-repeat: no-repeat;
+}
+
+@media (min-width: 1000px) {
+	body {
+		background-position: 0px 30px;
+		background-attachment: fixed;
+	}
+}
+
+@media (max-width: 1000px) {
+	body {
+		background-position: 100% 10px;
+		background-attachment: local;
+	}
+}
+
+@media (max-width: 630px) {
+	body {
+		background-image: none;
+	}
 }
 
 /* Responsive Design */

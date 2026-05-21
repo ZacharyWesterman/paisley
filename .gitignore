@@ -45,4 +45,6 @@ standalone_binary
 
 PAISLEY_BYTECODE.cpp
 
+# Auto-generated documentation
 html/
+lang_functions.md

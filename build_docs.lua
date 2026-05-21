@@ -32,12 +32,22 @@ table.sort(new_document, function(a, b) return a.category < b.category end)
 
 local filename = 'docs/walkthrough/lang_functions.md'
 local file = io.open(filename, 'r')
-if not file then
-	error('Failed to read ' .. filename)
+local text = ''
+if file then
+	text = file:read('a*')
+	if not text then text = '' end
+	file:close()
 end
-local text = file:read('a*')
-if not text then text = '' end
-file:close()
+if text == '' then
+	text = [[
+---
+
+### [< Prev][prev] | [Home](../walkthrough.md) | [Next >][next]
+
+[prev]: expressions.md
+[next]: operators.md
+]]
+end
 
 local suffix = text:sub(text:find('%-%-%-') or 0, #text)
 
@@ -50,6 +60,7 @@ file:write([[
 # Paisley Standard Library Functions
 
 Note that functions can be called in one of two ways:
+
 1. The usual syntax, e.g. `split(var, delim)`
 2. Using dot-notation, e.g. `var.split(delim)`
 
