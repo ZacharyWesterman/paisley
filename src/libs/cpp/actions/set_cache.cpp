@@ -2,7 +2,7 @@
 
 void set_cache(VirtualMachine &vm) noexcept
 {
-	// Set the cache for the current subroutine (does not pop the stack)
+	// Set the cache for the current function (does not pop the stack)
 	auto &instruction = vm.instructions[vm.instruction_index];
 
 	// Get the cache key

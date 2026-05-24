@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 		// Last command result
 		{},
 
-		// Subroutine cache
+		// Function cache
 		{},
 
 		// Return indices

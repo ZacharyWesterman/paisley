@@ -7,7 +7,7 @@ void get_cache_else_jump(VirtualMachine &vm) noexcept
 	// Get the cache key
 	Value params = vm.return_indices.size() ? vm.return_indices.back().params : std::vector<Value>();
 
-	// If the cache for this subroutine does not exist, jump to the specified index.
+	// If the cache for this function does not exist, jump to the specified index.
 	if (vm.cache.find(instruction.operand[0]) == vm.cache.end())
 	{
 		vm.instruction_index = instruction.operand[1] - 1;
