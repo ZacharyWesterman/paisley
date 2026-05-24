@@ -52,13 +52,15 @@ short-circuit.</li>
 <li>comparison, <code>&gt;</code>, <code>&gt;=</code>,
 <code>&lt;</code>, <code>&lt;=</code></li>
 <li>comparison (equality), <code>=</code> or <code>==</code> (the latter
-is deprecated)</li>
+is <span style="color:orange;">deprecated</span>)</li>
 <li>comparison (not equal), <code>!=</code> or <code>~=</code> (the
-latter is deprecated)</li>
+latter is <span style="color:orange;">deprecated</span>)</li>
 <li>check for whether variables are set, <code>exists</code>
 (e.g. <code>x exists</code>)</li>
 <li>string or array length, <code>&amp;</code>
-(e.g. <code>&amp;variable</code>)</li>
+(e.g. <code>&amp;variable</code>) (<span
+style="color:orange;">deprecated</span>, will be string concatenation in
+v2.0. use <code>len()</code> instead)</li>
 <li>array slicing, <code>:</code>. Note that slices are inclusive of
 both their upper and lower bounds (e.g. <code>0:5</code> gives
 <code>(0,1,2,3,4,5)</code>)
