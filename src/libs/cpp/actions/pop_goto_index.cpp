@@ -10,10 +10,10 @@ void pop_goto_index(VirtualMachine &vm) noexcept
 	auto &instruction = vm.instructions[vm.instruction_index];
 	if (!instruction.operand[0])
 	{
-		// Put any subroutine return value in the "command return value" slot
+		// Put any function return value in the "command return value" slot
 		vm.last_cmd_result = vm.stack.pop();
 
-		// Shrink the stack to the size it was before the subroutine call
+		// Shrink the stack to the size it was before the function call
 		vm.stack.resize(info.stack_size);
 	}
 }

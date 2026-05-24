@@ -457,17 +457,6 @@ comparison = function(span)
 	ok, rhs = exp(comparison)
 	if not ok then return parser.out(false) end
 
-	--DEPRECATED: These will be removed in v2.0!
-	if op.text == '~=' or op.text == '==' then
-		local coerce = op.text == '==' and '=' or '!='
-		local msg = 'The operator `' ..
-			op.text .. '` is deprecated and will be removed in v2.0. Use `' .. coerce .. '` instead.'
-		parse_warning(op.span, msg, parser.filename())
-
-		--Adjust to be non-deprecated operators
-		op.text = (op.text == '~=') and '!=' or '='
-	end
-
 	return true, {
 		id = TOK.comparison,
 		text = op.text,
@@ -1200,11 +1189,6 @@ function_def = function(span)
 		end
 	end
 
-	if kwd.text == 'subroutine' then
-		parse_warning(span, 'The `subroutine` keyword is deprecated and will be removed in v2.0. Use `function` instead.',
-			parser.filename())
-	end
-
 	local ok, list = parser.expect_list({
 		TOK.text,
 		program,
@@ -1230,11 +1214,6 @@ end
 call_stmt = function(span)
 	local ok, kwd = parser.accept(TOK.kwd_call)
 	if not ok then return parser.out(false) end
-
-	if kwd.text == 'gosub' then
-		parse_warning(span, 'The `gosub` keyword is deprecated and will be removed in v2.0. Use `call` instead.',
-			parser.filename())
-	end
 
 	local _, list
 	ok, list = parser.one_or_more(argument)

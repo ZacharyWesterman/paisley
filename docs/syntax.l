@@ -53,11 +53,9 @@ delete_stmt :=
 
 function_def :=
 	| `function` <text> program `end`
-	| `subroutine` <text> program `end`
 
 call_stmt :=
 	| `call` <text>
-	| `gosub` <text>
 
 let_stmt :=
 	| `let` <variable> `{` `}` `=` argument+

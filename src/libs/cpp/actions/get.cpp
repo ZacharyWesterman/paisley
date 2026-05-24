@@ -10,7 +10,7 @@ void get(VirtualMachine &vm) noexcept
 	{
 		if (!vm.return_indices.empty())
 		{
-			// If inside a subroutine, get all subroutine arguments
+			// If inside a function, get all function arguments
 			vm.stack.push(vm.return_indices.back().params);
 		}
 		else

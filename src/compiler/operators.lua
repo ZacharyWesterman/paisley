@@ -26,9 +26,7 @@ return {
 	['>'] = TOK.op_gt,
 	['<='] = TOK.op_le,
 	['<'] = TOK.op_lt,
-	['=='] = TOK.op_eq, --DEPRECATED: Will be removed in v2.0!
 	['='] = TOK.op_eq,
-	['~='] = TOK.op_ne, --DEPRECATED: Will be removed in v2.0!
 	['!='] = TOK.op_ne,
 	[','] = TOK.op_comma,
 	['.'] = TOK.op_dot,
