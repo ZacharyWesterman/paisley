@@ -11,7 +11,10 @@ local oper_block = {
 	['/'] = { '/' },
 	['>'] = { '=' },
 	['<'] = { '=' },
-	['='] = { '=', '>' }, --DEPRECATED: `==` will be removed in v2.0!
+	['='] = {
+		'=', --DEPRECATED: Will be removed in v2.0!
+		'>'
+	},
 	['%'] = { '%' },
 }
 
