@@ -16,11 +16,13 @@ require color
 @param width number The width of the image.
 @param height number The height of the image.
 @param color array[number] An optional RGBA color to fill the image with. Defaults to black, `(0,0,0,0)`.
-@return image A new image object.
+@return array[array[array[number]]] A new image object.
 @export
 #]]
 function image.new
 	let _color = {@3 if @3 else !black}
+
+	#@type array[array[array[number]]]
 	let _image = {,}
 
 	for _ in {1:@2} do

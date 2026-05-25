@@ -110,12 +110,12 @@ function datetime.add
 		!april[30],
 		!may[31],
 		!june[30],
-		!july[31]
-		!august[31]
-		!september[30]
-		!october[31]
-		!november[30]
-		!december[31]
+		!july[31],
+		!august[31],
+		!september[30],
+		!october[31],
+		!november[30],
+		!december[31],
 		!month_days[(
 			!january,
 			(!february if _y % 4 else !leap_february),
@@ -180,12 +180,12 @@ function datetime.sub
 		!april[30],
 		!may[31],
 		!june[30],
-		!july[31]
-		!august[31]
-		!september[30]
-		!october[31]
-		!november[30]
-		!december[31]
+		!july[31],
+		!august[31],
+		!september[30],
+		!october[31],
+		!november[30],
+		!december[31],
 		!month_days[(
 			!january,
 			(!february if _y % 4 else !leap_february),

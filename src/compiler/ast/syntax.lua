@@ -34,7 +34,6 @@ local command
 --Expressions
 local value
 local dot_and_index
-local length
 local exponent
 local negate
 local not_oper
@@ -394,20 +393,13 @@ end
 
 ---Syntax rule for string concatenation
 concat = function(span)
-	local ok, lhs, list
-
-	ok, lhs = exp(comparison)
-	if not ok then return parser.out(false) end
-
-	ok, list = parser.one_or_more(comparison)
-	if not ok then return true, lhs end
-	table.insert(list, 1, lhs)
-
-	return true, {
-		id = TOK.concat,
-		span = Span:merge(span, list[#list].span),
-		children = list,
-	}
+	return binary_lassoc(
+		comparison,
+		{
+			TOK.op_concat,
+		},
+		TOK.concat
+	)
 end
 
 ---Syntax rule for comparison
@@ -568,30 +560,10 @@ end
 ---Syntax rule for exponents
 exponent = function(span)
 	return binary_lassoc(
-		length,
+		dot_and_index,
 		{ TOK.op_exponent },
 		TOK.exponent
 	)
-end
-
----Syntax rule for length
----DEPRECATED: This will change to string concatenation in v2.0!
-length = function(span)
-	if not parser.accept(TOK.op_concat) then return exp(dot_and_index) end
-
-	local ok, child = exp(dot_and_index)
-	if not ok then return parser.out(false) end
-
-	local msg =
-	'Using `&` to mean "length" is deprecated and will be changed to string concatenation in v2.0. Use the `len()` function instead.'
-	parse_warning(span, msg, parser.filename())
-
-	return true, {
-		id = TOK.length,
-		text = '&',
-		span = Span:merge(span, child.span),
-		children = { child },
-	}
 end
 
 ---Syntax rule for dot-notation and indexing
@@ -1980,7 +1952,7 @@ define_stmt = function(span)
 
 	return true, {
 		id = TOK.define_stmt,
-		span = Span:merge(span, list[#list].span),
+		span = #list > 0 and Span:merge(span, list[#list].span) or span,
 		children = list,
 	}
 end

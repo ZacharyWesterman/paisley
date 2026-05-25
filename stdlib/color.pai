@@ -21,15 +21,15 @@ function color.new ... end # Create a new color from RGB values.
 
 # Common color definitions.
 define {
-	!white[0xffffffff.bytes(4)]
-	!black[0x000000ff.bytes(4)]
-	!red[0xff0000ff.bytes(4)]
-	!green[0x00ff00ff.bytes(4)]
-	!blue[0x0000ffff.bytes(4)]
-	!yellow[0xffff00ff.bytes(4)]
-	!cyan[0x00ffffff.bytes(4)]
-	!magenta[0xff00ffff.bytes(4)]
-	!gray[0x808080ff.bytes(4)]
+	!white[0xffffffff.bytes(4)],
+	!black[0x000000ff.bytes(4)],
+	!red[0xff0000ff.bytes(4)],
+	!green[0x00ff00ff.bytes(4)],
+	!blue[0x0000ffff.bytes(4)],
+	!yellow[0xffff00ff.bytes(4)],
+	!cyan[0x00ffffff.bytes(4)],
+	!magenta[0xff00ffff.bytes(4)],
+	!gray[0x808080ff.bytes(4)],
 }
 
 # @brief Convert a hex color code to RGB values
@@ -44,7 +44,7 @@ function color.hex_to_rgba
 	end
 
 	if {_color = 6} then
-		let _color = {_color 'ff'}
+		let _color = {_color & 'ff'}
 	end
 
 	return { _color.from_base(16).bytes(4) }

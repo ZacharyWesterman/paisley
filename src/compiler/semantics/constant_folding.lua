@@ -401,6 +401,10 @@ return {
 		[TOK.index] = {
 			if_const(
 				function(token, file, lhs, rhs)
+					if type(lhs) ~= 'table' then
+						return nil
+					end
+
 					if type(rhs) ~= 'table' then
 						return lhs[rhs]
 					end

@@ -22,25 +22,25 @@ function fmt.underline ... end # Format underline text.
 
 $if build = plasma
 define {
-	!!black["black"]
-	!!red["red"]
-	!!green["green"]
-	!!yellow["yellow"]
-	!!blue["blue"]
-	!!magenta["magenta"]
-	!!cyan["cyan"]
-	!!white["white"]
+	!!black["black"],
+	!!red["red"],
+	!!green["green"],
+	!!yellow["yellow"],
+	!!blue["blue"],
+	!!magenta["magenta"],
+	!!cyan["cyan"],
+	!!white["white"],
 }
 $else
 define {
-	!!black["\x1b[30m"]
-	!!red["\x1b[31m"]
-	!!green["\x1b[32m"]
-	!!yellow["\x1b[33m"]
-	!!blue["\x1b[34m"]
-	!!magenta["\x1b[35m"]
-	!!cyan["\x1b[36m"]
-	!!white["\x1b[37m"]
+	!!black["\x1b[30m"],
+	!!red["\x1b[31m"],
+	!!green["\x1b[32m"],
+	!!yellow["\x1b[33m"],
+	!!blue["\x1b[34m"],
+	!!magenta["\x1b[35m"],
+	!!cyan["\x1b[36m"],
+	!!white["\x1b[37m"],
 }
 $end
 
@@ -55,7 +55,7 @@ function fmt.color
 	$if build = plasma
 	return "<color={@2}>{@1}</color>"
 	$else
-	return {@2 @1 "\x1b[0m"}
+	return "{@2}{@1}\x1b[0m"
 	$end
 end
 

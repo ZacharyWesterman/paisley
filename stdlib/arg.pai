@@ -70,7 +70,7 @@ function arg.parse
                 error "Argument \"{_key}\" must have a default value if it's not required"
             end
 
-            let _args{'flags', ('--' _key)} = {
+            let _args{'flags', ('--' & _key)} = {
                 'flag' => true,
                 'type' => _val.type,
                 'key' => _key,
@@ -82,7 +82,7 @@ function arg.parse
                 if {_val.short in _args} then
                     error "Duplicate short argument \"{_val.short}\""
                 end
-                let _args{'flags', ('-' _val.short)} = {
+                let _args{'flags', ('-' & _val.short)} = {
                     'flag' => true,
                     'key' => _key,
                     'type' => _val.type,
@@ -110,7 +110,7 @@ function arg.parse
                 error "Missing value for flag \"{_key}\""
             end
 
-            let _res{_prev_key} = ${call arg._parse_type {_args.flags['--' _prev_key].type} {_arg} {_prev_key} }
+            let _res{_prev_key} = ${call arg._parse_type {_args.flags['--' & _prev_key].type} {_arg} {_prev_key} }
             let _prev_key = {null}
             continue
         end
@@ -119,7 +119,7 @@ function arg.parse
         if {_arg.beginswith('--')} then
             if {'=' not in _arg} then
                 let _prev_key = {_arg[3::]}
-                if {('--'_prev_key) not in _args.flags} then
+                if {('--' & _prev_key) not in _args.flags} then
                     error "Unknown flag \"--{_prev_key}\""
                 end
                 let _args{'flags', _arg, 'found'} = {true}
@@ -127,14 +127,14 @@ function arg.parse
             end
 
             let _key _val = {_arg[3:(_arg.index('=')-1)], _arg[(_arg.index('=')+1)::]}
-            if {('--'_key) not in _args.flags} then
+            if {('--' & _key) not in _args.flags} then
                 error "Unknown flag \"--{_key}\""
             end
             if {_val = ''} then
                 error "Empty value for flag \"{_key}\""
             end
 
-            let _res{_key} = ${call arg._parse_type {_args.flags['--' _key].type} {_val} {'--'_key}}
+            let _res{_key} = ${call arg._parse_type {_args.flags['--' & _key].type} {_val} {'--' & _key}}
             let _args{'flags', _key, 'found'} = {true}
             continue
         end
@@ -142,25 +142,25 @@ function arg.parse
         #Parse short flags
         if {_arg.beginswith('-')} then
             if {'=' not in _arg} then
-                if {('-'_arg[2::]) not in _args.flags} then
+                if {('-' & _arg[2::]) not in _args.flags} then
                     error "Unknown flag \"{_arg}\""
                 end
                 let _prev_key = {_args.flags[_arg].key}
-                let _args{'flags', ('--'_prev_key), 'found'} = {true}
+                let _args{'flags', ('--' & _prev_key), 'found'} = {true}
                 continue
             end
 
             let _key _val = {_arg[2:(_arg.index('=')-1)], _arg[(_arg.index('=')+1)::]}
-            if {('-'_key) not in _args.flags} then
+            if {('-' & _key) not in _args.flags} then
                 error "Unknown flag \"-{_key}\""
             end
             if {_val = ''} then
                 error "Empty value for flag \"{_key}\""
             end
 
-            let _key = {_args.flags['-'_key].key}
-            let _res{_key} = ${call arg._parse_type {_args.flags['--' _key].type} {_val} {'--'_key}}
-            let _args{'flags', ('--'_key), 'found'} = {true}
+            let _key = {_args.flags['-' & _key].key}
+            let _res{_key} = ${call arg._parse_type {_args.flags['--' & _key].type} {_val} {'--' & _key}}
+            let _args{'flags', ('--' & _key), 'found'} = {true}
             continue
         end
 
@@ -171,7 +171,7 @@ function arg.parse
 
     # Use the default value if it exists
     if {_prev_key} then
-        let _res{_prev_key} = {_args.flags['--' _prev_key].default}
+        let _res{_prev_key} = {_args.flags['--' & _prev_key].default}
     end
 
     # Make sure all required flags were given.
