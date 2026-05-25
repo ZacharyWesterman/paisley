@@ -15,7 +15,7 @@ try while do
 	let first_digit = {max(int(i) for i in lhs.split(''))}
 	let second_digit = {max(int(i) for i in rhs.split(''))}
 
-	let largest_joltage = {int(first_digit second_digit)}
+	let largest_joltage = {int(first_digit & second_digit)}
 	let total_joltage += {largest_joltage}
 end catch eof end
 
