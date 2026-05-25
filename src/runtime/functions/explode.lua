@@ -1,12 +1,17 @@
 return function(vm, line, param)
 	local array = vm.pop()
+	local tp = std.type(array)
 
-	if std.type(array) == 'object' then
+	if tp == 'object' then
 		for key, value in pairs(array) do vm.push(key) end
-	elseif std.type(array) == 'array' then
-		for i = 1, #array do
-			local val = array[#array - i + 1]
-			vm.push(val)
+	elseif tp == 'array' then
+		for i = #array, 1, -1 do
+			vm.push(array[i])
+		end
+	elseif tp == 'string' then
+		array = std.split(array, '\n')
+		for i = #array, 1, -1 do
+			vm.push(array[i])
 		end
 	else
 		vm.push(array)
