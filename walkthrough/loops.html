@@ -122,6 +122,14 @@ that the key-value pairs are valid.</p>
 <p>If you want syntax similar to Lua’s integer for loops
 (<code>for i = 1, 10 do ... end</code>), you can use something like
 <code>for i in {1:10} do ... end</code>.</p>
+<h3 id="scalar-values-in-for-loops">Scalar values in for loops</h3>
+<p>If a for loop is given a non-array-or-object expression, it will be
+coerced into an array based on the type:</p>
+<p>Strings will be split by newline (<code>\n</code>) character. This
+makes it trivial to iterate over lines that a command output, lines in a
+file, etc. Numbers or booleans will be converted to an array with 1
+element, namely the expression value. Null will be converted to an empty
+array.</p>
 <h3 id="generator-exception-loops">Generator-exception loops</h3>
 <p>A common pattern is to use exceptions to give generator behavior. For
 example, suppose you have a function that generates numbers from 0-9,
