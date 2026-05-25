@@ -55,10 +55,6 @@ short-circuit.</li>
 <li>comparison (not equal), <code>!=</code></li>
 <li>check for whether variables are set, <code>exists</code>
 (e.g. <code>x exists</code>)</li>
-<li>string or array length, <code>&amp;</code>
-(e.g. <code>&amp;variable</code>) (<span
-style="color:orange;">deprecated</span>, will be string concatenation in
-v2.0. use <code>len()</code> instead)</li>
 <li>array slicing, <code>:</code>. Note that slices are inclusive of
 both their upper and lower bounds (e.g. <code>0:5</code> gives
 <code>(0,1,2,3,4,5)</code>)
@@ -79,9 +75,8 @@ a given pattern (e.g. <code>"123" like "%d+"</code> gives
 <code>true</code>).</li>
 <li>array searching <code>in</code> (e.g. <code>3 in (1,2,4,5,6)</code>
 gives <code>false</code>)</li>
-<li>implicit string concatenation: There is no string concatenation
-operator. Seriously, two values next to each other, without an operator
-between them, results in string concatenation.</li>
+<li>string concatenation, <code>&amp;</code>
+(e.g. <code>"abc" &amp; "def"</code> gives <code>"abcdef"</code>)</li>
 <li>ternary expression, <code>val1 if expression else val2</code>. Like
 Python’s ternary syntax, this will result in <code>val1</code> if
 <code>expression</code> evaluates to true, otherwise it will result in
@@ -120,15 +115,13 @@ shorthand for object indexing, e.g. <code>obj.attr</code> =
 <h2 id="precedence">Precedence</h2>
 <p>Operator precedence in Paisley follows the table below, from higher
 to lower priority:</p>
-<p><code>.</code> <code>[]</code><br> <code>&amp;</code><br>
-<code>^</code><br>
+<p><code>.</code> <code>[]</code><br> <code>^</code><br>
 <code>-</code> <code>not</code> <code>bitwise not</code> (unary
 operators)<br> <code>:</code><br>
 <code>*</code> <code>/</code> <code>//</code> <code>%</code> <code>%%</code><br>
 <code>+</code> <code>-</code><br>
 <code>&gt;</code> <code>&lt;</code> <code>&gt;=</code> <code>&lt;=</code> <code>=</code> <code>!=</code> <code>in</code> <code>like</code> <code>not in</code> <code>not like</code><br>
-string concatenation <code>a b</code> (two expressions separated by a
-space)<br>
+<code>&amp;</code><br>
 <code>exists</code> <code>and</code> <code>or</code> <code>xor</code>
 and any <code>bitwise</code> versions of the latter 4.<br>
 <code>a for b in c</code> <code>a for b in c if d</code><br>
