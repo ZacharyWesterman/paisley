@@ -27,6 +27,13 @@ Also note that the key-value (bottom) loop **must** contain either `pairs()` or 
 
 If you want syntax similar to Lua's integer for loops (`for i = 1, 10 do ... end`), you can use something like `for i in {1:10} do ... end`.
 
+### Scalar values in for loops
+If a for loop is given a non-array-or-object expression, it will be coerced into an array based on the type:
+
+Strings will be split by newline (`\n`) character. This makes it trivial to iterate over lines that a command output, lines in a file, etc.
+Numbers or booleans will be converted to an array with 1 element, namely the expression value.
+Null will be converted to an empty array.
+
 ### Generator-exception loops
 
 A common pattern is to use exceptions to give generator behavior. For example, suppose you have a function that generates numbers from 0-9, and then raises an exception when done, to indicate there is no more data that can be generated:

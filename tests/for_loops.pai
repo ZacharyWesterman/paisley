@@ -1,0 +1,8 @@
+let lines = """
+this is line1
+this is line2
+"""
+
+for line in {lines} do
+	print ">>{line}<<"
+end
