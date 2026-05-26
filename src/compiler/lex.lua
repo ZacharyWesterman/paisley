@@ -706,6 +706,18 @@ function Lexer(text, file, keep_comments)
 					match = text:match('^[a-zA-Z_][a-zA-Z_0-9]*')
 					if match then tok_type = TOK.var_assign end
 				end
+
+				--Dot-indexing
+				if not match then
+					match = text:match('^%.')
+					if match then tok_type = TOK.op_dot end
+				end
+
+				--Dot-indexing allows numbers!
+				if not match then
+					match = text:match('^[0-9][0-9_]*') --1_234_567
+					if match then tok_type = TOK.lit_number end
+				end
 			end
 
 			--Append currently matched token to token list
