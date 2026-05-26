@@ -1271,11 +1271,6 @@ let_stmt = function(span)
 		local indexes = {}
 		while true do
 			ok, child = parser.accept(TOK.op_dot)
-			if is_initial then
-				--Indexed assignment is not allowed with `initial` statement
-				parser.ast_error(child, '=')
-				return parser.out(false)
-			end
 
 			if not ok then break end
 			ok, child = parser.any_of({ TOK.var_assign, TOK.lit_number }, { 'identifier', 'number' }, true)
@@ -1286,12 +1281,6 @@ let_stmt = function(span)
 		--Then get any expression.
 		ok, child = parser.accept(TOK.expr_open)
 		if ok then
-			if is_initial then
-				--Indexed assignment is not allowed with `initial` statement
-				parser.ast_error(child, '=')
-				return parser.out(false)
-			end
-
 			if parser.accept(TOK.expr_close) then
 				appending = true
 			else
@@ -1321,6 +1310,16 @@ let_stmt = function(span)
 		has_expr = #indexes > 0
 
 		if has_expr or appending then
+			if is_initial then
+				--Indexed assignment is not allowed with `initial` statement
+				parse_error(
+					span,
+					'Index-assignment does not make sense when initializing a variable.',
+					parser.filename()
+				)
+				return parser.out(false)
+			end
+
 			--Indexed assignment MUST have an `=` operator after it.
 			ok, op = parser.expect(TOK.op_assign, '=')
 			if not ok then
