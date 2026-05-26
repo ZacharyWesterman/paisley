@@ -1264,6 +1264,26 @@ let_stmt = function(span)
 		end
 	else
 		--Indexed assignment is only available in single assignment
+
+		local has_expr, appending = false, false
+
+		--First get any dot-indexing
+		local indexes = {}
+		while true do
+			ok, child = parser.accept(TOK.op_dot)
+			if is_initial then
+				--Indexed assignment is not allowed with `initial` statement
+				parser.ast_error(child, '=')
+				return parser.out(false)
+			end
+
+			if not ok then break end
+			ok, child = parser.any_of({ TOK.var_assign, TOK.lit_number }, { 'identifier', 'number' }, true)
+			child.id = TOK.text
+			table.insert(indexes, child)
+		end
+
+		--Then get any expression.
 		ok, child = parser.accept(TOK.expr_open)
 		if ok then
 			if is_initial then
@@ -1272,25 +1292,35 @@ let_stmt = function(span)
 				return parser.out(false)
 			end
 
-			local appending, has_expr = false, false
 			if parser.accept(TOK.expr_close) then
 				appending = true
 			else
-				has_expr = true
 				ok, child = parser.expect(expression, 'expression')
 				if not ok or not parser.expect(TOK.expr_close, '}') then
 					return parser.out(false)
 				end
-			end
 
-			--Allow appending to sub-elements of an array/object
-			if parser.accept(TOK.expr_open) then
-				appending = true
-				if not parser.expect(TOK.expr_close, '}') then
-					return parser.out(false)
+				--Allow appending to sub-elements of an array/object
+				if parser.accept(TOK.expr_open) then
+					appending = true
+					if not parser.expect(TOK.expr_close, '}') then
+						return parser.out(false)
+					end
+				end
+
+				if child.id == TOK.array_concat then
+					for _, subchild in ipairs(child.children) do
+						table.insert(indexes, subchild)
+					end
+				else
+					table.insert(indexes, child)
 				end
 			end
+		end
 
+		has_expr = #indexes > 0
+
+		if has_expr or appending then
 			--Indexed assignment MUST have an `=` operator after it.
 			ok, op = parser.expect(TOK.op_assign, '=')
 			if not ok then
@@ -1314,6 +1344,15 @@ let_stmt = function(span)
 				ch2.text = '[]'
 			else
 				ch2 = ch2.children[1]
+			end
+
+			if has_expr then
+				child = {
+					id = TOK.array_concat,
+					span = Span:merge(indexes[1].span, indexes[#indexes].span),
+					children = indexes,
+					text = '[]',
+				}
 			end
 
 			--Apply syntax sugar for indexed math-assignment, e.g. `let x{1} += 1`.

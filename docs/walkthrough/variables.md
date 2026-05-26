@@ -84,6 +84,16 @@ If you want to change `array[1][2]` from `2` to `8`, or `object.a.b.c` from `123
 ```pai
 let array{1, 2} = 8
 let object{'a', 'b', 'c'} = 456
+
+# The {...} indexing syntax above allows for arbitrary expressions,
+# but if the indexes are known at compile time, there's a simple shorthand:
+let array.1.2 = 8
+let object.a.b.c = 456
+
+# You can of course mix and match.
+let array.1{2} = 8
+let object.a.b{'c'} = 456
+let array.1{} = 4
 ```
 
 **REMEMBER:** All variables are global, so any "re-definition" of a variable just sets it to the new value.
