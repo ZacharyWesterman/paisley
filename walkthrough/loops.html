@@ -137,8 +137,8 @@ and then raises an exception when done, to indicate there is no more
 data that can be generated:</p>
 <div class="sourceCode" id="cb2"><pre
 class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span><span class="fu"> next</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">initial</span> i = <span class="dv">0</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> {i &gt;= <span class="dv">10</span>} <span class="kw">then</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">initial</span> i = {<span class="dv">-1</span>}</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> {i &gt;= <span class="dv">9</span>} <span class="kw">then</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="kw">error</span> <span class="st">&#39;End of generator&#39;</span> <span class="kw">as</span> generator_end</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> i += <span class="dv">1</span></span>

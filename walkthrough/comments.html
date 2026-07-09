@@ -109,29 +109,37 @@ class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id=
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">return</span> {@1 * @1}</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
 <p>The following is a complete list of annotations and what their
-effects are: - <code>@file</code> : A description for the current file.
-This can be multi-line, continuing until the end of the comment. -
-<code>@brief</code> : A single-line description of a function or
-variable. - <code>@param</code> : Indicate a function parameter of a
-specific type. - <code>@return</code> : Indicate a function return value
-of a specific type. - <code>@type</code>: Indicate that the variable is
-guaranteed to have the given data type. - <code>@allow_elision</code>:
-Allow this function to be overridden by external code. -
-<code>@export</code> : Don’t mark this function or variable as dead
-code. Only used when running Paisley as a language server. -
-<code>@shell</code>: Apply the <code>--shell</code> flag to the current
-compilation unit. - <code>@sandbox</code>: Apply the
-<code>--sandbox</code> flag to the current compilation unit. Overrides
-<code>--shell</code>. - <code>@plasma</code>: Apply the
-<code>--plasma</code> flag to the current compilation unit. Overrides
-<code>--shell</code> and <code>--sandbox</code>. -
-<code>@commands</code>: Postpone “command not found” errors for the
+effects are:</p>
+<ul>
+<li><code>@file</code> : A description for the current file. This can be
+multi-line, continuing until the end of the comment.</li>
+<li><code>@brief</code> : A single-line description of a function or
+variable.</li>
+<li><code>@param</code> : Indicate a function parameter of a specific
+type.</li>
+<li><code>@return</code> : Indicate a function return value of a
+specific type.</li>
+<li><code>@type</code>: Indicate that the variable is guaranteed to have
+the given data type.</li>
+<li><code>@allow_elision</code>: Allow this function to be overridden by
+external code.</li>
+<li><code>@export</code> : Don’t mark this function or variable as dead
+code. Only used when running Paisley as a language server.</li>
+<li><code>@shell</code>: Apply the <code>--shell</code> flag to the
+current compilation unit.</li>
+<li><code>@sandbox</code>: Apply the <code>--sandbox</code> flag to the
+current compilation unit. Overrides <code>--shell</code>.</li>
+<li><code>@plasma</code>: Apply the <code>--plasma</code> flag to the
+current compilation unit. Overrides <code>--shell</code> and
+<code>--sandbox</code>.</li>
+<li><code>@commands</code>: Postpone “command not found” errors for the
 given command(s) until run-time, and assume that they return the given
-types (e.g. <code>#@commands cmd1:type1 cmd2:type2</code>) -
-<code>@debug</code>: Validate command or function arguments at compile
-time (e.g. <code>#@debug command_name</code> … <code>#@end</code>). see
-the <a href="../debug_annotations.html">docs on debug annotations</a>
-for more info.</p>
+types (e.g. <code>#@commands cmd1:type1 cmd2:type2</code>)</li>
+<li><code>@debug</code>: Validate command or function arguments at
+compile time (e.g. <code>#@debug command_name</code> …
+<code>#@end</code>). see the <a href="../debug_annotations.html">docs on
+debug annotations</a> for more info.</li>
+</ul>
 <hr />
 <h3 id="prevprev-home-next-next"><a href="commands.html">&lt; Prev</a> |
 <a href="../walkthrough.html">Home</a> | <a href="directives.html">Next

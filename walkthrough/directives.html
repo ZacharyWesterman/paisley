@@ -127,12 +127,15 @@ class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id=
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> array = {<span class="dv">0</span>:<span class="dv">9</span>}</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> length = <span class="kw">$if version &gt;= 2$ {len(array)} $else$ {&amp;array} $end</span>$</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="dt">print</span> {length}</span></code></pre></div>
-<p>The following build flags are supported: - <code>version</code>: The
-Paisley version at compile time, formatted as <code>X.Y.Z</code>. -
-<code>build</code>: The build of Paisley that’s being targeted. Valid
-values are <code>plasma</code> or <code>desktop</code>. -
-<code>target</code>: The runtime that’s being targeted. Valid values are
-<code>lua</code>, <code>c</code> or <code>cpp</code>.</p>
+<p>The following build flags are supported:</p>
+<ul>
+<li><code>version</code>: The Paisley version at compile time, formatted
+as <code>X.Y.Z</code>.</li>
+<li><code>build</code>: The build of Paisley that’s being targeted.
+Valid values are <code>plasma</code> or <code>desktop</code>.</li>
+<li><code>target</code>: The runtime that’s being targeted. Valid values
+are <code>lua</code>, <code>c</code> or <code>cpp</code>.</li>
+</ul>
 <hr />
 <h3 id="prevprev-home-next"><a href="comments.html">&lt; Prev</a> | <a
 href="../walkthrough.html">Home</a> | Next &gt;</h3>

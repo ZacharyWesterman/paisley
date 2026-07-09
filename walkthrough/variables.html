@@ -92,6 +92,21 @@
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
+<h1 id="variables-in-paisley">Variables in Paisley</h1>
+<ul>
+<li>All variables are global.</li>
+<li>variables are always mutable, except for language variables:
+<ul>
+<li><code>_VERSION</code> - contains the current running Paisley
+version.</li>
+<li><code>_VARS</code> - contains all variable keys and values.</li>
+<li><code>_ENV</code> - can be indexed to get specific environment
+vars.</li>
+<li><code>@</code> - contains any parameters passed to the
+program/function.</li>
+<li><code>$</code> - contains all available commands.</li>
+</ul></li>
+</ul>
 <h2 id="variable-assignment">Variable Assignment:</h2>
 <p>Variable assignment always starts with <code>let</code>, e.g.</p>
 <div class="sourceCode" id="cb1"><pre

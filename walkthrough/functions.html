@@ -132,12 +132,13 @@ and <code>@2</code> will also work, but <strong>not</strong>
 <code>@ 2</code>. Also see that functions return values the same way
 that commands do, using the inline command evaluation syntax,
 <code>${...}</code>.</p>
+<h3 id="dynamic-dispatch">Dynamic Dispatch</h3>
 <p>Note that it is also possible to jump to functions with an arbitrary
-label ID. Unlike a regular call, a dynamic call could fail at runtime,
-and so requires a conditional check
+label ID. Unlike a regular call, a dynamic call could fail at runtime
+due to the function not existing, and so requires a conditional check
 <code>if call {expression} then ... else ... end</code> to make sure the
-label is valid. See how in the following example, the program will
-randomly call one of 5 possible functions, and then print “Function
+function call is valid. See how in the following example, the program
+will randomly call one of 5 possible functions, and then print “Function
 exists”.</p>
 <div class="sourceCode" id="cb2"><pre
 class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">if</span> <span class="kw">call</span><span class="fu"> </span><span class="st">&quot;</span>{<span class="fu">random_int</span>(<span class="dv">1</span>,<span class="dv">5</span>)}<span class="st">&quot;</span> <span class="kw">then</span></span>
