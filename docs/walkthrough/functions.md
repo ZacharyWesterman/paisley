@@ -32,7 +32,9 @@ print {\power(2,10)}
 See how in the above, the `@` variable stores any parameters passed to a function as an array, so the first parameter is `@[1]`, the second is `@[2]` and so on. For constant indexes, the square brackets are optional, e.g. `@1` and `@2` will also work, but **not** `@ 2`.
 Also see that functions return values the same way that commands do, using the inline command evaluation syntax, `${...}`.
 
-Note that it is also possible to jump to functions with an arbitrary label ID. Unlike a regular call, a dynamic call could fail at runtime, and so requires a conditional check `if call {expression} then ... else ... end` to make sure the label is valid.
+### Dynamic Dispatch
+
+Note that it is also possible to jump to functions with an arbitrary label ID. Unlike a regular call, a dynamic call could fail at runtime due to the function not existing, and so requires a conditional check `if call {expression} then ... else ... end` to make sure the function call is valid.
 See how in the following example, the program will randomly call one of 5 possible functions, and then print "Function exists".
 ```pai
 if call "{random_int(1,5)}" then

@@ -36,6 +36,7 @@ print {length}
 ```
 
 The following build flags are supported:
+
 - `version`: The Paisley version at compile time, formatted as `X.Y.Z`.
 - `build`: The build of Paisley that's being targeted. Valid values are `plasma` or `desktop`.
 - `target`: The runtime that's being targeted. Valid values are `lua`, `c` or `cpp`.

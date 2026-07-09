@@ -39,7 +39,7 @@ Null will be converted to an empty array.
 A common pattern is to use exceptions to give generator behavior. For example, suppose you have a function that generates numbers from 0-9, and then raises an exception when done, to indicate there is no more data that can be generated:
 ```pai
 function next
-	initial i = 0
+	initial i = {-1}
 	if {i >= 10} then
 		error 'End of generator' as generator_end
 	end

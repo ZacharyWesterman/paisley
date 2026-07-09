@@ -46,7 +46,8 @@ There are a few special escape sequences:
 - `\u` followed by any 4 hexadecimal digits outputs the respective Unicode character.
 - `\U` followed by any 8 hexadecimal digits outputs the respective Unicode character.
 
-There are also a bunch of escape sequences that correspond to emoticons, included for convenience:
+There are also a bunch of escape sequences that correspond to emoticons, included for convenience.
+To output these emoticons, you must put a backslash before any of the following:
 
 - `^-^` outputs `😌`
 - `:relaxed:` outputs `😌`
