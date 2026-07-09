@@ -1,9 +1,9 @@
 # Variables in Paisley
 
 - All variables are global.
-- variables are always mutable, except for language variables:
+- Variables are always mutable, except for reserved language variables, which are *never* mutable:
   - `_VERSION` - contains the current running Paisley version.
-  - `_VARS` - contains all variable keys and values.
+  - `_VARS` - contains all variable keys and values (except reserved variables).
   - `_ENV` - can be indexed to get specific environment vars.
   - `@` - contains any parameters passed to the program/function.
   - `$` - contains all available commands.
