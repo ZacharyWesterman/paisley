@@ -40,7 +40,7 @@ A common pattern is to use exceptions to give generator behavior. For example, s
 ```pai
 function next
 	initial i = {-1}
-	if {i >= 10} then
+	if {i >= 9} then
 		error 'End of generator' as generator_end
 	end
 	let i += 1

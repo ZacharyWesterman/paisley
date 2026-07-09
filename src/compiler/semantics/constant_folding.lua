@@ -4,7 +4,7 @@ end
 
 local function if_const(func)
 	return function(token, file)
-		local values = { token, file }
+		local values = {}
 		for _, child in ipairs(token.children) do
 			if not is_const(child) then return end
 			table.insert(values, child.value)
@@ -12,7 +12,7 @@ local function if_const(func)
 
 		---@diagnostic disable-next-line
 		local u = table.unpack or unpack
-		token.value = func(u(values))
+		token.value = func(token, file, u(values))
 		token.children = {}
 		token.id = ({
 			boolean = TOK.lit_boolean,
