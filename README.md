@@ -1,3 +1,5 @@
+
+
 # Paisley
 <table>
 <tr>
@@ -43,8 +45,7 @@ Required dependencies to build standalone applications:
 - `lua5.3` or greater.
 
 Optional dependencies to enable extra features:
-- `luarocks` which likely will require:
-- `liblua5.3-dev` or greater (Or whatever Lua development libraries for your OS). **NOTE** This needs to be the same as your Lua version!
+- `luarocks` (which likely requires `liblua5.3-dev` or equivalent Lua development libraries for your OS; **NOTE**: this must match your installed Lua version!)
 
 Dependencies required for creating standalone applications:
 - Some C compiler (`cc`, `gcc`, `clang` or `mingw32-gcc`). This is only for `--target=c`
