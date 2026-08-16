@@ -25,7 +25,7 @@ strip() {
 }
 
 dir=$(pwd)
-readarray -t a1 < <(cd "$psl_dir"; "$cmd" --introspect --functions --synonyms=none; cd "$pwd")
+readarray -t a1 < <(cd "$psl_dir"; "$cmd" --introspect --functions --synonyms=none; cd "$dir")
 a2=(
     add
     arrayindex

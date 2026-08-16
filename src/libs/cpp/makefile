@@ -1,6 +1,8 @@
 
 CXX = c++
-CXXFLAGS = -Wall -Wextra --pedantic -Werror -Wno-psabi -std=c++17 -Ofast -I./
+CXXFLAGS = -Wall -Wextra --pedantic -Werror \
+	-Wno-psabi -Wno-maybe-uninitialized \
+	-std=c++17 -Ofast -I./
 
 EXE = standalone_binary
 
@@ -33,16 +35,16 @@ main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 functions/%.o: functions/%.cpp functions/%.hpp
-	$(CXX) $(CXXFLAGS) -Wno-maybe-uninitialized -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 functions/pairs.o: functions/pairs.cpp functions/pairs.hpp
-	$(CXX) $(CXXFLAGS) -Wno-maybe-uninitialized -Wno-array-bounds -c $< -o $@
+	$(CXX) $(CXXFLAGS) -Wno-array-bounds -c $< -o $@
 
 actions/pop_catch_or_throw.o: actions/pop_catch_or_throw.cpp actions/pop_catch_or_throw.hpp
-	$(CXX) $(CXXFLAGS) -Wno-maybe-uninitialized -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 actions/throw_exception.o: actions/throw_exception.cpp actions/throw_exception.hpp
-	$(CXX) $(CXXFLAGS) -Wno-maybe-uninitialized -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 %.o: %.cpp %.hpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
