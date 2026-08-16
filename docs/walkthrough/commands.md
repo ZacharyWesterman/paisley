@@ -16,13 +16,12 @@ print {${time}.clocktime()[1:3].join(":")}
 ```
 
 ### Built-in commands
-For ease of use and consistency, there are 7 built-in commands that will always be the same regardless of what the target environment is.
+For ease of use and consistency, there are 6 built-in commands that will always be the same regardless of what the target environment is.
 
 - `time`: Returns a number representing the clock time. If in a game engine, this is the in-game time. If on PC, this is the same as `systime`. Arguments are ignored.
 - `systime`: Returns a number representing the system time (seconds since midnight). Arguments are ignored.
 - `sysdate`: Returns a numeric array containing the system day, month, and year (in that order). Arguments are ignored.
 - `print`: Prints any params to the 'print' or 'stdout' output.
-- `error`: Raises an exception with the line number, message, and stack info. If not caught, outputs the error and ends the program.
 - `sleep`: Pause script execution for the given amount of seconds. If the first argument is not a positive number, delay defaults to minimum value (0.02s).
 - `.`: No-op. Calculates the value of its arguments and discards the result. Returns null.
 
