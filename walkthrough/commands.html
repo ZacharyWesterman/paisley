@@ -108,7 +108,7 @@ thing:</p>
 <div class="sourceCode" id="cb2"><pre
 class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">print</span> {${<span class="dt">time</span>}.<span class="fu">clocktime</span>()[<span class="dv">1</span>:<span class="dv">3</span>].<span class="fu">join</span>(<span class="st">&quot;:&quot;</span>)}</span></code></pre></div>
 <h3 id="built-in-commands">Built-in commands</h3>
-<p>For ease of use and consistency, there are 7 built-in commands that
+<p>For ease of use and consistency, there are 6 built-in commands that
 will always be the same regardless of what the target environment
 is.</p>
 <ul>
@@ -121,9 +121,6 @@ as <code>systime</code>. Arguments are ignored.</li>
 day, month, and year (in that order). Arguments are ignored.</li>
 <li><code>print</code>: Prints any params to the ‘print’ or ‘stdout’
 output.</li>
-<li><code>error</code>: Raises an exception with the line number,
-message, and stack info. If not caught, outputs the error and ends the
-program.</li>
 <li><code>sleep</code>: Pause script execution for the given amount of
 seconds. If the first argument is not a positive number, delay defaults
 to minimum value (0.02s).</li>
