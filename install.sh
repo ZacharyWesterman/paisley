@@ -30,7 +30,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 #Package the program into an executable and install it.
-./paisley --install || exit 1
+./paisley --install "$@" || exit 1
 
 install_dependency() {
 	local rock_name
