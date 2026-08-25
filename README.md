@@ -102,4 +102,4 @@ Also see the [examples/](https://github.com/zacharywesterman/paisley/tree/main/e
 
 ---
 
-### [Language Walkthrough >](walkthrough/conditionals.md)
+### [Language Walkthrough >](docs/walkthrough.md)

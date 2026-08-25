@@ -35,6 +35,7 @@ while read -r file; do
 		--lua-filter=.filter.lua --metadata title="Paisley Documentation" -V title:"" \
 		--highlight-style breezedark --syntax-definition pandoc_syntax_definition.xml \
 	| sed -E 's|images/paisley-logo-small.png|logo.png|g' \
+	| sed -E 's|href="docs/|href="|g' \
 	> "$tofile" &
 done < <(find README.md docs -type f -name '*.md')
 wait
