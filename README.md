@@ -96,6 +96,10 @@ The above will print out detailed info about the `sleep` command.
 
 ## Programming in Paisley
 
-When you're ready to explore the language, be sure to check out the `examples/` directory. I recommend `examples/fibonacci.pai`.
+For a detailed breakdown of all the syntax and usage thereof, feel free to read through the complete syntax walkthrough (linked below).
 
-If you'd like a detailed breakdown of all the syntax and usage thereof, feel free to read through [the complete syntax guide](docs/walkthrough.md).
+Also see the [examples/](https://github.com/zacharywesterman/paisley/tree/main/examples) directory in the Paisley repo for real working examples.
+
+---
+
+### [Language Walkthrough >](walkthrough/conditionals.md)
