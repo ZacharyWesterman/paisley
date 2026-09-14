@@ -371,16 +371,21 @@ function generate_bytecode(root, file)
 
 		--ARRAY SLICE
 		[TOK.array_slice] = function(token, file)
-			codegen_rules.recur_push(token.children[1])
-			if token.children[2] then
-				codegen_rules.recur_push(token.children[2])
+			local kids = token.children
+			if kids[3] then
+				codegen_rules.recur_push(kids[3])
+			end
+
+			codegen_rules.recur_push(kids[1])
+			if kids[2] then
+				codegen_rules.recur_push(kids[2])
 			else
 				--non-terminated slices
 				--get length from previous item on the stack
 				emit(bc.copy, 1)
 				emit(bc.call, 'length')
 			end
-			emit(bc.call, 'arrayslice')
+			emit(bc.call, 'arrayslice', kids[3] ~= nil and 1 or 0)
 		end,
 
 		--STRING CONCAT

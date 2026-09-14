@@ -496,18 +496,30 @@ slice = function(span)
 
 	ok, rhs = parser.any_of({
 		TOK.op_slice,
-		slice,
+		unary,
 	}, {
 		TOK.expression,
 		':',
 	})
 	if not ok then return parser.out(false) end
 
+	local children = { lhs }
+	if rhs.id ~= TOK.op_slice then
+		--Allow a step size, e.g. `0:10:2` to list even numbers from 0 to 10.
+		children = { lhs, rhs }
+
+		if parser.accept(TOK.op_slice) then
+			ok, rhs = parser.expect(unary, 'expression')
+			if not ok then return parser.out(false) end
+			table.insert(children, rhs)
+		end
+	end
+
 	return true, {
 		id = TOK.array_slice,
 		text = op.text,
 		span = Span:merge(lhs.span, rhs.span),
-		children = rhs.id == TOK.op_slice and { lhs } or { lhs, rhs },
+		children = children,
 	}
 end
 
