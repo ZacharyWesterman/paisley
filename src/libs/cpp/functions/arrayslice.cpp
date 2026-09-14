@@ -8,7 +8,7 @@ void arrayslice(Context &context) noexcept
 
 	if (context.arg)
 	{
-		step = context.stack.pop().to_number();
+		step = std::max((int)context.stack.pop().to_number(), 1);
 	}
 
 	int length = (end - start) / step + 1;
