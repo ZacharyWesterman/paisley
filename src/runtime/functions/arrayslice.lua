@@ -1,6 +1,7 @@
 return function(vm, line, p1)
 	local stop, start, step = std.num(vm.pop()), std.num(vm.pop()), 1
-	if p1 then step = std.num(vm.pop()) end
+	if p1 == 1 then step = std.num(vm.pop()) end
+	if step < 1 then step = 1 end
 
 	local array = {}
 
@@ -9,7 +10,7 @@ return function(vm, line, p1)
 		print('WARNING: line ' ..
 			line ..
 			': Attempt to create an array of ' ..
-			(stop - start) .. ' elements (max is ' .. std.MAX_ARRAY_LEN .. '). Array truncated.')
+			(stop - start + 1) / step .. ' elements (max is ' .. std.MAX_ARRAY_LEN .. '). Array truncated.')
 		stop = start + std.MAX_ARRAY_LEN
 	end
 

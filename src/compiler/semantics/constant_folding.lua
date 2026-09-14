@@ -197,10 +197,11 @@ return {
 
 				local start, stop, step = kids[1].value, kids[2].value, 1
 				if kids[3] then step = kids[3].value end
+				if step < 1 then step = 1 end
 
 				if (stop - start) / step >= std.MAX_ARRAY_LEN then
 					local msg = 'Attempt to create an array of ' ..
-						(stop - start + 1) .. ' elements (max is ' .. std.MAX_ARRAY_LEN .. '). Array truncated.'
+						(stop - start + 1) / step .. ' elements (max is ' .. std.MAX_ARRAY_LEN .. '). Array truncated.'
 					parse_warning(token.span, msg, file)
 
 					stop = std.MAX_ARRAY_LEN + start - 1
