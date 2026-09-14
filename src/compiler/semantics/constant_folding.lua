@@ -193,11 +193,12 @@ return {
 				if #kids < 2 then return end
 
 				--Can only expand slice if it has a constant range.
-				if not is_const(kids[1]) or not is_const(kids[2]) then return end
+				if not is_const(kids[1]) or not is_const(kids[2]) or (kids[3] and not is_const(kids[3])) then return end
 
-				local start, stop = kids[1].value, kids[2].value
+				local start, stop, step = kids[1].value, kids[2].value, 1
+				if kids[3] then step = kids[3].value end
 
-				if (stop - start) >= std.MAX_ARRAY_LEN then
+				if (stop - start) / step >= std.MAX_ARRAY_LEN then
 					local msg = 'Attempt to create an array of ' ..
 						(stop - start + 1) .. ' elements (max is ' .. std.MAX_ARRAY_LEN .. '). Array truncated.'
 					parse_warning(token.span, msg, file)
@@ -209,7 +210,7 @@ return {
 				if (stop - start) > 20 then return end
 
 				local result = std.array()
-				for i = start, stop do table.insert(result, i) end
+				for i = start, stop, step do table.insert(result, i) end
 
 				token.id = TOK.lit_array
 				token.value = result
