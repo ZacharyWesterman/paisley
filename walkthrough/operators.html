@@ -59,12 +59,14 @@ short-circuit.</li>
 both their upper and lower bounds (e.g. <code>0:5</code> gives
 <code>(0,1,2,3,4,5)</code>)
 <ul>
-<li>Note that when slicing an array or a string, it’s possible to
-replace the second number with a colon, to indicate that the slice
-should go from the start index all the way to the end of the string or
-array. So for example, <code>"abcdef"[4::]</code> would result in
-<code>"def"</code>, <code>(5,4,3,2,1)[2::]</code> would result in
-<code>(4,3,2,1)</code>, etc.</li>
+<li>Slices may include an optional “step size”, e.g. <code>0:10:2</code>
+is read “0 to 10 step 2”, and gives <code>(0,2,4,6,8,10)</code>.</li>
+<li>When slicing an array or a string, it’s possible to replace the
+second number with a colon, to indicate that the slice should go from
+the start index all the way to the end of the string or array. So for
+example, <code>"abcdef"[4::]</code> would result in <code>"def"</code>,
+<code>(5,4,3,2,1)[2::]</code> would result in <code>(4,3,2,1)</code>,
+etc.</li>
 </ul></li>
 <li>array listing, <code>,</code> (e.g. <code>1,2,3</code> is an array
 with 3 elements, <code>(1,)</code> is an array with 1 element,
