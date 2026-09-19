@@ -5,7 +5,7 @@ let zero_count = 0
 
 require file using file.stdin
 
-try while do
+until eof do
 	let instruction = ${call stdin}
 
 	let direction amount = {instruction[1]} {instruction[2::].int()}
@@ -14,6 +14,6 @@ try while do
 	let dial_position = {(dial_position + amount) % 100}
 
 	if {dial_position = 0} then let zero_count += 1 end
-end catch eof end
+end
 
 print {zero_count}
