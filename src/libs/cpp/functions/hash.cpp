@@ -27,7 +27,7 @@ std::string sha256(const std::string &message)
 {
 	std::string padded = message;
 	const uint64_t bit_length = static_cast<uint64_t>(message.size()) * 8;
-	padded.push_back(0x80);
+	padded.push_back(static_cast<char>(0x80));
 	while ((padded.size() + 8) % 64 != 0)
 	{
 		padded.push_back('\0');
