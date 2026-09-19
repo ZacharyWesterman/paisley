@@ -26,7 +26,7 @@ clean:
 	rm -f $(OBJS) $(EXE) PAISLEY_BYTECODE.cpp
 
 $(EXE): PAISLEY_BYTECODE.o $(OBJS)
-	@$(CXX) $(CXXFLAGS) -o $@ $^ -lcrypto
+	@$(CXX) $(CXXFLAGS) -o $@ $^
 
 PAISLEY_BYTECODE.o : PAISLEY_BYTECODE.cpp
 	@$(CXX) $(CXXFLAGS) -c $< -o $@
