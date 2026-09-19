@@ -5,7 +5,7 @@ require file using file.stdin
 
 let total_joltage = 0
 
-try while do
+until eof do
 	let batteries = ${call stdin}
 
 	let possible_first_digits = {int(i) for i in batteries.\split(batteries.len() - 1)[1].split('')}
@@ -17,6 +17,6 @@ try while do
 
 	let largest_joltage = {int(first_digit & second_digit)}
 	let total_joltage += {largest_joltage}
-end catch eof end
+end
 
 print {total_joltage}
