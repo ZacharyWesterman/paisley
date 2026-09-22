@@ -221,7 +221,8 @@ mult :=
 
 slice :=
 	| unary `:` `:`
-	| unary `:` slice
+	| unary `:` unary `:` unary
+	| unary `:` unary
 	| unary
 
 unary :=
