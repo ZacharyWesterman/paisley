@@ -98,7 +98,7 @@ The above will print out detailed info about the `sleep` command.
 
 For a detailed breakdown of all the syntax and usage thereof, feel free to read through the complete syntax walkthrough (linked below).
 
-Also see the [examples/](https://github.com/zacharywesterman/paisley/tree/main/examples) directory in the Paisley repo for real working examples.
+Also see the [examples/](https://github.com/zacharywesterman/paisley/tree/main/examples) for real working sample code.
 
 ---
 
