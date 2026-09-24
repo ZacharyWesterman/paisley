@@ -100,3 +100,26 @@ function fmt.underline
 	return "\x1b[4m{@}\x1b[0m"
 	$end
 end
+
+$if build = desktop
+#[[
+@brief Format text as if it was the usual Paisley string interpolation.
+<BR><BR>
+
+All expression operations are supported inside curly braces,
+e.g. `\fmt('sum={1+2}')` will result in the string `sum=3`.
+Due to limitations in the implementation, this function is
+only supported for the PC build in environments where Paisley is installed.
+
+<BR><BR>
+Any number of arguments is supported.
+
+@return string The parsed text.
+@export
+#]]
+function fmt
+	return ${? echo "print \"{join(@, ' ').replace('\\', '\\\\').replace('"', '\\"')}\"" | paisley - }
+end
+$end
+
+print {\fmt('{_ENV.HOME}')}
