@@ -17,6 +17,7 @@ function fmt.color ... end # Format text with a given color.
 function fmt.bold ... end # Format bold text.
 function fmt.italic ... end # Format italic text.
 function fmt.underline ... end # Format underline text.
+function fmt ... end # Parse text as an interpolated string. (PC build only!)
 ```
 #]]
 
