@@ -93,8 +93,8 @@
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body><a class="logo" href="/paisley"></a>
-<h2 id="commands">Commands</h2>
-<h3 id="inline-command-evaluation">Inline Command Evaluation</h3>
+<h1 id="commands">Commands</h1>
+<h2 id="inline-command-evaluation">Inline Command Evaluation</h2>
 <p>Since commands can return values to Paisley after execution, you can
 also use those values in further calculations. For example:</p>
 <div class="sourceCode" id="cb1"><pre
@@ -108,7 +108,7 @@ class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id=
 thing:</p>
 <div class="sourceCode" id="cb2"><pre
 class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">print</span> {${<span class="dt">time</span>}.<span class="fu">clocktime</span>()[<span class="dv">1</span>:<span class="dv">3</span>].<span class="fu">join</span>(<span class="st">&quot;:&quot;</span>)}</span></code></pre></div>
-<h3 id="built-in-commands">Built-in commands</h3>
+<h2 id="built-in-commands">Built-in commands</h2>
 <p>For ease of use and consistency, there are 6 built-in commands that
 will always be the same regardless of what the target environment
 is.</p>
@@ -148,7 +148,7 @@ command.</li>
 and stderr output. Run with no params to output the result of the last
 command.</li>
 </ul>
-<h3 id="shell-command-coersion">Shell command coersion</h3>
+<h2 id="shell-command-coersion">Shell command coersion</h2>
 <p>If the <code>--shell</code> or <code>-l</code> flag is passed, then
 Paisley will assume that any undefined commands are programs available
 on this system.</p>
@@ -162,7 +162,7 @@ class="sourceCode pai"><code class="sourceCode pandocsyntaxdefinition"><span id=
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> x = ${<span class="dt">?</span> wget https://127.0.0.1/example}</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># And NOT equivalent to the following which captures the RETURN value of wget:</span></span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">let</span> x = ${<span class="dt">=</span> wget https://127.0.0.1/example}</span></code></pre></div>
-<h3 id="command-piping">Command piping</h3>
+<h2 id="command-piping">Command piping</h2>
 <p>Like Bash, the stdout of commands can be piped into other commands,
 or from and to files. This uses the same syntax as bash, for
 familiarity, and because the syntax is simple enough.</p>

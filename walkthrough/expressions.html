@@ -93,7 +93,7 @@
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body><a class="logo" href="/paisley"></a>
-<h2 id="expressions">Expressions:</h2>
+<h1 id="expressions">Expressions:</h1>
 <p>First and foremost, expressions will only be evaluated inside curly
 braces, <code>{}</code>. If you place an expression outside of braces,
 it will be treated as plain text. For example <code>print {1+2}</code>
@@ -106,7 +106,7 @@ perform easy string interpolation. Note that single-quoted strings
 <strong>do not</strong> interpolate expressions, so for example
 <code>'a = {1+2}'</code> would give exactly <code>a = {1+2}</code>
 without parsing any expression.</p>
-<h3 id="allowed-values">Allowed values:</h3>
+<h2 id="allowed-values">Allowed values:</h2>
 <ul>
 <li>Hexadecimal numbers, <code>0xFFFF</code></li>
 <li>Octal numbers, <code>0c7777</code></li>
@@ -142,7 +142,7 @@ docs for details</a>.</li>
 <li>Objects, e.g. <code>("a" =&gt; 1, "b" =&gt; 2)</code>. See <a
 href="objects.html">the docs for details</a>.</li>
 </ul>
-<h3 id="escape-sequences">Escape sequences:</h3>
+<h2 id="escape-sequences">Escape sequences:</h2>
 <p>If you would like to avoid interpolation in double-quoted strings,
 simply escape the opening curly brace with a backslash, e.g.</p>
 <div class="sourceCode" id="cb1"><pre
