@@ -877,11 +877,11 @@ function generate_bytecode(root, file)
 							op.children[2].id == TOK.lit_null
 						)
 					then
-						enter(op.children[1].id == TOK.lit_null and op.children[2] or op.children[1])
+						codegen_rules.recur_push(op.children[1].id == TOK.lit_null and op.children[2] or op.children[1])
 						emit(bc.call, 'jumpifnil', else_label)
 					else
 						if token.children[1].id == TOK.call_stmt then token.children[1].dynamic = true end
-						enter(token.children[1])
+						codegen_rules.recur_push(token.children[1])
 						emit(bc.call, 'jumpiffalse', else_label)
 					end
 
