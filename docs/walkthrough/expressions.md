@@ -1,9 +1,9 @@
-## Expressions:
+# Expressions:
 First and foremost, expressions will only be evaluated inside curly braces, `{}`. If you place an expression outside of braces, it will be treated as plain text. For example `print {1+2}` will print "3" but `print 1+2` will print the actual string "1+2".
 
 Expressions can be placed anywhere inside a command or statement operand. In addition, they can also be placed inside double-quoted strings (e.g. `"a = {1+2}"` gives `a = 3`) to perform easy string interpolation. Note that single-quoted strings **do not** interpolate expressions, so for example `'a = {1+2}'` would give exactly `a = {1+2}` without parsing any expression.
 
-### Allowed values:
+## Allowed values:
 - Hexadecimal numbers, `0xFFFF`
 - Octal numbers, `0c7777`
 - Binary numbers, `0b1111`
@@ -23,7 +23,7 @@ Expressions can be placed anywhere inside a command or statement operand. In add
 - Arrays, e.g. `(1,2,3,4,5)`. See [the docs for details](arrays.md).
 - Objects, e.g. `("a" => 1, "b" => 2)`. See [the docs for details](objects.md).
 
-### Escape sequences:
+## Escape sequences:
 
 If you would like to avoid interpolation in double-quoted strings, simply escape the opening curly brace with a backslash, e.g.
 ```pai

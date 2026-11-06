@@ -1,4 +1,4 @@
-## Scopes:
+# Scopes:
 Every time you enter into a new "block" of code, the scope is incremented.
 For global variables this doesn't matter, but macros for example cannot exist outside of the scope where they were defined.
 Any structure that *naturally isolates a block of code* also increments the scope.

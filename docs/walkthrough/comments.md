@@ -1,10 +1,10 @@
-## Comments
+# Comments
 
 As mentioned briefly at the beginning, single-line comments start with `#` and continue until the end of the line,
 and multi-line comments start with `#[[` and continue until `#]]`.
 Comments can also be used to annotate parts of the program and slightly modify compiler behavior.
 
-### Comment annotations
+## Comment annotations
 
 Every comment annotation starts with `@`. They will look something like the following:
 ```pai

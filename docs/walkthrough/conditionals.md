@@ -1,4 +1,4 @@
-## Conditionals:
+# Conditionals:
 "If" statements have the following structure:
 ```pai
 if {expression is truthy} then

@@ -1,4 +1,4 @@
-### List comprehension
+# List comprehension
 Often you need to take an array and mutate every element in some way. While you could very well use a for loop for this, this operation comes up often enough that there is a convenient shorthand for it. See how in the following script, we're taking the array `x` and multiplying every element by `2`, then assigning the result to `y`.
 ```pai
 let x = {1,2,3}

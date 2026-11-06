@@ -1,4 +1,4 @@
-## Conditional compilation via Compiler Directives
+# Conditional compilation via Compiler Directives
 
 In very rare cases, it may be beneficial to only parse code if certain compiler flags are set.
 In C/C++, this is done with macros like `#ifdef DEF_NAME ... #endif`.

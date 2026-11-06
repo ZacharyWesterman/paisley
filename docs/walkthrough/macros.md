@@ -1,4 +1,4 @@
-## Macros:
+# Macros:
 Macros are another good way to reuse code, however unlike functions, these are specifically for reusing parts of expressions.
 Macros are defined with the syntax `![expression]`, and are referred to with that same `!` identifier, just without the brackets. Note that the `!` can be any number of exclamation marks, optionally followed by an alphanumeric identifier. So for example, `!!`, `!2`, and `!!macro_1` are all valid macro identifiers, all referring to different macros. Note that macros are not functions; they don't take any parameters, instead they behave exactly as if you had written the contained expression instead of the macro.
 

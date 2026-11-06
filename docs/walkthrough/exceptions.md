@@ -1,4 +1,4 @@
-## Exceptions:
+# Exceptions:
 Sometimes, parts of a program **will** fail, and the failure point is not always easy to predict. Paisley handles this with exceptions. To raise an exception, use the `error` statement along with any message, and an optional `as <exception_type>` at the end. See the following example:
 
 ```pai

@@ -1,4 +1,4 @@
-## User-defined functions:
+# User-defined functions:
 User-defined functions may be either called as if they were commands, or built-in functions.
 Like commands, they can take parameters and optionally return a value, but they don't have to.
 Unlike commands, they can modify global variables, which may or may not be desired. Just keep it in mind when writing them.

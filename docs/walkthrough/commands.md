@@ -1,6 +1,6 @@
-## Commands
+# Commands
 
-### Inline Command Evaluation
+## Inline Command Evaluation
 Since commands can return values to Paisley after execution, you can also use those values in further calculations. For example:
 ```pai
 #Get an integer value representing in-game time, and convert it to a human-readable format
@@ -15,7 +15,7 @@ Of course, there is also a simpler version that does the same thing:
 print {${time}.clocktime()[1:3].join(":")}
 ```
 
-### Built-in commands
+## Built-in commands
 For ease of use and consistency, there are 6 built-in commands that will always be the same regardless of what the target environment is.
 
 - `time`: Returns a number representing the clock time. If in a game engine, this is the in-game time. If on PC, this is the same as `systime`. Arguments are ignored.
@@ -36,7 +36,7 @@ In the PC build, the following commands are also available:
 - `!`: Executes a unix command, capturing the stderr output. Run with no params to output the result of the last command.
 - `?!`: Executes a unix command, capturing both the stdout and stderr output. Run with no params to output the result of the last command.
 
-### Shell command coersion
+## Shell command coersion
 If the `--shell` or `-l` flag is passed, then Paisley will assume that any undefined commands are programs available on this system.
 ```pai
 # Plain commands will not capture stdout or stderr, so the following are equivalent:
@@ -50,7 +50,7 @@ let x = ${? wget https://127.0.0.1/example}
 let x = ${= wget https://127.0.0.1/example}
 ```
 
-### Command piping
+## Command piping
 
 Like Bash, the stdout of commands can be piped into other commands, or from and to files. This uses the same syntax as bash, for familiarity, and because the syntax is simple enough.
 ```sh
