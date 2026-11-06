@@ -17,13 +17,34 @@ find docs/* -type d | while read -r dir; do
 	cp images/paisley-logo-small.png "$dir/logo.png"
 done
 
-# Automatically convert .md links into .html
+# Automatically convert .md and .l links into .html
 echo "function Link(el)
-	el.target = string.gsub(el.target, '%.md', '.html')
+	el.target = el.target:gsub('%.md', '.html'):gsub('%.l', '.html')
 	return el
 end" > .filter.lua
 
 wait
+
+# Convert syntax file into a markdown document.
+echo "# Paisley Syntax
+
+This is the full syntax specification for the Paisley language.
+It's written in an ad-hoc format, not any real parser-generator syntax;
+the actual parser itself is hand-written.
+Instead, the hope here is that this file will make operator precedence &
+how statements are parsed more clear to the reader.
+
+---
+
+\`\`\`
+$(cat docs/syntax.l)
+\`\`\`
+
+---
+
+### [Back](walkthrough.md)
+" > docs/syntax.md
+
 
 # Convert example scripts into temporary markdown documents,
 # and generate examples index.
@@ -88,7 +109,7 @@ wait
 echo >&2 "Finalizing..."
 
 # Remove example scripts from temporary markdown documents
-rm docs/examples docs/examples.md rm .README.md -rf
+rm docs/examples docs/examples.md docs/syntax.md .README.md -rf
 
 # Just copy over any non-markdown files.
 find docs -type f -not -name '*.md' | while read -r file; do
