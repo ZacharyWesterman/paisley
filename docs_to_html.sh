@@ -80,7 +80,7 @@ while read -r file; do
 		--highlight-style breezedark --syntax-definition pandoc_syntax_definition.xml \
 	| sed -E 's|images/paisley-logo-small.png|logo.png|g' \
 	| sed -E 's|href="docs/|href="|g' \
-	| sed -E 's|<body>|<body><div class="logo"></div>|g' \
+	| sed -E 's|<body>|<body><a class="logo" href="/paisley"></a>|g' \
 	> "$tofile" &
 done < <(find README.md docs -type f -name '*.md')
 wait
