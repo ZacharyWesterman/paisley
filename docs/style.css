@@ -3,6 +3,8 @@
 :root {
 	/* Color Palette from Paisley Logo */
 	--paisley-dark: #170c29;
+	--paisley-dark2: #271435;
+	--paisley-purple2: #371C40;
 	--paisley-purple: #3d1f47;
 	--paisley-bright: #a61e78;
 	--paisley-teal: #14b8a6;
@@ -45,6 +47,17 @@ html {
 	display: table;
 	margin: auto;
 	height: 100%;
+
+	/*Interesting background pattern, but not too distracting.*/
+	background-image:
+		radial-gradient(var(--paisley-dark) 17%, var(--paisley-dark2) 18% 35%, transparent 36.5%),
+		radial-gradient(var(--paisley-dark) 17%, var(--paisley-dark2) 18% 35%, transparent 36.5%),
+		radial-gradient(var(--paisley-dark2) 34%, var(--paisley-dark) 36% 68%, transparent 70%),
+		repeating-linear-gradient(45deg, var(--paisley-dark) -12.5% 12.5%, var(--paisley-dark2) 0 37.5%);
+	background-position: -40px -40px, 40px 40px, 0 0, 0 0;
+	background-size: 160px 160px, 160px 160px, 80px 80px, 160px 160px;
+	animation: upwards 15s linear infinite;
+	background-attachment: fixed;
 }
 
 body {
@@ -52,9 +65,9 @@ body {
 	font-size: 16px;
 	line-height: 1.6;
 	color: var(--paisley-text);
-	background-color: var(--paisley-dark);
+	/* background-color: var(--paisley-dark); */
 	height: 100%;
-	max-width: 900px;
+	width: 900px;
 	display: table-cell;
 	vertical-align: middle;
 }
@@ -89,7 +102,8 @@ h1 {
 	-webkit-text-fill-color: transparent;
 	background-clip: text;
 	padding-bottom: var(--space-md);
-	border-bottom: 3px solid var(--paisley-bright);
+	border-bottom: 5px solid var(--paisley-bright);
+	border-radius: 10px;
 	display: inline-block;
 }
 
@@ -97,15 +111,28 @@ h2 {
 	font-size: 2rem;
 	color: var(--paisley-teal);
 	padding-bottom: var(--space-md);
-	border-left: 4px solid var(--paisley-bright);
 	padding-left: var(--space-md);
+}
+
+h2::before {
+	content: "{";
+	font-size: 42px;
+	color: var(--paisley-bright);
+	margin-left: calc(0px - var(--space-md));
+	padding-right: var(--space-md);
 }
 
 h3 {
 	font-size: 1.5rem;
 	color: var(--paisley-orange);
-	padding-left: var(--space-md);
-	border-left: 3px solid var(--paisley-teal);
+}
+
+h3::before {
+	content: "{";
+	font-size: 34px;
+	color: var(--paisley-teal);
+	margin-left: calc(0px - var(--space-md));
+	padding-right: var(--space-md);
 }
 
 h4 {
@@ -162,7 +189,7 @@ code {
 	padding: var(--space-xs) var(--space-sm);
 	border-radius: 4px;
 	font-size: 0.9em;
-	border: 1px solid var(--dark-border);
+	/* border: 1px solid var(--dark-border); */
 }
 
 pre {
@@ -175,6 +202,16 @@ pre {
 	border-left: 4px solid var(--paisley-teal);
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
 	word-wrap: normal;
+
+	/*Interesting background pattern, but not too distracting.*/
+	background-image:
+		radial-gradient(var(--paisley-purple) 17%, var(--paisley-purple2) 18% 35%, transparent 36.5%),
+		radial-gradient(var(--paisley-purple) 17%, var(--paisley-purple2) 18% 35%, transparent 36.5%),
+		radial-gradient(var(--paisley-purple2) 34%, var(--paisley-purple) 36% 68%, transparent 70%),
+		repeating-linear-gradient(45deg, var(--paisley-purple) -12.5% 12.5%, var(--paisley-purple2) 0 37.5%);
+	background-position: -20px -20px, 20px 20px, 0 0, 0 0;
+	background-size: 80px 80px, 80px 80px, 40px 40px, 80px 80px;
+	animation: downwards 15s linear infinite;
 }
 
 pre code {
@@ -202,9 +239,21 @@ blockquote {
 hr {
 	border: none;
 	height: 2px;
-	background: linear-gradient(90deg, var(--paisley-bright) 0%, var(--paisley-orange) 100%);
+	/* background: linear-gradient(90deg, var(--paisley-bright) 0%, var(--paisley-orange) 100%); */
 	margin: var(--space-2xl) 0;
-	border-radius: 1px;
+
+	/*Interesting background pattern, but not too distracting.*/
+	opacity: 0.8;
+	background-image:
+		radial-gradient(var(--paisley-bright) 17%, var(--paisley-orange) 18% 35%, transparent 36.5%),
+		radial-gradient(var(--paisley-bright) 17%, var(--paisley-orange) 18% 35%, transparent 36.5%),
+		radial-gradient(var(--paisley-orange) 34%, var(--paisley-bright) 36% 68%, transparent 70%),
+		repeating-linear-gradient(45deg, var(--paisley-bright) -12.5% 12.5%, var(--paisley-orange) 0 37.5%);
+	background-position: -20px -20px, 20px 20px, 0 0, 0 0;
+	background-size: 80px 80px, 80px 80px, 40px 40px, 80px 80px;
+	animation: downwards 15s linear infinite;
+
+	clip-path: polygon(0 100%, 10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
 }
 
 /* Tables */
@@ -277,28 +326,29 @@ nav a:hover {
 	color: var(--paisley-orange);
 }
 
-/* Adjust logo based on display size */
-body {
-	background-image: url('logo.png');
-	background-repeat: no-repeat;
-}
-
 @media (min-width: 1000px) {
-	body {
-		background-position: 0px 30px;
-		background-attachment: fixed;
+	.logo {
+		background-image: url('logo.png');
+		background-repeat: no-repeat;
+		position: fixed;
+		left: 0;
+		top: 30px;
+		width: 128px;
+		height: 128px;
 	}
 }
 
 @media (max-width: 1000px) {
 	body {
+		background-image: url('logo.png');
+		background-repeat: no-repeat;
 		background-position: 100% 10px;
 		background-attachment: local;
 	}
 }
 
 @media (max-width: 630px) {
-	body {
+	.logo {
 		background-image: none;
 	}
 }
@@ -428,5 +478,25 @@ pre>code.sourceCode {
 	h2,
 	h3 {
 		page-break-after: avoid;
+	}
+}
+
+@keyframes downwards {
+	0% {
+		background-position: -20px -20px, 20px 20px, 0 0, 0 0;
+	}
+
+	100% {
+		background-position: -20px 60px, 20px 100px, 0 80px, 0 80px;
+	}
+}
+
+@keyframes upwards {
+	0% {
+		background-position: -40px -40px, 40px 40px, 0 0, 0 0;
+	}
+
+	100% {
+		background-position: -40px -200px, 40px -120px, 0 -160px, 0 -160px;
 	}
 }
