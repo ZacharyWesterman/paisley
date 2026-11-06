@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Paisley Documentation</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body><a class="logo" href="/paisley"></a>
+<h1 id="paisley-syntax">Paisley Syntax</h1>
+<p>This is the full syntax specification for the Paisley language. It’s
+written in an ad-hoc format, not any real parser-generator syntax; the
+actual parser itself is hand-written. Instead, the hope here is that
+this file will make operator precedence &amp; how statements are parsed
+more clear to the reader.</p>
+<hr />
+<pre><code>program :=
+    | statement*
+
+statement :=
+    | if_stmt
+    | while_stmt
+    | for_stmt
+    | scope_stmt
+    | function_def
+    | call_stmt
+    | let_stmt
+    | uncache_stmt
+    | break_stmt
+    | continue_stmt
+    | return_stmt
+    | match_stmt
+    | alias_stmt
+    | try_stmt
+    | until_stmt
+    | error_stmt
+    | delete_stmt
+    | stop_stmt
+    | import_stmt
+    | define_stmt
+    | command
+
+if_stmt :=
+    | `if` (argument|call_stmt) `then` program `end`
+    | `if` (argument|call_stmt) `then` program else_stmt
+    | `if` (argument|call_stmt) `then` program elif_stmt
+    | `if` (argument|call_stmt) else_stmt
+
+elif_stmt :=
+    | `elif` program `end`
+    | `elif` program elif_stmt
+    | `elif` program else_stmt
+
+else_stmt :=
+    | `else` program `end`
+
+while_stmt :=
+    | `while` `do` program `end`
+    | `while` argument `do` program `end`
+
+for_stmt :=
+    | `for` &lt;text&gt;+ `in` argument+ `do` program `end`
+
+scope_stmt :=
+    | `do` program `end`
+
+delete_stmt :=
+    | `delete` &lt;text&gt;+
+
+function_def :=
+    | `function` &lt;text&gt; program `end`
+
+call_stmt :=
+    | `call` &lt;text&gt;
+
+let_stmt :=
+    | `let` &lt;variable&gt; `{` `}` `=` argument+
+    | `let` &lt;variable&gt; `{` expression `}` `{` `}` `=` argument+
+    | `let` &lt;variable&gt; `{` expression `}` (`=`|`+=`|`-=`|`*=`|`/=`|`%=`|`%%=`|`&amp;=`) argument+
+    | `let` &lt;variable&gt;+ `=` argument+
+    | `let` &lt;variable&gt;+
+    | `let` &lt;variable&gt; (`+=`|`-=`|`*=`|`/=`|`%=`|`%%=`|`&amp;=`) argument+
+    | `initial` &lt;variable&gt; `=` argument+
+
+uncache_stmt :=
+    | `break` `cache` &lt;text&gt;
+
+break_stmt :=
+    | `break` argument?
+
+continue_stmt :=
+    | `continue` argument?
+
+return_stmt :=
+    | `return` argument?
+
+match_stmt :=
+    | `match` argument `do` match_if_stmt+ `end`
+    | `match` argument `do` match_if_stmt+ else_smt
+
+match_if_stmt :=
+    | `if` match_argument `then` program `end`
+    | terse_match_statement `if` match_argument
+
+match_argument :=
+    | &lt;text&gt;
+    | string
+    | `{` (`%`|`%%`|`&gt;`|`&lt;`|`&gt;=`|`&lt;=`|`=`|`!=`|`not`? `like`|`not`? `in`|`bitwise`? `and`|`bitwise`? `or`|`bitwise`? `xor`) expression `}`
+    | `{` expression `}`
+    | `${` inline_command `}`
+
+terse_match_statement :=
+    | call_stmt
+    | let_stmt
+    | uncache_stmt
+    | break_stmt
+    | continue_stmt
+    | return_stmt
+    | delete_stmt
+    | stop_stmt
+    | error_stmt
+    | command
+
+alias_stmt :=
+    | `using` argument `as` argument
+    | `using` argument
+
+try_stmt :=
+    | `try` program catch_block+ `end`
+
+until_stmt :=
+    | `until` text+ `do` program `end`
+
+catch_block :=
+    | `catch` text+
+    | `catch` text+ as text
+
+stop_stmt :=
+    | `stop`
+
+import_stmt :=
+    | `require` text+
+
+error_stmt :=
+    | `error` argument `as` text
+    | `error` argument
+
+define_stmt :=
+    | `define` argument+
+
+command :=
+    | (argument | pipeio)+
+
+argument :=
+    | &lt;text&gt;
+    | string
+    | `{` expression `}`
+    | `${` inline_command `}`
+
+pipeio :=
+    | `|` command
+    | stdio `&gt;` (stdio | &lt;text&gt;)
+    | `&lt;` argument
+    | `&lt;&lt;&lt;` argument
+
+stdio :=
+    | `?`
+    | `!`
+    | `?!`
+
+inline_command :=
+    | call_stmt
+    | command
+
+expression :=
+    | array
+
+array :=
+    | kv_pair `,` array
+    | kv_pair `,`
+    | kv_pair
+    | `,`
+
+kv_pair :=
+    | ternary `=&gt;` ternary
+    | ternary
+    | `=&gt;`
+
+ternary :=
+    | list_comprehension `?` `else` ternary
+    | list_comprehension `else` ternary
+    | list_comprehension `?` `then` ternary
+    | list_comprehension `then` ternary
+    | list_comprehension `if` list_comprehension `else` ternary
+    | list_comprehension
+
+list_comprehension :=
+    | boolean `for` &lt;variable&gt; `in` list_comprehension `if` list_comprehension
+    | boolean `for` &lt;variable&gt; `in` list_comprehension
+    | boolean
+
+boolean :=
+    | concat `bitwise`? `and` boolean
+    | concat `bitwise`? `or` boolean
+    | concat `bitwise`? `xor` boolean
+    | concat `exists`
+    | concat
+
+concat :=
+    | comparison+
+
+comparison :=
+    | add `&gt;` comparison
+    | add `&lt;` comparison
+    | add `&gt;=` comparison
+    | add `&lt;=` comparison
+    | add `=` comparison
+    | add `!=` comparison
+    | add `in` comparison
+    | add `like` comparison
+    | add `not` `in` comparison
+    | add `not` `like` comparison
+    | add
+
+add :=
+    | mult `+` add
+    | mult `-` add
+    | mult
+
+mult :=
+    | slice `*` mult
+    | slice `/` mult
+    | slice `//` mult
+    | slice `%` mult
+    | slice `%%` mult
+    | slice
+
+slice :=
+    | unary `:` `:`
+    | unary `:` unary `:` unary
+    | unary `:` unary
+    | unary
+
+unary :=
+    | `bitwise`? `not` exponent
+    | `-` exponent
+
+exponent :=
+    | length `^` exponent
+    | length
+
+length :=
+    | `&amp;` dot_and_index
+    | dot_and_index
+
+dot_and_index :=
+    | value `.` value
+    | value `[` expression `]`
+    | value `?` `.` value
+    | value `?` `[` expression `]`
+    | value
+
+value :=
+    | macro
+    | func_call
+    | &lt;variable&gt;
+    | &lt;number&gt;
+    | string
+    | `true` | `false` | `null`
+    | `(` expression `)`
+    | `{` expression `}`
+    | `${` inline_command `}`
+
+macro :=
+    | &lt;exclamation&gt; `[` expression `]`
+    | &lt;exclamation&gt;
+
+func_call :=
+    | &lt;variable&gt; `(` expression `)`
+
+string :=
+    | `&quot;` string_interp* `&quot;`
+    | `&quot;&quot;&quot;` string_interp* `&quot;&quot;&quot;`
+    | `&#39;` &lt;text&gt;? `&#39;`
+    | `&#39;&#39;&#39;` &lt;text&gt;? `&#39;&#39;&#39;`
+
+string_interp :=
+    | &lt;text&gt;
+    | `{` expression `}`
+    | `${` inline_command `}`</code></pre>
+<hr />
+<h3 id="back"><a href="walkthrough.html">Back</a></h3>
+</body>
+</html>
