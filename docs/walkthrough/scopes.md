@@ -32,7 +32,7 @@ end
 
 try
 	# Scope F
-except err
+catch err
 	# Scope G
 end
 ```
