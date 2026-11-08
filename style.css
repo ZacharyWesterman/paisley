@@ -118,7 +118,6 @@ h2::before {
 	content: "{";
 	font-size: 42px;
 	color: var(--paisley-bright);
-	margin-left: calc(0px - var(--space-md));
 	padding-right: var(--space-md);
 }
 
@@ -131,7 +130,6 @@ h3::before {
 	content: "{";
 	font-size: 34px;
 	color: var(--paisley-teal);
-	margin-left: calc(0px - var(--space-md));
 	padding-right: var(--space-md);
 }
 
