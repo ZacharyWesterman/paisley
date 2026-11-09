@@ -37,12 +37,15 @@ The ethos behind Paisley was *not* to create a particularly fast language (most 
 ## Installing Paisley
 
 Required Dependencies to run:
+
 - *At least* `lua5.1` for basic functionality. However, if you want to create standalone applications, `lua5.3` or greater is required.
 
 Required dependencies to build standalone applications:
+
 - `lua5.3` or greater.
 
 Optional dependencies to enable extra features:
+
 - `luarocks` which likely will require:
 - `liblua5.3-dev` or greater (Or whatever Lua development libraries for your OS). **NOTE** This needs to be the same as your Lua version!
 
@@ -53,6 +56,7 @@ Dependencies required for creating standalone applications:
 **If you want to keep dependencies to a minimum**, you can just install `lua` and then run `paisley` (via `lua paisley` or `lua54 paisley`/`lua5.4 paisley`; whatever your specific version of Lua is) and it should work fine. Nothing else is needed, but extra features are disabled in this case.
 
 Optional extra features include:
+
 - Building the Paisley compiler into a standalone application and installing it on your system.
 - Compiling Paisley scripts into standalone applications.
 - Compressing Paisley bytecode with zlib compression.
