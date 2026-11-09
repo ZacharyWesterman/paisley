@@ -163,16 +163,23 @@ href="plasma_version.html">Plasma Version FAQ</a> if you’re
 interested in that.</p>
 <hr />
 <h2 id="installing-paisley">Installing Paisley</h2>
-<p>Required Dependencies to run: - <em>At least</em> <code>lua5.1</code>
-for basic functionality. However, if you want to create standalone
-applications, <code>lua5.3</code> or greater is required.</p>
-<p>Required dependencies to build standalone applications: -
-<code>lua5.3</code> or greater.</p>
-<p>Optional dependencies to enable extra features: -
-<code>luarocks</code> which likely will require: -
-<code>liblua5.3-dev</code> or greater (Or whatever Lua development
+<p>Required Dependencies to run:</p>
+<ul>
+<li><em>At least</em> <code>lua5.1</code> for basic functionality.
+However, if you want to create standalone applications,
+<code>lua5.3</code> or greater is required.</li>
+</ul>
+<p>Required dependencies to build standalone applications:</p>
+<ul>
+<li><code>lua5.3</code> or greater.</li>
+</ul>
+<p>Optional dependencies to enable extra features:</p>
+<ul>
+<li><code>luarocks</code> which likely will require:</li>
+<li><code>liblua5.3-dev</code> or greater (Or whatever Lua development
 libraries for your OS). <strong>NOTE</strong> This needs to be the same
-as your Lua version!</p>
+as your Lua version!</li>
+</ul>
 <p>Dependencies required for creating standalone applications: - Some C
 compiler (<code>cc</code>, <code>gcc</code>, <code>clang</code> or
 <code>mingw32-gcc</code>). This is only for <code>--target=c</code> -
@@ -185,11 +192,14 @@ can just install <code>lua</code> and then run <code>paisley</code> (via
 <code>lua54 paisley</code>/<code>lua5.4 paisley</code>; whatever your
 specific version of Lua is) and it should work fine. Nothing else is
 needed, but extra features are disabled in this case.</p>
-<p>Optional extra features include: - Building the Paisley compiler into
-a standalone application and installing it on your system. - Compiling
-Paisley scripts into standalone applications. - Compressing Paisley
-bytecode with zlib compression. - Advanced controls in REPL mode, along
-with syntax highlighting.</p>
+<p>Optional extra features include:</p>
+<ul>
+<li>Building the Paisley compiler into a standalone application and
+installing it on your system.</li>
+<li>Compiling Paisley scripts into standalone applications.</li>
+<li>Compressing Paisley bytecode with zlib compression.</li>
+<li>Advanced controls in REPL mode, along with syntax highlighting.</li>
+</ul>
 <p><strong>Note:</strong> If most rocks install fine, but the
 <code>lua-zlib</code> rock specifically fails, you probably need to
 install zlib development files on your system. On Ubuntu, that would be
